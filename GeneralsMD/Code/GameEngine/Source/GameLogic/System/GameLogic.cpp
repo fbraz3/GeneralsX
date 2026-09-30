@@ -45,6 +45,16 @@
 #include "Common/GameEngine.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
+
+// GeneralsX @feature Meeseeks 28/08/2026 Deep CRC platform headers for system telemetry
+#if DEEP_CRC_TO_MEMORY
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <sys/utsname.h>
+#include <SDL3/SDL.h>
+#endif
+#endif
 #include "Common/GameUtility.h"
 #include "Common/INI.h"
 #include "Common/LatchRestore.h"
@@ -117,6 +127,11 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NetworkMesh.h"
+#endif
 
 #include <rts/profile.h>
 
@@ -243,30 +258,6 @@ void setFPMode()
 	#endif
 }
 
-//-------------------------------------------------------------------------------------------------
-const char* toString(GameMode mode)
-{
-	switch (mode)
-	{
-		case GAME_SINGLE_PLAYER:
-			return "GAME_SINGLE_PLAYER";
-		case GAME_LAN:
-			return "GAME_LAN";
-		case GAME_SKIRMISH:
-			return "GAME_SKIRMISH";
-		case GAME_REPLAY:
-			return "GAME_REPLAY";
-		case GAME_SHELL:
-			return "GAME_SHELL";
-		case GAME_INTERNET:
-			return "GAME_INTERNET";
-		case GAME_NONE:
-			return "GAME_NONE";
-		default:
-			return "GAME_UNKNOWN";
-	}
-}
-
 // ------------------------------------------------------------------------------------------------
 /** GameLogic class constructor */
 // ------------------------------------------------------------------------------------------------
@@ -284,7 +275,18 @@ GameLogic::GameLogic()
 		m_progressCompleteTimeout[i] = 0;
 	}
 
-	m_shouldValidateCRCs = FALSE;
+	m_shouldValidateCRCs = 0;
+
+#if DEEP_CRC_TO_MEMORY
+	m_crcBufferIndex = 0;
+
+	m_crcWriteBuffer.resize(1024 * 1024 * 8);
+
+	for (size_t i = 0; i < ARRAY_SIZE(m_crcBuffers); ++i)
+	{
+		m_crcBuffers[i].resize(1024 * 1024);
+	}
+#endif
 
 	m_startNewGame = FALSE;
 
@@ -321,12 +323,16 @@ GameLogic::GameLogic()
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Bool GameLogic::isInSinglePlayerGame()
+Bool GameLogic::isInSinglePlayerGame() const
 {
-	return (m_gameMode == GAME_SINGLE_PLAYER ||
-		(TheRecorder && TheRecorder->isPlaybackMode() && TheRecorder->getGameMode() == GAME_SINGLE_PLAYER));
-}
+	if (rts::isSinglePlayerGame(m_gameMode))
+		return true;
 
+	if (TheRecorder && TheRecorder->isPlaybackMode() && rts::isSinglePlayerGame(TheRecorder->getGameMode()))
+		return true;
+
+	return false;
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Destroy all objects immediately */
@@ -876,7 +882,7 @@ static void populateRandomStartPosition( GameInfo *game )
 				{
 					Coord3D p1 = c1->second;
 					Coord3D p2 = c2->second;
-					startSpotDistance[i][j] = sqrt( sqr(p1.x-p2.x) + sqr(p1.y-p2.y) );
+					startSpotDistance[i][j] = WWMath::SqrtOrigin( sqr(p1.x-p2.x) + sqr(p1.y-p2.y) );
 				}
 			}
 			else
@@ -998,9 +1004,11 @@ static void populateRandomStartPosition( GameInfo *game )
 		//choose a starting position
 		Int team = slot->getTeamNumber();
 		if( !hasStartSpotBeenPicked )
-		{	// We're the first real spot.  Pick randomly.
+		{
+			// We're the first real spot.  Pick randomly.
 			while (posIdx == -1)
-			{	// This while loop shouldn't be neccessary, since we're first.  Why not, though?
+			{
+				// This while loop shouldn't be neccessary, since we're first.  Why not, though?
 				posIdx = GameLogicRandomValue(0, numPlayers-1);
 				if (game->isStartPositionTaken(posIdx))
 					posIdx = -1;
@@ -1012,9 +1020,11 @@ static void populateRandomStartPosition( GameInfo *game )
 			if( team > -1 )
 				teamPosIdx[team] = posIdx;  //remember where this team is
 		} else
-		{	//pick teams far apart, team members close together
+		{
+			//pick teams far apart, team members close together
 			if( team < 0  ||  teamPosIdx[ team ] == -1 )  //if team None or team not yet placed
-			{	//pick position furthest from all other teams
+			{
+				//pick position furthest from all other teams
 				Real farthestDistance = 0.0f;
 				Int farthestIndex = -1;
 				for (posIdx = 0; posIdx < numPlayers; ++posIdx)
@@ -1023,7 +1033,8 @@ static void populateRandomStartPosition( GameInfo *game )
 						continue;  //skip occupied positions
 
 					if (farthestIndex < 0)
-					{	//take this one as best if none else
+					{
+						//take this one as best if none else
 						farthestIndex = posIdx;
 						for (Int n=0; n<numPlayers; ++n)
 						{
@@ -1032,7 +1043,8 @@ static void populateRandomStartPosition( GameInfo *game )
 						}
 					}
 					else
-					{	//find empty position furthest from all taken positions
+					{
+						//find empty position furthest from all taken positions
 						Real dist = 0.0f;
 						for (Int n=0; n<numPlayers; ++n)
 						{
@@ -1054,14 +1066,16 @@ static void populateRandomStartPosition( GameInfo *game )
 					teamPosIdx[team] = farthestIndex;  //remember where this team is
 			}
 			else  //team already has a starting position
-			{	//pick position closest to team
+			{
+				//pick position closest to team
 				Real closestDist = FLT_MAX;
 				Int  closestIdx = 0;
 				for( Int n=0;  n < numPlayers;  ++n )
 				{
 					Real dist = startSpotDistance[ teamPosIdx[team] ][n];
 					if( !taken[n]  &&  dist < closestDist )
-					{	//found a better match
+					{
+						//found a better match
 						closestDist = dist;
 						closestIdx = n;
 					}
@@ -1268,6 +1282,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			DEBUG_LOG(("Starting network game"));
 			TheGameInfo = TheLAN->GetMyGame();
 		}
+#if defined(SAGE_USE_NGMP)
+		else if (TheNGMPGame)
+		{
+			DEBUG_LOG(("Starting NGMP game"));
+			TheGameInfo = TheNGMPGame;
+		}
+#endif
 		else
 		{
 			DEBUG_LOG(("Starting gamespy game"));
@@ -1357,6 +1378,18 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		{
 			TheMouse->setVisibility(FALSE);
 			m_loadScreen->init(TheGameInfo);
+
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Keep ICE signaling alive during long map loading
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StartLoadingKeepalive();
+				}
+			}
+#endif
 
 			updateLoadProgress( LOAD_PROGRESS_START );
 		}
@@ -1504,7 +1537,8 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			d.setInt(TheKey_multiplayerStartIndex, slot->getStartPos());
 //			d.setBool(TheKey_multiplayerIsLocal, slot->isLocalPlayer());
 //			d.setBool(TheKey_multiplayerIsLocal, slot->getIP() == game->getLocalIP());
-			d.setBool(TheKey_multiplayerIsLocal, slot->isHuman() && (slot->getName().compare(TheGameInfo->getSlot(TheGameInfo->getLocalSlotNum())->getName().str()) == 0));
+			const Bool isLocalPlayer = slot->isHuman() && i == TheGameInfo->getLocalSlotNum();
+			d.setBool(TheKey_multiplayerIsLocal, isLocalPlayer);
 
 /*
 			if (slot->getIP() == game->getLocalIP())
@@ -1525,9 +1559,8 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				}
 			}
 
-			AsciiString slotNameAscii;
-			slotNameAscii.translate(slot->getName());
-			if (slot->isHuman() && TheGameInfo->getSlotNum(slotNameAscii) == TheGameInfo->getLocalSlotNum()) {
+			if (isLocalPlayer)
+			{
 				localSlot = i;
 			}
 			TheSidesList->addSide(&d);
@@ -1862,13 +1895,11 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			if (!slot || !slot->isOccupied())
 				continue;
 
-			AsciiString playerName;
-			playerName.format("player%d", i);
-			Player *player = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(playerName));
+			Player *player = ThePlayerList->getPlayerFromSlotIndex(i);
 
 			if (slot->getPlayerTemplate() == PLAYERTEMPLATE_OBSERVER)
 			{
-				DEBUG_LOG(("Clearing shroud for observer %s in playerList slot %d", playerName.str(), player->getPlayerIndex()));
+				DEBUG_LOG(("Clearing shroud for observer in slot %d with player index %d", i, player->getPlayerIndex()));
 				ThePartitionManager->revealMapForPlayerPermanently( player->getPlayerIndex() );
 			}
 			else
@@ -2051,9 +2082,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			if (!slot || !slot->isOccupied())
 				continue;
 
-			AsciiString playerName;
-			playerName.format("player%d", i);
-			Player *player = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(playerName));
+			Player *player = ThePlayerList->getPlayerFromSlotIndex(i);
 
 			if (slot->getPlayerTemplate() == PLAYERTEMPLATE_OBSERVER)
 			{
@@ -2247,8 +2276,8 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				{
 					rel = ALLIES;
 				}
-				else if (thatPlayer != ThePlayerList->getNeutralPlayer()
-					&& thatPlayer != ThePlayerList->findPlayerWithNameKey(NAMEKEY("PlyrCivilian")))
+				else if (thatPlayer != ThePlayerList->getNeutralPlayer() &&
+					thatPlayer != ThePlayerList->findPlayerWithNameKey(NAMEKEY("PlyrCivilian")))
 				{
 					rel = ENEMIES;
 				}
@@ -2295,6 +2324,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	// if we're in a load game, don't fade yet
 	if(loadingSaveGame == FALSE && TheTransitionHandler != nullptr && m_loadScreen)
 	{
+		TheFramePacer->reset();
 		TheTransitionHandler->setGroup("FadeWholeScreen");
 		while(!TheTransitionHandler->isFinished())
 		{
@@ -2303,7 +2333,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			{
 				TheDisplay->draw();
 				setFPMode();
-				Sleep(33);
+				TheFramePacer->update();
 			}
 
 		}
@@ -2321,6 +2351,17 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		//
 		if( loadingSaveGame == FALSE )
 */
+#if defined(SAGE_USE_NGMP)
+			// GeneralsX @feature fbraz3 09/09/2026 Stop background ICE keepalive now that loading completed
+			if (TheNGMPGame)
+			{
+				NetworkMesh* pMesh = NGMP_OnlineServicesManager::GetNetworkMesh();
+				if (pMesh)
+				{
+					pMesh->StopLoadingKeepalive();
+				}
+			}
+#endif
 			deleteLoadScreen();
 
 	}
@@ -2560,7 +2601,7 @@ void GameLogic::loadMapINI( AsciiString mapName )
 
 
 	char fullFledgeFilename[_MAX_PATH];
-	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s\\map.ini", filename);
+	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s/map.ini", filename);
 	if (TheFileSystem->doesFileExist(fullFledgeFilename)) {
 		DEBUG_LOG(("Loading map.ini"));
 		INI ini;
@@ -2570,7 +2611,7 @@ void GameLogic::loadMapINI( AsciiString mapName )
 	// TheSuperHackers @todo Implement ini load directory for map folder.
 	// Requires adjustments in map transfer.
 
-	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s\\solo.ini", filename);
+	snprintf(fullFledgeFilename, ARRAY_SIZE(fullFledgeFilename), "%s/solo.ini", filename);
 	if (TheFileSystem->doesFileExist(fullFledgeFilename)) {
 		DEBUG_LOG(("Loading solo.ini"));
 		INI ini;
@@ -2688,7 +2729,7 @@ void GameLogic::processDestroyList()
 void GameLogic::processCommandList( CommandList *list )
 {
 	m_cachedCRCs.clear();
-	m_shouldValidateCRCs = FALSE;
+	m_shouldValidateCRCs = 0;
 
 	GameMessage* msg;
 
@@ -2700,7 +2741,7 @@ void GameLogic::processCommandList( CommandList *list )
 		logicMessageDispatcher( msg, nullptr );
 	}
 
-	if (m_shouldValidateCRCs && !TheNetwork->sawCRCMismatch())
+	if (m_shouldValidateCRCs == 1 && !TheNetwork->sawCRCMismatch())
 	{
 		Bool sawCRCMismatch = FALSE;
 		Int numPlayers = 0;
@@ -2716,21 +2757,39 @@ void GameLogic::processCommandList( CommandList *list )
 			if (m_cachedCRCs.size() < numPlayers)
 			{
 				DEBUG_CRASH(("Not enough CRCs!"));
+				// GeneralsX @build GitHubCopilot 12/04/2026 Surface CRC quorum failures for cross-platform mismatch diagnosis.
+				/* 				fprintf(stderr, "[LAN86] CRC quorum failure frame=%u cached=%zu players=%d\n",
+					m_frame, m_cachedCRCs.size(), numPlayers); */
 				sawCRCMismatch = TRUE;
 			}
 			else
 			{
-				//DEBUG_LOG(("Comparing %d CRCs on frame %d", m_cachedCRCs.size(), m_frame));
-				std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin();
-				Int validatorCRC = crcIt->second;
-				//DEBUG_LOG(("Validator CRC from player %d is %8.8X", crcIt->first, validatorCRC));
-				while (++crcIt != m_cachedCRCs.end())
+				Bool hasReferenceCRC = FALSE;
+				UnsignedInt referenceCRC = 0;
+
+				for (CachedCRCMap::const_iterator it = m_cachedCRCs.begin(); it != m_cachedCRCs.end(); ++it)
 				{
-					Int validatedCRC = crcIt->second;
-					//DEBUG_LOG(("CRC to validate is from player %d: %8.8X", crcIt->first, validatedCRC));
-					if (validatorCRC != validatedCRC)
+					// TheSuperHackers @bugfix Caball009 14/06/2026 Check if player is still connected,
+					// to avoid spurious mismatches at low CRC intervals, e.g. every frame.
+					// GeneralsX @bugfix felipebraz 05/07/2026 Use pre-computed slot index.
+					const Int slotIndex = ThePlayerList->getSlotIndex(it->first);
+					if (slotIndex >= 0 && !TheNetwork->isPlayerConnected(slotIndex))
+						continue;
+					const UnsignedInt crc = it->second;
+
+					if (!hasReferenceCRC)
+					{
+						hasReferenceCRC = TRUE;
+						referenceCRC = crc;
+						continue;
+					}
+
+					if (referenceCRC != crc)
 					{
 						DEBUG_CRASH(("CRC mismatch!"));
+						// GeneralsX @build GitHubCopilot 12/04/2026 Surface validator/validated CRC divergence before mismatch UI triggers.
+						/* 						fprintf(stderr, "[LAN86] CRC mismatch frame=%u validatorPlayer=%d validator=%08X validatedPlayer=%d validated=%08X\n",
+							m_frame, m_cachedCRCs.begin()->first, referenceCRC, it->first, crc); */
 						sawCRCMismatch = TRUE;
 					}
 				}
@@ -2739,9 +2798,85 @@ void GameLogic::processCommandList( CommandList *list )
 
 		if (sawCRCMismatch)
 		{
+			// GeneralsX @build GitHubCopilot 12/04/2026 Dump frame CRC set to stderr so Linux/macOS logs can be compared directly.
+			/* 			fprintf(stderr, "[LAN86] CRC mismatch summary frame=%u cached=%zu players=%d\n",
+				m_frame, m_cachedCRCs.size(), numPlayers); */
+#if DEEP_CRC_TO_MEMORY
+			UnsignedInt flagPlayersConnected = 0;
+			UnsignedInt flagCRCs = 0;
+
+			for (Int i = 0; i < MAX_SLOTS; ++i)
+			{
+				if (TheNetwork->isPlayerConnected(i))
+				{
+					flagPlayersConnected |= (1U << i);
+				}
+			}
+
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				flagCRCs |= (1U << (crcIt->first - 2)); // neutral and civilian players take the first two slots
+			}
+
+			UnicodeString strMismatchDetails;
+			strMismatchDetails.format(L"GameLogic frame %d, latest frame %d\nHad %d CRCs from %d players; Flags %d, %d\nMismatched Players:\n",
+				TheGameLogic->getFrame(),
+				TheGameLogic->getFrame() - TheNetwork->getRunAhead() - 1,
+				m_cachedCRCs.size(),
+				numPlayers,
+				flagPlayersConnected,
+				flagCRCs);
+
+			std::map<UnsignedInt, int> mapCRCOccurences;
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				std::map<UnsignedInt, int>::iterator occurIt = mapCRCOccurences.find(crcIt->second);
+				if (occurIt != mapCRCOccurences.end())
+				{
+					++occurIt->second;
+				}
+				else
+				{
+					mapCRCOccurences[crcIt->second] = 1;
+				}
+			}
+
+			int biggestCRCCount = -1;
+			UnsignedInt biggestCRC = ~0u;
+
+			for (std::map<UnsignedInt, int>::iterator crcIter = mapCRCOccurences.begin(); crcIter != mapCRCOccurences.end(); ++crcIter)
+			{
+				if (crcIter->second > biggestCRCCount)
+				{
+					biggestCRC = crcIter->first;
+					biggestCRCCount = crcIter->second;
+				}
+			}
+
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				if (crcIt->second != biggestCRC)
+				{
+					Player* player = ThePlayerList->getNthPlayer(crcIt->first);
+					UnicodeString strPlayerInfo;
+					strPlayerInfo.format(L"player %d (%ls) = %X [MISMATCH]\n", crcIt->first, player ? player->getPlayerDisplayName().str() : L"<NONE>", crcIt->second);
+
+					strMismatchDetails.concat(strPlayerInfo);
+				}
+			}
+
+			TheGameLogic->writeCRCBuffersToDisk(TheGameLogic->getFrame() - TheNetwork->getRunAhead() - 1);
+			TheNetwork->setSawCRCMismatch(strMismatchDetails);
+#else
+			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			{
+				Player *player = ThePlayerList->getNthPlayer(crcIt->first);
+				/* 				fprintf(stderr, "[LAN86] CRC mismatch entry player=%d name=%ls crc=%08X\n",
+					crcIt->first, player ? player->getPlayerDisplayName().str() : L"<NONE>", crcIt->second); */
+			}
 #ifdef DEBUG_LOGGING
 			DEBUG_LOG(("CRC Mismatch - saw %d CRCs from %d players", m_cachedCRCs.size(), numPlayers));
-			for (std::map<Int, UnsignedInt>::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
+			for (CachedCRCMap::const_iterator crcIt = m_cachedCRCs.begin(); crcIt != m_cachedCRCs.end(); ++crcIt)
 			{
 				Player *player = ThePlayerList->getNthPlayer(crcIt->first);
 				DEBUG_LOG(("CRC from player %d (%ls) = %X", crcIt->first,
@@ -2749,6 +2884,7 @@ void GameLogic::processCommandList( CommandList *list )
 			}
 #endif // DEBUG_LOGGING
 			TheNetwork->setSawCRCMismatch();
+#endif
 		}
 	}
 
@@ -3479,8 +3615,8 @@ static void unitTimings()
 			}
 			return;
 		}
-		while (g_UT_curThing->friend_getNextTemplate()
-			&& g_UT_curThing->friend_getNextTemplate()->getName()!=SINGLE_UNIT)
+		while (g_UT_curThing->friend_getNextTemplate() &&
+			g_UT_curThing->friend_getNextTemplate()->getName()!=SINGLE_UNIT)
 			g_UT_curThing = g_UT_curThing->friend_getNextTemplate();
 
 	}
@@ -3736,6 +3872,9 @@ void GameLogic::update()
 	USE_PERF_TIMER(GameLogic_update)
 	PROFILER_SECTION_COLOR(0x4CAF50);
 
+	// GeneralsX @bugfix fbraz3 16/07/2026 Lock FPU state before every simulation frame
+	ScopedFPUGuard fpuGuard;
+
 	LatchRestore<Bool> inUpdateLatch(m_isInUpdate, TRUE);
 #ifdef DO_UNIT_TIMINGS
 	unitTimings();
@@ -3787,6 +3926,12 @@ void GameLogic::update()
 	{
 		TheScriptEngine->UPDATE();
 	}
+
+	// TheSuperHackers @info Updates the frozen time status because it may have changed after the script engine update.
+	TheFramePacer->setTimeFrozen(TheGameEngine->isTimeFrozen());
+
+	if (TheFramePacer->isTimeFrozen())
+		return;
 
 	// Note - TerrainLogic update needs to happen after ScriptEngine update, but before object updates.  jba.
 	// This way changes in bridges are noted in the script engine before being cleared in TerrainLogic->update
@@ -4191,7 +4336,13 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 
 	XferCRC *xferCRC;
 	AsciiString marker;
-	if (deepCRCFileName.isNotEmpty())
+#if DEEP_CRC_TO_MEMORY
+	const Bool forceDeepCRC = TRUE;
+#else
+	const Bool forceDeepCRC = FALSE;
+#endif
+
+	if (forceDeepCRC || deepCRCFileName.isNotEmpty())
 	{
 		xferCRC = NEW XferDeepCRC;
 		xferCRC->open(deepCRCFileName.str());
@@ -4293,9 +4444,43 @@ UnsignedInt GameLogic::getCRC( Int mode, AsciiString deepCRCFileName )
 		TheGameState->friend_xferSaveDataForCRC(xferCRC, SNAPSHOT_DEEPCRC_LOGICONLY);
 	}
 
-	xferCRC->close();
+	const UnsignedInt theCRC = xferCRC->getCRC();
 
-	UnsignedInt theCRC = xferCRC->getCRC();
+#if DEEP_CRC_TO_MEMORY
+	AsciiString tmp;
+	tmp.format("[ frame %d: %8.8X, logical seeds: %8.8X ]", m_frame, theCRC, GetGameLogicRandomSeed());
+
+	xferCRC->xferLogString(tmp);
+
+	for (Int j = 0; j < ThePlayerList->getPlayerCount(); ++j)
+	{
+		if (Player* player = ThePlayerList->getNthPlayer(j))
+		{
+			tmp.format("[ Player (%d) money: %d, energy: %d | %d ]",
+				j, player->getMoney()->countMoney(), player->getEnergy()->getProduction(), player->getEnergy()->getConsumption());
+
+			xferCRC->xferLogString(tmp);
+		}
+	}
+
+	for (obj = m_objList; obj; obj=obj->getNextObject())
+	{
+		XferCRC tmpXfer;
+		tmpXfer.open("");
+		tmpXfer.xferUser(const_cast<Matrix3D*>(obj->getTransformMatrix()), sizeof(Matrix3D));
+		tmpXfer.close();
+
+		const UnsignedInt mtxCRC = tmpXfer.getCRC();
+
+		tmp.format("[ CRC of object: %d (%s), player: %d, team: %d, health: %f, pos: %f %f %f, mtx: %8.8X ]",
+			obj->getID(), obj->getTemplate()->getName().str(), obj->getControllingPlayer()->getPlayerIndex(), (obj->getTeam() ? obj->getTeam()->getID() : TEAM_ID_INVALID),
+			obj->getBodyModule()->getHealth(), obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z, mtxCRC);
+
+		xferCRC->xferLogString(tmp);
+	}
+#endif
+
+	xferCRC->close();
 
 	delete xferCRC;
 	xferCRC = nullptr;
@@ -4689,6 +4874,8 @@ void GameLogic::testTimeOut()
 void GameLogic::timeOutGameStart()
 {
 	DEBUG_LOG(("We got the Force TimeOut Start Message"));
+	// GeneralsX @build GitHubCopilot 12/04/2026 Surface game-start timeout path alongside CRC mismatch diagnostics.
+	/* 	fprintf(stderr, "[LAN86] timeOutGameStart frame=%u forceStartBefore=%d\n", m_frame, m_forceGameStartByTimeOut); */
 	m_forceGameStartByTimeOut = TRUE;
 }
 
@@ -5475,3 +5662,128 @@ void GameLogic::loadPostProcess()
 	remakeSleepyUpdate();
 
 }
+
+#if DEEP_CRC_TO_MEMORY
+std::vector<UnsignedByte>& GameLogic::getCRCBuffer()
+{
+	return m_crcWriteBuffer;
+}
+
+void GameLogic::storeCRCBuffer(size_t size)
+{
+	std::vector<UnsignedByte>& vec = m_crcBuffers[m_crcBufferIndex++ % ARRAY_SIZE(m_crcBuffers)];
+
+	vec.clear();
+	vec.insert(vec.begin(), m_crcWriteBuffer.begin(), m_crcWriteBuffer.begin() + size);
+}
+
+void GameLogic::writeCRCBuffersToDisk(UnsignedInt frame) const
+{
+	AsciiString str;
+	// GeneralsX @feature Meeseeks 28/08/2026 Generate OS/Arch header with Windows support
+	AsciiString headerStr;
+#ifdef _WIN32
+	SYSTEM_INFO sysInfo;
+	typedef VOID (WINAPI *PFN_GetNativeSystemInfo)(LPSYSTEM_INFO);
+	HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+	PFN_GetNativeSystemInfo pGetNativeSystemInfo = kernel32 ? (PFN_GetNativeSystemInfo)GetProcAddress(kernel32, "GetNativeSystemInfo") : nullptr;
+	if (pGetNativeSystemInfo)
+	{
+		pGetNativeSystemInfo(&sysInfo);
+	}
+	else
+	{
+		GetSystemInfo(&sysInfo);
+	}
+
+	MEMORYSTATUSEX memStatus;
+	memStatus.dwLength = sizeof(memStatus);
+	BOOL memOk = GlobalMemoryStatusEx(&memStatus);
+	int totalRamMB = memOk ? (int)(memStatus.ullTotalPhys / (1024 * 1024)) : 0;
+	const char* archName = (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) ? "x86_64" :
+	                       (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_ARM64) ? "arm64" : "x86";
+	headerStr.format("GeneralsX: Windows\nArch: %s\nCPU Cores: %u\nRAM: %d MB\n\n",
+	                 archName, (unsigned int)sysInfo.dwNumberOfProcessors, totalRamMB);
+#else
+	struct utsname sysInfo;
+	if (uname(&sysInfo) == 0) {
+		headerStr.format("GeneralsX: %s %s (%s)\nArch: %s\nCPU Cores: %d\nRAM: %d MB\n\n",
+						 sysInfo.sysname, sysInfo.release, sysInfo.version, sysInfo.machine,
+						 SDL_GetNumLogicalCPUCores(), SDL_GetSystemRAM());
+	} else {
+		headerStr = "GeneralsX: Unknown OS/Arch\n\n";
+	}
+#endif
+
+	// Format filename as deep_crc_YYYY-MM-DD-HH-MM-SS_f<frame>.bin inside user data Debug dir
+	time_t t = time(nullptr);
+	struct tm *tm_info = localtime(&t);
+	char timebuf[32];
+	strftime(timebuf, 32, "%Y-%m-%d-%H-%M-%S", tm_info);
+
+	// TheGlobalData->getPath_UserData() gives standard document path
+	// Let's create Debug dir if not exists (in cross-platform way, handled by file system)
+	AsciiString logDir;
+	logDir.format("%sDebug", TheGlobalData->getPath_UserData().str());
+	TheFileSystem->createDirectory(logDir);
+
+#ifdef _WIN32
+	str.format("%s\\deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
+#else
+	str.format("%s/deep_crc_%s_f%u.bin", logDir.str(), timebuf, frame);
+#endif
+
+	FILE* fp = fopen(str.str(), "wb");
+	if (fp)
+	{
+		constexpr const char version[] = "[ DEEP CRC DATA (VERSION 1.0.0) ]\n";
+
+		if (fwrite(&version[0], ARRAY_SIZE(version) - 1, 1, fp) != 1)
+		{
+			fclose(fp);
+			return;
+		}
+
+		if (fwrite(headerStr.str(), headerStr.getLength(), 1, fp) != 1)
+		{
+			fclose(fp);
+			return;
+		}
+
+		// GeneralsX @tweak Meeseeks 28/08/2026 Count and report actual serialized non-empty frames written
+		size_t framesWritten = 0;
+		size_t oldest = (m_crcBufferIndex >= ARRAY_SIZE(m_crcBuffers)) ? m_crcBufferIndex % ARRAY_SIZE(m_crcBuffers) : 0;
+		for (size_t i = 0; i < ARRAY_SIZE(m_crcBuffers); ++i)
+		{
+			size_t readIndex = (oldest + i) % ARRAY_SIZE(m_crcBuffers);
+			const std::vector<UnsignedByte>& vec = m_crcBuffers[readIndex];
+
+			if (vec.size() > 0)
+			{
+				if (fwrite(vec.data(), vec.size(), 1, fp) != 1)
+				{
+					fclose(fp);
+					return;
+				}
+				++framesWritten;
+			}
+		}
+
+		if (fclose(fp) == 0)
+		{
+			fprintf(stderr, "[DeepCRC] Desync detected! Wrote %zu frames of state telemetry to %s\n", framesWritten, str.str());
+			fflush(stderr);
+		}
+		else
+		{
+			fprintf(stderr, "[DeepCRC] Failed to flush and close %s\n", str.str());
+			fflush(stderr);
+		}
+	}
+	else
+	{
+		fprintf(stderr, "[DeepCRC] Failed to open %s for writing desync memory dump\n", str.str());
+		fflush(stderr);
+	}
+}
+#endif

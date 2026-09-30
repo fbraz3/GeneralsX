@@ -54,6 +54,7 @@ public:
 	virtual void init(void);
 	virtual void reset(void);
 	virtual void update(void);
+	virtual void draw(void) override;
 	virtual void initCursorResources(void);
 
 	// Mouse interface
@@ -84,7 +85,7 @@ private:
 
 	// Scale raw SDL window coordinates to game internal resolution
 	// GeneralsX @bugfix felipebraz 20/02/2026 Port fighter19 coordinate scaling fix
-	static void scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY);
+	static void scaleMouseCoordinates(float rawX, float rawY, Uint32 windowID, int& scaledX, int& scaledY);
 
 	// Load cursor from ANI file (fighter19 pattern)
 	// GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading
@@ -121,6 +122,10 @@ private:
 
 	// GeneralsX @bugfix BenderAI 22/02/2026 Add cursor animation tracking
 	Int m_directionFrame;         ///< current frame of directional cursor (from 0 points up)
+
+	void setCursorDirection(MouseCursor cursor);
+	MouseCursor m_lastSetCursor;
+	Int m_lastSetDirectionFrame;
 };
 
 #endif // SAGE_USE_SDL3

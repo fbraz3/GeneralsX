@@ -65,7 +65,7 @@ static VARIANT GetCell ( int row, int column )
 		goto error;
 	}
 
-  if ( ! (dispatch = ws->GetRange (cell, cell )))
+  if ( (dispatch = ws->GetRange (cell, cell )) == nullptr)
 	{
 		goto error;
 	}
@@ -105,7 +105,7 @@ int PutCell ( int row, int column, const OLECHAR *string, int val )
 		goto error;
 	}
 
-  if ( ! (dispatch = ws->GetRange (cell, cell )))
+  if ( (dispatch = ws->GetRange (cell, cell )) == nullptr)
 	{
 		goto error;
 	}
@@ -187,7 +187,7 @@ int PutSeparator ( int row )
  	V_BSTR ( &cell2 ) = SysAllocString (cellname2);
 
 
-  if ( ! (dispatch = ws->GetRange (cell1, cell2 )))
+  if ( (dispatch = ws->GetRange (cell1, cell2 )) == nullptr)
 	{
 		goto error;
 	}
@@ -262,7 +262,7 @@ int PutSection ( int row, OLECHAR *title )
  	V_BSTR ( &cell2 ) = SysAllocString (cellname2);
 
 
-  if ( ! (dispatch = ws->GetRange (cell1, cell2 )))
+  if ( (dispatch = ws->GetRange (cell1, cell2 )) == nullptr)
 	{
 		goto error;
 	}
@@ -367,7 +367,7 @@ error:
 
 }
 
-int OpenExcel ( void )
+int OpenExcel ()
 {
 	LPDISPATCH dispatch;
 
@@ -409,12 +409,12 @@ int OpenExcel ( void )
 		return FALSE;
 	}
 
-	if ( ! (ws = new _Worksheet ()))
+	if ( (ws = new _Worksheet ()) == nullptr)
 	{
 		return FALSE;
 	}
 
-	if ( ! (range = new Range ()))
+	if ( (range = new Range ()) == nullptr)
 	{
 		return FALSE;
 	}
@@ -457,7 +457,7 @@ error_access:
 }
 
 
-void CloseExcel ( void )
+void CloseExcel ()
 {
 	CloseWorkBook ();
 
@@ -522,7 +522,7 @@ int NewWorkBook ( const char *path )
 	if ( path )
 	{
 		strcpy ( tfile, path );
-		if ( (p = strchr ( tfile, '.' )))
+		if ( (p = strchr ( tfile, '.' )) != nullptr)
 		{
 			*p = 0;
 		}
@@ -592,7 +592,7 @@ int SaveWorkBook ( const char *filename, int protect )
 
 }
 
-void CloseWorkBook ( void )
+void CloseWorkBook ()
 {
 	if ( workbook )
 	{
@@ -604,11 +604,11 @@ void CloseWorkBook ( void )
 
 }
 
-void SelectActiveSheet ( void )
+void SelectActiveSheet ()
 {
 	LPDISPATCH dispatch;
 
-  if ( ! (dispatch = xl->GetActiveSheet ()))
+  if ( (dispatch = xl->GetActiveSheet ()) == nullptr)
 	{
 		return;
 	}

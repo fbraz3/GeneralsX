@@ -19,8 +19,8 @@
 // 08/06/02 KM Added cube map and volume texture support
 
 #include "ddsfile.h"
-#include "ffactory.h"
-#include "bufffile.h"
+#include "WWLib/ffactory.h"
+#include "WWLib/bufffile.h"
 #include "formconv.h"
 #include "dx8wrapper.h"
 #include "bitmaphandler.h"
@@ -105,20 +105,9 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	MipLevels=SurfaceDesc.MipMapCount;
 	if (MipLevels==0) MipLevels=1;
 
-	//Adjust the reduction factor to keep textures above some minimum dimensions
-	if (MipLevels <= WW3D::Get_Texture_Min_Dimension())
-		ReductionFactor=0;
-	else
-	{	int mipToDrop=MipLevels-WW3D::Get_Texture_Min_Dimension();
-		if (ReductionFactor >= mipToDrop)
-			ReductionFactor=mipToDrop;
-	}
-
-	if (MipLevels>ReductionFactor) MipLevels-=ReductionFactor;
-	else {
-		MipLevels=1;
-		ReductionFactor=ReductionFactor-MipLevels;
-	}
+	// GeneralsX @bugfix Copilot 24/08/2026 Clamp DDS reduction to authored levels so thumbnail loads cannot skip past the file data.
+	if (ReductionFactor >= MipLevels) ReductionFactor = MipLevels - 1;
+	MipLevels -= ReductionFactor;
 
 	// Drop the two lowest miplevels!
 	if (MipLevels>2) MipLevels-=2;
@@ -142,41 +131,30 @@ DDSFileClass::DDSFileClass(const char* name,unsigned reduction_factor)
 	Height=SurfaceDesc.Height>>ReductionFactor;
 	Depth=SurfaceDesc.Depth;
 
-	unsigned level_size=Calculate_DXTC_Surface_Size
-	(
-		SurfaceDesc.Width,
-		SurfaceDesc.Height,
-		Format
-	);
 	unsigned level_offset=0;
-
-	unsigned level_mip_dec=4;
-	if (Type==DDS_VOLUME)
-	{
-		// add slices to level data size
-		level_size*=SurfaceDesc.Depth;
-		level_mip_dec=8;
-	}
-
+	unsigned level_width=SurfaceDesc.Width;
+	unsigned level_height=SurfaceDesc.Height;
+	unsigned level_depth=SurfaceDesc.Depth;
 	LevelSizes=W3DNEWARRAY unsigned[MipLevels];
 	LevelOffsets=W3DNEWARRAY unsigned[MipLevels];
 	unsigned level=0;
 	for (;level<ReductionFactor;++level)
 	{
-		if (level_size>16)
-		{	// If surface is bigger than one block (8 or 16 bytes)...
-			level_size/=level_mip_dec;
-		}
+		if (level_width>1) level_width/=2;
+		if (level_height>1) level_height/=2;
+		if (Type==DDS_VOLUME && level_depth>1) level_depth/=2;
 	}
+	// GeneralsX @bugfix Copilot 26/08/2026 Derive each compressed mip size from its logical dimensions.
 	for (level=0;level<MipLevels;++level)
 	{
+		unsigned level_size=Calculate_DXTC_Surface_Size(level_width,level_height,Format);
+		if (Type==DDS_VOLUME) level_size*=level_depth;
 		LevelSizes[level]=level_size;
 		LevelOffsets[level]=level_offset;
 		level_offset+=level_size;
-		if (level_size>16)
-		{	// If surface is bigger than one block (8 or 16 bytes)...
-			level_size/=level_mip_dec;
-		}
+		if (level_width>1) level_width/=2;
+		if (level_height>1) level_height/=2;
+		if (Type==DDS_VOLUME && level_depth>1) level_depth/=2;
 	}
 
 	if (Type==DDS_CUBEMAP)
@@ -255,7 +233,8 @@ unsigned DDSFileClass::Calculate_DXTC_Surface_Size
 	WW3DFormat format
 )
 {
-	unsigned level_size=(width/4)*(height/4);
+	// GeneralsX @bugfix Copilot 24/08/2026 Count at least one compressed block on each axis for narrow rectangular DDS levels.
+	unsigned level_size=max((width+3)/4,1u)*max((height+3)/4,1u);
 	switch (format)
 	{
 	case WW3D_FORMAT_DXT1:
@@ -295,26 +274,24 @@ bool DDSFileClass::Load()
 	}
 
 	// Skip mip levels if reduction factor is not zero
-	unsigned level_size=Calculate_DXTC_Surface_Size
-	(
-		SurfaceDesc.Width,
-		SurfaceDesc.Height,
-		Format
-	);
-
 	unsigned skipped_offset=0;
+	unsigned level_width=SurfaceDesc.Width;
+	unsigned level_height=SurfaceDesc.Height;
+	unsigned level_depth=SurfaceDesc.Depth;
 	for (unsigned i=0;i<ReductionFactor;++i)
 	{
+		unsigned level_size=Calculate_DXTC_Surface_Size(level_width,level_height,Format);
+		if (Type==DDS_VOLUME) level_size*=level_depth;
 		skipped_offset+=level_size;
 		size-=level_size;
-		if (level_size>16)
-		{	// If surface is bigger than one block (8 or 16 bytes)...
-			level_size/=4;
-		}
+		if (level_width>1) level_width/=2;
+		if (level_height>1) level_height/=2;
+		if (Type==DDS_VOLUME && level_depth>1) level_depth/=2;
 	}
 
 	// Skip the header and info block and possible unused mip levels
 	unsigned seek_size=file->Seek(SurfaceDesc.Size+4+skipped_offset);
+	(void)seek_size;
 	WWASSERT(seek_size==(SurfaceDesc.Size+4+skipped_offset));
 
 	if (size && size<0x80000000)
@@ -323,6 +300,7 @@ bool DDSFileClass::Load()
 		DDSMemory=MSGW3DNEWARRAY("DDSMemory") unsigned char[size];
 		// Read data
 		unsigned read_size=file->Read(DDSMemory,size);
+		(void)read_size;
 		// Verify we got all the data
 		WWASSERT(read_size==size);
 	}
@@ -1092,7 +1070,8 @@ bool DDSFileClass::Get_4x4_Block(
 	// or we don't.
 	case WW3D_FORMAT_DXT1:
 		{
-			const unsigned char* block_memory=Get_Memory_Pointer(level)+(source_x/4)*8+((source_y/4)*(Get_Width(level)/4))*8;
+			const unsigned blocks_per_row=max((Get_Width(level)+3)/4,1u);
+			const unsigned char* block_memory=Get_Memory_Pointer(level)+(source_x/4)*8+((source_y/4)*blocks_per_row)*8;
 
 			unsigned col0=RGB565_To_ARGB8888(*(unsigned short*)&block_memory[0]);
 			unsigned col1=RGB565_To_ARGB8888(*(unsigned short*)&block_memory[2]);
@@ -1159,7 +1138,8 @@ bool DDSFileClass::Get_4x4_Block(
 	case WW3D_FORMAT_DXT5:
 		{
 			// Init alphas
-			const unsigned char* alpha_block=Get_Memory_Pointer(level)+(source_x/4)*16+((source_y/4)*(Get_Width(level)/4))*16;
+			const unsigned blocks_per_row=max((Get_Width(level)+3)/4,1u);
+			const unsigned char* alpha_block=Get_Memory_Pointer(level)+(source_x/4)*16+((source_y/4)*blocks_per_row)*16;
 
 			unsigned alphas[8];
 			alphas[0]=alpha_block[0];

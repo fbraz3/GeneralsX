@@ -290,16 +290,22 @@ UpdateSleepTime StealthDetectorUpdate::update()
 				theirDraw->setHeatVisionOpacity( 1.0f );
 			}
 
-			const ParticleSystemTemplate *gridTemplate = data->m_IRGridParticleSysTmpl;
-			ParticleSystem *sys = TheParticleSystemManager->createParticleSystem( gridTemplate );//GRID
-			if (sys)
+			if (data->m_IRGridParticleSysTmpl)
 			{
-				Coord3D gridPosition = *them->getPosition();
-				gridPosition.z = self->getPosition()->z + 17;
-				gridPosition.x -= ((Int)gridPosition.x)%12;
-				gridPosition.y -= ((Int)gridPosition.y)%12;
+				const ParticleSystemTemplate *gridTemplate = data->m_IRGridParticleSysTmpl;
+				if (gridTemplate)
+				{
+					ParticleSystem *sys = TheParticleSystemManager->createParticleSystem( gridTemplate );//GRID
+					if (sys)
+					{
+						Coord3D gridPosition = *them->getPosition();
+						gridPosition.z = self->getPosition()->z + 17;
+						gridPosition.x -= ((Int)gridPosition.x)%12;
+						gridPosition.y -= ((Int)gridPosition.y)%12;
 
-				sys->setPosition( &gridPosition );
+						sys->setPosition( &gridPosition );
+					}
+				}
 			}
 
 		}
@@ -346,28 +352,34 @@ UpdateSleepTime StealthDetectorUpdate::update()
 		else
 			pingTemplate = data->m_IRParticleSysTmpl;
 
-		ParticleSystem *sys = TheParticleSystemManager->createParticleSystem( pingTemplate );
-		if (sys)
+		if (pingTemplate)
 		{
-			if (myDraw)
-				sys->attachToDrawable( myDraw );
-			else
-				sys->attachToObject( self );
+			ParticleSystem *sys = TheParticleSystemManager->createParticleSystem( pingTemplate );
+			if (sys)
+			{
+				if (myDraw)
+					sys->attachToDrawable( myDraw );
+				else
+					sys->attachToObject( self );
 
-			sys->setPosition( &bonePosition );
+				sys->setPosition( &bonePosition );
+			}
 		}
 
 		const ParticleSystemTemplate *beaconTemplate = data->m_IRBeaconParticleSysTmpl;
-		sys = TheParticleSystemManager->createParticleSystem( beaconTemplate );//BEACON
-		if (sys)
+		if (beaconTemplate)
 		{
-			if (myDraw)
-				sys->attachToDrawable( myDraw );
-			else
-				sys->attachToObject( self );
+			ParticleSystem *sys = TheParticleSystemManager->createParticleSystem( beaconTemplate );//BEACON
+			if (sys)
+			{
+				if (myDraw)
+					sys->attachToDrawable( myDraw );
+				else
+					sys->attachToObject( self );
 
-			sys->setPosition( &bonePosition );
+				sys->setPosition( &bonePosition );
 
+			}
 		}
 
 		AudioEventRTS IRPingSound;

@@ -41,25 +41,25 @@
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "dllist.h"
 // GeneralsX @build BenderAI 10/02/2026
 // Use angle brackets (not quotes) to skip local d3d8.h stub and get DXVK headers
 // DXVK's d3d8.h includes d3d8types.h internally - no manual includes needed
 #include <d3d8.h>
-#include "matrix4.h"
+#include "WWMath/matrix4.h"
 #include "statistics.h"
-#include "wwstring.h"
-#include "lightenvironment.h"
-#include "shader.h"
-#include "vector4.h"
-#include "cpudetect.h"
+#include "WWLib/wwstring.h"
+#include "WW3D2/lightenvironment.h"
+#include "WW3D2/shader.h"
+#include "WWMath/vector4.h"
+#include "WWLib/cpudetect.h"
 #include "dx8caps.h"
 
 #include "texture.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
-#include "vertmaterial.h"
+#include "WW3D2/vertmaterial.h"
 
 /*
 ** Registry value names
@@ -916,7 +916,7 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 	// Can't monitor state changes because setShader call to GERD may change the states!
 	if (RenderStates[state]==value) return;
 
-#ifdef MESH_RENDER_SNAPSHOT_ENABLED
+#ifdef DEBUG_LOGGING
 	if (WW3D::Is_Snapshot_Activated()) {
 		StringClass value_name(0,true);
 		Get_DX8_Render_State_Value_Name(value_name,state,value);
@@ -945,7 +945,8 @@ WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURE
 
 	// Can't monitor state changes because setShader call to GERD may change the states!
 	if (TextureStageStates[stage][(unsigned int)state]==value) return;
-#ifdef MESH_RENDER_SNAPSHOT_ENABLED
+
+#ifdef DEBUG_LOGGING
 	if (WW3D::Is_Snapshot_Activated()) {
 		StringClass value_name(0,true);
 		Get_DX8_Texture_Stage_State_Value_Name(value_name,state,value);
@@ -1247,10 +1248,8 @@ WWINLINE void DX8Wrapper::Set_Shader(const ShaderClass& shader)
 	}
 	render_state.shader=shader;
 	render_state_changed|=SHADER_CHANGED;
-#ifdef MESH_RENDER_SNAPSHOT_ENABLED
-	StringClass str;
-#endif
-	SNAPSHOT_SAY(("DX8Wrapper::Set_Shader(%s)",shader.Get_Description(str).str()));
+
+	SNAPSHOT_SAY(("DX8Wrapper::Set_Shader(%s)",shader.Get_Description().str()));
 }
 
 // GeneralsX @refactor BenderAI 10/02/2026

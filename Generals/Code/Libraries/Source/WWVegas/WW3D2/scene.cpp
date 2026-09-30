@@ -58,11 +58,11 @@
 
 
 #include "scene.h"
-#include "plane.h"
+#include "WWMath/plane.h"
 #include "camera.h"
 #include "ww3d.h"
 #include "rinfo.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "dx8renderer.h"
 #include "dx8wrapper.h"
 #include "sortingrenderer.h"
@@ -544,12 +544,12 @@ void SimpleSceneClass::Customized_Render(RenderInfoClass & rinfo)
 	// apply only the first four lights in the scene
 	// derived classes should use light environment
 	WWASSERT(rinfo.light_environment==nullptr);
-	int count=0;
 	// Turn off lights in case we have none
 	DX8Wrapper::Set_Light(0,nullptr);
 	DX8Wrapper::Set_Light(1,nullptr);
 	DX8Wrapper::Set_Light(2,nullptr);
 	DX8Wrapper::Set_Light(3,nullptr);
+	int count=0;
 	for (it.First(&LightList); !it.Is_Done(); it.Next())
 	{
 		if (count<4)

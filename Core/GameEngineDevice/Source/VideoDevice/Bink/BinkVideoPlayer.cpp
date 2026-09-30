@@ -45,13 +45,13 @@
 //         Includes
 //----------------------------------------------------------------------------
 
-#include "Lib/BaseType.h"
 #include "VideoDevice/Bink/BinkVideoPlayer.h"
 #include "Common/AudioAffect.h"
 #include "Common/GameAudio.h"
 #include "Common/GameMemory.h"
 #include "Common/GlobalData.h"
 #include "Common/Registry.h"
+#include "BinkLoader.h"
 
 #ifdef _WIN32
 // ============================================================================
@@ -135,6 +135,12 @@ void	BinkVideoPlayer::init()
 	// Need to load the stuff from the ini file.
 	VideoPlayer::init();
 
+	// Load Bink on runtime instead of importing it into the executable.
+	if (!BinkLoader::load())
+	{
+		DEBUG_LOG(("Failed to load binkw32.dll (error %d). Videos will not play.", BinkLoader::getLastError()));
+	}
+
 	initializeBinkWithMiles();
 }
 
@@ -146,6 +152,7 @@ void BinkVideoPlayer::deinit()
 {
 	TheAudio->releaseHandleForBink();
 	VideoPlayer::deinit();
+	BinkLoader::unload();
 }
 
 //============================================================================
@@ -207,16 +214,38 @@ VideoStreamInterface* BinkVideoPlayer::createStream( HBINK handle )
 		stream->m_player = this;
 		m_firstStream = stream;
 
-		// never let volume go to 0, as Bink will interpret that as "play at full volume".
-		Int mod = (Int) ((TheAudio->getVolume(AudioAffect_Speech) * 0.8f) * 100) + 1;
-		Int volume = (32768*mod)/100;
-		DEBUG_LOG(("BinkVideoPlayer::createStream() - About to set volume (%g -> %d -> %d",
-			TheAudio->getVolume(AudioAffect_Speech), mod, volume));
-		BinkSetVolume( stream->m_handle,0, volume);
-		DEBUG_LOG(("BinkVideoPlayer::createStream() - set volume"));
+		// TheSuperHackers @bugfix BinkWait must run first or Bink ignores the initial volume.
+		BinkWait( stream->m_handle );
+		Int volume = calculateMovieAudioVolume( TheAudio->getVolume(AudioAffect_Speech) );
+		BinkSetVolume( stream->m_handle, 0, volume );
 	}
 
 	return stream;
+}
+
+//============================================================================
+// BinkVideoPlayer::calculateMovieAudioVolume
+//============================================================================
+
+Int BinkVideoPlayer::calculateMovieAudioVolume( Real volume )
+{
+	// Never let volume go to 0, as Bink will interpret that as "play at full volume".
+	Int mod = (Int) ((volume * 0.8f) * 100) + 1;
+	return (32768*mod)/100;
+}
+
+//============================================================================
+// BinkVideoPlayer::setVolume
+//============================================================================
+
+void BinkVideoPlayer::setVolume( Real volume )
+{
+	// Push the new volume to every open stream's audio output.
+	Int binkVolume = calculateMovieAudioVolume( volume );
+	for ( VideoStreamInterface* stream = firstStream(); stream != nullptr; stream = stream->next() )
+	{
+		BinkSetVolume( static_cast<BinkVideoStream*>( stream )->m_handle, 0, binkVolume );
+	}
 }
 
 //============================================================================

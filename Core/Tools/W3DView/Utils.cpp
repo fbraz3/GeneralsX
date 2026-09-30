@@ -29,12 +29,12 @@
 #include "MainFrm.h"
 #include "DataTreeView.h"
 #include "Utils.h"
-#include "texture.h"
-#include "assetmgr.h"
-#include "agg_def.h"
-#include "hlod.h"
+#include "WW3D2/texture.h"
+#include "WW3D2/assetmgr.h"
+#include "WW3D2/agg_def.h"
+#include "WW3D2/hlod.h"
 #include <VFW.h>
-#include "rcfile.h"
+#include "WWLib/rcfile.h"
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -737,9 +737,9 @@ Load_RC_Texture (LPCTSTR resource_name)
 	//
 	//	Load the cursor file image from this binaries resources
 	//
-	ResourceFileClass resource_file (::AfxGetResourceHandle (), resource_name);
-	unsigned char *res_data = resource_file.Peek_Data ();
-	unsigned int data_size = resource_file.Size ();
+	//ResourceFileClass resource_file (::AfxGetResourceHandle (), resource_name);
+	//unsigned char *res_data = resource_file.Peek_Data ();
+	//unsigned int data_size = resource_file.Size ();
 
 	//
 	//	Create a texture from the raw image data

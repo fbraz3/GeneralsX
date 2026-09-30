@@ -10,6 +10,11 @@ on:
         required: false
         type: string
         default: linux64-deploy
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
   workflow_dispatch:
     inputs:
       preset:
@@ -45,7 +50,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
           fetch-depth: 0
+          fetch-tags: true
+
+      - name: Populate Git Info for Sandboxed Build
+        run: |
+          echo "GENERALS_GIT_OVERRIDE_TSTAMP=$(git log -1 --format=%ct 2>/dev/null || echo '0')" >> $GITHUB_ENV
+          echo "GENERALS_GIT_OVERRIDE_TAG=$(git describe --tags --exact-match 2>/dev/null || echo '')" >> $GITHUB_ENV
 
       - name: Install Build Dependencies
         run: |
@@ -73,14 +85,22 @@ jobs:
             flatpak-builder-${{ runner.os }}-${{ inputs.preset }}-
 
       - name: Build Flatpak Bundle
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
+          set -o pipefail
           mkdir -p logs
-          ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
+          bash ./scripts/build/linux/build-linux-flatpak.sh "${{ inputs.preset }}" "${{ matrix.game.value }}" 2>&1 | tee "logs/build_flatpak_${{ matrix.game.log_suffix }}.log"
 
       - name: Locate generated Flatpak bundle
         id: bundle
         run: |
-          EXPECTED="build/${{ matrix.game.output }}-${{ inputs.preset }}.flatpak"
+          EXPECTED="build/linux-x86_64-${{ matrix.game.output }}.flatpak"
 
           if [ -f "${EXPECTED}" ]; then
             echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
@@ -88,16 +108,21 @@ jobs:
             exit 0
           fi
 
-          # GeneralsX @bugfix GitHubCopilot 14/04/2026 Resolve the generated Flatpak path dynamically to avoid upload failures when naming drifts.
-          CANDIDATE=$(find build -maxdepth 2 -type f -name "${{ matrix.game.output }}*.flatpak" | head -1)
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Resolve Flatpak path dynamically and normalize to canonical expected filename.
+          CANDIDATE=$(find build -maxdepth 2 -type f -name "*${{ matrix.game.output }}*.flatpak" | head -1)
           if [ -z "${CANDIDATE}" ] || [ ! -f "${CANDIDATE}" ]; then
             echo "ERROR: Flatpak bundle not found for ${{ matrix.game.id }}"
             find build -maxdepth 3 -type f -name "*.flatpak" || true
             exit 1
           fi
 
-          echo "path=${CANDIDATE}" >> "$GITHUB_OUTPUT"
-          echo "Using detected bundle: ${CANDIDATE}"
+          if [ "${CANDIDATE}" != "${EXPECTED}" ]; then
+            echo "Renaming candidate ${CANDIDATE} to expected filename: ${EXPECTED}"
+            mv "${CANDIDATE}" "${EXPECTED}"
+          fi
+
+          echo "path=${EXPECTED}" >> "$GITHUB_OUTPUT"
+          echo "Using bundle: ${EXPECTED}"
 
       - name: Emit Build Fingerprint (Linux Flatpak)
         if: success()
@@ -155,7 +180,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: linux-flatpak-${{ matrix.game.id }}-${{ inputs.preset }}
+          name: linux-x86_64-${{ matrix.game.output }}.flatpak
           path: ${{ steps.bundle.outputs.path }}
+          archive: false
           retention-days: 7
           if-no-files-found: error

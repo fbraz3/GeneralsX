@@ -30,7 +30,6 @@
 #pragma once
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "Lib/BaseType.h"
 
 #include "Common/STLTypedefs.h"
 #include "Common/SubsystemInterface.h"
@@ -44,7 +43,7 @@ class Object;
 class Drawable;
 class INI;
 
-typedef std::hash_map<AsciiString, ThingTemplate*, rts::hash<AsciiString>, rts::equal_to<AsciiString> > ThingTemplateHashMap;
+typedef std::hash_map<AsciiString, ThingTemplate*, rts::hash<AsciiString>, rts::equal_to<AsciiString>/**/> ThingTemplateHashMap;
 typedef ThingTemplateHashMap::iterator ThingTemplateHashMapIt;
 //-------------------------------------------------------------------------------------------------
 /** Implementation of the thing manager interface singleton */
@@ -66,18 +65,18 @@ public:
 	/// create a new template with name 'name' and add to template list
 	ThingTemplate *newTemplate( const AsciiString& name );
 
-	// get the first template in our list
+	// Get the first template in the database. Does not resolve the final override.
 	const ThingTemplate *firstTemplate() { return m_firstTemplate; }
 
 	/**
-		get a template given template database name. return null if not found.
-		note, this is now substantially faster (does a hash-table lookup)
+		Get a template by database name. Returns null if not found.
+		Does not resolve the final override.
 	*/
 	const ThingTemplate *findTemplate( const AsciiString& name, Bool check = TRUE ) { return findTemplateInternal( name, check ); }
 
 	/**
-		get a template given ID. return null if not found.
-		note, this is not particularly fast (does a linear search).
+		Get a template by ID. Returns null if not found.
+		Does not resolve the final override.
 	*/
 	const ThingTemplate *findByTemplateID( UnsignedShort id );
 

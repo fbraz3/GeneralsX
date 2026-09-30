@@ -3,17 +3,9 @@
 
 #include "d3dx8core.h"
 
-// GeneralsX @bugfix GitHub Copilot 20/05/2026 Fallback mip filter path uses fixed-width integer types.
-#include <cstdint>
-
-// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GLI only when headers are available; otherwise keep a built-in box-filter fallback.
-#if !defined(__APPLE__) && defined(__has_include)
-#if __has_include(<gli/gli.hpp>) && __has_include(<gli/generate_mipmaps.hpp>)
-#define SAGE_HAS_GLI 1
-#endif
-#endif
-
-#if defined(SAGE_HAS_GLI)
+// GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang (GLM version mismatch).
+// On macOS, exclude GLI and use stub implementations for the surface scaling path.
+#ifndef __APPLE__
 #include <gli/gli.hpp>
 #include <gli/generate_mipmaps.hpp>
 #endif
@@ -114,7 +106,82 @@ D3DXLoadSurfaceFromSurface(
 		return D3D_OK;
 	}
 
-#if defined(SAGE_HAS_GLI)
+#ifndef __APPLE__
+	// GeneralsX @bugfix Antigravity 26/06/2026 Linux: GLI lacks support for A4R4G4B4/R5G6B5 formats.
+	// We use manual box filter downsampling for these formats to fix black infantry rendering.
+	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
+	{
+		if (descSrc.Format == D3DFMT_A4R4G4B4)
+		{
+			// Box filter for A4R4G4B4: average 2x2 blocks
+			const uint16_t *src = (const uint16_t *)srcRect.pBits;
+			uint16_t *dst = (uint16_t *)destRect.pBits;
+			uint32_t srcPitch16 = srcRect.Pitch / 2;
+			uint32_t dstPitch16 = destRect.Pitch / 2;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint16_t p00 = src[sy * srcPitch16 + sx];
+					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
+					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
+					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
+
+					// Extract and average each channel (A4 R4 G4 B4)
+					uint32_t a = (((p00 >> 12) & 0x0F) + ((p10 >> 12) & 0x0F) +
+					              ((p01 >> 12) & 0x0F) + ((p11 >> 12) & 0x0F) + 2) >> 2;
+					uint32_t r = (((p00 >> 8) & 0x0F) + ((p10 >> 8) & 0x0F) +
+					              ((p01 >> 8) & 0x0F) + ((p11 >> 8) & 0x0F) + 2) >> 2;
+					uint32_t g = (((p00 >> 4) & 0x0F) + ((p10 >> 4) & 0x0F) +
+					              ((p01 >> 4) & 0x0F) + ((p11 >> 4) & 0x0F) + 2) >> 2;
+					uint32_t b = ((p00 & 0x0F) + (p10 & 0x0F) +
+					              (p01 & 0x0F) + (p11 & 0x0F) + 2) >> 2;
+
+					dst[y * dstPitch16 + x] = (uint16_t)((a << 12) | (r << 8) | (g << 4) | b);
+				}
+			}
+			pDestSurface->UnlockRect();
+			pSrcSurface->UnlockRect();
+			return D3D_OK;
+		}
+		else if (descSrc.Format == D3DFMT_R5G6B5)
+		{
+			// Box filter for R5G6B5: average 2x2 blocks
+			const uint16_t *src = (const uint16_t *)srcRect.pBits;
+			uint16_t *dst = (uint16_t *)destRect.pBits;
+			uint32_t srcPitch16 = srcRect.Pitch / 2;
+			uint32_t dstPitch16 = destRect.Pitch / 2;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint16_t p00 = src[sy * srcPitch16 + sx];
+					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
+					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
+					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
+
+					// Extract and average each channel (R5 G6 B5)
+					uint32_t r = (((p00 >> 11) & 0x1F) + ((p11 >> 11) & 0x1F) +
+					              ((p01 >> 11) & 0x1F) + ((p10 >> 11) & 0x1F) + 2) >> 2;
+					uint32_t g = (((p00 >> 5) & 0x3F) + ((p11 >> 5) & 0x3F) +
+					              ((p01 >> 5) & 0x3F) + ((p10 >> 5) & 0x3F) + 2) >> 2;
+					uint32_t b = ((p00 & 0x1F) + (p11 & 0x1F) +
+					              (p01 & 0x1F) + (p10 & 0x1F) + 2) >> 2;
+
+					dst[y * dstPitch16 + x] = (uint16_t)((r << 11) | (g << 5) | b);
+				}
+			}
+			pDestSurface->UnlockRect();
+			pSrcSurface->UnlockRect();
+			return D3D_OK;
+		}
+	}
 	// Pick a compatible format
 	gli::format imageFormat = gli::format::FORMAT_RGBA8_UNORM_PACK8;
 
@@ -157,7 +224,8 @@ D3DXLoadSurfaceFromSurface(
 
 	return D3D_OK;
 #else
-	// GeneralsX @bugfix GitHub Copilot 20/05/2026 GLI-free fallback path for mipmap downsampling.
+	// GeneralsX @bugfix BenderAI 07/03/2026 macOS: GLI not available due to Apple Clang ambiguity.
+	// Implement manual box filter downsampling for mipmap generation.
 	// This is critical for terrain textures - without mipmaps, terrain renders black.
 	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
 	{
@@ -223,6 +291,70 @@ D3DXLoadSurfaceFromSurface(
 					              (p01 & 0xFF) + (p11 & 0xFF) + 2) >> 2;
 
 					dst[y * dstPitch32 + x] = (a << 24) | (r << 16) | (g << 8) | b;
+				}
+			}
+		}
+		else if (descSrc.Format == D3DFMT_A4R4G4B4)
+		{
+			// Box filter for A4R4G4B4: average 2x2 blocks
+			const uint16_t *src = (const uint16_t *)srcRect.pBits;
+			uint16_t *dst = (uint16_t *)destRect.pBits;
+			uint32_t srcPitch16 = srcRect.Pitch / 2;
+			uint32_t dstPitch16 = destRect.Pitch / 2;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint16_t p00 = src[sy * srcPitch16 + sx];
+					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
+					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
+					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
+
+					// Extract and average each channel (A4 R4 G4 B4)
+					uint32_t a = (((p00 >> 12) & 0x0F) + ((p10 >> 12) & 0x0F) +
+					              ((p01 >> 12) & 0x0F) + ((p11 >> 12) & 0x0F) + 2) >> 2;
+					uint32_t r = (((p00 >> 8) & 0x0F) + ((p10 >> 8) & 0x0F) +
+					              ((p01 >> 8) & 0x0F) + ((p11 >> 8) & 0x0F) + 2) >> 2;
+					uint32_t g = (((p00 >> 4) & 0x0F) + ((p10 >> 4) & 0x0F) +
+					              ((p01 >> 4) & 0x0F) + ((p11 >> 4) & 0x0F) + 2) >> 2;
+					uint32_t b = ((p00 & 0x0F) + (p10 & 0x0F) +
+					              (p01 & 0x0F) + (p11 & 0x0F) + 2) >> 2;
+
+					dst[y * dstPitch16 + x] = (uint16_t)((a << 12) | (r << 8) | (g << 4) | b);
+				}
+			}
+		}
+		else if (descSrc.Format == D3DFMT_R5G6B5)
+		{
+			// Box filter for R5G6B5: average 2x2 blocks
+			const uint16_t *src = (const uint16_t *)srcRect.pBits;
+			uint16_t *dst = (uint16_t *)destRect.pBits;
+			uint32_t srcPitch16 = srcRect.Pitch / 2;
+			uint32_t dstPitch16 = destRect.Pitch / 2;
+
+			for (uint32_t y = 0; y < descDest.Height; y++)
+			{
+				for (uint32_t x = 0; x < descDest.Width; x++)
+				{
+					uint32_t sx = x * 2;
+					uint32_t sy = y * 2;
+					uint16_t p00 = src[sy * srcPitch16 + sx];
+					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
+					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
+					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
+
+					// Extract and average each channel (R5 G6 B5)
+					uint32_t r = (((p00 >> 11) & 0x1F) + ((p11 >> 11) & 0x1F) +
+					              ((p01 >> 11) & 0x1F) + ((p10 >> 11) & 0x1F) + 2) >> 2;
+					uint32_t g = (((p00 >> 5) & 0x3F) + ((p11 >> 5) & 0x3F) +
+					              ((p01 >> 5) & 0x3F) + ((p10 >> 5) & 0x3F) + 2) >> 2;
+					uint32_t b = ((p00 & 0x1F) + (p11 & 0x1F) +
+					              (p01 & 0x1F) + (p10 & 0x1F) + 2) >> 2;
+
+					dst[y * dstPitch16 + x] = (uint16_t)((r << 11) | (g << 5) | b);
 				}
 			}
 		}

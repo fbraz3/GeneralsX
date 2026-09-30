@@ -32,7 +32,6 @@
 
 #include "gamespy/ghttp/ghttp.h"
 
-#include "Lib/BaseType.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -82,6 +81,12 @@
 #include <SDL3/SDL.h>
 #endif
 
+// GeneralsX @feature GeneralsOnline NGMP browser-based login
+#ifdef SAGE_USE_NGMP
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include "GameNetwork/GameSpyOverlay.h"
+#endif
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
@@ -112,6 +117,8 @@ void DoCompressTest();
 // window ids -------------------------------------------------------------------------------------
 static NameKeyType mainMenuID = NAMEKEY_INVALID;
 static NameKeyType skirmishID = NAMEKEY_INVALID;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static NameKeyType buttonCustomMissionID = NAMEKEY_INVALID;
 static NameKeyType onlineID = NAMEKEY_INVALID;
 static NameKeyType networkID = NAMEKEY_INVALID;
 static NameKeyType optionsID = NAMEKEY_INVALID;
@@ -150,6 +157,8 @@ static GameWindow *parentMainMenu = nullptr;
 static GameWindow *buttonSinglePlayer = nullptr;
 static GameWindow *buttonMultiPlayer = nullptr;
 static GameWindow *buttonSkirmish = nullptr;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static GameWindow *buttonCustomMission = nullptr;
 static GameWindow *buttonOnline = nullptr;
 static GameWindow *buttonNetwork = nullptr;
 static GameWindow *buttonOptions = nullptr;
@@ -260,7 +269,8 @@ static void quitCallback()
 
 
 	//if (!TheGameLODManager->didMemPass())
-	{	//GIANT CRAPTACULAR HACK ALERT!!!!  On sytems with little memory, we skip all normal exit code
+	{
+		//GIANT CRAPTACULAR HACK ALERT!!!!  On sytems with little memory, we skip all normal exit code
 //		//and let Windows clean up the mess.  This reduces exit times from minutes to seconds.
 //		//8-19-03. MW
 //		delete TheGameClient;
@@ -428,7 +438,11 @@ static void initLabelVersion()
 	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:LabelVersion" );
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( nullptr, versionID );
 	UnicodeString creditText;
-	creditText.translate("GeneralsX - Multiplatform C&C Generals");
+	if (TheVersion) {
+		creditText = TheVersion->getUnicodeProjectWatermark();
+	} else {
+		creditText.translate("GeneralsX - Multiplatform C&C Generals");
+	}
 
 	if (labelVersion)
 	{
@@ -449,7 +463,7 @@ static void initLabelVersion()
 			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
 			instData.m_textLabelString = "GeneralsXCreditLabel";
 
-			const Int width = 560;
+			const Int width = TheDisplay->getWidth() - 16;
 			const Int height = 28;
 			const Int x = 8;
 			const Int y = TheDisplay->getHeight() - height - 8;
@@ -467,7 +481,11 @@ static void initLabelVersion()
 			if (fallbackCreditLabel)
 			{
 				// GeneralsX @tweak BenderAI 31/03/2026 Keep fallback watermark subtle and aligned to bottom-left target placement.
-				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", 12, FALSE));
+				int baseSize = 12;
+				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
+				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", scaledSize, FALSE));
 				fallbackCreditLabel->winSetEnabledTextColors(GameMakeColor(255, 220, 60, 255), GameMakeColor(0, 0, 0, 0));
 				GadgetStaticTextSetText(fallbackCreditLabel, creditText);
 			}
@@ -498,6 +516,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	mainMenuID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuParent" );
 //	campaignID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCampaign" );
 	skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMissionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCustomMission" );
 	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
@@ -537,6 +557,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonSinglePlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonSinglePlayerID );
 	buttonMultiPlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonMultiPlayerID );
 	buttonSkirmish = TheWindowManager->winGetWindowFromId( parentMainMenu, skirmishID );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCustomMissionID );
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
@@ -645,7 +667,9 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	if (TheGameSpyPeerMessageQueue && !TheGameSpyPeerMessageQueue->isConnected())
 	{
 		DEBUG_LOG(("Tearing down GameSpy from MainMenuInit()"));
+#ifndef SAGE_USE_NGMP
 		TearDownGameSpy();
+#endif
 	}
 	if (TheMapCache)
 		TheMapCache->updateCache();
@@ -861,6 +885,37 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	if(DontShowMainMenu && justEntered)
 		justEntered = FALSE;
 
+#if defined(SAGE_USE_NGMP)
+	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
+		if (buttonPushed) {
+			buttonPushed = FALSE; 
+			dontAllowTransitions = FALSE;
+			std::string username = NGMP_OnlineServicesManager::getInstance().getUsername();
+			int64_t userId = NGMP_OnlineServicesManager::getInstance().getUserId();
+			if (TheGameSpyInfo) {
+				TheGameSpyInfo->setLocalName(AsciiString(username.c_str()));
+				TheGameSpyInfo->setLocalProfileID(static_cast<Int>(userId));
+			}
+			TheShell->push("Menus/WOLWelcomeMenu.wnd");
+		}
+	} else if (!NGMP_OnlineServicesManager::getInstance().isWaitingBrowserLogin()) {
+		// GeneralsX @bugfix fbraz3 12/09/2026 Restore main menu UI if browser login was cancelled or failed
+		if (buttonPushed && dropDown == DROPDOWN_NONE) {
+			for (Int i = 0; i < DROPDOWN_COUNT; ++i) {
+				if (dropDownWindows[i]) {
+					dropDownWindows[i]->winHide(i != DROPDOWN_MAIN);
+				}
+			}
+			TheTransitionHandler->remove("MainMenuMultiPlayerMenuTransitionToNext");
+			HandleCanceledDownload(TRUE);
+			dontAllowTransitions = FALSE;
+			if (parentMainMenu) {
+				TheWindowManager->winSetFocus(parentMainMenu);
+			}
+		}
+	}
+#endif
+
 	// GeneralsX @feature BenderAI 21/04/2026 Poll background update check; create dynamic button when update found
 #ifdef SAGE_UPDATE_CHECK
 	if (updateNotifyButton == nullptr)
@@ -895,7 +950,11 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 
 			if (updateNotifyButton)
 			{
-				GameFont* font = TheWindowManager->winFindFont("Arial", 10, FALSE);
+				int baseSize = 10;
+				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
+				GameFont* font = TheWindowManager->winFindFont("Arial", scaledSize, FALSE);
 				if (font)
 					updateNotifyButton->winSetFont(font);
 
@@ -1125,7 +1184,9 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 		{
 			ghttpCleanup();
 			DEBUG_LOG(("Tearing down GameSpy from MainMenuSystem(GWM_DESTROY)"));
+#ifndef SAGE_USE_NGMP
 			TearDownGameSpy();
+#endif
 			StopAsyncDNSCheck(); // kill off the async DNS check thread in case it is still running
 			break;
 
@@ -1387,8 +1448,8 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 
 			// don't allow mouse click slop that occurs during transitions to unset this flag
-			if (TheTransitionHandler->isFinished()
-				&& controlID != buttonEasyID && controlID != buttonMediumID && controlID != buttonHardID)
+			if (TheTransitionHandler->isFinished() &&
+				controlID != buttonEasyID && controlID != buttonMediumID && controlID != buttonHardID)
 			{
 				// this toggle must only be reset if one of these buttons have not been pressed
 				// ...the difficulty selection behavior must have a chance to act upon this toggle
@@ -1527,16 +1588,64 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheShell->push( "Menus/SkirmishGameOptionsMenu.wnd" );
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_SKIRMISH_SELECTED]);
 			}
+			// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+			else if( controlID == buttonCustomMissionID )
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				buttonPushed = TRUE;
+				campaignSelected = TRUE;
+				if (dropDownWindows[DROPDOWN_SINGLE])
+					dropDownWindows[DROPDOWN_SINGLE]->winHide(FALSE);
+				TheTransitionHandler->remove("MainMenuFactionSkirmish");
+
+				if (TheTransitionHandler && TheTransitionHandler->hasGroup("MainMenuSinglePlayerMenuBackCustomMission"))
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackCustomMission");
+				else if (TheTransitionHandler)
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
+
+				TheShell->push( "Menus/MapSelectMenu.wnd" );
+			}
 			else if( controlID == onlineID )
 			{
 				if(dontAllowTransitions)
 					break;
+
+#if defined(SAGE_USE_NGMP) && defined(SAGE_UPDATE_CHECK)
+				// GeneralsX @feature GeneralsOnline - In production mode, require latest game version
+				if (!NGMP::IsDevelopment() && UpdateChecker::hasUpdate()) {
+					UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
+					const char* tag = UpdateChecker::getLatestTag();
+					if (tag && tag[0] != '\0') {
+						char buf[256];
+						snprintf(buf, sizeof(buf), "A newer version of GeneralsX (%s) is available. You must update before playing online.", tag);
+						msg = NGMP::UTF8ToUnicode(buf);
+					}
+					ClearGSMessageBoxes();
+					GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
+						const char* url = UpdateChecker::getReleasesUrl();
+						if (url) {
+							NGMP::OpenURL(url);
+						}
+					});
+					break;
+				}
+#endif
+
 				dontAllowTransitions = TRUE;
 				buttonPushed = TRUE;
 				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
+#if defined(SAGE_USE_NGMP)
+				// GeneralsX @feature GeneralsOnline - Silent refresh token login with browser fallback
+				NGMP_OnlineServicesManager::getInstance().init();
+				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
+					NGMP_OnlineServicesManager::getInstance().beginLogin();
+				}
+#else
 				StartPatchCheck();
+#endif
 //				localAnimateWindowManager->reverseAnimateWindow();
 				dropDown = DROPDOWN_NONE;
 

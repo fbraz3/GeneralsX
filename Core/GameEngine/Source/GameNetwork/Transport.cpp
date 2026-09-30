@@ -85,6 +85,14 @@ Bool Transport::init( AsciiString ip, UnsignedShort port )
 
 Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 {
+	// GeneralsX @build Mr. Meesseeks 11/07/2026 Trace UDP transport bind inputs for LAN troubleshooting.
+	/* 	if (ip == 0) {
+		fprintf(stderr, "[LAN86] Transport::init - requested bind INADDR_ANY (0.0.0.0):%d\n", port);
+	} else {
+		fprintf(stderr, "[LAN86] Transport::init - requested bind %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port);
+	}
+	fflush(stderr); */
+
 	// ----- Initialize Winsock -----
 	if (!m_winsockInit)
 	{
@@ -118,11 +126,20 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 
 	if (retval != 0) {
 		DEBUG_CRASH(("Could not bind to 0x%8.8X:%d", ip, port));
-		DEBUG_LOG(("Transport::init - Failure to bind socket with error code %x", retval));
+		/* 		fprintf(stderr, "[LAN86] Transport::init - Failure to bind socket with error code %x\n", retval);
+		fflush(stderr); */
 		delete m_udpsock;
 		m_udpsock = nullptr;
 		return false;
 	}
+
+	// GeneralsX @build Mr. Meesseeks 11/07/2026 Confirm successful UDP bind endpoint for LAN diagnostics.
+	/* 	if (ip == 0) {
+		fprintf(stderr, "[LAN86] Transport::init - bind success INADDR_ANY (0.0.0.0):%d\n", port);
+	} else {
+		fprintf(stderr, "[LAN86] Transport::init - bind success %d.%d.%d.%d:%d\n", PRINTF_IP_AS_4_INTS(ip), port);
+	}
+	fflush(stderr); */
 
 	// ------- Clear buffers --------
 	int i=0;
@@ -211,10 +228,9 @@ Bool Transport::doSend() {
 	}
 
 	// Send all messages
-	int i;
-	for (i=0; i<MAX_MESSAGES; ++i)
+	for (size_t i = 0; i < ARRAY_SIZE(m_outBuffer); ++i)
 	{
-		if (m_outBuffer[i].length != 0)
+		if (m_outBuffer[i].length > 0)
 		{
 			int bytesSent = 0;
 			// TheSuperHackers @info The handling of data sizing of the payload within a UDP packet is confusing due to the current networking implementation
@@ -249,17 +265,20 @@ Bool Transport::doSend() {
 	// Latency simulation - deliver anything we're holding on to that is ready
 	if (m_useLatency)
 	{
-		for (i=0; i<MAX_MESSAGES; ++i)
+		size_t bufferIndex = 0;
+
+		for (size_t i = 0; i < ARRAY_SIZE(m_delayedInBuffer); ++i)
 		{
-			if (m_delayedInBuffer[i].message.length != 0 && m_delayedInBuffer[i].deliveryTime <= now)
+			if (m_delayedInBuffer[i].message.length > 0 && m_delayedInBuffer[i].deliveryTime <= now)
 			{
-				for (int j=0; j<MAX_MESSAGES; ++j)
+				for (; bufferIndex < ARRAY_SIZE(m_inBuffer); ++bufferIndex)
 				{
-					if (m_inBuffer[j].length == 0)
+					if (m_inBuffer[bufferIndex].length <= 0)
 					{
 						// Empty slot; use it
-						memcpy(&m_inBuffer[j], &m_delayedInBuffer[i].message, sizeof(TransportMessage));
+						memcpy(&m_inBuffer[bufferIndex], &m_delayedInBuffer[i].message, sizeof(TransportMessage));
 						m_delayedInBuffer[i].message.length = 0;
+						++bufferIndex;
 						break;
 					}
 				}
@@ -292,6 +311,7 @@ Bool Transport::doRecv()
 	TransportMessage incomingMessage;
 	unsigned char *buf = (unsigned char *)&incomingMessage;
 	int len = MAX_NETWORK_MESSAGE_LEN;
+	size_t bufferIndex = 0;
 //	DEBUG_LOG(("Transport::doRecv - checking"));
 	while ( (len=m_udpsock->Read(buf, MAX_NETWORK_MESSAGE_LEN, &from)) > 0 )
 	{
@@ -319,7 +339,11 @@ Bool Transport::doRecv()
 
 		if (len <= sizeof(TransportMessageHeader) || !isGeneralsPacket( &incomingMessage ))
 		{
-			DEBUG_LOG(("Transport::doRecv - unknownPacket! len = %d", len));
+			// GeneralsX @build GitHubCopilot 11/04/2026 Capture source endpoint for dropped/unknown packets.
+			DEBUG_LOG(("Transport::doRecv - unknownPacket len=%d from %d.%d.%d.%d:%d",
+				len, PRINTF_IP_AS_4_INTS(ntohl(from.sin_addr.s_addr)), ntohs(from.sin_port)));
+			/* 			fprintf(stderr, "[LAN86] Transport::doRecv unknownPacket len=%d from %d.%d.%d.%d:%d\n",
+				len, PRINTF_IP_AS_4_INTS(ntohl(from.sin_addr.s_addr)), ntohs(from.sin_port)); */
 			m_unknownPackets[m_statisticsSlot]++;
 			m_unknownBytes[m_statisticsSlot] += len;
 			continue;
@@ -330,44 +354,48 @@ Bool Transport::doRecv()
 		m_incomingPackets[m_statisticsSlot]++;
 		m_incomingBytes[m_statisticsSlot] += len;
 
-		for (int i=0; i<MAX_MESSAGES; ++i)
-		{
+		DEBUG_ASSERTCRASH(bufferIndex < MAX_MESSAGES, ("Message lost!"));
+
 #if defined(RTS_DEBUG)
-			// Latency simulation
-			if (m_useLatency)
+		// Latency simulation
+		if (m_useLatency)
+		{
+			for (; bufferIndex < ARRAY_SIZE(m_delayedInBuffer); ++bufferIndex)
 			{
-				if (m_delayedInBuffer[i].message.length == 0)
+				if (m_delayedInBuffer[bufferIndex].message.length <= 0)
 				{
 					// Empty slot; use it
-					m_delayedInBuffer[i].deliveryTime =
+					m_delayedInBuffer[bufferIndex].deliveryTime =
 						now + TheGlobalData->m_latencyAverage +
 						(Int)(TheGlobalData->m_latencyAmplitude * sin(now * TheGlobalData->m_latencyPeriod)) +
 						GameClientRandomValue(-TheGlobalData->m_latencyNoise, TheGlobalData->m_latencyNoise);
-					m_delayedInBuffer[i].message.length = incomingMessage.length;
-					m_delayedInBuffer[i].message.addr = ntohl(from.sin_addr.S_un.S_addr);
-					m_delayedInBuffer[i].message.port = ntohs(from.sin_port);
-					memcpy(&m_delayedInBuffer[i].message, buf, len);
+					m_delayedInBuffer[bufferIndex].message.length = incomingMessage.length;
+					m_delayedInBuffer[bufferIndex].message.addr = ntohl(from.sin_addr.s_addr);
+					m_delayedInBuffer[bufferIndex].message.port = ntohs(from.sin_port);
+					memcpy(&m_delayedInBuffer[bufferIndex].message, buf, len);
+					++bufferIndex;
 					break;
 				}
 			}
-			else
-			{
-#endif
-				if (m_inBuffer[i].length == 0)
-				{
-					// Empty slot; use it
-					m_inBuffer[i].length = incomingMessage.length;
-					// GeneralsX @bugfix BenderAI 13/02/2026 Use POSIX s_addr (no S_un union on Linux)
-					m_inBuffer[i].addr = ntohl(from.sin_addr.s_addr);
-					m_inBuffer[i].port = ntohs(from.sin_port);
-					memcpy(&m_inBuffer[i], buf, len);
-					break;
-				}
-#if defined(RTS_DEBUG)
-			}
-#endif
+
+			continue;
 		}
-		//DEBUG_ASSERTCRASH(i<MAX_MESSAGES, ("Message lost!"));
+#endif
+
+		for (; bufferIndex < ARRAY_SIZE(m_inBuffer); ++bufferIndex)
+		{
+			if (m_inBuffer[bufferIndex].length <= 0)
+			{
+				// Empty slot; use it
+				m_inBuffer[bufferIndex].length = incomingMessage.length;
+				// GeneralsX @bugfix BenderAI 13/02/2026 Use POSIX s_addr (no S_un union on Linux)
+				m_inBuffer[bufferIndex].addr = ntohl(from.sin_addr.s_addr);
+				m_inBuffer[bufferIndex].port = ntohs(from.sin_port);
+				memcpy(&m_inBuffer[bufferIndex], buf, len);
+				++bufferIndex;
+				break;
+			}
+		}
 	}
 
 	if (len == -1) {
@@ -382,17 +410,15 @@ Bool Transport::doRecv()
 Bool Transport::queueSend(UnsignedInt addr, UnsignedShort port, const UnsignedByte *buf, Int len /*,
 						  NetMessageFlags flags, Int id */)
 {
-	int i;
-
 	if (len < 1 || len > MAX_PACKET_SIZE)
 	{
 		DEBUG_LOG(("Transport::queueSend - Invalid Packet size"));
 		return false;
 	}
 
-	for (i=0; i<MAX_MESSAGES; ++i)
+	for (size_t i = 0; i < ARRAY_SIZE(m_outBuffer); ++i)
 	{
-		if (m_outBuffer[i].length == 0)
+		if (m_outBuffer[i].length <= 0)
 		{
 			// Insert data here
 			m_outBuffer[i].length = len;

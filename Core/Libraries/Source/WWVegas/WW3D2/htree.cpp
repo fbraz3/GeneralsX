@@ -55,10 +55,10 @@
 #include "hanim.h"
 #include "hcanim.h"
 #include <assert.h>
-#include "wwmath.h"
-#include "chunkio.h"
+#include "WWMath/wwmath.h"
+#include "WWLib/chunkio.h"
 #include "w3d_file.h"
-#include "wwmemlog.h"
+#include "WWDebug/wwmemlog.h"
 #include "hrawanim.h"
 #include "motchan.h"
 #include "ww3d.h"
@@ -209,9 +209,10 @@ int HTreeClass::Load_W3D(ChunkLoadClass & cload)
 	*/
 	memcpy(Name,header.Name,W3D_NAME_LEN);
 	NumPivots = header.NumPivots;
-	if (NumPivots > 0) {
-		Pivot = MSGW3DNEWARRAY("HTreeClass::Pivot") PivotClass[NumPivots];
+	if (NumPivots < 1) {
+		return LOAD_ERROR;
 	}
+	Pivot = MSGW3DNEWARRAY("HTreeClass::Pivot") PivotClass[NumPivots];
 
 	/*
 	** Now, read in all of the other chunks for this hierarchy.
@@ -638,7 +639,7 @@ void HTreeClass::Anim_Update_Without_Interpolation(const Matrix3D & root,HRawAni
 	endpivot=pivot+(NumPivots-1);
 	lastAnimPivot = &Pivot[num_anim_pivots];
 
-	for (int piv_idx=1; pivot < endpivot; pivot++,nodeMotion++) {
+	for (; pivot < endpivot; pivot++,nodeMotion++) {
 
 		// base pose
 		assert(pivot->Parent != nullptr);

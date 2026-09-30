@@ -4,19 +4,30 @@ applyTo: '**/*.md'
 
 ## Documentation Guidelines
 
-- Docs in English, Markdown only.
-- Keep `docs/ETC/COMMAND_LINE_PARAMETERS.md` current for runtime-critical flags and caveats.
-- Never add docs in root `docs/`; use `docs/WORKDIR/` for active work, `docs/DEV_BLOG/` for diary, `docs/ETC/` for reference/history.
-- Update phase checklists in `docs/WORKDIR/phases/PHASEXX_*.md` at session end.
+- All documentation **MUST BE** in English
+- Use Markdown format
+- Keep `docs/ETC/COMMAND_LINE_PARAMETERS.md` updated with runtime-critical diagnostic flags and caveats (for example `-logToCon` behavior differences on Linux).
+- Don't add documentation files directly in the root `docs/` folder
+- The root folder `/` should only contain project-level files (README.md, LICENSE, etc.)
+- **Active Work**: Place in `docs/WORKDIR/` with appropriate subdirectory (phases, planning, reports, support, audit, lessons)
+- **Worklog**: Update `docs/WORKLOG/YYYY-MM-DIARY.md` with daily entries
+  - Create new file each month (YYYY-MM-DIARY.md)
+  - Include an AI-generated content disclosure note at the top of each monthly diary
+  - Order entries newest to oldest (recent at top after Overview section)
+  - Keep entries informal and concise
+- **Reference & Historical**: Place in `docs/ETC/` (older reference materials, archived analysis)
+- **Phase Checklist Updates**: At the end of each session working on a phase, update the corresponding `docs/WORKDIR/phases/PHASEXX_*.md` file to mark completed tasks with `[x]`
+
+**Key Rule**: WORKLOG is for the automated diary only. Active work goes to WORKDIR. Reference/historical materials go to ETC.
 
 ## Documentation Updates
 
-- Dev diary: `docs/DEV_BLOG/YYYY-MM-DIARY.md`.
-- Session reports: `docs/WORKDIR/reports/PHASEXX_SESSIONX_*.md`.
-- Phase planning: `docs/WORKDIR/phases/PHASEXX_*.md`.
-- Technical discoveries: `docs/WORKDIR/support/`.
-- Lessons learned: `docs/WORKDIR/lessons/LESSONS_LEARNED.md`.
-- Known issues live in GitHub Issues; no new markdown issue files.
+- **Worklog** (`docs/WORKLOG/YYYY-MM-DIARY.md`): Informal session notes, newest first (with AI disclosure note at the top)
+- **Session reports** (`docs/WORKDIR/reports/PHASEXX_SESSIONX_*.md`): Formal summary after significant progress
+- **Phase planning** (`docs/WORKDIR/phases/PHASEXX_*.md`): Update `[x]` checklist at session end
+- **Technical discoveries**: Place in `docs/WORKDIR/support/` (e.g., `CRITICAL_VFS_DISCOVERY.md`)
+- **Lessons learned** (`docs/WORKDIR/lessons/LESSONS_LEARNED.md`): Key takeaways from phases and work cycles
+- **Known Issues**: Track in [GitHub Issues](https://github.com/fbraz3/GeneralsX/issues/) — do NOT create new markdown issue files
 
 ## Documentation Organization
 
@@ -25,54 +36,99 @@ applyTo: '**/*.md'
 **Subdirectories**:
 
 #### `docs/WORKDIR/phases/` - Phase-Specific Plans
-Plans and checklists. Use `PHASEXX_purpose.md` filenames. Ignore week estimates.
+**Purpose**: Detailed phase plans and checklists
+**Guideline**: use `PHASEXX_purpose.md` format for filenames - XX is phase number, purpose is brief description
+**Restriction**: Avoid using `weeks` for phase work segmentation, don't try to guess completion times in calendar weeks, just ignore this information entirely
+**Rationale**: Sprints provide a standardized Agile framework terminology, ensuring consistency with sprint-based development methodologies
 
-Examples:
+**Naming Examples:**
 - PHASE01_INITIAL_RESEARCH.md
 - PHASE02_ENGINE_SELECTION.md
 - PHASE03_PROTOTYPING.md
+- etc.
 
 #### `docs/WORKDIR/planning/` - Planning & Strategic Documents
-Planning docs, roadmaps, architecture decisions. Use `PLAN-XXX_description.md` or `ROADMAP.md`.
+**Purpose**: Planning documents, roadmaps, architectural decisions
+**Naming Convention**:
+- `PLAN-XXX_description.md` for individual plans
+- `ROADMAP.md` for overall project roadmap
+- Other strategic planning documents
 
-Examples:
+**Examples:**
 - PLAN-010_VISUAL_LAYOUT.md
 - PLAN-013_PARTICLE_SYSTEM.md
 - ROADMAP.md
 
 #### `docs/WORKDIR/reports/` - Session Reports & Progress
-Formal phase summaries. Use `PHASEXX_SESSIONX_description.md`.
+**Purpose**: Formal summaries after significant progress on phases
+**Naming Convention**: `PHASEXX_SESSIONX_description.md`
 
-Examples:
+**Examples:**
 - PHASE01_SESSION1_INITIAL_RESEARCH_COMPLETE.md
 - PHASE02_SESSION2_ENGINE_SELECTION_COMPLETE.md
 
 #### `docs/WORKDIR/support/` - Findings & Support Documents
-Technical discoveries, analysis, reference guides, and research support.
+**Purpose**: Technical discoveries, analysis, reference materials for active phases
+**Content Types**:
+- Technical analysis documents
+- Implementation findings
+- Code reference guides
+- Research supporting active work
 
-Examples:
+**Examples:**
 - VFS_IMPLEMENTATION_FINDINGS.md
 - PARTICLE_SYSTEM_DEEP_ANALYSIS.md
 - TOOLTIP_CODE_REFERENCE.md
 
 #### `docs/WORKDIR/audit/` - Audit & Verification Files
-Audit logs, verification checklists, compliance docs, gap analysis.
+**Purpose**: Audit logs, verification checklists, compliance documents
+**Content Types**:
+- Structure audits
+- Implementation checklists
+- Gap analysis documents
+- Compliance verification
 
-Examples:
+**Examples:**
 - ROADMAP_AUDIT_DECEMBER_2025.md
 - GAP_ANALYSIS_FINDINGS.md
 
 #### `docs/WORKDIR/lessons/` - Lessons Learned
-Key insights, technical takeaways, process improvements. Main file: `LESSONS_LEARNED.md`.
+**Purpose**: Key insights from phases and work cycles
+**Main File**: `LESSONS_LEARNED.md` - Central repository for all lessons
+**Content**: Phase-specific learnings, technical insights, process improvements
 
-### `docs/DEV_BLOG/` - Development Diary ONLY
-Chronological diary entries only. One `YYYY-MM-DIARY.md` per month, newest first. Also `docs/DEV_BLOG/README.md`.
+### `docs/WORKLOG/` - Worklog ONLY
+**Purpose**: Chronological worklog entries
+- YYYY-MM-DIARY.md - Monthly diary (ONE file per month)
+  - YYYY is the current year
+  - MM is the current month
+  - DIARY is a fixed literal
+  - **MANDATORY**: Every monthly diary MUST start with this exact AI-generated content disclosure note at the very top:
+    ```markdown
+    # <Month> <Year>
 
-Not here: reports, analysis, phase progress.
+    > [!NOTE]
+    > **AI-Generated Content Disclosure**: This worklog is automatically generated and maintained by AI coding agents to document daily progress, debugging sessions, and technical decisions.
+    ```
+  - Entries newest to oldest (most recent at top, after Disclosure)
+  - Informal, daily/session notes
+  - Short summaries of work done
+- `docs/WORKLOG/README.md` - Index of available diaries and overview of diary purpose with details on structure and usage
+
+**Only this goes here**: Diary entries and README
+
+**Not here**: Session reports, summaries, analysis, phase progress
 
 ## Issue Tracking — GitHub is the Source of Truth
 
-Track issues, bugs, features, and enhancements in GitHub Issues (`https://github.com/fbraz3/GeneralsX/issues/`), not markdown.
+**CRITICAL POLICY**: All issues, bugs, feature requests, and enhancements MUST be tracked in **GitHub Issues** (`https://github.com/fbraz3/GeneralsX/issues/`), NOT in markdown documentation.
+
+### Why GitHub is Source of Truth
+- **Single source**: One place to track status, assign ownership, and manage priorities
+- **Versioning**: GitHub automatically tracks discussion history as features evolve
+- **Automation**: CI/CD, PR linking, and automation hooks depend on GitHub issues
+- **Collaboration**: Easier for team members to discover, comment, and contribute
+- **External visibility**: Users and contributors can search and report issues directly
 
 ### Creating New Issues
 
@@ -87,16 +143,21 @@ gh issue create \
 ```
 
 **Labels** (always apply 1-2):
-- `enhancement` — feature or improvement
-- `bug` — broken behavior
-- `documentation` — docs work
-- `Linux`, `macOS` — platform scope
-- `Generals`, `Zero Hour` — game variant
-- `Blocker` — blocks other work
+- `enhancement` — New feature or improvement
+- `bug` — Something isn't working
+- `documentation` — Documentation improvements
+- `Linux`, `macOS` — Platform-specific
+- `Generals`, `Zero Hour` — Game variant
+- `Blocker` — Blocks other work
+- See `.github/instructions/docs.instructions.md` for complete label reference
 
 ### Markdown Documentation (Legacy)
 
-Older `docs/KNOWN_ISSUES/` files are deprecated. Do not create new markdown issue files; archive or delete duplicates after moving content to GitHub.
+Older `.md` files in `docs/KNOWN_ISSUES/` are **DEPRECATED**.  
+- **Do NOT** create new markdown issue files
+- **Remove** files that duplicate active GitHub issues
+- **Archive** resolved issues in GitHub, then delete the `.md` file
+- **Migrate** any investigation findings to GitHub issue comments
 
 ### Deleted/Resolved/Archived Issues
 
@@ -107,10 +168,41 @@ If an issue is closed/resolved in GitHub:
 
 ### Legacy `.md` Issues (Historical Reference)
 
-Keep historical markdown issues in `docs/ETC/archive/` only. Do not maintain them going forward.
+If you need to reference older markdown issues for historical context:
+- Keep in `docs/ETC/archive/` (not `docs/KNOWN_ISSUES/`)
+- Update the path and add a note that these are archived
+- Do not maintain these going forward
 
-### `docs/BUILD/` - Platform Build Instructions
-Platform build/setup guides. One all-caps file per platform (`LINUX.md`, `MACOS.md`, `WINDOWS.md`). Keep them canonical and synced to build scripts/CI.
+### `docs/BUILD/` - Platform Build Instructions (Migrated to Wiki)
+**Purpose**: Redirection stubs pointing to canonical platform build and environment setup guides on the [GitHub Wiki](https://github.com/fbraz3/GeneralsX/wiki).
+**Active Location**: Canonical build guides now live in the project wiki:
+- [Building on Linux](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux)
+- [Building on macOS](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS)
+
+**Guidelines**:
+- New build instructions and platform guides should be created and updated directly in the GitHub Wiki.
+- In-repo `docs/BUILD/` files serve as temporary redirection stubs.
 
 ### `docs/ETC/` - Reference & Historical Materials
-Archived reference, analysis, and misc docs only. No active work, reports, planning, or build instructions.
+**Purpose**: Older reference materials, archived analysis, and miscellaneous documentation
+- General reference materials
+- Archived technical documentation
+- Historical analysis documents
+- Miscellaneous project materials not fitting other categories
+
+**Guidelines**:
+- New active work should NOT go here
+- Use for long-term reference materials
+- Archive completed analysis here if still needed for reference
+
+**Not here**: Active phase work, current session reports, active planning, or build instructions
+
+### `docs/HOWTO/` - User-Facing Tutorials (Migrated to Wiki)
+**Purpose**: Redirection stubs pointing to user guides and step-by-step tutorials on the [GitHub Wiki](https://github.com/fbraz3/GeneralsX/wiki).
+**Active Location**: All tutorials and user guides now reside in the project wiki:
+- [GeneralsX Wiki](https://github.com/fbraz3/GeneralsX/wiki)
+- Direct link index preserved in `docs/HOWTO/README.md`
+
+**Guidelines**:
+- New user tutorials should be created directly on the GitHub Wiki.
+- In-repo `docs/HOWTO/` files serve as temporary redirection stubs.

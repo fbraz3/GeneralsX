@@ -35,6 +35,8 @@
 #include "Common/STLTypedefs.h"
 #include "Common/ObjectStatusTypes.h"
 #include "GameNetwork/NetworkDefs.h"
+#include "GameLogic/AI.h"
+#include "GameLogic/GameMode.h"
 #include "GameLogic/Module/UpdateModule.h"	// needed for DIRECT_UPDATEMODULE_ACCESS
 
 /*
@@ -66,20 +68,6 @@ enum BuildableStatus CPP_11(: Int);
 
 typedef const CommandButton* ConstCommandButtonPtr;
 
-// What kind of game we're in.
-enum GameMode CPP_11(: Int)
-{
-	GAME_SINGLE_PLAYER,
-	GAME_LAN,
-	GAME_SKIRMISH,
-	GAME_REPLAY,
-	GAME_SHELL,
-	GAME_INTERNET,
-	GAME_NONE
-};
-
-const char* toString(GameMode mode);
-
 enum
 {
 	CRC_CACHED,
@@ -88,7 +76,7 @@ enum
 
 /// Function pointers for use by GameLogic callback functions.
 typedef void (*GameLogicFuncPtr)( Object *obj, void *userData );
-typedef std::hash_map<ObjectID, Object *, rts::hash<ObjectID>, rts::equal_to<ObjectID> > ObjectPtrHash;
+typedef std::hash_map<ObjectID, Object *, rts::hash<ObjectID>, rts::equal_to<ObjectID>/**/> ObjectPtrHash;
 typedef ObjectPtrHash::const_iterator ObjectPtrIter;
 
 typedef std::vector<Object*> ObjectPtrVector;
@@ -112,6 +100,9 @@ public:
 
 	void preUpdate();
 
+#if defined(RTS_DEBUG)
+	Int getNumberSleepyUpdates() const {return m_sleepyUpdates.size();} //For profiling, so not in Release.
+#endif
 	void processCommandList( CommandList *list );		///< process the command list
 
 	void prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rankPoints );						///< prepare for new game
@@ -169,17 +160,15 @@ public:
 	void setGameMode( GameMode mode );
 	GameMode getGameMode();
 
-	Bool isInGame(); // Includes Shell Game
-	Bool isInLanGame();
-	Bool isInSinglePlayerGame();
-	Bool isInSkirmishGame();
-	Bool isInReplayGame();
-	Bool isInInternetGame();
-	Bool isInShellGame();
-	Bool isInMultiplayerGame();
+	Bool isInGame() const; // Includes Shell Game
+	Bool isInLanGame() const;
+	Bool isInSinglePlayerGame() const;
+	Bool isInSkirmishGame() const;
+	Bool isInReplayGame() const;
+	Bool isInInternetGame() const;
+	Bool isInShellGame() const;
+	Bool isInMultiplayerGame() const;
 	Bool isInInteractiveGame() const;
-
-	static Bool isInInteractiveGame(GameMode mode) { return mode != GAME_NONE && mode != GAME_SHELL; }
 
 	//Kris: Cut isLoadingGame() and replaced with isLoadingMap() and isLoadingSave() -- reason: nomenclature
 	//Bool isLoadingGame() const { return m_loadingScene; }		// This is the old function that isn't very clear on it's definition.
@@ -240,6 +229,8 @@ public:
 	// We need to allow access to this, because on a restartGame, we need to restart with the settings we started with
 	Int getRankPointsToAddAtGameStart() const { return m_rankPointsToAddAtGameStart; }
 
+  UnsignedShort getSuperweaponRestriction() const; ///< Get any optional limits on superweapons
+
 #ifdef DUMP_PERF_STATS
 	void getAIMetricsStatistics( UnsignedInt *numAI, UnsignedInt *numMoving, UnsignedInt *numAttacking, UnsignedInt *numWaitingForPath, UnsignedInt *overallFailedPathfinds );
 	void resetOverallFailedPathfinds() { m_overallFailedPathfinds = 0; }
@@ -286,19 +277,92 @@ private:
 	void remakeSleepyUpdate();
 	void validateSleepyUpdate() const;
 
+	bool onNewGame(GameMessage *msg);
+	bool onClearGameData(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onBeginPathBuild(GameMessage *msg);
+	bool onEndPathBuild(GameMessage *msg);
+	bool onSetRallyPoint(GameMessage *msg);
+	bool onDoWeapon(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onCombatdropAtObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onCombatdropAtLocation(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoWeaponAtObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoSwitchWeapons(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onSetMineClearingDetail(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onEnableRetaliationMode(GameMessage *msg);
+	bool onDoWeaponAtLocation(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoSpecialPower(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoSpecialPowerAtLocation(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoSpecialPowerAtObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoAttackmoveto(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoForcemoveto(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoMoveto(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onAddWaypoint(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoGuardPosition(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoGuardObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoStop(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoScatter(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onCreateFormation(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onClearIngamePopupMessage(GameMessage *msg);
+	bool onDoCheer(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+#if defined(RTS_DEBUG) || defined (_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+	bool onDebugKillSelection(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDebugHurtObject(GameMessage *msg);
+	bool onDebugKillObject(GameMessage *msg);
+#endif
+	bool onEnter(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onExit(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onEvacuate(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onExecuteRailedTransport(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onInternetHack(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onGetRepaired(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDock(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onGetHealed(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoRepair(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onResumeConstruction(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoSpecialPowerOverrideDestination(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoAttackObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoForceAttackObject(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDoForceAttackGround(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onQueueUpgrade(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onCancelUpgrade(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onQueueUnitCreate(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onCancelUnitCreate(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDozerConstruct(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onDozerCancelConstruct(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onSell(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onToggleOvercharge(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+#ifdef ALLOW_SURRENDER
+	bool onDoSurrender(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onPickUpPrisoner(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onReturnToPrison(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+#endif
+	bool onCreateSelectedGroup(GameMessage *msg);
+	bool onRemoveFromSelectedGroup(GameMessage *msg);
+	bool onDestroySelectedGroup(GameMessage *msg);
+	bool onPlaceBeacon(GameMessage *msg);
+	bool onRemoveBeacon(GameMessage *msg);
+	bool onSetBeaconText(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
+	bool onSelfDestruct(GameMessage *msg);
+	bool onSetReplayCamera(GameMessage *msg);
+	bool onCreateTeam(GameMessage *msg);
+	bool onSelectTeam(GameMessage *msg);
+	bool onAddTeam(GameMessage *msg);
+	bool onLogicCrc(GameMessage *msg);
+	bool onPurchaseScience(GameMessage *msg);
+
 private:
 
 	/**
 		overrides to thing template buildable status. doesn't really belong here,
 		but has to go somewhere. (srj)
 	*/
-	typedef std::hash_map< AsciiString, BuildableStatus, rts::hash<AsciiString>, rts::equal_to<AsciiString> > BuildableMap;
+	typedef std::hash_map< AsciiString, BuildableStatus, rts::hash<AsciiString>, rts::equal_to<AsciiString>/**/> BuildableMap;
 	BuildableMap m_thingTemplateBuildableOverrides;
 
 	/**
 		overrides to control bars. doesn't really belong here, but has to go somewhere. (srj)
 	*/
-	typedef std::hash_map< AsciiString, ConstCommandButtonPtr, rts::hash<AsciiString>, rts::equal_to<AsciiString> > ControlBarOverrideMap;
+	typedef std::hash_map< AsciiString, ConstCommandButtonPtr, rts::hash<AsciiString>, rts::equal_to<AsciiString>/**/> ControlBarOverrideMap;
 	ControlBarOverrideMap m_controlBarOverrides;
 
 	Real m_width, m_height;																	///< Dimensions of the world
@@ -306,8 +370,18 @@ private:
 
 	// CRC cache system -----------------------------------------------------------------------------
 	UnsignedInt	m_CRC;																			///< Cache of previous CRC value
-	std::map<Int, UnsignedInt> m_cachedCRCs;								///< CRCs we've seen this frame
-	Bool m_shouldValidateCRCs;															///< Should we validate CRCs this frame?
+	typedef std::map<Int, UnsignedInt> CachedCRCMap;
+	CachedCRCMap m_cachedCRCs;															///< CRCs we've seen this frame
+	Int m_shouldValidateCRCs;															///< Should we validate CRCs this frame?
+#if DEEP_CRC_TO_MEMORY
+	std::vector<UnsignedByte> m_crcWriteBuffer;
+	std::vector<UnsignedByte> m_crcBuffers[64];
+	size_t m_crcBufferIndex;
+public:
+	std::vector<UnsignedByte>& getCRCBuffer();
+	void storeCRCBuffer(size_t size);
+	void writeCRCBuffersToDisk(UnsignedInt frame) const;
+#endif
 	//-----------------------------------------------------------------------------------------------
 	//Bool m_loadingScene;
 	Bool m_loadingMap;
@@ -410,15 +484,15 @@ inline void GameLogic::setHeight( Real height ) { m_height = height; }
 inline Real GameLogic::getHeight() { return m_height; }
 inline UnsignedInt GameLogic::getFrame() { return m_frame; }
 
-inline Bool GameLogic::isInGame() { return m_gameMode != GAME_NONE; }
 inline GameMode GameLogic::getGameMode() { return m_gameMode; }
-inline Bool GameLogic::isInLanGame() { return (m_gameMode == GAME_LAN); }
-inline Bool GameLogic::isInSkirmishGame() { return (m_gameMode == GAME_SKIRMISH); }
-inline Bool GameLogic::isInMultiplayerGame() { return (m_gameMode == GAME_LAN) || (m_gameMode == GAME_INTERNET) ; }
-inline Bool GameLogic::isInInteractiveGame() const { return isInInteractiveGame(m_gameMode); }
-inline Bool GameLogic::isInReplayGame() { return (m_gameMode == GAME_REPLAY); }
-inline Bool GameLogic::isInInternetGame() { return (m_gameMode == GAME_INTERNET); }
-inline Bool GameLogic::isInShellGame() { return (m_gameMode == GAME_SHELL); }
+inline Bool GameLogic::isInGame() const { return rts::isGame(m_gameMode); }
+inline Bool GameLogic::isInLanGame() const { return rts::isLanGame(m_gameMode); }
+inline Bool GameLogic::isInSkirmishGame() const { return rts::isSkirmishGame(m_gameMode); }
+inline Bool GameLogic::isInReplayGame() const { return rts::isReplayGame(m_gameMode); }
+inline Bool GameLogic::isInInternetGame() const { return rts::isInternetGame(m_gameMode); }
+inline Bool GameLogic::isInShellGame() const { return rts::isShellGame(m_gameMode); }
+inline Bool GameLogic::isInMultiplayerGame() const { return rts::isMultiplayerGame(m_gameMode); }
+inline Bool GameLogic::isInInteractiveGame() const { return rts::isInteractiveGame(m_gameMode); }
 
 inline Object* GameLogic::findObjectByID( ObjectID id )
 {

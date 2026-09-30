@@ -19,7 +19,7 @@ DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0
 DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
 BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-OUTPUT_ZIP="${PROJECT_ROOT}/GeneralsXZH-macos-arm64.zip"
+OUTPUT_ZIP="${PROJECT_ROOT}/macos-arm64-GeneralsXZH.zip"
 
 DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
 DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"
@@ -239,6 +239,8 @@ cat > "${CONTENTS_DIR}/Info.plist" <<'PLIST'
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
     <string>15.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>
 PLIST
@@ -284,6 +286,13 @@ ln -sf libdxvk_d3d9.0.dylib "${LIB_DIR}/libdxvk_d3d9.dylib"
 echo "  + libdxvk_d3d8"
 cp "${DXVK_D3D8_LIB}" "${LIB_DIR}/libdxvk_d3d8.0.dylib"
 ln -sf libdxvk_d3d8.0.dylib "${LIB_DIR}/libdxvk_d3d8.dylib"
+
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.dylib"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  + libsage_patch (SagePatch QoL)"
+    cp "${SAGE_PATCH_LIB}" "${LIB_DIR}/libsage_patch.dylib"
+fi
 
 if [[ "${INCLUDE_EXTERNAL_DYLIBS}" == "1" ]]; then
     echo "  + scanning for external dylibs (Homebrew/system extras)"
@@ -352,6 +361,18 @@ else
     echo "WARNING: ${FONTCONFIG_ETC_DIR}/fonts.conf not found - in-game font lookup may fail on macOS"
 fi
 
+# GeneralsX @feature felipebraz 26/09/2026 Bundle universal fonts into application resources.
+mkdir -p "${RESOURCES_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    echo "  + Bundled fonts"
+    cp "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RESOURCES_DIR}/fonts/"
+else
+    echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
+    exit 1
+fi
+
 # App launcher wrapper
 echo "  + App launcher"
 cat > "${MACOS_DIR}/run.sh" << 'WRAPPER'
@@ -365,8 +386,26 @@ LIB_DIR="${RESOURCES_DIR}/lib"
 
 export DYLD_LIBRARY_PATH="${LIB_DIR}:${BIN_DIR}:${DYLD_LIBRARY_PATH:-}"
 
+# SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock, Ctrl+PgUp/Dn
+# brightness, Ctrl+1..5 window snap). Only loaded when the bundled dylib is
+# present and SAGE_PATCH_DISABLED is not set. Also seeds the engine INI loader
+# via Resources/Data/INI/GameData/SagePatch.ini.
+if [[ -f "${LIB_DIR}/libsage_patch.dylib" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${DYLD_INSERT_LIBRARIES:-}" ]]; then
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib:${DYLD_INSERT_LIBRARIES}"
+    else
+        export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libsage_patch.dylib"
+    fi
+fi
+
 # GeneralsX @bugfix fbraz3 20/03/2026 DXVK requires this env var on non-Win32; SDL3 matches game windowing layer
 export DXVK_WSI_DRIVER="SDL3"
+
+# DXVK HUD: kept opt-in. MoltenVK on macOS 26 cannot compile DXVK's HUD
+# pipeline shader (gl_DrawID / SPIR-V DrawIndex has no MSL equivalent yet).
+# Defaulting it on causes the swap chain blit pipeline to fail. Users wanting
+# an FPS overlay set DXVK_HUD=fps themselves.
+export DXVK_HUD="${DXVK_HUD:-0}"
 
 if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
     export VK_ICD_FILENAMES="${RESOURCES_DIR}/MoltenVK_icd.json"
@@ -376,7 +415,10 @@ fi
 
 # GeneralsX @bugfix BenderAI 01/04/2026 Select default Zero Hour asset path by .big presence, with GeneralsMD fallback.
 # Default asset paths matching the standard macOS deploy layout (allow user override)
-export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/GeneralsX/Generals}"
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+fi
 if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
     if [[ -d "${HOME}/GeneralsX/GeneralsZH" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsZH/*.big" 2>/dev/null)" ]]; then
         export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"
@@ -404,12 +446,21 @@ if [[ -f "${RESOURCES_DIR}/fontconfig/fonts.conf" ]]; then
     export FONTCONFIG_PATH="${RESOURCES_DIR}/fontconfig"
 fi
 
+# GeneralsX @bugfix felipebraz 26/09/2026 Export GX_BUNDLE_FONTS so engine resolves staged fonts when CWD changes to asset root.
+if [[ -d "${RESOURCES_DIR}/fonts" ]]; then
+    export GX_BUNDLE_FONTS="${RESOURCES_DIR}/fonts"
+fi
+
 # Run from the detected Zero Hour asset root when available.
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"
+
+    # SagePatch INI override: the engine now auto-creates SagePatch.ini with
+    # defaults in the user data directory on first run.
 fi
 
-exec "${BIN_DIR}/GeneralsXZH" "$@"
+"${BIN_DIR}/GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${MACOS_DIR}/run.sh"
 
@@ -426,11 +477,12 @@ exec "${SCRIPT_DIR}/GeneralsXZH.app/Contents/MacOS/run.sh" "$@"
 RUNNER
 chmod +x "${STAGE_DIR}/run.sh"
 
-# Create zip
+# Create zip containing only the .app bundle directly at the root
+# GeneralsX @bugfix Meeseeks 14/09/2026 Package .app directly at zip root to prevent nested folders on extract.
 echo ""
 echo "Creating ${OUTPUT_ZIP}..."
 rm -f "${OUTPUT_ZIP}"
-(cd "${STAGE_DIR}" && zip -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}" run.sh)
+(cd "${STAGE_DIR}" && zip -y -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}")
 
 echo ""
 echo "Bundle complete: ${OUTPUT_ZIP}"
@@ -439,7 +491,7 @@ unzip -l "${OUTPUT_ZIP}" | sed '1,3d;$d'
 echo ""
 echo "To use locally:"
 echo "  1) unzip ${OUTPUT_ZIP}"
-echo "  2) run: ./run.sh -win"
+echo "  2) run: ./${APP_DIR_NAME}/Contents/MacOS/run.sh -win"
 echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"

@@ -39,7 +39,7 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/udp.h"
 #include "GameNetwork/Transport.h"
-#include "strtok_r.h"
+#include "WWLib/strtok_r.h"
 #include "GameClient/Shell.h"
 #include "Common/CRCDebug.h"
 #include "GameLogic/GameLogic.h"
@@ -53,7 +53,7 @@
 #include "GameClient/MessageBox.h"
 
 
-#if defined(DEBUG_CRC)
+#if defined(DEBUG_CRC) && !RETAIL_COMPATIBLE_NETWORKING
 Int NET_CRC_INTERVAL = 1;
 #else
 Int NET_CRC_INTERVAL = 100;
@@ -113,6 +113,7 @@ public:
 
 	virtual void setLocalAddress(UnsignedInt ip, UnsignedInt port) override;
 	virtual UnsignedInt getRunAhead() override { return m_runAhead; }
+	virtual UnsignedInt getBufferedFramesAvailable() override;
 	virtual UnsignedInt getFrameRate() override { return m_frameRate; }
 	virtual UnsignedInt getPacketArrivalCushion() override;								///< Returns the smallest packet arrival cushion since this was last called.
 	virtual Bool isFrameDataReady() override;
@@ -164,7 +165,11 @@ public:
 	virtual void attachTransport(Transport *transport) override;
 	virtual void initTransport() override;
 
+#if DEEP_CRC_TO_MEMORY
+	virtual void setSawCRCMismatch(const UnicodeString& strMismatchDetails) override;
+#else
 	virtual void setSawCRCMismatch() override;
+#endif
 	virtual Bool sawCRCMismatch() override { return m_sawCRCMismatch; }
 	virtual Bool isPlayerConnected( Int playerID ) override;
 
@@ -184,6 +189,7 @@ protected:
 	Bool AllCommandsReady(UnsignedInt frame);											///< Do we have all the commands for the given frame?
 	void RelayCommandsToCommandList(UnsignedInt frame);						///< Put the commands for the given frame onto TheCommandList.
 	static Bool isMessageTypeWithinNetworkRange(GameMessage::Type type);
+	Bool isTransferCommand(GameMessage *msg);											///< Is this a command that needs to be transfered to the other clients?
 	Bool processCommand(GameMessage *msg);												///< Whatever needs to be done as a result of this command, do it now.
 	void processFrameSynchronizedNetCommand(NetCommandRef *msg);	///< If there is a network command that needs to be executed at the same frame number on all clients, it happens here.
 	void processRunAheadCommand(NetRunAheadCommandMsg *msg);			///< Do what needs to be done when we get a new run ahead command.
@@ -368,9 +374,16 @@ void Network::init()
 #endif
 }
 
+#if DEEP_CRC_TO_MEMORY
+void Network::setSawCRCMismatch(const UnicodeString& strMismatchDetails)
+#else
 void Network::setSawCRCMismatch()
+#endif
 {
 	m_sawCRCMismatch = TRUE;
+	// GeneralsX @build GitHubCopilot 12/04/2026 Surface mismatch UI activation in manual Linux/macOS captures.
+	/* 	fprintf(stderr, "[LAN86] setSawCRCMismatch logicFrame=%u latestMismatchFrame=%d runAhead=%d\n",
+		TheGameLogic->getFrame(), TheGameLogic->getFrame() - m_runAhead - 1, m_runAhead); */
 
 	TheScriptActions->closeWindows( TRUE );
 	m_messageWindow = TheWindowManager->winCreateFromScript("Menus/CRCMismatch.wnd");
@@ -457,6 +470,16 @@ Bool Network::isMessageTypeWithinNetworkRange(GameMessage::Type type) {
 }
 
 /**
+ * Does this command need to be transfered to the other game clients?
+ */
+Bool Network::isTransferCommand(GameMessage *msg) {
+	if ((msg != nullptr) && isMessageTypeWithinNetworkRange(msg->getType())) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
  * Take commands from TheCommandList and give them to the connection manager for transport.
  */
 void Network::GetCommandsFromCommandList() {
@@ -464,7 +487,8 @@ void Network::GetCommandsFromCommandList() {
 	GameMessage *next = nullptr;
 	while (msg != nullptr) {
 		next = msg->next();
-		if (isMessageTypeWithinNetworkRange(msg->getType())) { // Is this something we should be sending to the other players?
+		if (isMessageTypeWithinNetworkRange(msg->getType())) {
+			// Is this something we should be sending to the other players?
 			if (m_localStatus == NETLOCALSTATUS_INGAME) {
 				m_conMgr->sendLocalGameMessage(msg, getExecutionFrame());
 			}
@@ -572,6 +596,16 @@ Bool Network::AllCommandsReady(UnsignedInt frame) {
 	return m_conMgr->allCommandsReady(frame);// && m_conMgr->allCRCsReady(frame);
 }
 
+UnsignedInt Network::getBufferedFramesAvailable() {
+	UnsignedInt currentFrame = TheGameLogic->getFrame();
+	UnsignedInt readyCount = 0;
+	// Limit the search so we don't loop forever if network is somehow way ahead
+	while(AllCommandsReady(currentFrame + readyCount) && readyCount < 100) {
+		readyCount++;
+	}
+	return readyCount;
+}
+
 /**
  * Take commands from the connection manager and put them on TheCommandList.
  * The commands need to be put on in the same order across all clients.
@@ -586,19 +620,8 @@ void Network::RelayCommandsToCommandList(UnsignedInt frame) {
 	while (msg != nullptr) {
 		NetCommandType cmdType = msg->getCommand()->getNetCommandType();
 		if (cmdType == NETCOMMANDTYPE_GAMECOMMAND) {
-			NetGameCommandMsg* gmsg = static_cast<NetGameCommandMsg*>(msg->getCommand());
-#if RETAIL_COMPATIBLE_CRC
-			TheCommandList->appendMessage(gmsg->constructGameMessage());
-#else
-			// TheSuperHackers @fix stephanmeesters 14/05/2026 Verify accepted type of incoming game messages
-			if (isMessageTypeWithinNetworkRange(gmsg->getGameMessageType())) {
-				//DEBUG_LOG(("Network::RelayCommandsToCommandList - appending command %d of type %s to command list on frame %d", msg->getCommand()->getID(), gmsg->getCommandAsString(), TheGameLogic->getFrame()));
-				TheCommandList->appendMessage(gmsg->constructGameMessage());
-			} else {
-				DEBUG_LOG(("Network::RelayCommandsToCommandList - rejecting game message from player %d of type %s, which is not a network type.",
-					gmsg->getPlayerID(), GameMessage::getCommandTypeAsString(gmsg->getGameMessageType())));
-			}
-#endif
+			//DEBUG_LOG(("Network::RelayCommandsToCommandList - appending command %d of type %s to command list on frame %d", msg->getCommand()->getID(), ((NetGameCommandMsg *)msg->getCommand())->constructGameMessage()->getCommandAsString(), TheGameLogic->getFrame()));
+			TheCommandList->appendMessage(((NetGameCommandMsg *)msg->getCommand())->constructGameMessage());
 		} else {
 			processFrameSynchronizedNetCommand(msg);
 		}
@@ -663,14 +686,12 @@ void Network::processRunAheadCommand(NetRunAheadCommandMsg *msg) {
 
 void Network::processDestroyPlayerCommand(NetDestroyPlayerCommandMsg *msg)
 {
-	UnsignedInt playerIndex = msg->getPlayerIndex();
-	DEBUG_ASSERTCRASH(playerIndex < MAX_SLOTS, ("Bad player index"));
-	if (playerIndex >= MAX_SLOTS)
+	UnsignedInt slotIndex = msg->getPlayerIndex();
+	DEBUG_ASSERTCRASH(slotIndex < MAX_SLOTS, ("Bad slot index"));
+	if (slotIndex >= MAX_SLOTS)
 		return;
 
-	AsciiString playerName;
-	playerName.format("player%d", playerIndex);
-	Player *pPlayer = ThePlayerList->findPlayerWithNameKey(NAMEKEY(playerName));
+	Player *pPlayer = ThePlayerList->getPlayerFromSlotIndex(slotIndex);
 	if (pPlayer)
 	{
 		GameMessage *msg = newInstance(GameMessage)(GameMessage::MSG_SELF_DESTRUCT);
@@ -720,14 +741,17 @@ void Network::update()
 
 	liteupdate();
 
-	if (m_localStatus == NETLOCALSTATUS_LEFT) {// || (m_localStatus == NETLOCALSTATUS_LEAVING)) {
+	if (m_localStatus == NETLOCALSTATUS_LEFT) {
+		// || (m_localStatus == NETLOCALSTATUS_LEAVING)) {
 		endOfGameCheck();
 	}
 
-	if (AllCommandsReady(TheGameLogic->getFrame())) { // If all the commands are ready for the next frame...
+	if (AllCommandsReady(TheGameLogic->getFrame())) {
+		// If all the commands are ready for the next frame...
 		m_conMgr->handleAllCommandsReady();
 //		DEBUG_LOG(("Network::update - frame %d is ready", TheGameLogic->getFrame()));
-		if (timeForNewFrame()) { // This needs to come after any other pre-frame execution checks as this changes the timing variables.
+		if (timeForNewFrame()) {
+			// This needs to come after any other pre-frame execution checks as this changes the timing variables.
 			RelayCommandsToCommandList(TheGameLogic->getFrame());	// Put the commands for the next frame on TheCommandList.
 			m_frameDataReady = TRUE; // Tell the GameEngine to run the commands for the new frame.
 		}

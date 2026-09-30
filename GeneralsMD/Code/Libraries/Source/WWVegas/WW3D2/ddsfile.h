@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include "always.h"
-#include "ww3dformat.h"
-#include "wwstring.h"
-#include "vector3.h"
+#include "WWLib/always.h"
+#include "WW3D2/ww3dformat.h"
+#include "WWLib/wwstring.h"
+#include "WWMath/vector3.h"
 
 struct IDirect3DSurface8;
 struct IDirect3DVolume8;
@@ -214,6 +214,11 @@ public:
 	unsigned long Get_Date_Time() const { return DateTime; }
 
 	unsigned Get_Mip_Level_Count() const { return MipLevels; }
+	// GeneralsX @bugfix Copilot 24/08/2026 Report the usable authored chain independently of thumbnail reduction.
+	unsigned Get_Full_Mip_Level_Count() const {
+		unsigned count=SurfaceDesc.MipMapCount ? SurfaceDesc.MipMapCount : 1;
+		return count>2 ? count-2 : 1;
+	}
 	const unsigned char* Get_Memory_Pointer(unsigned level) const;
 	unsigned Get_Level_Size(unsigned level) const;
 	WW3DFormat Get_Format() const { return Format; }

@@ -37,7 +37,8 @@
 #pragma once
 
 // TheSuperHackers @build 09/02/2026 Conditionally include Miles (Windows only)
-#if !defined(SAGE_USE_OPENAL)
+// GeneralsX @feature fbraz 11/06/2026 Also use MilesStub when MiniAudio is enabled
+#if !defined(SAGE_USE_OPENAL) && !defined(SAGE_USE_MINIAUDIO)
 #pragma warning (push, 3)
 #include "mss.h"
 #pragma warning (pop)
@@ -45,7 +46,7 @@
 #include "MilesStub.h"
 #endif
 
-#include "always.h"
+#include "WWLib/always.h"
 
 
 // Forward declarations

@@ -171,6 +171,7 @@ public:
 	virtual void iterateContained( ContainIterateFunc func, void *userData, Bool reverse ) override;
 	virtual UnsignedInt getContainCount() const override { return m_containListSize; }
 	virtual const ContainedItemsList* getContainedItemsList() const override { return &m_containList; }
+	virtual Bool isContained( const Object *obj ) const override;
 	virtual const Object *friend_getRider() const override {return nullptr;} ///< Damn.  The draw order dependency bug for riders means that our draw module needs to cheat to get around it.
 	virtual Real getContainedItemsMass() const override;
 	virtual UnsignedInt getStealthUnitsContained() const override { return m_stealthUnitsContained; }
@@ -259,7 +260,7 @@ protected:
 	UnsignedInt					m_containListSize;							///< size of contained list
 private:
 
-	typedef std::map< ObjectID, ObjectEnterExitType, std::less<ObjectID> > ObjectEnterExitMap;
+	typedef std::map< ObjectID, ObjectEnterExitType, std::less<ObjectID>/**/> ObjectEnterExitMap;
 
 	ObjectEnterExitMap	m_objectEnterExitInfo;
 	UnsignedInt					m_stealthUnitsContained;				///< number of stealth units that can't be seen by enemy players.

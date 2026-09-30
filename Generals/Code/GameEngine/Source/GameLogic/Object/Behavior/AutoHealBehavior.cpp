@@ -279,10 +279,13 @@ void AutoHealBehavior::pulseHealObject( Object *obj )
 		obj->attemptHealingFromSoleBenefactor( data->m_healingAmount, getObject(), data->m_healingDelay );
 
 
-	ParticleSystem *system = TheParticleSystemManager->createParticleSystem( data->m_unitHealPulseParticleSystemTmpl );
-	if( system )
+	if( data->m_unitHealPulseParticleSystemTmpl )
 	{
-		system->setPosition( obj->getPosition() );
+		ParticleSystem *system = TheParticleSystemManager->createParticleSystem( data->m_unitHealPulseParticleSystemTmpl );
+		if( system )
+		{
+			system->setPosition( obj->getPosition() );
+		}
 	}
 
 	m_soonestHealFrame = TheGameLogic->getFrame() + data->m_healingDelay;// In case onDamage tries to wake us up early

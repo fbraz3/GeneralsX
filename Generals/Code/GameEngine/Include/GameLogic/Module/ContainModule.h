@@ -85,6 +85,8 @@ public:
 	virtual Bool isHealContain() const = 0;
 	virtual Bool isTunnelContain() const = 0;
 	virtual Bool isImmuneToClearBuildingAttacks() const = 0;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Ported from GeneralsMD for Overlord-style nested containers.
+	virtual Bool isSpecialOverlordStyleContainer() const = 0;
 
 
 	///< if my object gets selected, then my visible passengers should, too
@@ -152,6 +154,7 @@ public:
 	virtual void iterateContained( ContainIterateFunc func, void *userData, Bool reverse ) = 0;		///< iterate the contain list
 	virtual UnsignedInt getContainCount() const = 0;											///< contained count
 	virtual const ContainedItemsList* getContainedItemsList() const = 0;
+	virtual Bool isContained( const Object *obj ) const = 0;	///< Return whether the object is contained in this module
 	virtual const Object *friend_getRider() const = 0; ///< Damn.  The draw order dependency bug for riders means that our draw module needs to cheat to get around it.
 	virtual Real getContainedItemsMass() const = 0;
 	virtual UnsignedInt getStealthUnitsContained() const = 0;
@@ -165,6 +168,7 @@ public:
 	virtual PlayerMaskType getPlayerWhoEntered() const = 0;
 
 	virtual void processDamageToContained(Real percentDamage) = 0; ///< Do our % damage to units now.
+  virtual Object* getClosestRider ( const Coord3D *pos ) = 0;
 
 	virtual void enableLoadSounds( Bool enable ) = 0;
 

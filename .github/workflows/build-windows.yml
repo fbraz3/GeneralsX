@@ -7,94 +7,174 @@ permissions:
 on:
   workflow_call:
     inputs:
-      preset:
+      checkout_ref:
         required: false
         type: string
-        default: "windows64-deploy"
-        description: "CMake preset for Windows"
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
   workflow_dispatch:
-    inputs:
-      preset:
-        type: choice
-        description: "CMake preset for Windows"
-        options:
-          - windows64-deploy
-        default: windows64-deploy
 
 jobs:
   build-windows:
-    name: ${{ matrix.game.id }}@${{ inputs.preset }}
-    runs-on: windows-latest
-    timeout-minutes: 120
+    name: ${{ matrix.game.id }} x86
+    runs-on: windows-2022
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         game:
           - id: generalsxzh
+            name: Zero Hour
             target: z_generals
-            build_script: ./scripts/build/windows/build-windows-zh.ps1
-            deploy_script: ./scripts/build/windows/deploy-windows-zh.ps1
-            bundle_dir: build/bundles/windows-generalsxzh-windows64-deploy
-            log_suffix: zh
+            folder: GeneralsMD
+            exe: GeneralsXZH.exe
+            pdb: GeneralsXZH.pdb
+            build_zh: "ON"
+            build_generals: "OFF"
+            artifact_name: windows-x86-GeneralsXZH.zip
+            ci_artifact_name: windows-x86-GeneralsXZH-replay-test-only.zip
           - id: generalsx
+            name: Generals Base
             target: g_generals
-            build_script: ./scripts/build/windows/build-windows-generals.ps1
-            deploy_script: ./scripts/build/windows/deploy-windows-generals.ps1
-            bundle_dir: build/bundles/windows-generalsx-windows64-deploy
-            log_suffix: generals
+            folder: Generals
+            exe: GeneralsX.exe
+            pdb: GeneralsX.pdb
+            build_zh: "OFF"
+            build_generals: "ON"
+            artifact_name: windows-x86-GeneralsX.zip
+            ci_artifact_name: windows-x86-GeneralsX-ci-only.zip
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Setup MSYS2 MinGW64
-        uses: msys2/setup-msys2@v2
         with:
-          update: true
-          install: >-
-            base-devel
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-cmake
+          ref: ${{ inputs.checkout_ref || github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Configure CMake (${{ inputs.preset }})
+      - name: Configure MSVC x86
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-v2-${{ runner.os }}-x86-msvc-v143-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
+          restore-keys: |
+            vcpkg-bincache-v2-${{ runner.os }}-x86-msvc-v143-
+
+      - name: Configure vcpkg cache directory
         shell: pwsh
         run: |
-          ./scripts/build/windows/configure-windows64.ps1
+          $cacheDir = "${{ github.workspace }}/vcpkg-bincache"
+          New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
+          "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
+          "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/cmake/triplets" >> $env:GITHUB_ENV
+          "VCPKG_OVERLAY_PORTS=${{ github.workspace }}/cmake/ports" >> $env:GITHUB_ENV
 
-      - name: Build ${{ matrix.game.target }}
+      - name: Configure
+        shell: pwsh
+        env:
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
+        run: |
+          $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
+          cmake --preset win32-vcpkg `
+            -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
+            -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
+            -DRTS_BUILD_ZEROHOUR=${{ matrix.game.build_zh }} `
+            -DRTS_BUILD_CORE_TOOLS=OFF `
+            -DRTS_BUILD_ZEROHOUR_TOOLS=OFF `
+            -DRTS_BUILD_GENERALS_TOOLS=OFF `
+            -DRTS_BUILD_OPTION_SAGE_PATCH=OFF `
+            -DSAGE_USE_DX8=ON `
+            -DSAGE_USE_DETERMINISTIC_MATH=ON
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x86-msvc-v143-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build --preset win32-vcpkg --target ${{ matrix.game.target }}
+
+      - name: Collect runtime
         shell: pwsh
         run: |
-          & "${{ matrix.game.build_script }}"
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          New-Item -ItemType Directory -Force ci-artifacts | Out-Null
+          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} artifacts/
+          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
+          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
 
-      - name: Generate Windows Bundle
-        shell: pwsh
-        run: |
-          & "${{ matrix.game.deploy_script }}"
-
-      - name: Verify Bundle Output
-        shell: pwsh
-        run: |
-          if (-not (Test-Path "${{ matrix.game.bundle_dir }}")) {
-            Write-Error "Bundle directory not found: ${{ matrix.game.bundle_dir }}"
-            exit 1
+          Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Collecting vcpkg DLL: $($_.FullName)"
+            Copy-Item $_.FullName artifacts/
+            Copy-Item $_.FullName ci-artifacts/
           }
-          Get-ChildItem -Path "${{ matrix.game.bundle_dir }}" -Force | Format-Table Name, Length
 
-      - name: Upload Build Logs
-        if: always()
+          if (Test-Path "assets/fonts") {
+            if (-not (Test-Path "assets/fonts/LICENSE.liberation") -or -not (Test-Path "assets/fonts/LICENSE.fontawesome")) {
+              throw "Missing required font license files in assets/fonts"
+            }
+            New-Item -ItemType Directory -Force artifacts/fonts | Out-Null
+            Copy-Item assets/fonts/* artifacts/fonts/
+            New-Item -ItemType Directory -Force ci-artifacts/fonts | Out-Null
+            Copy-Item assets/fonts/* ci-artifacts/fonts/
+          }
+
+          # Collect Desktop Release CRT DLLs (msvcp140.dll, vcruntime140.dll, etc.)
+          $vcReleaseDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
+            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |
+            Select-Object -First 1
+
+          if ($vcReleaseDir) {
+            Get-ChildItem -Path (Join-Path $vcReleaseDir.FullName "*.dll") | ForEach-Object {
+              Write-Host "Collecting Desktop Release CRT DLL: $($_.FullName)"
+              Copy-Item $_.FullName artifacts/
+              Copy-Item $_.FullName ci-artifacts/
+            }
+          }
+
+          foreach ($name in @("binkw32.dll", "mss32.dll")) {
+            $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |
+              Select-Object -First 1
+            if ($stub) {
+              Copy-Item $stub.FullName ci-artifacts/
+            }
+          }
+
+          @"
+          Copy these files into an existing licensed ${{ matrix.game.name }} installation.
+          Keep the installation's original binkw32.dll and mss32.dll; video and audio
+          are loaded dynamically if present.
+          "@ | Set-Content artifacts/INSTALL.txt
+          Compress-Archive -Path artifacts/* -DestinationPath "${{ matrix.game.artifact_name }}"
+          Compress-Archive -Path ci-artifacts/* -DestinationPath "${{ matrix.game.ci_artifact_name }}"
+
+      - name: Upload runtime
         uses: actions/upload-artifact@v7
         with:
-          name: build-logs-windows-${{ matrix.game.id }}-${{ inputs.preset }}
-          path: logs/
+          name: ${{ matrix.game.artifact_name }}
+          path: ${{ matrix.game.artifact_name }}
+          archive: false
           retention-days: 7
 
-      - name: Upload Windows Bundle
-        if: success()
+      - name: Upload replay-test runtime
         uses: actions/upload-artifact@v7
         with:
-          name: windows-bundle-${{ matrix.game.id }}-${{ inputs.preset }}
-          path: ${{ matrix.game.bundle_dir }}
-          retention-days: 7
-          if-no-files-found: error
+          name: ${{ matrix.game.ci_artifact_name }}
+          path: ${{ matrix.game.ci_artifact_name }}
+          archive: false
+          retention-days: 1

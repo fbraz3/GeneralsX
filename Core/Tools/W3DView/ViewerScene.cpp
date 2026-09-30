@@ -37,13 +37,13 @@
 
 #include "StdAfx.h"
 #include "ViewerScene.h"
-#include "camera.h"
-#include "ww3d.h"
+#include "WW3D2/camera.h"
+#include "WW3D2/ww3d.h"
 
-#include "rendobj.h"
-#include "assetmgr.h"
-#include "rinfo.h"
-#include "lightenvironment.h"
+#include "WW3D2/rendobj.h"
+#include "WW3D2/assetmgr.h"
+#include "WW3D2/rinfo.h"
+#include "WW3D2/lightenvironment.h"
 
 /*
 ** ViewerSceneIterator
@@ -53,10 +53,10 @@
 class ViewerSceneIterator : public SceneIterator
 {
 public:
-	virtual void					First();
-	virtual void					Next();
-	virtual bool					Is_Done();
-	virtual RenderObjClass *	Current_Item();
+	virtual void					First() override;
+	virtual void					Next() override;
+	virtual bool					Is_Done() override;
+	virtual RenderObjClass *	Current_Item() override;
 
 protected:
 
@@ -216,7 +216,7 @@ ViewerSceneClass::Clear_Lineup ()
 	// Remove every object in the lineup from the scene,
 	// and remove each object from the line up list.
 	RenderObjClass *obj = nullptr;
-	while (obj = LineUpList.Remove_Head())
+	while ((obj = LineUpList.Remove_Head()) != nullptr)
 		Remove_Render_Object(obj);
 }
 
@@ -226,7 +226,7 @@ ViewerSceneClass::Get_Bounding_Sphere ()
 	// Iterate through every object in the scene, adding its
 	// bounding sphere to the current bounding sphere. The sum of
 	// the bounding spheres will be the scene's bounding sphere.
-	SphereClass bounding_sphere(Vector3(0,0,0), 0.0f);
+	SphereClass bounding_sphere;
 	SceneIterator *it = Create_Iterator();
 	assert(it);
 	for (; !it->Is_Done(); it->Next())

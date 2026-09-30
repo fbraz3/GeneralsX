@@ -290,7 +290,7 @@ public:
 			Real dy = primary->y - secondary->y;
 
 			//Calc length
-			Real length = sqrt( dx*dx + dy*dy );
+			Real length = WWMath::SqrtOrigin( dx*dx + dy*dy );
 
 			//Normalize length
 			dx /= length;
@@ -333,9 +333,9 @@ public:
 
 			Coord3D startPos = *primary;
 			Coord3D moveToPos = *secondary;
-			startPos.add( &offset );
+			startPos.add( offset );
 			//Also give our moveToPos the same offset to maintain perfect formation.
-			moveToPos.add( &offset );
+			moveToPos.add( offset );
 
 			Coord3D targetPos = *secondary;
 
@@ -357,7 +357,7 @@ public:
 			}
 
 
-			Real orient = atan2( moveToPos.y - startPos.y, moveToPos.x - startPos.x);
+			Real orient = WWMath::Atan2Origin( moveToPos.y - startPos.y, moveToPos.x - startPos.x);
 			if( m_data.m_distToTarget > 0 )
 			{
 				const Real SLOP = 1.5f;
@@ -974,9 +974,9 @@ protected:
 		if (!m_particleSysName.isEmpty())
 		{
 			const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate(m_particleSysName);
-			ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
-			if (sys)
+			if (tmp)
 			{
+				ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
 				sys->attachToObject(obj);
 			}
 		}
@@ -1108,7 +1108,7 @@ protected:
 
 				objUp->applyForce(&force);
 				if (m_orientInForceDirection)
-					orientation = atan2(force.y, force.x);
+					orientation = WWMath::Atan2Origin(force.y, force.x);
 
 			}
 		}
@@ -1196,7 +1196,7 @@ protected:
 				objUp->applyForce(&force);
 				if (m_orientInForceDirection)
 				{
-					orientation = atan2(force.y, force.x);
+					orientation = WWMath::Atan2Origin(force.y, force.x);
 				}
 				DUMPREAL(orientation);
 				objUp->setAngles(orientation, 0, 0);
@@ -1260,9 +1260,9 @@ protected:
 	    // if we land in the water, we die. alas.
 	    const Coord3D* riderPos = obj->getPosition();
 	    Real waterZ, terrainZ;
-	    if (TheTerrainLogic->isUnderwater(riderPos->x, riderPos->y, &waterZ, &terrainZ)
-			    && riderPos->z <= waterZ + 10.0f
-			    && obj->getLayer() == LAYER_GROUND)
+	    if (TheTerrainLogic->isUnderwater(riderPos->x, riderPos->y, &waterZ, &terrainZ) &&
+			    riderPos->z <= waterZ + 10.0f &&
+			    obj->getLayer() == LAYER_GROUND)
 	    {
 		    // don't call kill(); do it manually, so we can specify DEATH_FLOODED
 		    DamageInfo damageInfo;
@@ -1282,10 +1282,10 @@ protected:
 
 	    // If we land outside the map, we die too.
 	    // Otherwise we exist outside the PartitionManger like a cheater.
-	  if( obj->isOffMap()
-      || (cellType == PathfindCell::CELL_CLIFF)
-      || (cellType == PathfindCell::CELL_WATER)
-      || (cellType == PathfindCell::CELL_IMPASSABLE) )
+	  if( obj->isOffMap() ||
+      (cellType == PathfindCell::CELL_CLIFF) ||
+      (cellType == PathfindCell::CELL_WATER) ||
+      (cellType == PathfindCell::CELL_IMPASSABLE) )
 	    {
 		    // We are sorry, for reasons beyond our control, we are experiencing technical difficulties. Please die.
 		    obj->kill();
@@ -1346,7 +1346,8 @@ protected:
 			if (m_nameAreObjects)
 				tmpl = TheThingFactory->findTemplate(m_names[pick]);
 			else
-			{	//this is using the generic debris type so it's probably safe to
+			{
+				//this is using the generic debris type so it's probably safe to
 				//remove if requested by the GameLOD manager.
 				if (TheGameLODManager->isDebrisSkipped())
 					continue;
@@ -1428,7 +1429,7 @@ protected:
 			}
 		}
 
-#if !(RETAIL_COMPATIBLE_CRC || PRESERVE_NO_XP_FROM_OCL_KILLS)
+#if !RETAIL_COMPATIBLE_CRC && !PRESERVE_NO_XP_FROM_OCL_KILLS
 		ObjectID sinkID = sourceObj->getExperienceTracker()->getExperienceSink();
 		firstObject->getExperienceTracker()->setExperienceSink(sinkID != INVALID_ID ? sinkID : sourceObj->getID());
 #endif
@@ -1447,7 +1448,10 @@ protected:
 			if (TheGlobalData->m_preloadAssets)
 				debrisModelNamesGlobalHack.push_back(token);
 			debrisNugget->m_names.push_back(AsciiString(token));
+
+#if RETAIL_COMPATIBLE_CRC
 			token = ini->getNextTokenOrNull();
+#endif
 		}
 	}
 

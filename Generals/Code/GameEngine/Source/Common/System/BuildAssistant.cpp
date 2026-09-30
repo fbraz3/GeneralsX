@@ -523,10 +523,10 @@ static void checkSampleBuildLocation( const Coord3D *samplePoint, void *userData
 	// too close to edge of map?
 	if (TheGlobalData->m_MinDistFromEdgeOfMapForBuild > 0.0f)
 	{
-		if (samplePoint->x < sampleData->mapRegion.lo.x + TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->x > sampleData->mapRegion.hi.x - TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->y < sampleData->mapRegion.lo.y + TheGlobalData->m_MinDistFromEdgeOfMapForBuild
-				|| samplePoint->y > sampleData->mapRegion.hi.y - TheGlobalData->m_MinDistFromEdgeOfMapForBuild)
+		if (samplePoint->x < sampleData->mapRegion.lo.x + TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->x > sampleData->mapRegion.hi.x - TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->y < sampleData->mapRegion.lo.y + TheGlobalData->m_MinDistFromEdgeOfMapForBuild ||
+				samplePoint->y > sampleData->mapRegion.hi.y - TheGlobalData->m_MinDistFromEdgeOfMapForBuild)
 		{
 			sampleData->terrainRestricted = TRUE;
 		}
@@ -752,8 +752,8 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 	if (myFactoryExitWidth>0) {
 		myExitPos = *worldPos;
 		checkMyExit = true;
-		Real c = (Real)cos(angle);
-		Real s = (Real)sin(angle);
+		Real c = (Real)WWMath::CosTrig(angle);
+		Real s = (Real)WWMath::SinTrig(angle);
 		Real offset = build->getTemplateGeometryInfo().getMajorRadius() + myFactoryExitWidth/2.0f;
 		myExitPos.x += c*offset;
 		myExitPos.y += s*offset;
@@ -787,8 +787,8 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 		if (themFactoryExitWidth>0) {
 			hisExitPos = *them->getPosition();
 			checkHisExit = true;
-			Real c = (Real)cos(them->getOrientation());
-			Real s = (Real)sin(them->getOrientation());
+			Real c = (Real)WWMath::CosTrig(them->getOrientation());
+			Real s = (Real)WWMath::SinTrig(them->getOrientation());
 			Real offset = them->getGeometryInfo().getMajorRadius() + themFactoryExitWidth/2.0f;
 			hisExitPos.x += c*offset;
 			hisExitPos.y += s*offset;
@@ -849,7 +849,7 @@ LegalBuildCode BuildAssistant::isLocationLegalToBuild( const Coord3D *worldPos,
 	/* You just can't never build off the map, regardless of options.  jba. */
 	Region3D mapExtent;
 	TheTerrainLogic->getMaximumPathfindExtent(&mapExtent);
-	if (!mapExtent.isInRegionNoZ(worldPos)) {
+	if (!mapExtent.isInRegionNoZ(*worldPos)) {
 		return LBC_RESTRICTED_TERRAIN;
 	}
 
@@ -1022,7 +1022,7 @@ void BuildAssistant::addBibs(const Coord3D *worldPos,
 																	const ThingTemplate *build  )
 {
 
-	Real range = build->friend_getVisionRange();
+	Real range = build->friend_calcVisionRange();
 	range += 3*build->getTemplateGeometryInfo().getMajorRadius();
 
 	PartitionFilterAcceptByKindOf f1(MAKE_KINDOF_MASK(KINDOF_STRUCTURE), KINDOFMASK_NONE);
@@ -1405,7 +1405,7 @@ Bool BuildAssistant::moveObjectsForConstruction( const ThingTemplate *whatToBuil
 	Bool anyUnmovables = false;
 	MemoryPoolObjectHolder hold( iter );
 
-	Real radius = sqrt(pow(gi.getMajorRadius(), 2) + pow(gi.getMinorRadius(), 2));
+	Real radius = WWMath::SqrtOrigin(WWMath::PowOrigin(gi.getMajorRadius(), 2) + WWMath::PowOrigin(gi.getMinorRadius(), 2));
 	radius *= 1.4f;	// Fudge the distance,
 
 	for( Object *them = iter->first(); them; them = iter->next() )

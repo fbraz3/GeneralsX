@@ -45,7 +45,7 @@
 #include "rendobj.h"
 #include "assetmgr.h"
 #include "part_emt.h"
-#include "matrix3d.h"
+#include "WWMath/matrix3d.h"
 
 
 /***********************************************************************************************

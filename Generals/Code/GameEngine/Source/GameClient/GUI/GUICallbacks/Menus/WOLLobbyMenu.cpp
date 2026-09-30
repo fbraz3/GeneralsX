@@ -78,7 +78,7 @@ void refreshPlayerList( Bool forceRefresh = FALSE );
 static LogClass s_perfLog("Perf.txt");
 #define PERF_LOG(x) s_perfLog.log x
 #else // DEBUG_LOGGING
-#define PERF_LOG(x) {}
+#define PERF_LOG(x)
 #endif // DEBUG_LOGGING
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ static NameKeyType buttonHostID = NAMEKEY_INVALID;
 static NameKeyType buttonRefreshID = NAMEKEY_INVALID;
 static NameKeyType buttonJoinID = NAMEKEY_INVALID;
 static NameKeyType buttonBuddyID = NAMEKEY_INVALID;
-static NameKeyType buttonEmoteID = NAMEKEY_INVALID;
+static NameKeyType buttonChatID = NAMEKEY_INVALID;
 static NameKeyType textEntryChatID = NAMEKEY_INVALID;
 static NameKeyType listboxLobbyPlayersID = NAMEKEY_INVALID;
 static NameKeyType listboxLobbyChatID = NAMEKEY_INVALID;
@@ -117,7 +117,7 @@ static GameWindow *buttonHost = nullptr;
 static GameWindow *buttonRefresh = nullptr;
 static GameWindow *buttonJoin = nullptr;
 static GameWindow *buttonBuddy = nullptr;
-static GameWindow *buttonEmote = nullptr;
+static GameWindow *buttonChat = nullptr;
 static GameWindow *textEntryChat = nullptr;
 static GameWindow *listboxLobbyPlayers = nullptr;
 static GameWindow *listboxLobbyChat = nullptr;
@@ -223,6 +223,8 @@ void SetLobbyAttemptHostJoin(Bool start)
 
 // Tooltips -------------------------------------------------------------------------------
 
+static UnicodeString FormatPlayerNameWithOSIcon(const AsciiString& rawName);
+
 static void playerTooltip(GameWindow *window,
 													WinInstanceData *instData,
 													UnsignedInt mouse)
@@ -240,11 +242,57 @@ static void playerTooltip(GameWindow *window,
 	}
 
 	UnicodeString uName = GadgetListBoxGetText(window, row, 2);
-	AsciiString aName;
-	aName.translate(uName);
 
-	PlayerInfoMap::iterator it = TheGameSpyInfo->getPlayerInfoMap()->find(aName);
-	PlayerInfo *info = &(it->second);
+	// GeneralsX @bugfix felipebraz 27/09/2026 Resolve player tooltip by profile ID first, then fallback to name
+	PlayerInfoMap *playerMap = TheGameSpyInfo ? TheGameSpyInfo->getPlayerInfoMap() : nullptr;
+	if (!playerMap)
+	{
+		TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);
+		return;
+	}
+
+	PlayerInfo *info = nullptr;
+	Int profileID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(window, row, 0)));
+	if (profileID != 0)
+	{
+		for (PlayerInfoMap::iterator pIt = playerMap->begin(); pIt != playerMap->end(); ++pIt)
+		{
+			if (pIt->second.m_profileID == profileID)
+			{
+				info = &(pIt->second);
+				break;
+			}
+		}
+	}
+	if (info == nullptr)
+	{
+		// GeneralsX @bugfix felipebraz 27/09/2026 Match against formatted name for profile-ID-zero players with OS tags
+		for (PlayerInfoMap::iterator pIt = playerMap->begin(); pIt != playerMap->end(); ++pIt)
+		{
+			if (FormatPlayerNameWithOSIcon(pIt->second.m_name).compare(uName) == 0)
+			{
+				info = &(pIt->second);
+				break;
+			}
+		}
+	}
+	if (info == nullptr)
+	{
+		AsciiString aName;
+		aName.translate(uName);
+		PlayerInfoMap::iterator it = playerMap->find(aName);
+		if (it != playerMap->end())
+		{
+			info = &(it->second);
+		}
+	}
+
+	if (info == nullptr)
+	{
+		TheMouse->setCursorTooltip(UnicodeString::TheEmptyString);
+		return;
+	}
+
 	Bool isLocalPlayer = (TheGameSpyInfo->getLocalName().compareNoCase(info->m_name) == 0);
 
 	if (col == 0)
@@ -308,9 +356,12 @@ static void playerTooltip(GameWindow *window,
 
 	Int rank = 0;
 	Int i = 0;
-	while( info->m_rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	rank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && info->m_rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		rank = i;
+	}
 	AsciiString sideName = "GUI:RandomSide";
 	if (info->m_side > 0)
 	{
@@ -388,9 +439,12 @@ const Image* LookupSmallRankImage(Int side, Int rankPoints)
 
 	Int rank = 0;
 	Int i = 0;
-	while( rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
-	rank = i;
+	if (TheRankPointValues)
+	{
+		while (i + 1 < MAX_RANKS && rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+		rank = i;
+	}
 
 	if (rank < 0 || rank >= 10)
 		return nullptr;
@@ -416,10 +470,61 @@ const Image* LookupSmallRankImage(Int side, Int rankPoints)
 	return img;
 }
 
+// GeneralsX @feature felipebraz 26/09/2026 Format player display name with Font Awesome OS brand icon
+static UnicodeString FormatPlayerNameWithOSIcon(const AsciiString& rawName)
+{
+	UnicodeString uName;
+	AsciiString cleanName = rawName;
+	WideChar osIcon = 0;
+
+	if (cleanName.endsWithNoCase(" [MAC]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF179; // fa-apple
+	}
+	else if (cleanName.endsWithNoCase(" [WIN]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF17A; // fa-windows
+	}
+	else if (cleanName.endsWithNoCase(" [LNX]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 6);
+		osIcon = 0xF17C; // fa-linux
+	}
+	else if (cleanName.endsWithNoCase("[MAC]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF179;
+	}
+	else if (cleanName.endsWithNoCase("[WIN]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF17A;
+	}
+	else if (cleanName.endsWithNoCase("[LNX]"))
+	{
+		cleanName = AsciiString(cleanName.str(), cleanName.getLength() - 5);
+		osIcon = 0xF17C;
+	}
+
+	uName.translate(cleanName);
+
+	if (osIcon != 0)
+	{
+		WideChar iconBuf[3];
+		iconBuf[0] = ' ';
+		iconBuf[1] = osIcon;
+		iconBuf[2] = 0;
+		uName.concat(iconBuf);
+	}
+
+	return uName;
+}
+
 static Int insertPlayerInListbox(const PlayerInfo& info, Color color)
 {
-	UnicodeString uStr;
-	uStr.translate(info.m_name);
+	UnicodeString uStr = FormatPlayerNameWithOSIcon(info.m_name);
 
 	Int currentRank = info.m_rankPoints;
 	Int currentSide = info.m_side;
@@ -464,6 +569,7 @@ static Int insertPlayerInListbox(const PlayerInfo& info, Color color)
 	Int index = GadgetListBoxAddEntryImage(listboxLobbyPlayers, preorderImg, -1, 0, w, h);
 	GadgetListBoxAddEntryImage(listboxLobbyPlayers, rankImg, index, 1, w, h);
 	GadgetListBoxAddEntryText(listboxLobbyPlayers, uStr, color, index, 2);
+	GadgetListBoxSetItemData(listboxLobbyPlayers, (void*)(intptr_t)info.m_profileID, index);
 
 	return index;
 }
@@ -484,6 +590,7 @@ void PopulateLobbyPlayerListbox()
 		Int maxSelectedItems = GadgetListBoxGetNumEntries(listboxLobbyPlayers);
 		Int *selectedIndices;
 		GadgetListBoxGetSelected(listboxLobbyPlayers, (Int *)(&selectedIndices));
+		std::set<Int> selectedProfileIDs;
 		std::set<AsciiString> selectedNames;
 		std::set<AsciiString>::const_iterator selIt;
 		std::set<Int> indicesToSelect;
@@ -497,6 +604,11 @@ void PopulateLobbyPlayerListbox()
 				break;
 			}
 			++numSelected;
+			Int profileID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLobbyPlayers, selectedIndices[i], 0)));
+			if (profileID != 0)
+			{
+				selectedProfileIDs.insert(profileID);
+			}
 			AsciiString selectedName;
 			uStr = GadgetListBoxGetText(listboxLobbyPlayers, selectedIndices[i], 2);
 			selectedName.translate(uStr);
@@ -509,6 +621,16 @@ void PopulateLobbyPlayerListbox()
 
 		GadgetListBoxReset(listboxLobbyPlayers);
 
+		auto shouldSelect = [&](const PlayerInfo& pInfo) -> bool {
+			if (pInfo.m_profileID != 0 && selectedProfileIDs.find(pInfo.m_profileID) != selectedProfileIDs.end())
+				return true;
+			if (selectedNames.find(pInfo.m_name) != selectedNames.end())
+				return true;
+			AsciiString formattedName;
+			formattedName.translate(FormatPlayerNameWithOSIcon(pInfo.m_name));
+			return selectedNames.find(formattedName) != selectedNames.end();
+		};
+
 		// Ops
 		for (it = players->begin(); it != players->end(); ++it)
 		{
@@ -517,8 +639,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_OWNER]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
@@ -535,8 +656,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_BUDDY]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
@@ -553,8 +673,7 @@ void PopulateLobbyPlayerListbox()
 			{
 				Int index = insertPlayerInListbox(info, info.isIgnored()?GameSpyColor[GSCOLOR_PLAYER_IGNORED]:GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
 
-				selIt = selectedNames.find(info.m_name);
-				if (selIt != selectedNames.end())
+				if (shouldSelect(info))
 				{
 					DEBUG_LOG(("Marking index %d (%s) to re-select", index, info.m_name.str()));
 					indicesToSelect.insert(index);
@@ -624,8 +743,8 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	buttonBuddyID = TheNameKeyGenerator->nameToKey("WOLCustomLobby.wnd:ButtonBuddy");
 	buttonBuddy = TheWindowManager->winGetWindowFromId(parent, buttonBuddyID);
 
-	buttonEmoteID = TheNameKeyGenerator->nameToKey("WOLCustomLobby.wnd:ButtonEmote");
-	buttonEmote = TheWindowManager->winGetWindowFromId(parent, buttonEmoteID);
+	buttonChatID = TheNameKeyGenerator->nameToKey("WOLCustomLobby.wnd:ButtonEmote"); // TODO Rename ButtonEmote to ButtonChat in .wnd file
+	buttonChat = TheWindowManager->winGetWindowFromId(parent, buttonChatID);
 
 	textEntryChatID = TheNameKeyGenerator->nameToKey("WOLCustomLobby.wnd:TextEntryChat");
 	textEntryChat = TheWindowManager->winGetWindowFromId(parent, textEntryChatID);
@@ -1621,7 +1740,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 				{
 					ToggleGameListType();
 				}
-				else if ( controlID == buttonEmoteID )
+				else if ( controlID == buttonChatID )
 				{
 				// read the user's input and clear the entry box
 					UnicodeString txtInput;
@@ -1717,12 +1836,46 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						break;
 					}
 
-					GPProfile profileID = 0;
+					// GeneralsX @bugfix felipebraz 27/09/2026 Resolve profile ID and raw player name consistently in right click menu
+					GPProfile profileID = static_cast<GPProfile>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rc->pos, 0)));
+					UnicodeString uRowText = GadgetListBoxGetText(control, rc->pos, COLUMN_PLAYERNAME);
 					AsciiString aName;
-					aName.translate(GadgetListBoxGetText(control, rc->pos, COLUMN_PLAYERNAME));
-					PlayerInfoMap::iterator it = TheGameSpyInfo->getPlayerInfoMap()->find(aName);
-					if (it != TheGameSpyInfo->getPlayerInfoMap()->end())
-						profileID = it->second.m_profileID;
+					PlayerInfoMap *rcPlayerMap = TheGameSpyInfo ? TheGameSpyInfo->getPlayerInfoMap() : nullptr;
+					PlayerInfo *rcInfo = nullptr;
+					if (rcPlayerMap != nullptr)
+					{
+						if (profileID != 0)
+						{
+							for (PlayerInfoMap::iterator pIt = rcPlayerMap->begin(); pIt != rcPlayerMap->end(); ++pIt)
+							{
+								if (pIt->second.m_profileID == profileID)
+								{
+									rcInfo = &(pIt->second);
+									break;
+								}
+							}
+						}
+						if (rcInfo == nullptr)
+						{
+							for (PlayerInfoMap::iterator pIt = rcPlayerMap->begin(); pIt != rcPlayerMap->end(); ++pIt)
+							{
+								if (FormatPlayerNameWithOSIcon(pIt->second.m_name).compare(uRowText) == 0)
+								{
+									rcInfo = &(pIt->second);
+									profileID = rcInfo->m_profileID;
+									break;
+								}
+							}
+						}
+					}
+					if (rcInfo != nullptr)
+					{
+						aName = rcInfo->m_name;
+					}
+					else
+					{
+						aName.translate(uRowText);
+					}
 
 					Bool isBuddy = FALSE;
 					if (profileID <= 0)

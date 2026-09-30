@@ -302,8 +302,8 @@ void AudioManager::update()
 	//of making sure we only go a certain percentage towards the camera or the desired height, whichever occurs first.
 	Coord3D cameraPos = TheTacticalView->get3DCameraPosition();
 	Coord3D groundToCameraVector;
-	groundToCameraVector.set( &cameraPos );
-	groundToCameraVector.sub( &cameraPivot );
+	groundToCameraVector.set( cameraPos );
+	groundToCameraVector.sub( cameraPivot );
 	Real bestScaleFactor;
 
 	if( cameraPos.z <= desiredHeightAbs || groundToCameraVector.z <= 0.0f )
@@ -325,8 +325,8 @@ void AudioManager::update()
 
 	//Set the microphone to be the ground position adjusted for terrain plus the vector we just calculated.
 	Coord3D microphonePos;
-	microphonePos.set( &cameraPivot );
-	microphonePos.add( &groundToCameraVector );
+	microphonePos.set( cameraPivot );
+	microphonePos.add( groundToCameraVector );
 
 	//Viola! A properly placed microphone.
 	setListenerPosition( &microphonePos, &lookTo );
@@ -345,7 +345,7 @@ void AudioManager::update()
 	{
 		//How far away is the camera from the microphone?
 		Coord3D vector = cameraPos;
-		vector.sub( &microphonePos );
+		vector.sub( microphonePos );
 		Real dist = vector.length();
 
 		if( dist < minDist )
@@ -437,13 +437,14 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		return AHSV_NotForLocal;
 	}
 
-	AudioEventRTS *audioEvent = MSGNEW("AudioEventRTS") AudioEventRTS(*eventToAdd);		// poolify
+	RefCountPtr<DynamicAudioEventRTS> audioEvent;
+	audioEvent.Assign_No_Add_Ref(newInstance(DynamicAudioEventRTS)(*eventToAdd));
 	audioEvent->setPlayingHandle( allocateNewHandle() );
 	audioEvent->generateFilename();	// which file are we actually going to play?
 	eventToAdd->setPlayingAudioIndex( audioEvent->getPlayingAudioIndex() );
 	audioEvent->generatePlayInfo();	// generate pitch shift and volume shift now as well
 
-	std::list<std::pair<AsciiString, Real> >::iterator it;
+	std::list<std::pair<AsciiString, Real>/**/>::iterator it;
 	for (it = m_adjustedVolumes.begin(); it != m_adjustedVolumes.end(); ++it) {
 		if (it->first == audioEvent->getEventName()) {
 			audioEvent->setVolume(it->second);
@@ -454,7 +455,6 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 #if RETAIL_COMPATIBLE_CRC
 	if (notForLocal)
 	{
-		releaseAudioEventRTS(audioEvent);
 		return AHSV_NotForLocal;
 	}
 #endif
@@ -464,21 +464,22 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 #ifdef INTENSIVE_AUDIO_DEBUG
 		DEBUG_LOG((" - culled due to muting (%d).", audioEvent->getVolume()));
 #endif
-		releaseAudioEventRTS(audioEvent);
 		return AHSV_Muted;
 	}
 
 	if (soundType == AT_Music)
 	{
-		m_music->addAudioEvent(audioEvent);
+		m_music->addAudioEvent(audioEvent.Peek());
 	}
 	else
 	{
-		//Possible to nuke audioEvent inside.
-		m_sound->addAudioEvent(audioEvent);
+		if (!m_sound->addAudioEvent(audioEvent.Peek()))
+		{
+			audioEvent.Clear();
+		}
 	}
 
-	if( audioEvent )
+	if( audioEvent != nullptr )
 	{
 		return audioEvent->getPlayingHandle();
 	}
@@ -576,7 +577,7 @@ void AudioManager::removeAudioEvent(AudioHandle audioEvent)
 		return;
 	}
 
-	AudioRequest *req = allocateAudioRequest( false );
+	AudioRequest *req = allocateAudioRequest();
 	req->m_handleToInteractOn = audioEvent;
 	req->m_request = AR_Stop;
 	appendAudioRequest( req );
@@ -601,7 +602,7 @@ void AudioManager::setAudioEventVolumeOverride( AsciiString eventToAffect, Real 
 		adjustVolumeOfPlayingAudio(eventToAffect, newVolume);
 	}
 
-	std::list<std::pair<AsciiString, Real> >::iterator it;
+	std::list<std::pair<AsciiString, Real>/**/>::iterator it;
 	for (it = m_adjustedVolumes.begin(); it != m_adjustedVolumes.end(); ++it) {
 		if (it->first == eventToAffect) {
 			if (newVolume == -1.0f) {
@@ -707,7 +708,12 @@ void AudioManager::setVolume( Real volume, AudioAffect whichToAffect )
 			m_scriptMusicVolume = volume;
 		}
 
-		m_musicVolume = m_scriptMusicVolume * m_systemMusicVolume;
+		const Real newVolume = m_scriptMusicVolume * m_systemMusicVolume;
+		if (m_musicVolume != newVolume)
+		{
+			m_musicVolume = newVolume;
+			m_volumeHasChanged = true;
+		}
 	}
 
 	if (whichToAffect & AudioAffect_Sound) {
@@ -717,7 +723,12 @@ void AudioManager::setVolume( Real volume, AudioAffect whichToAffect )
 			m_scriptSoundVolume = volume;
 		}
 
-		m_soundVolume = m_scriptSoundVolume * m_systemSoundVolume;
+		const Real newVolume = m_scriptSoundVolume * m_systemSoundVolume;
+		if (m_soundVolume != newVolume)
+		{
+			m_soundVolume = newVolume;
+			m_volumeHasChanged = true;
+		}
 	}
 
 	if (whichToAffect & AudioAffect_Sound3D) {
@@ -726,7 +737,13 @@ void AudioManager::setVolume( Real volume, AudioAffect whichToAffect )
 		} else {
 			m_scriptSound3DVolume = volume;
 		}
-		m_sound3DVolume = m_scriptSound3DVolume * m_systemSound3DVolume;
+
+		const Real newVolume = m_scriptSound3DVolume * m_systemSound3DVolume;
+		if (m_sound3DVolume != newVolume)
+		{
+			m_sound3DVolume = newVolume;
+			m_volumeHasChanged = true;
+		}
 	}
 
 	if (whichToAffect & AudioAffect_Speech) {
@@ -735,10 +752,14 @@ void AudioManager::setVolume( Real volume, AudioAffect whichToAffect )
 		} else {
 			m_scriptSpeechVolume = volume;
 		}
-		m_speechVolume = m_scriptSpeechVolume * m_systemSpeechVolume;
-	}
 
-	m_volumeHasChanged = true;
+		const Real newVolume = m_scriptSpeechVolume * m_systemSpeechVolume;
+		if (m_speechVolume != newVolume)
+		{
+			m_speechVolume = newVolume;
+			m_volumeHasChanged = true;
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -759,17 +780,13 @@ Real AudioManager::getVolume( AudioAffect whichToGet )
 //-------------------------------------------------------------------------------------------------
 void AudioManager::set3DVolumeAdjustment( Real volumeAdjustment )
 {
-	m_sound3DVolume = volumeAdjustment * m_scriptSound3DVolume * m_systemSound3DVolume;
+	const Real newVolume = clamp(0.0f, volumeAdjustment * m_scriptSound3DVolume * m_systemSound3DVolume, 1.0f);
 
-	// clamp
-	if (m_sound3DVolume < 0.0f)
-		m_sound3DVolume = 0.0f;
-
-	if (m_sound3DVolume > 1.0f)
-		m_sound3DVolume = 1.0f;
-
-  if ( ! has3DSensitiveStreamsPlaying() )
-  	m_volumeHasChanged = TRUE;
+	if (m_sound3DVolume != newVolume)
+	{
+		m_sound3DVolume = newVolume;
+		m_volumeHasChanged = true;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -786,10 +803,9 @@ const Coord3D *AudioManager::getListenerPosition() const
 }
 
 //-------------------------------------------------------------------------------------------------
-AudioRequest *AudioManager::allocateAudioRequest( Bool useAudioEvent )
+AudioRequest *AudioManager::allocateAudioRequest()
 {
 	AudioRequest *audioReq = newInstance(AudioRequest);
-	audioReq->m_usePendingEvent = useAudioEvent;
 	audioReq->m_requiresCheckForSample = false;
 	return audioReq;
 }
@@ -801,21 +817,20 @@ void AudioManager::releaseAudioRequest( AudioRequest *requestToRelease )
 }
 
 //-------------------------------------------------------------------------------------------------
-void AudioManager::appendAudioRequest( AudioRequest *m_request )
+void AudioManager::appendAudioRequest( AudioRequest *request )
 {
-	m_audioRequests.push_back(m_request);
+	m_audioRequests.push_back(request);
 }
 
 //-------------------------------------------------------------------------------------------------
 // Remove all pending audio requests
 void AudioManager::removeAllAudioRequests()
 {
-  std::list<AudioRequest*>::iterator it;
-  for ( it = m_audioRequests.begin(); it != m_audioRequests.end(); it++ ) {
-    releaseAudioRequest( *it );
-  }
-
-  m_audioRequests.clear();
+	std::list<AudioRequest*>::iterator it;
+	for ( it = m_audioRequests.begin(); it != m_audioRequests.end(); ++it ) {
+		releaseAudioRequest( *it );
+	}
+	m_audioRequests.clear();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -945,6 +960,30 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 }
 
 //-------------------------------------------------------------------------------------------------
+Bool AudioManager::isMusicAlreadyLoaded() const
+{
+	// GeneralsX @bugfix felipebraz 10/07/2026 Fix game crash on Linux when some music files are missing by checking until a valid one is found
+	AudioEventInfoHash::const_iterator it;
+	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
+		if (it->second) {
+			const AudioEventInfo *aet = it->second;
+			if (aet->m_soundType == AT_Music) {
+				AudioEventRTS aud;
+				aud.setAudioEventInfo(aet);
+				aud.generateFilename();
+				
+				AsciiString astr = aud.getFilename();
+				if (TheFileSystem->doesFileExist(astr.str())) {
+					return TRUE;
+				}
+			}
+		}
+	}
+	
+	return FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
 void AudioManager::findAllAudioEventsOfType( AudioType audioType, std::vector<AudioEventInfo*>& allEvents )
 {
 	AudioEventInfoHashIt it;
@@ -1043,15 +1082,8 @@ Bool AudioManager::shouldPlayLocally(const AudioEventRTS *audioEvent)
 //-------------------------------------------------------------------------------------------------
 AudioHandle AudioManager::allocateNewHandle()
 {
-	// note, intenionally a post increment rather than a pre increment.
+	// note, intentionally a post increment rather than a pre increment.
 	return theAudioHandlePool++;
-}
-
-//-------------------------------------------------------------------------------------------------
-void AudioManager::releaseAudioEventRTS( AudioEventRTS *&eventToRelease )
-{
-	delete eventToRelease;
-	eventToRelease = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------

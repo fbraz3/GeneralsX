@@ -41,8 +41,8 @@
 #include "SoundScene.h"
 #include "Utils.h"
 #include "SoundChunkIDs.h"
-#include "persistfactory.h"
-#include "chunkio.h"
+#include "WWSaveLoad/persistfactory.h"
+#include "WWLib/chunkio.h"
 #include "sound3dhandle.h"
 
 
@@ -353,9 +353,8 @@ Sound3DClass::Set_Position (const Vector3 &position)
 			//
 			//	Transform the sound's position into 'listener-space'
 			//
-			Vector3 sound_pos	= position;
 			Vector3 listener_space_pos;
-			Matrix3D::Inverse_Transform_Vector (m_ListenerTransform, sound_pos, &listener_space_pos);
+			Matrix3D::Inverse_Transform_Vector (m_ListenerTransform, position, &listener_space_pos);
 
 			//
 			//	Update the object's position inside of Miles

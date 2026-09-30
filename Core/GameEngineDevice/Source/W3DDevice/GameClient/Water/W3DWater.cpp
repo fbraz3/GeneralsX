@@ -37,19 +37,19 @@
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "W3DDevice/GameClient/W3DWaterTracks.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
-#include "texture.h"
-#include "assetmgr.h"
-#include "rinfo.h"
-#include "camera.h"
-#include "scene.h"
-#include "dx8wrapper.h"
-#include "light.h"
+#include "WW3D2/texture.h"
+#include "WW3D2/assetmgr.h"
+#include "WW3D2/rinfo.h"
+#include "WW3D2/camera.h"
+#include "WW3D2/scene.h"
+#include "WW3D2/dx8wrapper.h"
+#include "WW3D2/light.h"
 #include "d3dx8math.h"
 // GeneralsX @bugfix BenderAI 13/02/2026 Include d3dx8core.h for LPD3DXBUFFER
 #include "d3dx8core.h"
-#include "simplevec.h"
-#include "mesh.h"
-#include "matinfo.h"
+#include "WWLib/simplevec.h"
+#include "WW3D2/mesh.h"
+#include "WW3D2/matinfo.h"
 
 #include "Common/FramePacer.h"
 #include "Common/GameState.h"
@@ -653,7 +653,8 @@ HRESULT WaterRenderObjClass::generateVertexBuffer( Int sizeX, Int sizeY, Int ver
 	DWORD fvf = WATER_MESH_FVF;
 
 	if (doStatic)
-	{	//change settings for a static vertex buffer
+	{
+		//change settings for a static vertex buffer
 		pool = D3DPOOL_MANAGED;
 		usage = D3DUSAGE_WRITEONLY;
 		fvf=0;// DX8 Docs confusing on this. Say no FVF for vertex shaders. Else DX8_FVF_XYZDUV1;
@@ -661,7 +662,8 @@ HRESULT WaterRenderObjClass::generateVertexBuffer( Int sizeX, Int sizeY, Int ver
 	}
 
 	if (m_vertexBufferD3D == nullptr)
-	{	// Create vertex buffer
+	{
+		// Create vertex buffer
 
 		if (FAILED(hr=m_pDev->CreateVertexBuffer
 		(
@@ -889,7 +891,8 @@ void WaterRenderObjClass::ReAcquireResources()
 	}
 	else
 	if (m_waterType == WATER_TYPE_2_PVSHADER)
-	{	//pixel/vertex shader based water assets.
+	{
+		//pixel/vertex shader based water assets.
 		if (FAILED(hr=generateIndexBuffer(PATCH_SIZE,PATCH_SIZE)))
 			return;
 
@@ -1066,7 +1069,8 @@ Int WaterRenderObjClass::init(Real waterLevel, Real dx, Real dy, SceneClass *par
 	ReAcquireResources();
 #if 0	//MD does not support the old bump-mapped water at all so no point loading textures. -MW 8-11-03
 	if (type == WATER_TYPE_2_PVSHADER || (W3DShaderManager::getChipset() >= DC_GENERIC_PIXEL_SHADER_1_1))
-	{	//geforce3 specific water requires some extra D3D assets
+	{
+		//geforce3 specific water requires some extra D3D assets
 		m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		//save previous thumbnail mode
 		bool thumbnails_enabled = WW3D::Get_Thumbnail_Enabled();
@@ -1214,7 +1218,8 @@ void WaterRenderObjClass::enableWaterGrid(Bool state)
 	m_disableRiver = false;
 
 	if (state && m_meshData == nullptr)
-	{	//water type has changed, must allocate necessary assets for new water.
+	{
+		//water type has changed, must allocate necessary assets for new water.
 		//contains the current deformed water surface z(height) values.  With 1 vertex invisible border
 		//around surface to speed up normal calculations.
 		m_meshDataSize = (m_gridCellsX+1+2)*(m_gridCellsY+1+2);
@@ -1338,6 +1343,13 @@ void WaterRenderObjClass::update()
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::replaceSkyboxTexture(const AsciiString& oldTexName, const AsciiString& newTextName)
 {
+	// GeneralsX @bugfix Claude 05/07/2026 Guard against null m_skyBox: replaceAssetTexture dereferences the
+	// render object unconditionally, so skip texture replacement when the skybox asset never loaded.
+	if (m_skyBox == nullptr)
+	{
+		return;
+	}
+
 	W3DAssetManager* assetManager = ((W3DAssetManager*)W3DAssetManager::Get_Instance());
 
 	assetManager->replacePrototypeTexture(m_skyBox, oldTexName.str(), newTextName.str());
@@ -1737,7 +1749,9 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 			break;
 	}
 
-	if (TheGlobalData && TheGlobalData->m_drawSkyBox)
+	// GeneralsX @bugfix Claude 05/07/2026 Guard against null m_skyBox: Create_Render_Obj("new_skybox") can fail
+	// when the skybox asset is unavailable (e.g. base Generals archives not found), causing a segfault here.
+	if (TheGlobalData && TheGlobalData->m_drawSkyBox && m_skyBox)
 	{	//center skybox around camera
 		Vector3 pos=rinfo.Camera.Get_Position();
 		pos.Z = TheGlobalData->m_skyBoxPositionZ;
@@ -2314,12 +2328,14 @@ void WaterRenderObjClass::renderWaterMesh()
 
 	MaterMeshVertexFormat *vb;
 	if (m_vertexBufferD3DOffset < m_numVertices)
-	{	//we have room in current VB, append new verts
+	{
+		//we have room in current VB, append new verts
 		if(m_vertexBufferD3D->Lock(m_vertexBufferD3DOffset*sizeof(MaterMeshVertexFormat),mx*my*sizeof(MaterMeshVertexFormat),(unsigned char**)&vb,D3DLOCK_NOOVERWRITE) != D3D_OK)
 			return;
 	}
 	else
-	{	//ran out of room in last VB, request a substitute VB.
+	{
+		//ran out of room in last VB, request a substitute VB.
 		if(m_vertexBufferD3D->Lock(0,mx*my*sizeof(MaterMeshVertexFormat),(unsigned char**)&vb,D3DLOCK_DISCARD) != D3D_OK)
 			return;
 		m_vertexBufferD3DOffset=0;	//reset start of page to first vertex
@@ -2430,7 +2446,8 @@ void WaterRenderObjClass::renderWaterMesh()
 
 
 	if (TheTerrainRenderObject->getShroud() && !m_trapezoidWaterPixelShader)
-	{	//we have a shroud to apply and can't do it inside the pixel shader.
+	{
+		//we have a shroud to apply and can't do it inside the pixel shader.
 		//so do it in stage1
 		W3DShaderManager::setTexture(0,TheTerrainRenderObject->getShroud()->getShroudTexture());
 		W3DShaderManager::setShader(W3DShaderManager::ST_SHROUD_TEXTURE, 1);
@@ -2564,7 +2581,8 @@ void WaterRenderObjClass::changeGridHeight(Real wx, Real wy, Real delta)
 
 	//check if center falls within grid bounds
 	if (worldToGridSpace(wx, wy, gx, gy))
-	{	//find extents of influence
+	{
+		//find extents of influence
 		minX = floorf(gx - m_gridChangeMaxRange);
 		if (minX < 0 )
 			minX = 0;	//clamp extent to fall within box
@@ -2646,7 +2664,8 @@ void WaterRenderObjClass::setGridResolution(Real gridCellsX, Real gridCellsY, Re
 	m_gridCellSize=cellSize;
 
 	if (m_gridCellsX != gridCellsX || m_gridCellsY != gridCellsY)
-	{	//resolution has changed
+	{
+		//resolution has changed
 		m_gridCellsX=gridCellsX;
 		m_gridCellsY=gridCellsY;
 
@@ -2797,7 +2816,8 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 		shadeB=shadeB*255.0f;
 
 		if (shadeR == 0 && shadeG == 0 && shadeB == 0)
-		{	//special case where we disable lighting
+		{
+			//special case where we disable lighting
 			shadeR=255;
 			shadeG=255;
 			shadeB=255;
@@ -2978,7 +2998,8 @@ void WaterRenderObjClass::setupFlatWaterShader()
 			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
 		else
-		{	//Assume no shroud, so stage 3 will be null texture but using actual white because
+		{
+			//Assume no shroud, so stage 3 will be null texture but using actual white because
 			//pixel shader on GF4 generates random colors with SetTexture(3,nullptr).
 			if (!m_whiteTexture->Is_Initialized())
 			{	m_whiteTexture->Init();
@@ -3139,7 +3160,8 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 		shadeB=shadeB*255.0f;
 
 		if (shadeR == 0 && shadeG == 0 && shadeB == 0)
-		{	//special case where we disable lighting
+		{
+			//special case where we disable lighting
 			shadeR=255;
 			shadeG=255;
 			shadeB=255;
@@ -3341,13 +3363,15 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 	if (TheTerrainRenderObject->getShroud())
 	{
 		if (m_trapezoidWaterPixelShader)
-		{	//shroud was applied in stage3 of main pass so just need to restore state here.
+		{
+			//shroud was applied in stage3 of main pass so just need to restore state here.
 			W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
 			DX8Wrapper::_Get_D3D_Device8()->SetTexture(3,nullptr);	//free possible reference to shroud texture
 			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_ZFUNC, D3DCMP_EQUAL);
 		}
 		else
-		{	//do second pass to apply the shroud on water plane for cards that can't do it in main pass.
+		{
+			//do second pass to apply the shroud on water plane for cards that can't do it in main pass.
 			W3DShaderManager::setTexture(0,TheTerrainRenderObject->getShroud()->getShroudTexture());
 			W3DShaderManager::setShader(W3DShaderManager::ST_SHROUD_TEXTURE, 0);
 			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);

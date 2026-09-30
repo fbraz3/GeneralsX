@@ -39,6 +39,7 @@
 #include "Common/RandomValue.h"
 #include "Common/SkirmishBattleHonors.h"
 #include "Common/SkirmishPreferences.h"
+#include "Common/OptionPreferences.h"
 #include "GameLogic/GameLogic.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ClientInstance.h"
@@ -149,7 +150,8 @@ static Bool buttonPushed = FALSE;
 static Bool stillNeedsToSetOptions = FALSE;
 void skirmishUpdateSlotList();
 static void populateSkirmishBattleHonors();
-enum{ GREATER_NO_FPS_LIMIT = 60};
+// GeneralsX @tweak felipebraz 20/06/2026 Change Skirmish speed limit to represent FPS limit (30..120)
+enum{ GREATER_NO_FPS_LIMIT = 120};
 Bool doUpdateSlotList = TRUE;
 
 static Int getNextSelectablePlayer(Int start)
@@ -337,6 +339,31 @@ void SkirmishPreferences::setStartingCash( const Money & startingCash )
   (*this)[startingCashKey] = option;
 }
 
+// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+Int SkirmishPreferences::getSkirmishTickRate() const
+{
+	SkirmishPreferences::const_iterator it = find("TickRate");
+	if (it == end())
+	{
+		it = find("GameSpeed");
+	}
+	if (it == end())
+	{
+		it = find("SkirmishTickRate");
+	}
+	if (it != end())
+	{
+		Int rate = atoi(it->second.str());
+		if (rate > 0)
+		{
+			return clamp(5, rate, 120);
+		}
+	}
+
+	OptionPreferences optionPref;
+	return optionPref.getSkirmishTickRate();
+}
+
 
 
 Bool SkirmishPreferences::write()
@@ -426,8 +453,13 @@ void reallyDoStart()
 	DEBUG_LOG(("GameSpeedSlider was at %d", maxFPS));
 	if (maxFPS > GREATER_NO_FPS_LIMIT)
 		maxFPS = 1000;
-	if (maxFPS < 15)
-		maxFPS = 15;
+	// GeneralsX @tweak felipebraz 20/06/2026 Clamp FPS limit from skirmish game speed slider to 30..120
+	if (maxFPS < 30)
+		maxFPS = 30;
+
+	// GeneralsX @feature felipebraz 17/09/2026 Read configured Skirmish simulation tick rate (#281)
+	SkirmishPreferences prefs;
+	TheWritableGlobalData->m_skirmishTickRate = prefs.getSkirmishTickRate();
 
   TheWritableGlobalData->m_mapName = TheSkirmishGameInfo->getMap();
   TheSkirmishGameInfo->startGame(0);
@@ -528,8 +560,8 @@ void MapSelectorTooltip(GameWindow *window,
 		// Check to see if we mouse over a tech building
 		while(it != TheSupplyAndTechImageLocations.m_techPosList.end())
 		{
-			if ((x > (pixelX + it->x) && x < (pixelX + it->x + SUPPLY_TECH_SIZE))
-				  && ( y > (pixelY + it->y) && y < (pixelY + it->y + SUPPLY_TECH_SIZE)))
+			if ((x > (pixelX + it->x) && x < (pixelX + it->x + SUPPLY_TECH_SIZE)) &&
+				  ( y > (pixelY + it->y) && y < (pixelY + it->y + SUPPLY_TECH_SIZE)))
 			{
 				TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:TechBuilding"), -1, nullptr); //, 1.5f
 				return;
@@ -543,8 +575,8 @@ void MapSelectorTooltip(GameWindow *window,
 		// Check to see if we mouse over a supply dock
 		while (it2 != TheSupplyAndTechImageLocations.m_supplyPosList.end())
 		{
-			if ((x > (pixelX + it2->x) && x < (pixelX + it2->x + SUPPLY_TECH_SIZE))
-					 && ( y > (pixelY + it2->y) && y < (pixelY + it2->y + SUPPLY_TECH_SIZE)))
+			if ((x > (pixelX + it2->x) && x < (pixelX + it2->x + SUPPLY_TECH_SIZE)) &&
+					 ( y > (pixelY + it2->y) && y < (pixelY + it2->y + SUPPLY_TECH_SIZE)))
 			{
 				TheMouse->setCursorTooltip( TheGameText->fetch("TOOLTIP:SupplyDock"), -1, nullptr); // , 1.5f
 				break;
@@ -588,8 +620,8 @@ void positionStartSpotControls( GameWindow *win, GameWindow *mapWindow, Coord3D 
 		ICoord2D tempPos;
 		buttonMapStartPositions[i]->winGetScreenPosition(&tempPos.x, &tempPos.y);
 		// we're inside the other gadget
-		if(gadgetPos.x > tempPos.x && gadgetPos.x < tempPos.x + gadgetSize.x
-				&& gadgetPos.y > tempPos.y && gadgetPos.y < tempPos.y + gadgetSize.y)
+		if(gadgetPos.x > tempPos.x && gadgetPos.x < tempPos.x + gadgetSize.x &&
+				gadgetPos.y > tempPos.y && gadgetPos.y < tempPos.y + gadgetSize.y)
 		{
 			Int closerRight = tempPos.x + gadgetSize.x - gadgetPos.x;
 			Int closerBottom = tempPos.y + gadgetSize.y - gadgetPos.y;
@@ -673,10 +705,8 @@ void positionAdditionalImages( MapMetaData *mmd, GameWindow *mapWindow, Bool for
 
 void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPositions[], GameWindow *mapWindow)
 {
-	AsciiString lowerMap = mapName;
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(mapName) : nullptr;
+	if (pMmd == nullptr)
 	{
 		mapWindow->winSetUserData(nullptr);
 
@@ -704,11 +734,15 @@ void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPosition
 	}
 	else
 	{
-		MapMetaData mmd = it->second;
+		MapMetaData mmd = *pMmd;
+		AsciiString targetMapFile = mmd.m_fileName.isEmpty() ? mapName : mmd.m_fileName;
 
-		Image *image = getMapPreviewImage(mapName);
+		Image *image = getMapPreviewImage(targetMapFile);
+		if (!image) {
+			image = getMapPreviewImage(mapName);
+		}
 		if (mapWindow != nullptr) {
-			mapWindow->winSetUserData((void *)TheMapCache->findMap(mapName));
+			mapWindow->winSetUserData((void *)pMmd);
 			if(image)
 			{
 				mapWindow->winSetStatus(WIN_STATUS_IMAGE);
@@ -785,10 +819,8 @@ void positionStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[]
 
 void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[], Bool onLoadScreen )
 {
-	AsciiString lowerMap = myGame->getMap();
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(myGame->getMap()) : nullptr;
+	if (pMmd == nullptr)
 	{
 		for (Int i = 0; i < MAX_SLOTS; ++i)
     {
@@ -799,7 +831,7 @@ void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[
     }
 		return;
 	}
-	MapMetaData mmd = it->second;
+	MapMetaData mmd = *pMmd;
 
 	Int i = 0;
 	for(; i < MAX_SLOTS; ++i)
@@ -1353,7 +1385,9 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	// set up the game speed slider
 //	NameKeyType sliderGameSpeedID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:SliderGameSpeed" );
 	GameWindow *sliderGameSpeed = TheWindowManager->winGetWindowFromId( parentSkirmishGameOptions, sliderGameSpeedID );
-	Int sliderPos = max(15,min(61,prefs.getInt("FPS", TheGlobalData->m_framesPerSecondLimit)));
+	// GeneralsX @tweak felipebraz 20/06/2026 Set up the skirmish slider to represent rendering FPS limit (30..120+)
+	GadgetSliderSetMinMax( sliderGameSpeed, 30, 121 );
+	Int sliderPos = max(30,min(121,prefs.getInt("FPS", TheGlobalData->m_framesPerSecondLimit)));
 	GadgetSliderSetPosition( sliderGameSpeed, sliderPos );
 	setFPSTextBox(sliderPos);
 	buttonStart->winSetText(TheGameText->fetch("GUI:Start"));

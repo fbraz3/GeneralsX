@@ -28,18 +28,38 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "WWLib/utf8.h"
+
 //-------------------------------------------------------------------------
 
+// GeneralsX @refactor bobtista 28/08/2026 Import portable WWLib UTF-8 conversion for GameSpy threads.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
 std::wstring MultiByteToWideCharSingleLine( const char *orig )
 {
-	Int len = strlen(orig);
-	WideChar *dest = NEW WideChar[len+1];
-
-	MultiByteToWideChar(CP_UTF8, 0, orig, -1, dest, len);
+	const size_t srcLen = strlen(orig);
+	const size_t dstLen = Utf8_To_Wide_Len(orig, srcLen);
+	if (dstLen == 0)
+		return std::wstring();
+	std::wstring ret;
+	if (dstLen == UTF8_INVALID)
+	{
+		// Not UTF-8. Fall back to a 1:1 byte cast so legacy data keeps its characters, matching
+		// UnicodeString::translate.
+		ret.resize(srcLen);
+		for (size_t i = 0; i < srcLen; ++i)
+		{
+			ret[i] = (WideChar)(unsigned char)orig[i];
+		}
+	}
+	else
+	{
+		ret.resize(dstLen);
+		Utf8_To_Wide(&ret[0], dstLen, orig, srcLen);
+	}
 	WideChar *c = nullptr;
 	do
 	{
-		c = wcschr(dest, L'\n');
+		c = wcschr(&ret[0], L'\n');
 		if (c)
 		{
 			*c = L' ';
@@ -48,7 +68,7 @@ std::wstring MultiByteToWideCharSingleLine( const char *orig )
 	while ( c != nullptr );
 	do
 	{
-		c = wcschr(dest, L'\r');
+		c = wcschr(&ret[0], L'\r');
 		if (c)
 		{
 			*c = L' ';
@@ -56,26 +76,19 @@ std::wstring MultiByteToWideCharSingleLine( const char *orig )
 	}
 	while ( c != nullptr );
 
-	dest[len] = 0;
-	std::wstring ret = dest;
-	delete[] dest;
 	return ret;
 }
 
 std::string WideCharStringToMultiByte( const WideChar *orig )
 {
+	const size_t srcLen = wcslen(orig);
+	const size_t dstLen = Wide_To_Utf8_Len(orig, srcLen);
+	if (dstLen == 0)
+		return std::string();
 	std::string ret;
-	Int len = WideCharToMultiByte( CP_UTF8, 0, orig, wcslen(orig), nullptr, 0, nullptr, nullptr ) + 1;
-	if (len > 0)
-	{
-		char *dest = NEW char[len];
-		WideCharToMultiByte( CP_UTF8, 0, orig, -1, dest, len, nullptr, nullptr );
-		dest[len-1] = 0;
-		ret = dest;
-		delete[] dest;
-	}
+	ret.resize(dstLen);
+	Wide_To_Utf8(&ret[0], dstLen, orig, srcLen);
 	return ret;
 }
 
 //-------------------------------------------------------------------------
-

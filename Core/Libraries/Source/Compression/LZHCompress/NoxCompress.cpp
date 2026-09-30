@@ -21,7 +21,6 @@
 // Author: Jeff Brown, January 1999
 
 #include <stdlib.h>
-#include "Lib/BaseTypeCore.h"
 #include "NoxCompress.h"
 #include "CompLibHeader/lzhl.h"
 
@@ -30,7 +29,7 @@
 #define NoxRead fread
 #define DbgMalloc malloc
 #define DbgFree free
-#define DEBUG_LOG(x) {}
+#define DEBUG_LOG(x)
 
 Bool DecompressFile		(char *infile, char *outfile)
 {

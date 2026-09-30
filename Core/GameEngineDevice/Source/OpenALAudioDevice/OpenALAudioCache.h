@@ -38,19 +38,17 @@ struct PlayingAudio
 	FFmpegFile* m_ffmpegFile = nullptr;
 
 	PlayingAudioType m_type;
-	AudioEventRTS* m_audioEventRTS;
+	RefCountPtr<DynamicAudioEventRTS> m_audioEventRTS;
 
 	// The created OpenAL buffer handle for this file
 	ALuint m_bufferHandle = 0;
 	Bool m_requestStop;
-	Bool m_cleanupAudioEventRTS;
 	Int m_framesFaded;
 
 	PlayingAudio() :
 		m_type(PAT_INVALID),
 		m_audioEventRTS(NULL),
 		m_requestStop(false),
-		m_cleanupAudioEventRTS(true),
 		m_source(0),
 		m_framesFaded(0)
 	{ }

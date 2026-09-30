@@ -69,6 +69,26 @@ static const char* kBaseGeneralsAssetEnv = "CNC_GENERALS_PATH";
 static const char* kBaseGeneralsAssetIniKey = "GeneralsAssetPath";
 #endif
 
+// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 True if the basename starts with "Patch" (e.g. PatchINI.big).
+static Bool isPatchArchiveFilename(const AsciiString& archivePath)
+{
+	const char* raw = archivePath.str();
+	const char* lastSlash = strrchr(raw, '/');
+	const char* lastBackslash = strrchr(raw, '\\');
+	const char* split = lastSlash;
+	if (split == nullptr || (lastBackslash != nullptr && lastBackslash > split)) {
+		split = lastBackslash;
+	}
+
+	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+
+#ifdef _WIN32
+	return _strnicmp(baseName, "Patch", 5) == 0;
+#else
+	return strncasecmp(baseName, "Patch", 5) == 0;
+#endif
+}
+
 static Bool equalsIgnoreCase(const char* lhs, const char* rhs)
 {
 	if (lhs == nullptr || rhs == nullptr) {
@@ -274,15 +294,17 @@ static Bool sanitizeConfiguredPath(const char* rawValue, AsciiString& sanitizedP
 	return sanitizedPath.isNotEmpty();
 }
 
+// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 allowPatchPrecedence must be FALSE for fallback
+// roots so their Patch*.big can't outrank content already loaded from the primary root.
 template <typename TBigFileSystem>
-static Bool tryLoadBigFiles(TBigFileSystem* fileSystem, const AsciiString& directory, const char* sourceTag, Bool overwrite = FALSE)
+static Bool tryLoadBigFiles(TBigFileSystem* fileSystem, const AsciiString& directory, const char* sourceTag, Bool overwrite = FALSE, Bool allowPatchPrecedence = TRUE)
 {
 	if (directory.isEmpty()) {
 		return FALSE;
 	}
 
 	DEBUG_LOG(("StdBIGFileSystem::init - trying '%s' assets directory: %s", sourceTag, directory.str()));
-	const Bool loaded = fileSystem->loadBigFilesFromDirectory(directory, "*.big", overwrite);
+	const Bool loaded = fileSystem->loadBigFilesFromDirectory(directory, "*.big", overwrite, allowPatchPrecedence);
 	if (loaded) {
 		DEBUG_LOG(("StdBIGFileSystem::init - loaded BIG files from %s (%s)", directory.str(), sourceTag));
 	}
@@ -429,21 +451,21 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 	// GeneralsX @feature GitHubCopilot 16/03/2026 Resolve base Generals asset directory for ZH by ENV > INI > default.
 	const char* baseEnvValue = getenv(kBaseGeneralsAssetEnv);
 	if (baseEnvValue != nullptr && baseEnvValue[0] != '\0') {
-		if (tryLoadBigFiles(fileSystem, AsciiString(baseEnvValue), "env-generals")) {
+		if (tryLoadBigFiles(fileSystem, AsciiString(baseEnvValue), "env-generals", FALSE, FALSE)) {
 			return;
 		}
 	}
 
 	const char* compatibilityBaseEnvValue = getenv("GENERALSX_GENERALS_ASSET_PATH");
 	if (compatibilityBaseEnvValue != nullptr && compatibilityBaseEnvValue[0] != '\0') {
-		if (tryLoadBigFiles(fileSystem, AsciiString(compatibilityBaseEnvValue), "env-generals-compat")) {
+		if (tryLoadBigFiles(fileSystem, AsciiString(compatibilityBaseEnvValue), "env-generals-compat", FALSE, FALSE)) {
 			return;
 		}
 	}
 
 	const char* legacyGeneralsEnvValue = getenv("CNC_GENERALS_INSTALLPATH");
 	if (legacyGeneralsEnvValue != nullptr && legacyGeneralsEnvValue[0] != '\0') {
-		if (tryLoadBigFiles(fileSystem, AsciiString(legacyGeneralsEnvValue), "legacy-env-generals")) {
+		if (tryLoadBigFiles(fileSystem, AsciiString(legacyGeneralsEnvValue), "legacy-env-generals", FALSE, FALSE)) {
 			return;
 		}
 	}
@@ -453,27 +475,27 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 
 	AsciiString iniPath;
 	if (tryResolveFromIni(exeDirectory, kBaseGeneralsAssetIniKey, iniPath)) {
-		if (tryLoadBigFiles(fileSystem, iniPath, "ini-generals")) {
+		if (tryLoadBigFiles(fileSystem, iniPath, "ini-generals", FALSE, FALSE)) {
 			return;
 		}
 	}
 
 	AsciiString installPath;
 	GetStringFromGeneralsRegistry("", "InstallPath", installPath);
-	if (tryLoadBigFiles(fileSystem, installPath, "default-registry-generals")) {
+	if (tryLoadBigFiles(fileSystem, installPath, "default-registry-generals", FALSE, FALSE)) {
 		return;
 	}
 
 	if (zhAssetDirectory.isNotEmpty()) {
 		AsciiString siblingGenerals = zhAssetDirectory;
 		siblingGenerals.concat("/../Generals");
-		if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals")) {
+		if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
 			return;
 		}
 
 		AsciiString steamGenerals = zhAssetDirectory;
 		steamGenerals.concat("/ZH_Generals");
-		if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals")) {
+		if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
 			return;
 		}
 	}
@@ -497,6 +519,7 @@ void StdBIGFileSystem::init() {
 	AsciiString primaryAssetsDirectory;
 	const Bool loadedPrimaryAssets = loadPrimaryGameAssets(this, &primaryAssetsDirectory);
 	DEBUG_ASSERTCRASH(loadedPrimaryAssets, ("No BIG files were loaded for the primary game assets."));
+	(void)loadedPrimaryAssets;
 
 	// GeneralsX @bugfix felipebraz 23/03/2026 Propagate the resolved asset root to the local file system.
 	// On Linux/macOS the binary cwd and the game data directory (asset root) are separate. Loose files like
@@ -526,8 +549,6 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	archiveFileName.toLower();
 	Int archiveFileSize = 0;
 	Int numLittleFiles = 0;
-
-	ArchiveFile *archiveFile = NEW StdBIGFile(filename, AsciiString::TheEmptyString);
 
 	DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - opening BIG file %s", filename));
 
@@ -569,7 +590,8 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	// seek to the beginning of the directory listing.
 	fp->seek(0x10, File::START);
 	// read in each directory listing.
-	ArchivedFileInfo *fileInfo = NEW ArchivedFileInfo;
+	ArchivedFileInfo fileInfo;
+	ArchiveFile *archiveFile = NEW StdBIGFile(filename, AsciiString::TheEmptyString);
 
 	for (Int i = 0; i < numLittleFiles; ++i) {
 		Int filesize = 0;
@@ -580,9 +602,9 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 		filesize = betoh(filesize);
 		fileOffset = betoh(fileOffset);
 
-		fileInfo->m_archiveFilename = archiveFileName;
-		fileInfo->m_offset = fileOffset;
-		fileInfo->m_size = filesize;
+		fileInfo.m_archiveFilename = archiveFileName;
+		fileInfo.m_offset = fileOffset;
+		fileInfo.m_size = filesize;
 
 		// read in the path name of the file.
 		Int pathIndex = -1;
@@ -596,25 +618,29 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 			--filenameIndex;
 		}
 
-		fileInfo->m_filename = (char *)(buffer + filenameIndex + 1);
-		fileInfo->m_filename.toLower();
+		fileInfo.m_filename = (char *)(buffer + filenameIndex + 1);
+		fileInfo.m_filename.toLower();
 		buffer[filenameIndex + 1] = 0;
+
+		// GeneralsX @bugfix felipebraz 16/09/2026 Skip dummy/wildcard entries (e.g. Data\* in retail PatchZH.big)
+		if (fileInfo.m_filename.isEmpty() ||
+			fileInfo.m_filename.find('*') != nullptr ||
+			fileInfo.m_filename.find('?') != nullptr) {
+			continue;
+		}
 
 		AsciiString path;
 		path = buffer;
 
 		AsciiString debugpath;
 		debugpath = path;
-		debugpath.concat(fileInfo->m_filename);
+		debugpath.concat(fileInfo.m_filename);
 //		DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - adding file %s to archive file %s, file number %d", debugpath.str(), fileInfo->m_archiveFilename.str(), i));
 
-		archiveFile->addFile(path, fileInfo);
+		archiveFile->addFile(path, &fileInfo);
 	}
 
 	archiveFile->attachFile(fp);
-
-	delete fileInfo;
-	fileInfo = nullptr;
 
 	// leave fp open as the archive file will be using it.
 
@@ -648,10 +674,37 @@ void StdBIGFileSystem::closeAllArchiveFiles() {
 void StdBIGFileSystem::closeAllFiles() {
 }
 
+Bool StdBIGFileSystem::loadOneArchiveFile(const AsciiString& archivePath, Bool overwrite)
+{
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Skip archives already loaded (e.g. a ZH_Generals
+	// fallback directory nested under the primary root gets scanned by both); reloading corrupts the tree.
+	if (m_archiveFileMap.find(archivePath) != m_archiveFileMap.end())
+		return FALSE;
+
+	ArchiveFile *archiveFile = openArchiveFile(archivePath.str());
+	if (archiveFile == nullptr) {
+		return FALSE;
+	}
+
+	DEBUG_LOG(("StdBIGFileSystem::loadBigFilesFromDirectory - loading %s into the directory tree.", archivePath.str()));
+	loadIntoDirectoryTree(archiveFile, overwrite);
+	m_archiveFileMap[archivePath] = archiveFile;
+	DEBUG_LOG(("StdBIGFileSystem::loadBigFilesFromDirectory - %s inserted into the archive file map.", archivePath.str()));
+	return TRUE;
+}
+
 Bool StdBIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite) {
+	return loadBigFilesFromDirectory(dir, fileMask, overwrite, TRUE);
+}
+
+Bool StdBIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite, Bool allowPatchPrecedence) {
 
 	FilenameList filenameList;
 	TheLocalFileSystem->getFileListInDirectory(dir, "", fileMask, filenameList, TRUE);
+
+	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 Patch*.big must win over same-named base archives
+	// within this root; allowPatchPrecedence=FALSE keeps a fallback root from outranking the primary one.
+	FilenameList patchFilenameList;
 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
@@ -666,17 +719,22 @@ Bool StdBIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString fi
 		}
 #endif
 
-		ArchiveFile *archiveFile = openArchiveFile((*it).str());
-
-		if (archiveFile != nullptr) {
-			DEBUG_LOG(("StdBIGFileSystem::loadBigFilesFromDirectory - loading %s into the directory tree.", (*it).str()));
-			loadIntoDirectoryTree(archiveFile, overwrite);
-			m_archiveFileMap[(*it)] = archiveFile;
-			DEBUG_LOG(("StdBIGFileSystem::loadBigFilesFromDirectory - %s inserted into the archive file map.", (*it).str()));
+		if (isPatchArchiveFilename(*it)) {
+			patchFilenameList.insert(*it);
+		} else if (loadOneArchiveFile(*it, overwrite)) {
 			actuallyAdded = TRUE;
 		}
 
 		it++;
+	}
+
+	FilenameListIter patchIt = patchFilenameList.begin();
+	while (patchIt != patchFilenameList.end()) {
+		if (loadOneArchiveFile(*patchIt, allowPatchPrecedence ? TRUE : overwrite)) {
+			actuallyAdded = TRUE;
+		}
+
+		patchIt++;
 	}
 
 	return actuallyAdded;

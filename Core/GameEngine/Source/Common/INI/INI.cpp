@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #define DEFINE_DEATH_NAMES
 
+#include "WWMath/wwmath.h"
 #include "Common/INI.h"
 #include "Common/INIException.h"
 
@@ -59,15 +60,18 @@
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/Weapon.h"
 
-#if __cplusplus >= 201611L && !defined(__APPLE__)
+#if __cplusplus >= 201611L
 #define USE_STD_FROM_CHARS_PARSING 1
 #else
 #define USE_STD_FROM_CHARS_PARSING 0
 #endif
 
 #if USE_STD_FROM_CHARS_PARSING
+#include <cerrno>
 #include <charconv>
+#include <cmath>
 #include <cstdlib>
+#include <limits>
 #include <string_view>
 #include <type_traits>
 #endif
@@ -190,7 +194,7 @@ INI::INI()
 }
 
 //-------------------------------------------------------------------------------------------------
-UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
+UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadType, Xfer *pXfer, LoadFlags loadFlags )
 {
 	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
 	fprintf(stderr, "[INI] loadFileDirectory('%s') START\n", fileDirName.str());
@@ -228,12 +232,13 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 	// Load any additional ini files from a "filename" directory and its subdirectories.
 	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') START\n", iniDir.str());
 	fflush(stderr);
-	filesRead += loadDirectory(iniDir, loadType, pXfer, subdirs);
+	filesRead += loadDirectory(iniDir, loadType, pXfer, loadFlags & ~LoadFlags_ExpectFileFound);
 	fprintf(stderr, "[INI] loadFileDirectory - calling loadDirectory('%s') END\n", iniDir.str());
 	fflush(stderr);
 
 	// Expect to open and load at least one file.
-	if (filesRead == 0)
+	const Bool expectFileFound = (loadFlags & LoadFlags_ExpectFileFound) != 0;
+	if (expectFileFound && filesRead == 0)
 	{
 		fprintf(stderr, "[INI] ERROR: No files read from directory '%s'\n", fileDirName.str());
 		fflush(stderr);
@@ -250,7 +255,7 @@ UnsignedInt INI::loadFileDirectory( AsciiString fileDirName, INILoadType loadTyp
 	* If we are to load subdirectories, we will load them *after* we load all the
 	* files in the current directory */
 //-------------------------------------------------------------------------------------------------
-UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, Bool subdirs )
+UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer *pXfer, LoadFlags loadFlags )
 {
 	// GeneralsX @feature BenderAI 20/02/2026 Debug hang investigation
 	fprintf(stderr, "[INI] loadDirectory('%s') START\n", dirName.str());
@@ -266,6 +271,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		throw INI_INVALID_DIRECTORY;
 	}
 
+	const Bool subdirs = (loadFlags & LoadFlags_SearchSubDirs) != 0;
 	FilenameList filenameList;
 	dirName.concat('\\');
 	TheFileSystem->getFileListInDirectory(dirName, "*.ini", filenameList, subdirs);
@@ -294,6 +300,13 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 			filesRead += load( *it, loadType, pXfer );
 		}
 		++it;
+	}
+
+	// Expect to open and load at least one file.
+	const Bool expectFileFound = (loadFlags & LoadFlags_ExpectFileFound) != 0;
+	if (expectFileFound && filesRead == 0)
+	{
+		throw INI_CANT_OPEN_FILE;
 	}
 
 	return filesRead;
@@ -441,6 +454,9 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 					try {
 						(*parse)( this );
 
+					// GeneralsX @bugfix Copilot 20/09/2026 Preserve the innermost INI field diagnostic.
+					} catch (const INIException&) {
+						throw;
 					} catch (...) {
 						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
 						char buff[1024];
@@ -867,7 +883,8 @@ AsciiString INI::getNextAsciiString()
 				result.set(buff);
 			} else {
 				Int len = strlen(buff);
-				if (len && buff[len-1] == '"') { // strip off trailing quote jba. [2/12/2003]
+				if (len && buff[len-1] == '"') {
+					// strip off trailing quote jba. [2/12/2003]
 					buff[len-1] = 0;
 				}
 				result.set(buff);
@@ -960,7 +977,7 @@ void INI::parsePercentToReal( INI* ini, void * /*instance*/, void *store, const 
 //-------------------------------------------------------------------------------------------------
 void INI::parseBitString8( INI* ini, void * /*instance*/, void *store, const void* userData )
 {
-	UnsignedInt tmp;
+	UnsignedInt tmp = *(Byte*)store;
 	INI::parseBitString32(ini, nullptr, &tmp, userData);
 	if (tmp & 0xffffff00)
 	{
@@ -1217,23 +1234,22 @@ void INI::parseICoord2D( INI* ini, void * /*instance*/, void *store, const void*
 void INI::parseDynamicAudioEventRTS( INI *ini, void * /*instance*/, void *store, const void* userData )
 {
 	const char *token = ini->getNextToken();
-	DynamicAudioEventRTS** theSound = (DynamicAudioEventRTS**)store;
+	RefCountPtr<DynamicAudioEventRTS>* theSound = (RefCountPtr<DynamicAudioEventRTS>*)store;
 
 	// translate the string into a sound
 	if (stricmp(token, "NoSound") == 0)
 	{
-		deleteInstance(*theSound);
-		*theSound = nullptr;
+		theSound->Clear();
 	}
 	else
 	{
 		if (*theSound == nullptr)
-			*theSound = newInstance(DynamicAudioEventRTS);
-		(*theSound)->m_event.setEventName(AsciiString(token));
+			*theSound = Create_No_Add_Ref(newInstance(DynamicAudioEventRTS));
+		(*theSound)->setEventName(AsciiString(token));
 	}
 
 	if (*theSound)
-		TheAudio->getInfoForAudioEvent(&(*theSound)->m_event);
+		TheAudio->getInfoForAudioEvent(theSound->Peek());
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1585,6 +1601,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 
 						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
 
+						// GeneralsX @bugfix Copilot 20/09/2026 Do not replace nested field errors with an enclosing module.
+						} catch (const INIException&) {
+							throw;
 						} catch (...) {
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
@@ -1669,11 +1688,33 @@ Type scanType(std::string_view token)
                 #if defined(__APPLE__)
                 const std::string tokenString(token);
                 char *end = nullptr;
+                errno = 0;
                 const double result = std::strtod(tokenString.c_str(), &end);
 
                 if (end == tokenString.c_str())
                 {
                         throw INI_INVALID_DATA;
+                }
+
+                if (!std::isfinite(result) && errno != ERANGE)
+                {
+                        throw INI_INVALID_DATA;
+                }
+
+                const double maxValue = static_cast<double>(std::numeric_limits<Type>::max());
+                if (result > maxValue)
+                {
+                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                static_cast<int>(token.size()), token.data());
+                        fflush(stderr);
+                        return std::numeric_limits<Type>::max();
+                }
+                if (result < -maxValue)
+                {
+                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                static_cast<int>(token.size()), token.data());
+                        fflush(stderr);
+                        return -std::numeric_limits<Type>::max();
                 }
 
                 return static_cast<Type>(result);
@@ -1683,23 +1724,118 @@ Type scanType(std::string_view token)
 
                 if (ec != std::errc{})
                 {
+                        if (ec == std::errc::result_out_of_range)
+                        {
+                                const std::string tokenString(token);
+                                char *end = nullptr;
+                                errno = 0;
+                                const double widened = std::strtod(tokenString.c_str(), &end);
+                                const double maxValue =
+                                        static_cast<double>(std::numeric_limits<Type>::max());
+
+                                if (end != tokenString.c_str() &&
+                                    !std::isfinite(widened) && errno != ERANGE)
+                                {
+                                        throw INI_INVALID_DATA;
+                                }
+
+                                if (end != tokenString.c_str() &&
+                                    widened >= -maxValue && widened <= maxValue)
+                                {
+                                        return static_cast<Type>(widened);
+                                }
+
+                                fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+                                        static_cast<int>(token.size()), token.data());
+                                fflush(stderr);
+                                if (!token.empty() && token[0] == '-')
+                                {
+                                        return -std::numeric_limits<Type>::max();
+                                }
+                                return std::numeric_limits<Type>::max();
+                        }
+
+                        // GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
+                        fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+                                static_cast<int>(token.size()), token.data(),
+                                "invalid number");
+                        fflush(stderr);
+                        throw INI_INVALID_DATA;
+                }
+
+                if (!std::isfinite(result))
+                {
                         throw INI_INVALID_DATA;
                 }
 
                 return result;
                 #endif
         }
+        else
+        {
+		// TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
+		std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
+		const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
 
-        // TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
-	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
-	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+		if (ec != std::errc{})
+		{
+			if (ec == std::errc::result_out_of_range)
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
 
-	if (ec != std::errc{})
-	{
-		throw INI_INVALID_DATA;
-	}
+				if (!token.empty() && token[0] == '-')
+				{
+					return std::numeric_limits<Type>::min();
+				}
+				return std::numeric_limits<Type>::max();
+			}
 
-	return static_cast<Type>(result);
+			// GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
+			fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+				static_cast<int>(token.size()), token.data(),
+				"invalid number");
+			fflush(stderr);
+			throw INI_INVALID_DATA;
+		}
+
+		if constexpr (std::is_unsigned_v<Type>)
+		{
+			// For unsigned integers, negative values like -1 are sentinels (~0U) and should wrap via static_cast.
+			// Positive values exceeding Type's range saturate to max.
+			if (result > static_cast<Int64>(std::numeric_limits<Type>::max()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds max value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::max();
+			}
+		}
+		else if constexpr (std::is_signed_v<Type>)
+		{
+			if (result > static_cast<Int64>(std::numeric_limits<Type>::max()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds max value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::max();
+			}
+			if (result < static_cast<Int64>(std::numeric_limits<Type>::min()))
+			{
+				// GeneralsX @bugfix fbraz 25/09/2026 Saturate overflowing integers to field limits to match retail behavior for mods (#297).
+				fprintf(stderr, "[INI] Numeric token '%.*s' exceeds min value, saturating to limit\n",
+					static_cast<int>(token.size()), token.data());
+				fflush(stderr);
+				return std::numeric_limits<Type>::min();
+			}
+		}
+
+		return static_cast<Type>(result);
+        }
 }
 
 #endif
@@ -1866,7 +2002,7 @@ void INI::parseDurationReal( INI *ini, void * /*instance*/, void *store, const v
 void INI::parseDurationUnsignedInt( INI *ini, void * /*instance*/, void *store, const void* /*userData*/ )
 {
 	UnsignedInt val = scanUnsignedInt(ini->getNextToken());
-	*(UnsignedInt *)store = (UnsignedInt)ceilf(ConvertDurationFromMsecsToFrames((Real)val));
+	*(UnsignedInt *)store = (UnsignedInt)WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)val));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1874,7 +2010,7 @@ void INI::parseDurationUnsignedInt( INI *ini, void * /*instance*/, void *store, 
 void INI::parseDurationUnsignedShort( INI *ini, void * /*instance*/, void *store, const void* /*userData*/ )
 {
 	UnsignedInt val = scanUnsignedInt(ini->getNextToken());
-	*(UnsignedShort *)store = (UnsignedShort)ceilf(ConvertDurationFromMsecsToFrames((Real)val));
+	*(UnsignedShort *)store = (UnsignedShort)WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)val));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1966,13 +2102,13 @@ void INI::parseDamageTypeFlags(INI* ini, void* /*instance*/, void* store, const 
 		}
 		if (token[0] == '+')
 		{
-			DamageType dt = (DamageType)DamageTypeFlags::getSingleBitFromName(token+1);
+			DamageType dt = (DamageType)scanIndexList(token+1, DamageTypeFlags::getBitNames());
 			flags = setDamageTypeFlag(flags, dt);
 			continue;
 		}
 		if (token[0] == '-')
 		{
-			DamageType dt = (DamageType)DamageTypeFlags::getSingleBitFromName(token+1);
+			DamageType dt = (DamageType)scanIndexList(token+1, DamageTypeFlags::getBitNames());
 			flags = clearDamageTypeFlag(flags, dt);
 			continue;
 		}

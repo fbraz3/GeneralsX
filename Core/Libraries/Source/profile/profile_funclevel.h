@@ -58,8 +58,7 @@
 #include <cstdint>
 
 // GeneralsX @bugfix fbraz 03/02/2026 Use guard macro to prevent typedef conflicts
-// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW treats __int64 as a GCC keyword; avoid redefining it.
-#ifndef _INT64_TYPES_DEFINED
+#if !defined(_MSC_VER) && !defined(_INT64_TYPES_DEFINED)
 	#define _INT64_TYPES_DEFINED
 	#ifndef __MINGW32__
 		typedef int64_t __int64;

@@ -82,6 +82,12 @@ cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+# Copy GameNetworkingSockets library (for NGMP P2P multiplayer)
+if compgen -G "${BUILD_DIR}/bin/libGameNetworkingSockets.so*" > /dev/null || compgen -G "${BUILD_DIR}/lib/libGameNetworkingSockets.so*" > /dev/null; then
+    echo "  Copying GameNetworkingSockets library..."
+    cp -v "${BUILD_DIR}"/bin/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || cp -v "${BUILD_DIR}"/lib/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+fi
+
 copy_ldd_deps() {
     local root="$1"
     [[ -e "${root}" ]] || return 0
@@ -109,30 +115,31 @@ copy_ldd_deps() {
 }
 
 # GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
+# GeneralsX @tweak Antigravity 09/07/2026 Support multiple host architectures and paths (Fedora/Red Hat, Arch, Debian/Ubuntu)
 echo "  Copying FFmpeg runtime libraries..."
 shopt -s nullglob
-ffmpeg_roots=(
-    "${FFMPEG_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_LIB_DIR}"/libswscale.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
-)
+ffmpeg_roots=()
+for dir in "${FFMPEG_LIB_DIR}" "${FFMPEG_DEP_LIB_DIR}" "/usr/lib64" "/lib64" "/usr/lib" "/lib"; do
+    ffmpeg_roots+=(
+        "${dir}"/libavcodec.so*
+        "${dir}"/libavformat.so*
+        "${dir}"/libavutil.so*
+        "${dir}"/libswresample.so*
+        "${dir}"/libswscale.so*
+    )
+done
 shopt -u nullglob
 for ffmpeg_root in "${ffmpeg_roots[@]}"; do
     cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true
     copy_ldd_deps "${ffmpeg_root}"
 done
 
-if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library: libavcodec.so*"
-    echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
-    exit 1
+if ldd "${BINARY_SRC}" | grep -q "libavcodec.so"; then
+    if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+        echo "ERROR: Missing required runtime library: libavcodec.so*"
+        echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
+        exit 1
+    fi
 fi
 
 # Set RPATH so executable finds libraries in same directory
@@ -141,6 +148,14 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsX" 2>/dev/null || {
     echo "WARNING: patchelf not found. Install with: sudo apt install patchelf"
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
+
+echo "  Deploying fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RUNTIME_DIR}/fonts/"
+fi
 
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
@@ -213,7 +228,8 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
 fi
 
 # Run game with all arguments
-exec "${SCRIPT_DIR}/GeneralsX" "$@"
+"${SCRIPT_DIR}/GeneralsX" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 EOF
 chmod +x "${RUNTIME_DIR}/run.sh"
 

@@ -130,11 +130,11 @@
 #include "assetmgr.h"
 #include "hmdldef.h"
 #include "w3derr.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "predlod.h"
 #include "rinfo.h"
-#include <win.h>
-#include "sphere.h"
+#include <WWLib/win.h>
+#include "WWMath/sphere.h"
 #include "boxrobj.h"
 
 
@@ -2057,7 +2057,7 @@ bool HLodClass::Get_Proxy (int index, ProxyClass &proxy) const
 		//	Lookup the proxy's transform
 		//
 		HTree->Base_Update(Get_Transform());
-		Matrix3D transform = HTree->Get_Transform((*ProxyArray)[index].Get_Bone_Index());
+		const Matrix3D& transform = HTree->Get_Transform((*ProxyArray)[index].Get_Bone_Index());
 		Set_Hierarchy_Valid(false);
 
 		//
@@ -2172,7 +2172,8 @@ void HLodClass::Special_Render(SpecialRenderInfoClass & rinfo)
 	Animatable3DObjClass::Special_Render(rinfo);
 
 	int lod_index = CurLod;
-	if (rinfo.RenderType == SpecialRenderInfoClass::RENDER_SHADOW) {			// (gth) HACK HACK! yikes
+	if (rinfo.RenderType == SpecialRenderInfoClass::RENDER_SHADOW) {
+		// (gth) HACK HACK! yikes
 		lod_index = LodCount-1;
 	}
 

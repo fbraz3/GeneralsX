@@ -1004,7 +1004,7 @@ void ScriptDialog::markWaypoint(MapObject *pObj)
 void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, Bool doWaypoints, Bool doTriggers)
 {
 	if (pParm->getParameterType() == Parameter::WAYPOINT && doWaypoints) {
-		AsciiString waypointName  = pParm->getString();
+		const AsciiString &waypointName  = pParm->getString();
 		MapObject *pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 			if (pObj->isWaypoint() && pObj->getWaypointName()==waypointName) {
@@ -1013,7 +1013,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::WAYPOINT_PATH && doWaypoints) {
-		AsciiString waypointPathLabel = pParm->getString();
+		const AsciiString &waypointPathLabel = pParm->getString();
 		MapObject *pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 			if (pObj->isWaypoint() ) {
@@ -1031,7 +1031,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::TEAM) {
-		AsciiString teamName  = pParm->getString();
+		const AsciiString &teamName  = pParm->getString();
 		TeamsInfo * pInfo = m_sides.findTeamInfo(teamName);
 		if (pInfo) {
 			pInfo->getDict()->setBool(TheKey_exportWithScript, true);
@@ -1048,7 +1048,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::UNIT) {
-		AsciiString unitName  = pParm->getString();
+		const AsciiString &unitName  = pParm->getString();
 		if (doUnits) {
 			MapObject *pObj;
 			for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
@@ -1421,6 +1421,9 @@ void ScriptDialog::OnLoad()
 					msg += m_readPlayerNames[i].str();
 					msg += ", discarding scripts for this player.";
 					::AfxMessageBox(msg);
+
+					deleteInstance(scripts[i]);
+					scripts[i] = nullptr;
 					continue;
 				}
 			}
@@ -1428,31 +1431,34 @@ void ScriptDialog::OnLoad()
 				curSide = 0;
 				::AfxMessageBox("Imported scripts came from more players than exist in this map.  Additional scripts moved to Neutral player.");
 			}
-			ScriptList *pSL = m_sides.getSideInfo(curSide)->getScriptList();
 
-			Script *pScr;
-			Script *pNextScr;
-			Int j=0;
-			for (pScr = scripts[i]->getScript(); pScr; pScr=pNextScr) {
-				pNextScr=pScr->getNext();
-				pScr->setNextScript(nullptr);
-				pSL->addScript(pScr, j); //unlink it and add.
-				j++;
-			}
-			j=0;
-			ScriptGroup *pGroup;
-			ScriptGroup *pNextGroup;
-			for (pGroup = scripts[i]->getScriptGroup(); pGroup; pGroup=pNextGroup) {
-				pNextGroup=pGroup->getNext();
-				pGroup->setNextGroup(nullptr);
-				pSL->addGroup(pGroup, j);
-				j++;
-			}
-			scripts[i]->discard(); /* Frees the script list, but none of it's children, as they have been
-														copied into the current scripts. */
-			scripts[i] = nullptr;
+			ScriptList *pSL = m_sides.getSideInfo(curSide)->getScriptList();
 			if (pSL) {
+				Script *pScr;
+				Script *pNextScr;
+				Int j=0;
+				for (pScr = scripts[i]->getScript(); pScr; pScr=pNextScr) {
+					pNextScr=pScr->getNext();
+					pScr->setNextScript(nullptr);
+					pSL->addScript(pScr, j); //unlink it and add.
+					j++;
+				}
+				j=0;
+				ScriptGroup *pGroup;
+				ScriptGroup *pNextGroup;
+				for (pGroup = scripts[i]->getScriptGroup(); pGroup; pGroup=pNextGroup) {
+					pNextGroup=pGroup->getNext();
+					pGroup->setNextGroup(nullptr);
+					pSL->addGroup(pGroup, j);
+					j++;
+				}
+				scripts[i]->discard(); /* Frees the script list, but none of it's children, as they have been
+															copied into the current scripts. */
+				scripts[i] = nullptr;
 				reloadPlayer(curSide, pSL);
+			} else {
+				deleteInstance(scripts[i]);
+				scripts[i] = nullptr;
 			}
 		}
 

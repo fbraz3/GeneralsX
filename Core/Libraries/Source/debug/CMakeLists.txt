@@ -32,7 +32,7 @@ if(WIN32)
     )
 
     target_precompile_headers(core_debug PRIVATE
-        [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+        [["Precompiled/BasePrecomp.h"]] # Must be first
         "debug.h"
         "internal.h"
         "internal_except.h"

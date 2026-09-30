@@ -209,7 +209,7 @@ UpdateSleepTime OCLUpdate::update()
 			// Loop through the list of faction ocls to find the matching faction that triggers the specific ocls
 			for (OCLUpdateModuleData::FactionOCLList::const_iterator it = data->m_factionOCL.begin(); it != data->m_factionOCL.end(); ++it)
 			{
-				OCLUpdateModuleData::FactionOCLInfo info = *it;
+				const OCLUpdateModuleData::FactionOCLInfo &info = *it;
 				if (playerFactionName == info.m_factionName)
 				{
 					ObjectCreationList::create( info.m_ocl, getObject(), &creationCoord, getObject()->getPosition(), getObject()->getOrientation() );
@@ -262,7 +262,12 @@ Real OCLUpdate::getCountdownPercent() const
 {
 	UnsignedInt now = TheGameLogic->getFrame();
 
-	return 1.0f - (( m_nextCreationFrame - now ) / (float)( m_nextCreationFrame - m_timerStartedFrame ));
+	UnsignedInt totalTime = m_nextCreationFrame - m_timerStartedFrame;
+	if (totalTime > 0)
+	{
+		return 1.0f - (( m_nextCreationFrame - now ) / (float)totalTime);
+	}
+	return 1.0f;
 }
 
 // ------------------------------------------------------------------------------------------------

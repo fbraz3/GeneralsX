@@ -44,6 +44,7 @@
 
 #pragma once
 
+#include "Common/AcademyStats.h"
 #include "Common/Debug.h"
 #include "Common/Energy.h"
 #include "Common/GameType.h"
@@ -147,7 +148,7 @@ struct SpecialPowerReadyTimerType
 
 
 // ------------------------------------------------------------------------------------------------
-typedef std::hash_map< PlayerIndex, Relationship, std::hash<PlayerIndex>, std::equal_to<PlayerIndex> > PlayerRelationMapType;
+typedef std::hash_map< PlayerIndex, Relationship, std::hash<PlayerIndex>, std::equal_to<PlayerIndex>/**/> PlayerRelationMapType;
 class PlayerRelationMap : public MemoryPoolObject,
 													public Snapshot
 {
@@ -334,6 +335,9 @@ public:
 	void enableFreeBuild(Bool enable) { m_DEMO_freeBuild = enable; }
 	Bool buildsForFree() const { return m_DEMO_freeBuild; }
 
+#endif
+
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	/// No time building cheat key
 	void toggleInstantBuild(){ m_DEMO_instantBuild = !m_DEMO_instantBuild; }
 	void enableInstantBuild(Bool enable) { m_DEMO_instantBuild = enable; }
@@ -521,7 +525,7 @@ public:
 	/**
 		* Iterate all objects that this player has
 		*/
-	void iterateObjects( ObjectIterateFunc func, void *userData );
+	void iterateObjects( ObjectIterateFunc func, void *userData ) const;
 
 	/**
 		return this player's "default" team.
@@ -653,6 +657,9 @@ public:
 	void setCashBounty(Real percentage) { m_cashBountyPercent = percentage; }
 	void doBountyForKill(const Object* killer, const Object* victim);
 
+	AcademyStats* getAcademyStats() { return &m_academyStats; }
+	const AcademyStats* getAcademyStats() const { return &m_academyStats; }
+
 	//Set via logical message. Options menu sets the client value in global data. Player::update()
 	//detects a change, and posts a message. When the message gets processed, this value gets set.
 	Bool isLogicalRetaliationModeEnabled() const { return m_logicalRetaliationModeEnabled; }
@@ -774,6 +781,8 @@ private:
 	PlayerRelationMap			*m_playerRelations;						///< allies & enemies
 	TeamRelationMap				*m_teamRelations;							///< allies & enemies
 
+	AcademyStats					m_academyStats;				///< Keeps track of various statistics in order to provide advice to the player about how to improve playing.
+
 	Bool									m_canBuildUnits;		///< whether the current player is allowed to build units
 	Bool									m_canBuildBase;			///< whether the current player is allowed to build Base buildings
 	Bool									m_observer;
@@ -794,6 +803,9 @@ private:
 #if defined(RTS_DEBUG)
 	Bool									m_DEMO_ignorePrereqs;		///< Can I ignore prereq checks?
 	Bool									m_DEMO_freeBuild;				///< Can I build everything for no money?
+#endif
+
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	Bool									m_DEMO_instantBuild;		///< Can I build anything in one frame?
 #endif
 

@@ -107,7 +107,7 @@ static ParkingPlaceBehaviorInterface* getPP(ObjectID id, Object** airfieldPP = n
 		*airfieldPP = nullptr;
 
 	Object* airfield = TheGameLogic->findObjectByID( id );
-	if (airfield == nullptr || airfield->isEffectivelyDead() || !airfield->isKindOf(KINDOF_AIRFIELD) || airfield->testStatus(OBJECT_STATUS_SOLD))
+	if (airfield == nullptr || airfield->isEffectivelyDead() || !airfield->isKindOf(KINDOF_FS_AIRFIELD) || airfield->testStatus(OBJECT_STATUS_SOLD))
 		return nullptr;
 
 	if (airfieldPP)
@@ -146,7 +146,7 @@ protected:
 //-------------------------------------------------------------------------------------------------
 static Object* findSuitableAirfield(Object* jet)
 {
-	PartitionFilterAcceptByKindOf					filterKind(MAKE_KINDOF_MASK(KINDOF_AIRFIELD), KINDOFMASK_NONE);
+	PartitionFilterAcceptByKindOf					filterKind(MAKE_KINDOF_MASK(KINDOF_FS_AIRFIELD), KINDOFMASK_NONE);
 	PartitionFilterRejectByObjectStatus		filterStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_UNDER_CONSTRUCTION ), OBJECT_STATUS_MASK_NONE );
 	PartitionFilterRejectByObjectStatus		filterStatusTwo( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_SOLD ), OBJECT_STATUS_MASK_NONE ); // Independent to make it an OR
 	PartitionFilterRelationship						filterTeam(jet, PartitionFilterRelationship::ALLOW_ALLIES);
@@ -216,10 +216,11 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-		{
-			// no producer? just skip this step.
+#if RETAIL_COMPATIBLE_CRC
 			return STATE_SUCCESS;
-		}
+#else
+			return STATE_FAILURE;
+#endif
 
 		// gotta reserve a space in order to reserve a runway
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), nullptr))
@@ -446,10 +447,13 @@ public:
 		jetAI->chooseLocomotorSet(LOCOMOTORSET_TAXIING);
 		DEBUG_ASSERTCRASH(jetAI->getCurLocomotor(), ("no loco"));
 
-		Object* airfield;
-		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID(), &airfield);
+		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-			return STATE_SUCCESS;	// no airfield? just skip this step.
+#if RETAIL_COMPATIBLE_CRC
+			return STATE_SUCCESS;
+#else
+			return STATE_FAILURE;
+#endif
 
 		ParkingPlaceBehaviorInterface::PPInfo ppinfo;
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), &ppinfo))
@@ -457,7 +461,7 @@ public:
 
 		Coord3D intermedPt;
 		Bool intermed = false;
-		Real orient = atan2(ppinfo.runwayPrep.y - ppinfo.parkingSpace.y, ppinfo.runwayPrep.x - ppinfo.parkingSpace.x);
+		Real orient = WWMath::Atan2Origin(ppinfo.runwayPrep.y - ppinfo.parkingSpace.y, ppinfo.runwayPrep.x - ppinfo.parkingSpace.x);
 		if (fabs(stdAngleDiff(orient, ppinfo.parkingOrientation)) > PI/128)
 		{
 			intermedPt.z = (ppinfo.parkingSpace.z + ppinfo.runwayPrep.z) * 0.5f;
@@ -585,7 +589,11 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-			return STATE_SUCCESS;	// no airfield? just skip this step
+#if RETAIL_COMPATIBLE_CRC
+			return STATE_SUCCESS;
+#else
+			return STATE_FAILURE;
+#endif
 
 		ParkingPlaceBehaviorInterface::PPInfo ppinfo;
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), &ppinfo))
@@ -808,10 +816,13 @@ public:
 		loco->setUltraAccurate(true);
 		jetAI->ignoreObstacleID(jet->getProducerID());
 
-		Object* airfield;
-		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID(), &airfield);
+		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-			return STATE_SUCCESS;	// no airfield? just skip this step
+#if RETAIL_COMPATIBLE_CRC
+			return STATE_SUCCESS;
+#else
+			return STATE_FAILURE;
+#endif
 
 		Coord3D landingApproach;
 		if (jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
@@ -884,7 +895,7 @@ public:
 		}
 		else
 		{
-			Real dist = sqrtf(dSqr);
+			Real dist = WWMath::SqrtfOrigin(dSqr);
 			if (dist<1) dist = 1;
 			pos.x += PATHFIND_CELL_SIZE_F*dx/(dist*LOGICFRAMES_PER_SECOND);
 			pos.y += PATHFIND_CELL_SIZE_F*dy/(dist*LOGICFRAMES_PER_SECOND);
@@ -1423,6 +1434,13 @@ public:
 	virtual StateReturnType update() override
 	{
 		Object* jet = getMachineOwner();
+
+#if !RETAIL_COMPATIBLE_CRC
+		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+		if (pp == nullptr)
+			return STATE_FAILURE;
+#endif
+
 		UnsignedInt now = TheGameLogic->getFrame();
 		Bool allDone = true;
 		for (Int i = 0; i < WEAPONSLOT_COUNT;	++i)
@@ -1569,8 +1587,13 @@ HeliAIStateMachine::HeliAIStateMachine(Object *owner, AsciiString name) : AIStat
 	defineState( TAKING_OFF, newInstance(HeliTakeoffOrLandingState)( this, false ), AI_IDLE, AI_IDLE );
 	defineState( LANDING_AWAIT_CLEARANCE, newInstance(SuccessState)( this ), ORIENT_FOR_PARKING_PLACE, AI_IDLE );
 	defineState( ORIENT_FOR_PARKING_PLACE, newInstance(JetOrHeliParkOrientState)( this ), LANDING, AI_IDLE );
+#if RETAIL_COMPATIBLE_CRC
 	defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, AI_IDLE );
 	defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, AI_IDLE );
+#else
+	defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, TAKING_OFF );
+	defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, TAKING_OFF );
+#endif
 	defineState( RETURN_TO_DEAD_AIRFIELD, newInstance(JetOrHeliReturningToDeadAirfieldState)( this ), CIRCLING_DEAD_AIRFIELD, RETURN_TO_DEAD_AIRFIELD );
 	defineState( CIRCLING_DEAD_AIRFIELD, newInstance(JetOrHeliCirclingDeadAirfieldState)( this ), AI_IDLE, AI_IDLE );
 	defineState( TAXI_FROM_HANGAR, newInstance(JetOrHeliTaxiState)( this, FROM_HANGAR ), AI_IDLE, AI_IDLE );
@@ -1809,9 +1832,9 @@ UpdateSleepTime JetAIUpdate::update()
 			setLastCommandSource( CMD_FROM_AI );
 			getStateMachine()->setState(RETURNING_FOR_LANDING);
 		}
-		else if (getFlag(HAS_PENDING_COMMAND)
+		else if (getFlag(HAS_PENDING_COMMAND) &&
 			// srj sez: if we are reloading ammo, wait will we are done before processing the pending command.
-			&& getStateMachine()->getCurrentStateID() != RELOAD_AMMO)
+			getStateMachine()->getCurrentStateID() != RELOAD_AMMO)
 		{
 			m_returnToBaseFrame = 0;
 
@@ -1930,11 +1953,11 @@ UpdateSleepTime JetAIUpdate::update()
 		Drawable *draw = jet->getDrawable();
 		if( draw )
 		{
-			if( getFlag(TAKEOFF_IN_PROGRESS)
-					|| getFlag(LANDING_IN_PROGRESS)
-					|| getObject()->isSignificantlyAboveTerrain()
-					|| isMoving()
-					|| isWaitingForPath() )
+			if( getFlag(TAKEOFF_IN_PROGRESS) ||
+					getFlag(LANDING_IN_PROGRESS) ||
+					getObject()->isSignificantlyAboveTerrain() ||
+					isMoving() ||
+					isWaitingForPath() )
 			{
 				if( !m_enginesOn )
 				{
@@ -1981,8 +2004,8 @@ Bool JetAIUpdate::chooseLocomotorSet(LocomotorSetType wst)
 //-------------------------------------------------------------------------------------------------
 void JetAIUpdate::setLocomotorGoalNone()
 {
-	if ((getFlag(TAKEOFF_IN_PROGRESS) || getFlag(LANDING_IN_PROGRESS))
-			&& getFlag(ALLOW_AIR_LOCO) && !getFlag(ALLOW_CIRCLING))
+	if ((getFlag(TAKEOFF_IN_PROGRESS) || getFlag(LANDING_IN_PROGRESS)) &&
+			getFlag(ALLOW_AIR_LOCO) && !getFlag(ALLOW_CIRCLING))
 	{
 		Object* jet = getObject();
 		Coord3D desiredPos = *jet->getPosition();
@@ -2070,7 +2093,7 @@ void JetAIUpdate::positionLockon()
 	Real dx = getObject()->getPosition()->x - pos.x;
 	Real dy = getObject()->getPosition()->y - pos.y;
 	if (dx || dy)
-		m_lockonDrawable->setOrientation(atan2(dy, dx));
+		m_lockonDrawable->setOrientation(WWMath::Atan2Origin(dy, dx));
 
 	// the Gaussian sum, to avoid keeping a running total:
 	//
@@ -2459,13 +2482,20 @@ void JetAIUpdate::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 2: Save engine on/off state.
+	* 3: TheSuperHackers @bugfix Save landing position.
+	*/
 // ------------------------------------------------------------------------------------------------
 void JetAIUpdate::xfer( Xfer *xfer )
 {
 
   // version
-  XferVersion currentVersion = 2;
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	XferVersion currentVersion = 2;
+#else
+	XferVersion currentVersion = 3;
+#endif
   XferVersion version = currentVersion;
   xfer->xferVersion( &version, currentVersion );
 
@@ -2517,6 +2547,10 @@ void JetAIUpdate::xfer( Xfer *xfer )
 		}
 	}
 
+	if (version >= 3)
+	{
+		xfer->xferCoord3D(&m_landingPosForHelipadStuff);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

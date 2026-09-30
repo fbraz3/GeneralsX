@@ -91,3 +91,9 @@ void BinkVideoPlayer::initializeBinkWithMiles(void)
 {
 	fprintf(stderr, "DEBUG: BinkVideoPlayer::initializeBinkWithMiles() - stub\n");
 }
+
+void BinkVideoPlayer::setVolume(Real volume)
+{
+	// Stub: video volume not supported on stub
+}
+

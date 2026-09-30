@@ -31,13 +31,17 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(_UNIX) && !defined(__APPLE__)
+#include <cxxabi.h>
+#endif
+
 #include "Common/UserPreferences.h"
 #include "Common/PlayerTemplate.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 
-#include "mutex.h"
-#include "thread.h"
+#include "WWLib/mutex.h"
+#include "WWLib/thread.h"
 
 #include "Common/SubsystemInterface.h"
 
@@ -674,7 +678,7 @@ static void getPersistentDataCallback(int localid, int profileid, persisttype_t 
 		// check if we have discons we should update on the server
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
 		DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 		Int addedInDesyncs2 = pref.getInt("0", 0);
@@ -754,7 +758,7 @@ static void setPersistentDataCallback(int localid, int profileid, persisttype_t 
 	{
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", profileid);
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", profileid);
 		DEBUG_LOG(("setPersistentDataCallback - writing stats to file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 		pref.clear();
@@ -906,7 +910,7 @@ void PSThreadClass::Thread_Function()
 					DEBUG_LOG(("Processing PSRequest::PSREQUEST_UPDATEPLAYERSTATS"));
 					UserPreferences pref;
 					AsciiString userPrefFilename;
-					userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
+					userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", MESSAGE_QUEUE->getLocalPlayerID());
 					DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 					pref.load(userPrefFilename);
 					Int addedInDesyncs2 = pref.getInt("0", 0);
@@ -1072,8 +1076,12 @@ void PSThreadClass::Thread_Function()
 
 	if (IsStatsConnected())
 		CloseStatsConnection();
+#if defined(_UNIX) && !defined(__APPLE__)
+	} catch ( abi::__forced_unwind& ) {
+		throw;
+#endif
 	} catch ( ... ) {
-		DEBUG_CRASH(("Exception in storage thread!"));
+		DEBUG_CRASH(("Exception in persistent storage thread!"));
 	}
 }
 

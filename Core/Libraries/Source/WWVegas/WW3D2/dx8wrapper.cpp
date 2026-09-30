@@ -52,7 +52,9 @@
 
 #include "dx8wrapper.h"
 // GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
+#ifndef _WIN32
 #include "module_compat.h"
+#endif
 // GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
 #ifndef _WIN32
 #include <dlfcn.h>
@@ -67,13 +69,13 @@
 #include "dx8renderer.h"
 #include "ww3d.h"
 #include "camera.h"
-#include "wwstring.h"
-#include "matrix4.h"
+#include "WWLib/wwstring.h"
+#include "WWMath/matrix4.h"
 #include "vertmaterial.h"
 #include "rddesc.h"
 #include "lightenvironment.h"
 #include "statistics.h"
-#include "registry.h"
+#include "WWLib/registry.h"
 #include "boxrobj.h"
 #include "pointgr.h"
 #include "render2d.h"
@@ -83,15 +85,15 @@
 #include "assetmgr.h"
 #include "textureloader.h"
 #include "missingtexture.h"
-#include "thread.h"
+#include "WWLib/thread.h"
 #include <d3dx8core.h>
-#include "pot.h"
-#include "wwprofile.h"
-#include "ffactory.h"
+#include "WWMath/pot.h"
+#include "WWDebug/wwprofile.h"
+#include "WWLib/ffactory.h"
 #include "dx8caps.h"
 #include "formconv.h"
 #include "dx8texman.h"
-#include "bound.h"
+#include "WWLib/bound.h"
 #include "DbgHelpGuard.h"
 
 #include "shdlib.h"
@@ -103,6 +105,58 @@ const int DEFAULT_TEXTURE_BIT_DEPTH = 16;
 const D3DMULTISAMPLE_TYPE DEFAULT_MSAA = D3DMULTISAMPLE_NONE;
 
 static D3DPRESENT_PARAMETERS _PresentParameters;
+
+// GeneralsX @bugfix Copilot 24/08/2026 Fall back through supported MSAA sample counts instead of disabling AA immediately.
+static D3DMULTISAMPLE_TYPE Normalize_MSAA_Mode(D3DMULTISAMPLE_TYPE mode)
+{
+	if (mode >= D3DMULTISAMPLE_8_SAMPLES)
+		return D3DMULTISAMPLE_8_SAMPLES;
+	if (mode >= D3DMULTISAMPLE_4_SAMPLES)
+		return D3DMULTISAMPLE_4_SAMPLES;
+	if (mode >= D3DMULTISAMPLE_2_SAMPLES)
+		return D3DMULTISAMPLE_2_SAMPLES;
+
+	return D3DMULTISAMPLE_NONE;
+}
+
+static D3DMULTISAMPLE_TYPE Get_Lower_MSAA_Mode(D3DMULTISAMPLE_TYPE mode)
+{
+	switch (mode)
+	{
+	case D3DMULTISAMPLE_8_SAMPLES:
+		return D3DMULTISAMPLE_4_SAMPLES;
+	case D3DMULTISAMPLE_4_SAMPLES:
+		return D3DMULTISAMPLE_2_SAMPLES;
+	case D3DMULTISAMPLE_2_SAMPLES:
+	default:
+		return D3DMULTISAMPLE_NONE;
+	}
+}
+
+static bool Is_MSAA_Mode_Supported(
+	IDirect3D8 *direct3D,
+	unsigned adapter,
+	D3DFORMAT backBufferFormat,
+	D3DFORMAT depthStencilFormat,
+	BOOL windowed,
+	D3DMULTISAMPLE_TYPE mode)
+{
+	if (mode == D3DMULTISAMPLE_NONE)
+		return true;
+
+	return SUCCEEDED(direct3D->CheckDeviceMultiSampleType(
+		adapter,
+		D3DDEVTYPE_HAL,
+		backBufferFormat,
+		windowed,
+		mode)) &&
+		SUCCEEDED(direct3D->CheckDeviceMultiSampleType(
+			adapter,
+			D3DDEVTYPE_HAL,
+			depthStencilFormat,
+			windowed,
+			mode));
+}
 
 // --- Pillarbox: render game to offscreen RT, blit centered onto backbuffer ---
 // GeneralsX @feature xxorza 15/04/2026 Unified pillarbox for fullscreen and windowed
@@ -168,6 +222,17 @@ bool DX8Wrapper::Pillarbox_Setup(int gameW, int gameH)
 				bbH = gameH;
 				density = 1.0f;
 			}
+		}
+	} else {
+		// GeneralsX @bugfix macOS HiDPI: the backbuffer size came from the present
+		// parameters (in physical pixels), so the density query above was skipped and
+		// s_pixelDensity would wrongly stay 1.0. Fetch it explicitly so Pillarbox_Get_Rect
+		// can convert the viewport rect back to logical points - SDL delivers mouse
+		// coordinates in points, so without this, clicks land at the wrong position.
+		int pointsW = 0, pointsH = 0;
+		float queriedDensity = 1.0f;
+		if (GetWindowSize(pointsW, pointsH, queriedDensity) && queriedDensity > 0.0f) {
+			density = queriedDensity;
 		}
 	}
 
@@ -973,7 +1038,8 @@ void DX8Wrapper::Release_Device()
 	if (D3DDevice) {
 
 		for (int a=0;a<MAX_TEXTURE_STAGES;++a)
-		{	//release references to any textures that were used in last rendering call
+		{
+			//release references to any textures that were used in last rendering call
 			DX8CALL(SetTexture(a,nullptr));
 		}
 
@@ -1354,7 +1420,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		}
 
 		if (BitDepth==32 && D3DInterface->CheckDeviceType(0,D3DDEVTYPE_HAL,desktop_mode.Format,D3DFMT_A8R8G8B8, TRUE) == D3D_OK)
-		{	//promote 32-bit modes to include destination alpha
+		{
+			//promote 32-bit modes to include destination alpha
 			_PresentParameters.BackBufferFormat = D3DFMT_A8R8G8B8;
 		}
 
@@ -1401,28 +1468,24 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	** Check the devices support for the requested MSAA mode then setup the multi sample type
 	*/
 	if (MultiSampleAntiAliasing > D3DMULTISAMPLE_NONE) {
+		const D3DMULTISAMPLE_TYPE requestedMode = MultiSampleAntiAliasing;
+		MultiSampleAntiAliasing = Normalize_MSAA_Mode(MultiSampleAntiAliasing);
 
-		HRESULT hrBack = D3DInterface->CheckDeviceMultiSampleType(
+		while (!Is_MSAA_Mode_Supported(
+			D3DInterface,
 			CurRenderDevice,
-			D3DDEVTYPE_HAL,
 			_PresentParameters.BackBufferFormat,
-			IsWindowed,
-			MultiSampleAntiAliasing
-		);
-
-		HRESULT hrDepth = D3DInterface->CheckDeviceMultiSampleType(
-			CurRenderDevice,
-			D3DDEVTYPE_HAL,
 			_PresentParameters.AutoDepthStencilFormat,
 			IsWindowed,
-			MultiSampleAntiAliasing
-		);
+			MultiSampleAntiAliasing))
+		{
+			MultiSampleAntiAliasing = Get_Lower_MSAA_Mode(MultiSampleAntiAliasing);
+		}
 
-		if (FAILED(hrBack) || FAILED(hrDepth)) {
-			// IF we fail then disable MSAA entirely.
-			// External code needs to retrieve the configured MSAA mode after device creation
-			WWDEBUG_SAY(("Requested MSAA Mode Not Supported"));
-			MultiSampleAntiAliasing = D3DMULTISAMPLE_NONE;
+		if (MultiSampleAntiAliasing != requestedMode) {
+			WWDEBUG_SAY(("Requested MSAA mode %u is unsupported; using %u",
+				(unsigned)requestedMode,
+				(unsigned)MultiSampleAntiAliasing));
 		}
 	}
 
@@ -1829,7 +1892,8 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 	}
 
 	if (bitdepth==32 && *set_colorbuffer == D3DFMT_X8R8G8B8 && D3DInterface->CheckDeviceType(0,D3DDEVTYPE_HAL,*set_colorbuffer,D3DFMT_A8R8G8B8, TRUE) == D3D_OK)
-	{	//promote 32-bit modes to include destination alpha when supported
+	{
+		//promote 32-bit modes to include destination alpha when supported
 		*set_backbuffer = D3DFMT_A8R8G8B8;
 	}
 
@@ -2382,7 +2446,7 @@ void DX8Wrapper::Draw(
 	// Debug feature to disable triangle drawing...
 	if (!_Is_Triangle_Draw_Enabled()) return;
 
-#ifdef MESH_RENDER_SNAPSHOT_ENABLED
+#ifdef DEBUG_LOGGING
 	if (WW3D::Is_Snapshot_Activated()) {
 		DWORD passes=0;		// GeneralsX @build BenderAI 10/02/2026 - Use DWORD (32-bit) instead of unsigned long (platform-dependent)
 		SNAPSHOT_SAY(("ValidateDevice:"));
@@ -2430,10 +2494,9 @@ void DX8Wrapper::Draw(
 			break;
 		}
 	}
-#endif	// MESH_RENDER_SNAPSHOT_ENABLED
-
 
 	SNAPSHOT_SAY(("DX8 - draw %d polygons (%d vertices)",polygon_count,vertex_count));
+#endif
 
 	if (vertex_count<3) {
 		min_vertex_index=0;
@@ -2606,7 +2669,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 			if (render_state_changed&mask) {
 				SNAPSHOT_SAY(("DX8 - apply light %d",index));
 				if (render_state.LightEnable[index]) {
-#ifdef MESH_RENDER_SNAPSHOT_ENABLED
+#if defined(DEBUG_CRASHING) || defined(DEBUG_LOGGING)
 					if ( WW3D::Is_Snapshot_Activated() ) {
 						D3DLIGHT8 * light = &(render_state.Lights[index]);
 						static const char * _light_types[] = { "Unknown", "Point","Spot", "Directional" };
@@ -2647,7 +2710,8 @@ void DX8Wrapper::Apply_Render_State_Changes()
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
 		for (i=0;i<MAX_VERTEX_STREAMS;++i) {
 			if (render_state.vertex_buffers[i]) {
-				switch (render_state.vertex_buffer_types[i]) {//->Type()) {
+				switch (render_state.vertex_buffer_types[i]) {
+					//->Type()) {
 				case BUFFER_TYPE_DX8:
 				case BUFFER_TYPE_DYNAMIC_DX8:
 					DX8CALL(SetStreamSource(
@@ -2678,7 +2742,8 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	if (render_state_changed&INDEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply ib change"));
 		if (render_state.index_buffer) {
-			switch (render_state.index_buffer_type) {//->Type()) {
+			switch (render_state.index_buffer_type) {
+				//->Type()) {
 			case BUFFER_TYPE_DX8:
 			case BUFFER_TYPE_DYNAMIC_DX8:
 				DX8CALL(SetIndices(

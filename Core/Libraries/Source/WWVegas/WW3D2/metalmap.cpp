@@ -50,12 +50,12 @@
 #include "texture.h"
 #include "ww3dformat.h"
 #include "ww3d.h"
-#include <vp.h>
-#include <INI.h>
-#include <Point.h>
-#include <hashtemplate.h>
-#include <wwstring.h>
-#include <wwmath.h>
+#include <WWMath/vp.h>
+#include <WWLib/INI.h>
+#include <WWLib/Point.h>
+#include <WWLib/hashtemplate.h>
+#include <WWLib/wwstring.h>
+#include <WWMath/wwmath.h>
 
 /*
 ** Class static members:

@@ -5,22 +5,13 @@ add_library(z_wwcommon INTERFACE)
 target_link_libraries(z_wwcommon INTERFACE
     core_wwcommon
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
+    milesloader
     stlport
 )
 
-# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
-    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles stubs are disabled.
-    if(TARGET milesstub)
-        target_link_libraries(z_wwcommon INTERFACE
-            milesstub
-        )
-    endif()
-endif()
 
 target_include_directories(z_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    WW3D2
 )
 
 add_subdirectory(WWAudio)
@@ -32,7 +23,6 @@ add_library(z_wwvegas INTERFACE)
 
 target_include_directories(z_wwvegas INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    WW3D2
 )
 
 target_link_libraries(z_wwvegas INTERFACE

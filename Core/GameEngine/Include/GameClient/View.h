@@ -33,7 +33,9 @@
 #include "Common/GameType.h"
 #include "Common/Snapshot.h"
 #include "Lib/BaseType.h"
+#include "WW3D2/camera.h"
 #include "WW3D2/coltype.h"			///< we don't generally do this, but we need the W3D collision types
+#include "WWMath/plane.h"
 #include "WWMath/wwmath.h"
 
 #define DEFAULT_VIEW_WIDTH 640
@@ -120,11 +122,12 @@ public:
 																				Bool (*callback)( Drawable *draw, void *userData ),
 																				void *userData ) = 0;
 
-	/** project the 4 corners of this view into the world and return each point as a parameter,
-			the world points are at the requested Z */
-	virtual void getScreenCornerWorldPointsAtZ( Coord3D *topLeft, Coord3D *topRight,
+	/// Project the 4 corners of this view into the world and return each point as a parameter,
+	/// the world points are at the requested Z. Returns whether all corner view rays intersect
+	/// with the Z plane.
+	virtual PlaneClass::IntersectionResType getScreenCornerWorldPointsAtZ( Coord3D *topLeft, Coord3D *topRight,
 																							Coord3D *bottomRight, Coord3D *bottomLeft,
-																							Real z );
+																							Real z, ViewportClass viewPort = ViewportClass() );
 
 	virtual void setWidth( Int width ) { m_width = width; }
 	virtual Int getWidth() { return m_width; }
@@ -134,6 +137,8 @@ public:
 	virtual void getOrigin( Int *x, Int *y) { *x=m_originX; *y=m_originY;}			///< Return location of top-left view corner on display
 
 	virtual void forceRedraw() = 0;
+	virtual void onHeightMapChanged() {}
+	virtual void onBridgeChanged() {}
 
 	virtual void lookAt( const Coord3D *o );														///< Center the view on the given coordinate
 	virtual void initHeightForMap() {};														///< Init the camera height for the map at the current position.
@@ -193,7 +198,7 @@ public:
 	void setPosition( const Coord3D &pos ) { m_pos = pos; }
 	void setPosition2D( const Coord2D &pos ) { m_pos.x = pos.x; m_pos.y = pos.y; }
 	const Coord3D &getPosition() const { return m_pos; } ///< Returns position camera is looking at
-	Coord2D getPosition2D() const { Coord2D c = { m_pos.x, m_pos.y }; return c; } ///< Returns position camera is looking at
+	Coord2D getPosition2D() const { return m_pos.asCoord2D(); } ///< Returns position camera is looking at
 
 	virtual Coord3D get3DCameraPosition() const { Coord3D c={0,0,0}; return c; } ///< Returns the actual camera position
 	virtual Coord3D get3DCameraDirection() const { Coord3D c={0,0,0}; return c; } ///< Returns the actual camera view direction
@@ -240,8 +245,12 @@ public:
 
   Bool worldToScreen( const Coord3D *w, ICoord2D *s ) { return worldToScreenTriReturn( w, s ) == WTS_INSIDE_FRUSTUM; }	///< Transform world coordinate "w" into screen coordinate "s"
   virtual WorldToScreenReturn worldToScreenTriReturn(const Coord3D *w, ICoord2D *s ) = 0; ///< Like worldToScreen(), but with a more informative return value
-	virtual void screenToTerrain( const ICoord2D *screen, Coord3D *world ) = 0;  ///< transform screen coord to a point on the 3D terrain
-	virtual void screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z ) = 0;  ///< transform screen point to world point at the specified world Z value
+
+	/// Transform screen point to the viewed world position on the 3D terrain. Returns true when intersection exists.
+	virtual Bool screenToTerrain( const ICoord2D *screen, Coord3D *world ) = 0;
+
+	/// Transform screen point to the viewed world position at the specified world Z height. Returns the type of the intersection.
+	virtual PlaneClass::IntersectionResType screenToWorldAtZ( const ICoord2D *screen, Coord3D *world, Real z ) = 0;
 
 	virtual void getLocation ( ViewLocation *location );								///< write the view's current location in to the view location object
 	virtual void setLocation ( const ViewLocation *location );					///< set the view's current location from to the view location object
@@ -405,8 +414,8 @@ public:
 	{
 		return WTS_INVALID;
 	}
-	virtual void screenToTerrain( const ICoord2D *screen, Coord3D *world ) override {}
-	virtual void screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z ) override {}
+	virtual Bool screenToTerrain( const ICoord2D *screen, Coord3D *world ) override { return false; }
+	virtual PlaneClass::IntersectionResType screenToWorldAtZ( const ICoord2D *screen, Coord3D *world, Real z ) override { return PlaneClass::NO_INTERSECTION; }
 	virtual void drawView() override {}
 	virtual void updateView() override {}
 	virtual void stepView() override {}

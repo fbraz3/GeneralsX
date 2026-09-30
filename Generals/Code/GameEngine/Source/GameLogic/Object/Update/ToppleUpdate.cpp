@@ -185,7 +185,7 @@ void ToppleUpdate::applyTopplingForce( const Coord3D* toppleDirection, Real topp
 	// yeah, it assumes the models are constructed appropriately, but is a cheap way
 	// of minimizing the problem. (srj)
 	Real curAngleX = normalizeAngle(getObject()->getOrientation());
-	Real toppleAngle = normalizeAngle(atan2(m_toppleDirection.y, m_toppleDirection.x));
+	Real toppleAngle = normalizeAngle(WWMath::Atan2Origin(m_toppleDirection.y, m_toppleDirection.x));
 	if (d->m_toppleLeftOrRightOnly)
 	{
 		// it's a fence or such, and can only topple left or right, so pick the closest
@@ -201,7 +201,7 @@ void ToppleUpdate::applyTopplingForce( const Coord3D* toppleDirection, Real topp
 	}
 	// desired angle is toppleAngle +/- pi/2, whichever is closer to curangle
 	Real desiredAngleX = angleClosestTo(toppleAngle + PI/2, toppleAngle - PI/2, curAngleX);
-	m_numAngleDeltaX = REAL_TO_INT_FLOOR(ANGULAR_LIMIT / (m_angularVelocity * 2));
+	m_numAngleDeltaX = REAL_TO_INT_FLOOR(WWMath::Div_FixNaN(ANGULAR_LIMIT, m_angularVelocity * 2.0f, 1.0f));
 	if (m_numAngleDeltaX < 1)
 		m_numAngleDeltaX = 1;
 	m_angleDeltaX = (desiredAngleX - curAngleX) / m_numAngleDeltaX;

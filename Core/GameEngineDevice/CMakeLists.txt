@@ -3,10 +3,10 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/MilesAudioDevice/MilesAudioManager.h
 #    Include/VideoDevice/Bink/BinkVideoPlayer.h (see GeneralsMD/Code/GameEngineDevice/Include/W3DDevice/GameClient/W3DGameClient.h createVideoPlayer)
 #    Include/W3DDevice/Common/W3DConvert.h
-#    Include/W3DDevice/Common/W3DFunctionLexicon.h
+    Include/W3DDevice/Common/W3DFunctionLexicon.h
 #    Include/W3DDevice/Common/W3DModuleFactory.h
     Include/W3DDevice/Common/W3DRadar.h
-#    Include/W3DDevice/Common/W3DThingFactory.h
+    Include/W3DDevice/Common/W3DThingFactory.h
     Include/W3DDevice/GameClient/BaseHeightMap.h
 #    Include/W3DDevice/GameClient/camerashakesystem.h
     Include/W3DDevice/GameClient/FlatHeightMap.h
@@ -37,29 +37,29 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameClient/W3DBibBuffer.h
 #    Include/W3DDevice/GameClient/W3DBridgeBuffer.h
 #    Include/W3DDevice/GameClient/W3DBufferManager.h
-#    Include/W3DDevice/GameClient/W3DCustomEdging.h
 #    Include/W3DDevice/GameClient/W3DCustomScene.h
-#    Include/W3DDevice/GameClient/W3DDebugDisplay.h
-#    Include/W3DDevice/GameClient/W3DDebugIcons.h
-#    Include/W3DDevice/GameClient/W3DDisplay.h
-#    Include/W3DDevice/GameClient/W3DDisplayString.h
-#    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
+    Include/W3DDevice/GameClient/W3DDebugDisplay.h
+    Include/W3DDevice/GameClient/W3DDebugIcons.h
+    Include/W3DDevice/GameClient/W3DDisplay.h
+    Include/W3DDevice/GameClient/W3DDisplayString.h
+    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
 #    Include/W3DDevice/GameClient/W3DDynamicLight.h
 #    Include/W3DDevice/GameClient/W3DFileSystem.h
     Include/W3DDevice/GameClient/W3DGadget.h
 #    Include/W3DDevice/GameClient/W3DGameClient.h
-#    Include/W3DDevice/GameClient/W3DGameFont.h
-#    Include/W3DDevice/GameClient/W3DGameWindow.h
-#    Include/W3DDevice/GameClient/W3DGameWindowManager.h
-#    Include/W3DDevice/GameClient/W3DGUICallbacks.h
+    Include/W3DDevice/GameClient/W3DGameFont.h
+    Include/W3DDevice/GameClient/W3DGameWindow.h
+    Include/W3DDevice/GameClient/W3DGameWindowManager.h
+    Include/W3DDevice/GameClient/W3DGUICallbacks.h
 #    Include/W3DDevice/GameClient/W3DInGameUI.h
 #    Include/W3DDevice/GameClient/W3DMirror.h
     Include/W3DDevice/GameClient/W3DMouse.h
-#    Include/W3DDevice/GameClient/W3DParticleSys.h
+    Include/W3DDevice/GameClient/W3DParticleSys.h
 #    Include/W3DDevice/GameClient/W3DPoly.h
     Include/W3DDevice/GameClient/W3DProfilerFrameCapture.h
 #    Include/W3DDevice/GameClient/W3DProjectedShadow.h
     Include/W3DDevice/GameClient/W3DPropBuffer.h
+    Include/W3DDevice/GameClient/W3DScorch.h
 #    Include/W3DDevice/GameClient/W3DRoadBuffer.h
 #    Include/W3DDevice/GameClient/W3DScene.h
     Include/W3DDevice/GameClient/W3DShaderManager.h
@@ -74,6 +74,7 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameClient/W3DTreeBuffer.h
     Include/W3DDevice/GameClient/W3DVideoBuffer.h
     Include/W3DDevice/GameClient/W3DView.h
+    Include/W3DDevice/GameClient/W3DScreenshot.h
 #    Include/W3DDevice/GameClient/W3DVolumetricShadow.h
     Include/W3DDevice/GameClient/W3DWater.h
     Include/W3DDevice/GameClient/W3DWaterTracks.h
@@ -91,11 +92,11 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/Win32Device/GameClient/Win32Mouse.h
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
 #    Source/VideoDevice/Bink/BinkVideoPlayer.cpp (Bink SDK Windows-only, using stubs)
-#    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
+    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
     Source/W3DDevice/Common/System/W3DRadar.cpp
-#    Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
-#    Source/W3DDevice/Common/Thing/W3DThingFactory.cpp
-#    Source/W3DDevice/Common/W3DConvert.cpp
+    Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
+    Source/W3DDevice/Common/Thing/W3DThingFactory.cpp
+    Source/W3DDevice/Common/W3DConvert.cpp
     Source/W3DDevice/GameClient/BaseHeightMap.cpp
     Source/W3DDevice/GameClient/CameraShakeSystem.cpp
     Source/W3DDevice/GameClient/Drawable/Draw/W3DDebrisDraw.cpp
@@ -129,12 +130,12 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/GUI/Gadget/W3DTabControl.cpp
     Source/W3DDevice/GameClient/GUI/Gadget/W3DTextEntry.cpp
     Source/W3DDevice/GameClient/GUI/Gadget/W3DVerticalSlider.cpp
-#    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DControlBar.cpp
-#    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMainMenu.cpp
-#    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMOTD.cpp
-#    Source/W3DDevice/GameClient/GUI/W3DGameFont.cpp
-#    Source/W3DDevice/GameClient/GUI/W3DGameWindow.cpp
-#    Source/W3DDevice/GameClient/GUI/W3DGameWindowManager.cpp
+    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DControlBar.cpp
+    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMainMenu.cpp
+    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMOTD.cpp
+    Source/W3DDevice/GameClient/GUI/W3DGameFont.cpp
+    Source/W3DDevice/GameClient/GUI/W3DGameWindow.cpp
+    Source/W3DDevice/GameClient/GUI/W3DGameWindowManager.cpp
     Source/W3DDevice/GameClient/HeightMap.cpp
 #    Source/W3DDevice/GameClient/Shadow/W3DBufferManager.cpp
 #    Source/W3DDevice/GameClient/Shadow/W3DProjectedShadow.cpp
@@ -146,21 +147,21 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
 #    Source/W3DDevice/GameClient/W3DBibBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DBridgeBuffer.cpp
-#    Source/W3DDevice/GameClient/W3DCustomEdging.cpp
-#    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
-#    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
-#    Source/W3DDevice/GameClient/W3DDisplay.cpp
-#    Source/W3DDevice/GameClient/W3DDisplayString.cpp
-#    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
+    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
+    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
+    Source/W3DDevice/GameClient/W3DDisplay.cpp
+    Source/W3DDevice/GameClient/W3DDisplayString.cpp
+    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
 #    Source/W3DDevice/GameClient/W3DDynamicLight.cpp
 #    Source/W3DDevice/GameClient/W3DFileSystem.cpp
 #    Source/W3DDevice/GameClient/W3DGameClient.cpp
 #    Source/W3DDevice/GameClient/W3DInGameUI.cpp
     Source/W3DDevice/GameClient/W3DMouse.cpp
-#    Source/W3DDevice/GameClient/W3DParticleSys.cpp
+    Source/W3DDevice/GameClient/W3DParticleSys.cpp
 #    Source/W3DDevice/GameClient/W3DPoly.cpp
     Source/W3DDevice/GameClient/W3DProfilerFrameCapture.cpp
     Source/W3DDevice/GameClient/W3DPropBuffer.cpp
+    Source/W3DDevice/GameClient/W3DScorch.cpp
 #    Source/W3DDevice/GameClient/W3DRoadBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DScene.cpp
     Source/W3DDevice/GameClient/W3DShaderManager.cpp
@@ -174,6 +175,8 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DTreeBuffer.cpp
     Source/W3DDevice/GameClient/W3DVideoBuffer.cpp
     Source/W3DDevice/GameClient/W3DView.cpp
+    Source/W3DDevice/GameClient/W3DScreenshot.cpp
+    Source/W3DDevice/GameClient/stb_image_write_impl.cpp
 #    Source/W3DDevice/GameClient/W3dWaypointBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DWebBrowser.cpp
     Source/W3DDevice/GameClient/Water/W3DWater.cpp
@@ -195,14 +198,19 @@ set(GAMEENGINEDEVICE_SRC
 if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
+        Include/MilesAudioDevice/MilesAudioManager.h
+        Include/VideoDevice/Bink/BinkVideoPlayer.h
+        Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
+        Source/MilesAudioDevice/MilesAudioManager.cpp
+        Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+        Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
         Source/Win32Device/Common/Win32LocalFileSystem.cpp
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
-
     # GeneralsX @build fbraz3 29/09/2026 Isolate legacy Win32 input devices when SDL3 backend is enabled
     if(NOT SAGE_USE_SDL3)
         list(APPEND GAMEENGINEDEVICE_SRC
@@ -220,6 +228,12 @@ if(WIN32)
             )
         endif()
     endif()
+else()
+    # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/StdDevice/Common/StdLANInterface.h
+        Source/StdDevice/Common/StdLANInterface.cpp
+    )
 endif()
 
 # Add C++ 17 FileSystem implementation for non-VS6 builds
@@ -248,6 +262,7 @@ target_include_directories(corei_gameenginedevice_public INTERFACE
 target_link_libraries(corei_gameenginedevice_private INTERFACE
     corei_always
     corei_main
+    stb
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
@@ -258,16 +273,10 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 if(WIN32)
     # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles/Bink stubs are disabled.
     target_link_libraries(corei_gameenginedevice_public INTERFACE
+        binkloader
         d3d8lib
+        milesloader
     )
-
-    if(TARGET binkstub)
-        target_link_libraries(corei_gameenginedevice_public INTERFACE binkstub)
-    endif()
-
-    if(TARGET milesstub)
-        target_link_libraries(corei_gameenginedevice_public INTERFACE milesstub)
-    endif()
 endif()
 
 # GeneralsX @build fbraz3 29/09/2026 Propagate SDL3 interface library to game engine device
@@ -322,6 +331,25 @@ if(SAGE_USE_OPENAL)
             message(WARNING "OpenAL audio decode requested FFmpegFile.cpp but FFmpeg was not found.")
         endif()
     endif()
+endif()
+
+# GeneralsX @feature fbraz 11/06/2026 MiniAudio audio library (alternative to OpenAL)
+# miniaudio is a single-header C library that replaces OpenAL + FFmpeg for audio decoding/playback.
+# Reference: https://miniaud.io/
+# Reference: https://github.com/feliwir/CnC_Generals_Zero_Hour (MiniAudio backend by Stephan Vedder)
+if(SAGE_USE_MINIAUDIO)
+    if(NOT TARGET miniaudio_lib)
+        message(FATAL_ERROR "SAGE_USE_MINIAUDIO is ON but miniaudio_lib target not found. Include cmake/miniaudio.cmake first.")
+    endif()
+
+    target_link_libraries(corei_gameenginedevice_public INTERFACE miniaudio_lib)
+
+    target_sources(corei_gameenginedevice_private INTERFACE
+        Include/MiniAudioDevice/MiniAudioManager.h
+        Include/MiniAudioDevice/MiniAudioStream.h
+        Source/MiniAudioDevice/MiniAudioManager.cpp
+        Source/MiniAudioDevice/MiniAudioStream.cpp
+    )
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)

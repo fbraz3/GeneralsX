@@ -344,11 +344,11 @@ void Keyboard::initKeyNames()
 	// GeneralsX @bugfix GitHub Copilot 24/05/2026 Treat HKL as an integral handle across platforms.
 	Int low = static_cast<Int>(reinterpret_cast<ULONG_PTR>(kLayout) & 0xFFFF);
 	LanguageID currentLanguage = OurLanguage;
-	if(low == 0x040c
-		 || low == 0x080c
-		 || low == 0x0c0c
-		 || low == 0x100c
-		 || low == 0x140c)
+	if(low == 0x040c ||
+		 low == 0x080c ||
+		 low == 0x0c0c ||
+		 low == 0x100c ||
+		 low == 0x140c)
 		currentLanguage = LANGUAGE_ID_FRENCH;
 
 	switch( currentLanguage )

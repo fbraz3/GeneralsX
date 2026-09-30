@@ -59,12 +59,12 @@ VoxelDebugWindowClass::VoxelDebugWindowClass(VoxelClass * vxl) :
 	_VoxelPalette[1] = RGBClass(128,255,128);
 }
 
-VoxelDebugWindowClass::~VoxelDebugWindowClass(void)
+VoxelDebugWindowClass::~VoxelDebugWindowClass()
 {
 	ReleaseISpinner(LayerSpin);
 }
 
-void VoxelDebugWindowClass::Display_Window(void)
+void VoxelDebugWindowClass::Display_Window()
 {
 	DialogBoxParam
 						(
@@ -180,7 +180,7 @@ bool VoxelDebugWindowClass::Dialog_Proc
 }
 
 
-void VoxelDebugWindowClass::update_display(void)
+void VoxelDebugWindowClass::update_display()
 {
 	int i,j;
 
@@ -215,8 +215,8 @@ void VoxelDebugWindowClass::update_display(void)
 	RECT			crect;
 
 	GetClientRect(ViewportHWND,&crect);
-	int cx = (crect.right - crect.left) / 2;
-	int cy = (crect.bottom - crect.top) / 2;
+	//int cx = (crect.right - crect.left) / 2;
+	//int cy = (crect.bottom - crect.top) / 2;
 	int x0 = 0; //cx - Bitmap->Get_Width();
 	int y0 = 0; //cy - Bitmap->Get_Height();
 	int x1 = 2 * Bitmap->Get_Width(); //cx + Bitmap->Get_Width();

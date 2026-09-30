@@ -79,7 +79,7 @@ LogDataDialogClass::LogDataDialogClass(HWND parent):
 	}
 }
 
-LogDataDialogClass::~LogDataDialogClass(void)
+LogDataDialogClass::~LogDataDialogClass()
 {
 	status = 3;
 	if (::IsWindow(Hwnd)) {
@@ -242,8 +242,6 @@ bool LogDataDialogClass::Dialog_Proc
 	LPARAM
 )
 {
-	int code = HIWORD(wParam);
-
 	switch (message )	{
 
 		/*******************************************************************

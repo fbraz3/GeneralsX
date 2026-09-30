@@ -37,9 +37,10 @@
 #include "render2dsentence.h"
 #include "surfaceclass.h"
 #include "texture.h"
-#include "wwprofile.h"
-#include "wwmemlog.h"
+#include "WWDebug/wwprofile.h"
+#include "WWDebug/wwmemlog.h"
 #include "dx8wrapper.h"
+#include "PlatformPaths.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -707,7 +708,6 @@ float FindStartingXPos( const WCHAR *text )
 void	Render2DSentenceClass::Build_Sentence_Centered (const WCHAR *text, int *hkX, int *hkY)
 {
 	float char_height = Font->Get_Char_Height ();
-	int		wordWidth = 0;
 	int notCenteredHotkeyX = 0;
 	int notCenteredHotkeyY = 0;
 	Vector2 extent = Build_Sentence_Not_Centered(text,&notCenteredHotkeyX, &notCenteredHotkeyY, TRUE); //Get_Formatted_Text_Extents(text);
@@ -1063,7 +1063,8 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 				Cursor.Y += char_height;
 			} else if (ch == 0) {
 				break;
-			} else if (wordBiggerThenLine){ // we've entered this loop because we're greater then the wordwrap so we need to force a wordwrap
+			} else if (wordBiggerThenLine){
+				// we've entered this loop because we're greater then the wordwrap so we need to force a wordwrap
 				Cursor.X = 0;
 				Cursor.Y += char_height;
 			}
@@ -1182,6 +1183,7 @@ FontCharsClass::FontCharsClass () :
 	IsBold (false)
 {
 	AlternateUnicodeFont = nullptr;
+	AlternateBrandFont = nullptr;
 	::memset( ASCIICharArray, 0, sizeof (ASCIICharArray) );
 }
 
@@ -1194,7 +1196,7 @@ FontCharsClass::FontCharsClass () :
 FontCharsClass::~FontCharsClass ()
 {
 	while ( BufferList.Count() ) {
-		delete BufferList[0];
+		delete [] BufferList[0].Buffer;
 		BufferList.Delete(0);
 	}
 
@@ -1224,6 +1226,11 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 	if ( normalized_char < 256 )
 	{
 		retval = ASCIICharArray[normalized_char];
+	}
+	// GeneralsX @feature felipebraz 26/09/2026 Route Private Use Area (Font Awesome Brand icons) to brand font
+	else if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont )
+	{
+		return AlternateBrandFont->Get_Char_Data( glyph );
 	}
  	else if ( AlternateUnicodeFont && this != AlternateUnicodeFont )
 	{
@@ -1260,6 +1267,16 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 int
 FontCharsClass::Get_Char_Width (WCHAR ch)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		return AlternateBrandFont->Get_Char_Width( glyph );
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		return AlternateUnicodeFont->Get_Char_Width( glyph );
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr ) {
 		return data->Width;
@@ -1277,6 +1294,16 @@ FontCharsClass::Get_Char_Width (WCHAR ch)
 int
 FontCharsClass::Get_Char_Spacing (WCHAR ch)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		return AlternateBrandFont->Get_Char_Spacing( glyph );
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		return AlternateUnicodeFont->Get_Char_Spacing( glyph );
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr ) {
 		if ( data->Width != 0 ) {
@@ -1296,6 +1323,18 @@ FontCharsClass::Get_Char_Spacing (WCHAR ch)
 void
 FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y)
 {
+	const uint16 normalized_char = static_cast<uint16>(ch);
+	const WCHAR glyph = static_cast<WCHAR>(normalized_char);
+
+	if ( normalized_char >= 0xE000 && normalized_char <= 0xF8FF && AlternateBrandFont && this != AlternateBrandFont ) {
+		AlternateBrandFont->Blit_Char( glyph, dest_ptr, dest_stride, x, y );
+		return;
+	}
+	if ( normalized_char >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		AlternateUnicodeFont->Blit_Char( glyph, dest_ptr, dest_stride, x, y );
+		return;
+	}
+
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
 	if ( data != nullptr && data->Width != 0 ) {
 
@@ -1320,6 +1359,72 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 			}
 			dest_ptr	+= dest_inc;
 		}
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Has_Glyph
+//
+// GeneralsX @feature felipebraz 27/09/2026 Test if font contains a valid glyph mapping
+////////////////////////////////////////////////////////////////////////////////////
+bool
+FontCharsClass::Has_Glyph (WCHAR ch) const
+{
+#if defined(_WIN32)
+	if ( MemDC == nullptr ) {
+		return false;
+	}
+	WORD glyph_index = 0;
+	if ( ::GetGlyphIndicesW( MemDC, &ch, 1, &glyph_index, GGI_MARK_NONEXISTING_GLYPHS ) == GDI_ERROR ) {
+		return false;
+	}
+	return glyph_index != 0xFFFF;
+#elif defined(SAGE_USE_FREETYPE)
+	if ( FTFace == nullptr ) {
+		return false;
+	}
+	return FT_Get_Char_Index( FTFace, ch ) != 0;
+#else
+	return false;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Update_Current_Buffer
+//
+////////////////////////////////////////////////////////////////////////////////////
+void
+FontCharsClass::Update_Current_Buffer (int char_width)
+{
+	const int char_len = char_width * CharHeight;
+
+	//
+	//	Check to see if we need to allocate a new buffer
+	//
+	bool needs_new_buffer = (BufferList.Count () == 0);
+	if (needs_new_buffer == false) {
+
+		//
+		//	Would we extend past this buffer?
+		//
+		if ( (CurrPixelOffset + char_len) > BufferList[BufferList.Count () - 1].Length ) {
+			needs_new_buffer = true;
+		}
+	}
+
+	//
+	//	Do we need to create a new surface?
+	//
+	if (needs_new_buffer)
+	{
+		// TheSuperHackers @fix arcticdolphin 07/09/2026 Length may exceed CHAR_BUFFER_LEN to fit this glyph.
+		const int length = max( (int)CHAR_BUFFER_LEN, char_len );
+		BufferList.Add( FontCharsBuffer( length, W3DNEWARRAY uint16[length] ) );
+		CurrPixelOffset = 0;
 	}
 }
 
@@ -1354,11 +1459,15 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	SIZE char_size = { 0 };
 	::GetTextExtentPoint32W( MemDC, &ch, 1, &char_size );
 	char_size.cx += PixelOverlap + xOrigin;
+
+	// GeneralsX @bugfix felipebraz 29/09/2026 Clamp to bitmap dimensions to prevent out-of-bounds reads
+	if (char_size.cx > width) char_size.cx = width;
+	if (char_size.cy > height) char_size.cy = height;
 	//
 	//	Get a pointer to the surface that this character should use
 	//
 	Update_Current_Buffer( char_size.cx );
-	uint16* curr_buffer_p = BufferList[BufferList.Count () - 1]->Buffer;
+	uint16* curr_buffer_p = BufferList[BufferList.Count () - 1].Buffer;
 	curr_buffer_p += CurrPixelOffset;
 
 	//
@@ -1432,7 +1541,7 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	FontCharsClassCharDataStruct *char_data	= W3DNEW FontCharsClassCharDataStruct;
 	char_data->Value				= ch;
 	char_data->Width				= char_size.cx;
-	char_data->Buffer				= BufferList[BufferList.Count () - 1]->Buffer + CurrPixelOffset;
+	char_data->Buffer				= BufferList[BufferList.Count () - 1].Buffer + CurrPixelOffset;
 
 	//
 	//	Insert this character into our array
@@ -1454,9 +1563,6 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	return char_data;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////
-//
 //	Create_GDI_Font
 //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1471,6 +1577,43 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 		font_name = fontToUseForGenerals;
 		doingGenerals = true;
 	}
+
+#if defined(_WIN32)
+	// GeneralsX @bugfix felipebraz 29/09/2026 Register and resolve Font Awesome Brands for Windows GDI
+	bool is_fa_brands = (font_name != nullptr && (
+		strcmp(font_name, "fa-brands-400") == 0 ||
+		strcmp(font_name, "fa-brands-400.ttf") == 0 ||
+		strcmp(font_name, "Font Awesome 6 Brands") == 0 ||
+		strcmp(font_name, "Font Awesome 6 Brands Regular") == 0 ||
+		strcmp(font_name, "FontAwesome6Brands-Regular") == 0 ||
+		strstr(font_name, "fa-brands") != nullptr ||
+		strstr(font_name, "Font Awesome 6 Brands") != nullptr ||
+		strstr(font_name, "FontAwesome6Brands") != nullptr ||
+		strstr(font_name, "Font Awesome Brands") != nullptr ||
+		strstr(font_name, "FontAwesomeBrands") != nullptr));
+
+	static bool s_brandFontRegistered = false;
+	if (is_fa_brands && !s_brandFontRegistered) {
+		const wchar_t *candidatesW[] = {
+			L"fa-brands-400.ttf",
+			L"fa-brands-400",
+			L"FontAwesome6Brands-Regular.ttf",
+			L"FontAwesome6Brands-Regular",
+			L"Font Awesome 6 Brands"
+		};
+		wchar_t font_pathW[MAX_PATH * 2] = {0};
+		if (Platform::FindLocalFontFileW(candidatesW, 5, font_pathW, sizeof(font_pathW)/sizeof(wchar_t))) {
+			int added = ::AddFontResourceExW(font_pathW, FR_PRIVATE, 0);
+			if (added > 0) {
+				s_brandFontRegistered = true;
+			}
+		}
+	}
+
+	if (is_fa_brands) {
+		font_name = "Font Awesome 6 Brands Regular";
+	}
+#endif
 
 	//
 	//	Calculate the height of the font in logical units
@@ -1540,6 +1683,29 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 	//
 	OldGDIBitmap	= (HBITMAP)::SelectObject (MemDC, GDIBitmap);
 	OldGDIFont		= (HFONT)::SelectObject (MemDC, GDIFont);
+#if defined(_WIN32)
+	if (is_fa_brands && MemDC != nullptr) {
+		WORD glyph_idx = 0;
+		WCHAR test_ch = 0xF17A; // fa-windows
+		if (::GetGlyphIndicesW(MemDC, &test_ch, 1, &glyph_idx, GGI_MARK_NONEXISTING_GLYPHS) == GDI_ERROR || glyph_idx == 0xFFFF) {
+			// If "Font Awesome 6 Brands Regular" didn't match, try "Font Awesome 6 Brands"
+			HFONT altFont = ::CreateFont(font_height, fontWidth, 0, 0, bold, italic,
+			                             FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+			                             CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+			                             VARIABLE_PITCH, "Font Awesome 6 Brands");
+			if (altFont != nullptr) {
+				::SelectObject(MemDC, altFont);
+				if (::GetGlyphIndicesW(MemDC, &test_ch, 1, &glyph_idx, GGI_MARK_NONEXISTING_GLYPHS) != GDI_ERROR && glyph_idx != 0xFFFF) {
+					::DeleteObject(GDIFont);
+					GDIFont = altFont;
+				} else {
+					::SelectObject(MemDC, GDIFont);
+					::DeleteObject(altFont);
+				}
+			}
+		}
+	}
+#endif
 	::SetBkColor (MemDC, RGB (0, 0, 0));
 	::SetTextColor (MemDC, RGB (255, 255, 255));
 
@@ -1598,100 +1764,223 @@ FontCharsClass::Free_GDI_Font ()
 
 #endif // _WIN32
 
-////////////////////////////////////////////////////////////////////////////////////
-//
-//	Update_Current_Buffer (Platform-independent text buffer management)
-//
-// GeneralsX @build fbraz 11/02/2026 - Used by both Windows GDI and Linux FreeType
-////////////////////////////////////////////////////////////////////////////////////
-void
-FontCharsClass::Update_Current_Buffer (int char_width)
-{
-	//
-	//	Check to see if we need to allocate a new buffer
-	//
-	bool needs_new_buffer = (BufferList.Count () == 0);
-	if (needs_new_buffer == false) {
 
-		//
-		//	Would we extend past this buffer?
-		//
-		if ( (CurrPixelOffset + (char_width * CharHeight)) > CHAR_BUFFER_LEN ) {
-			needs_new_buffer = true;
-		}
-	}
-
-	//
-	//	Do we need to create a new surface?
-	//
-	if (needs_new_buffer)
-	{
-		FontCharsBuffer* new_buffer = W3DNEW FontCharsBuffer;
-		BufferList.Add( new_buffer );
-		CurrPixelOffset = 0;
-	}
-
-	return ;
-}
 
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
+
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
 //	Locate_Font_FontConfig
 //
-// TheSuperHackers @feature FreeType port 10/02/2026 Locate system font using Fontconfig
+// GeneralsX @feature felipebraz 26/09/2026 Universal multi-tiered font resolution:
+// Tier 1: Probe local/bundled fonts/ directory (app bundle, game root, cwd)
+// Tier 2: System Fontconfig match (desktop Linux/macOS)
+// Tier 3: Guaranteed fallback to bundled Arial (Liberation Sans)
 ////////////////////////////////////////////////////////////////////////////////////
 const char *
 FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 {
-	//
-	//	Initialize Fontconfig library
-	//
-	FcConfig *config = FcInitLoadConfigAndFonts();
-	if ( config == nullptr ) {
+	if ( font_name == nullptr || font_name[0] == '\0' ) {
 		return nullptr;
 	}
 
 	//
-	//	Create a pattern for the requested font
+	// Normalize font name (lowercase, strip spaces, hyphens, and underscores)
 	//
-	FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
-	if ( pattern == nullptr ) {
-		FcConfigDestroy( config );
-		return nullptr;
-	}
-
-	//
-	//	Configure the pattern
-	//
-	FcConfigSubstitute( config, pattern, FcMatchPattern );
-	FcDefaultSubstitute( pattern );
-
-	//
-	//	Find the best match
-	//
-	FcResult result = FcResultNoMatch;
-	FcPattern *font = FcFontMatch( config, pattern, &result );
-
-	const char *font_path = nullptr;
-	if ( font != nullptr && result == FcResultMatch ) {
-		//
-		//	Extract the font file path
-		//
-		FcChar8 *file_path = nullptr;
-		if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch ) {
-			FreetypeFontPath = (const char*)file_path;
-			font_path = FreetypeFontPath;
+	char normalized[128];
+	int n = 0;
+	for ( const char *p = font_name; *p != '\0' && n < (int)sizeof(normalized) - 1; ++p ) {
+		if ( *p == ' ' || *p == '-' || *p == '_' ) {
+			continue;
 		}
+		normalized[n++] = (char)tolower( (unsigned char)*p );
+	}
+	normalized[n] = '\0';
 
-		FcPatternDestroy( font );
+	// Map "generals" to "arial"
+	if ( strcmp( normalized, "generals" ) == 0 ) {
+		strncpy( normalized, "arial", sizeof(normalized) - 1 );
+		normalized[sizeof(normalized) - 1] = '\0';
 	}
 
-	FcPatternDestroy( pattern );
-	FcConfigDestroy( config );
+	//
+	// Prepare candidate names based on requested font and bold status
+	//
+	bool is_bold = this->IsBold || (strstr( font_name, "Bold" ) != nullptr) || (strstr( font_name, "bold" ) != nullptr);
 
-	return font_path;
+	const char *candidates[12];
+	int candidate_count = 0;
+
+	char bold_candidate[140];
+	if ( is_bold && !strstr( normalized, "bold" ) ) {
+		snprintf( bold_candidate, sizeof(bold_candidate), "%sbold", normalized );
+		candidates[candidate_count++] = bold_candidate;
+	}
+
+	candidates[candidate_count++] = normalized;
+
+	// Add common Liberation and standard aliases (exact normalized matches)
+	// GeneralsX @bugfix felipebraz 26/09/2026 Use exact alias checks to prevent matching wide-coverage fonts like Arial Unicode MS
+	bool is_arial = (strcmp( normalized, "arial" ) == 0 ||
+					 strcmp( normalized, "arialbold" ) == 0 ||
+					 strcmp( normalized, "generals" ) == 0 ||
+					 strcmp( normalized, "generalsbold" ) == 0 ||
+					 strcmp( normalized, "liberationsans" ) == 0 ||
+					 strcmp( normalized, "liberationsansbold" ) == 0);
+
+	bool is_times = (strcmp( normalized, "times" ) == 0 ||
+					 strcmp( normalized, "timesbold" ) == 0 ||
+					 strcmp( normalized, "timesnewroman" ) == 0 ||
+					 strcmp( normalized, "timesnewromanbold" ) == 0 ||
+					 strcmp( normalized, "liberationserif" ) == 0 ||
+					 strcmp( normalized, "liberationserifbold" ) == 0);
+
+	bool is_courier = (strcmp( normalized, "courier" ) == 0 ||
+					   strcmp( normalized, "courierbold" ) == 0 ||
+					   strcmp( normalized, "couriernew" ) == 0 ||
+					   strcmp( normalized, "couriernewbold" ) == 0 ||
+					   strcmp( normalized, "liberationmono" ) == 0 ||
+					   strcmp( normalized, "liberationmonobold" ) == 0);
+
+	// GeneralsX @feature felipebraz 26/09/2026 Font Awesome 6 Brands font resolution
+	bool is_fa_brands = (strcmp( normalized, "fontawesome6brands" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brands.ttf" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brandsregular" ) == 0 ||
+	                     strcmp( normalized, "fontawesome6brandsregular.ttf" ) == 0 ||
+	                     strcmp( normalized, "fontawesomebrands" ) == 0 ||
+	                     strcmp( normalized, "fontawesomebrands.ttf" ) == 0 ||
+	                     strcmp( normalized, "fabrands400" ) == 0 ||
+	                     strcmp( normalized, "fabrands400.ttf" ) == 0 ||
+	                     strcmp( normalized, "fabrands" ) == 0 ||
+	                     strcmp( normalized, "fabrands.ttf" ) == 0);
+
+	if ( is_arial ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationSans-Bold";
+			candidates[candidate_count++] = "liberationsans-bold";
+		}
+		candidates[candidate_count++] = "LiberationSans-Regular";
+		candidates[candidate_count++] = "liberationsans-regular";
+		candidates[candidate_count++] = "LiberationSans";
+	} else if ( is_times ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationSerif-Bold";
+			candidates[candidate_count++] = "liberationserif-bold";
+		}
+		candidates[candidate_count++] = "LiberationSerif-Regular";
+		candidates[candidate_count++] = "liberationserif-regular";
+		candidates[candidate_count++] = "LiberationSerif";
+	} else if ( is_courier ) {
+		if ( is_bold ) {
+			candidates[candidate_count++] = "LiberationMono-Bold";
+			candidates[candidate_count++] = "liberationmono-bold";
+		}
+		candidates[candidate_count++] = "LiberationMono-Regular";
+		candidates[candidate_count++] = "liberationmono-regular";
+		candidates[candidate_count++] = "LiberationMono";
+	} else if ( is_fa_brands ) {
+		candidates[candidate_count++] = "fa-brands-400";
+		candidates[candidate_count++] = "fa-brands-400.ttf";
+		candidates[candidate_count++] = "FontAwesome6Brands-Regular";
+		candidates[candidate_count++] = "Font Awesome 6 Brands";
+		candidates[candidate_count++] = "Font Awesome 6 Brands Regular";
+	}
+
+	//
+	// Tier 1: Probe local candidate font files via platform abstraction
+	// GeneralsX @refactor felipebraz 26/09/2026 Encapsulate font probing in platform layer
+	//
+	char candidate_path[1024];
+	if ( Platform::FindLocalFontFile( candidates, candidate_count, candidate_path, sizeof(candidate_path) ) ) {
+		FreetypeFontPath = candidate_path;
+		return FreetypeFontPath;
+	}
+
+	//
+	// Tier 2: System Fontconfig match (desktop Linux/macOS)
+	//
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+	FcConfig *config = FcInitLoadConfigAndFonts();
+	if ( config != nullptr ) {
+		FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
+		if ( pattern != nullptr ) {
+			FcConfigSubstitute( config, pattern, FcMatchPattern );
+			FcDefaultSubstitute( pattern );
+
+			FcResult result = FcResultNoMatch;
+			FcPattern *font = FcFontMatch( config, pattern, &result );
+			if ( font != nullptr && result == FcResultMatch ) {
+				// GeneralsX @bugfix felipebraz 27/09/2026 Guard brand queries against generic sans fallbacks from FcFontMatch
+				bool match_valid = true;
+				if ( is_fa_brands ) {
+					FcChar8 *family = nullptr;
+					if ( FcPatternGetString( font, FC_FAMILY, 0, &family ) == FcResultMatch && family != nullptr ) {
+						if ( strstr( (const char*)family, "Font Awesome" ) == nullptr &&
+							 strstr( (const char*)family, "FontAwesome" ) == nullptr &&
+							 strstr( (const char*)family, "Brands" ) == nullptr ) {
+							match_valid = false;
+						}
+					} else {
+						match_valid = false;
+					}
+				}
+
+				if ( match_valid ) {
+					FcChar8 *file_path = nullptr;
+					if ( FcPatternGetString( font, FC_FILE, 0, &file_path ) == FcResultMatch && file_path != nullptr ) {
+						if ( Platform::IsFileReadable( (const char*)file_path ) ) {
+							FreetypeFontPath = (const char*)file_path;
+							FcPatternDestroy( font );
+							FcPatternDestroy( pattern );
+							FcConfigDestroy( config );
+							return FreetypeFontPath;
+						}
+					}
+				}
+				FcPatternDestroy( font );
+			}
+			FcPatternDestroy( pattern );
+		}
+		FcConfigDestroy( config );
+	}
+#endif
+
+	//
+	// Tier 3: Universal fallback to bundled Arial/Liberation font for recognized core UI fonts
+	// GeneralsX @bugfix felipebraz 26/09/2026 Guard Tier 3 so unresolved Unicode/CJK fonts return nullptr and allow caller fallback delegation
+	//
+	if ( is_arial || is_times || is_courier ) {
+		static const char *fallback_names_bold[] = {
+			"arialbold.ttf",
+			"arial.ttf",
+			"LiberationSans-Bold.ttf",
+			"LiberationSans-Regular.ttf"
+		};
+		static const char *fallback_names_reg[] = {
+			"arial.ttf",
+			"LiberationSans-Regular.ttf"
+		};
+		const char *const *fnames = is_bold ? fallback_names_bold : fallback_names_reg;
+		int fcount = is_bold ? 4 : 2;
+		if ( Platform::FindLocalFontFile( fnames, fcount, candidate_path, sizeof(candidate_path) ) ) {
+			fprintf( stderr, "[Font] Note: Font '%s' not found; falling back to bundled '%s'\n", font_name, candidate_path );
+			fflush( stderr );
+			FreetypeFontPath = candidate_path;
+			return FreetypeFontPath;
+		}
+	}
+
+	fprintf( stderr, "[Font] WARNING: Unable to resolve font '%s' (all tiers exhausted)\n", font_name );
+	fflush( stderr );
+	return nullptr;
 }
 
 
@@ -1836,13 +2125,19 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	//	Calculate character width (advance + overlap)
 	//
-	unsigned int char_width = glyph->advance.x >> 6;
+	int char_width = static_cast<int>(glyph->advance.x >> 6);
 
 	//
 	//	Sometimes bitmap is wider than advancement (fix it)
 	//
-	if ( char_width < glyph->bitmap.width + glyph->bitmap_left ) {
-		char_width = glyph->bitmap.width + glyph->bitmap_left;
+	// GeneralsX @bugfix fbraz3 12/09/2026 bitmap_left is signed and negative for combining marks
+	// (e.g. U+0303); the old unsigned add wrapped to ~4 billion and corrupted the buffer index below.
+	int bitmap_extent = static_cast<int>(glyph->bitmap.width) + glyph->bitmap_left;
+	if ( char_width < bitmap_extent ) {
+		char_width = bitmap_extent;
+	}
+	if ( char_width < 0 ) {
+		char_width = 0;
 	}
 	char_width += PixelOverlap + x_pos;
 
@@ -1850,7 +2145,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//	Get a pointer to the buffer for this character (allocates if needed)
 	//
 	Update_Current_Buffer( char_width );
-	uint16 *curr_buffer_p = BufferList[BufferList.Count() - 1]->Buffer;
+	uint16 *curr_buffer_p = BufferList[BufferList.Count() - 1].Buffer;
 	curr_buffer_p += CurrPixelOffset;
 
 	//
@@ -1869,11 +2164,19 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	//
 	//	Copy FreeType bitmap to our buffer (convert 8-bit gray → 16-bit format)
 	//
+	// GeneralsX @bugfix fbraz3 13/09/2026 Clip columns so a wide glyph with negative bitmap_left
+	// (combining marks) never writes past this character's slot into the next one.
+	const int skip_cols = (glyph->bitmap_left < 0) ? -glyph->bitmap_left : 0;
+	const int max_cols = char_width - x_offset;
 	for ( unsigned int row = 0; row < glyph->bitmap.rows; row++ ) {
+		// GeneralsX @bugfix felipebraz 26/09/2026 Guard row write bounds against CharHeight
+		if ( (y_offset + static_cast<int>(row)) >= CharHeight ) {
+			break;
+		}
 		int src_index = row * glyph->bitmap.pitch;
 		int dst_index = (y_offset + row) * char_width;
 
-		for ( unsigned int col = 0; col < glyph->bitmap.width; col++ ) {
+		for ( int col = skip_cols; col < static_cast<int>(glyph->bitmap.width) && (col - skip_cols) < max_cols; col++ ) {
 			//
 			//	Get 8-bit grayscale pixel
 			//
@@ -1889,7 +2192,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 			//	SAME FORMAT AS GDI IMPLEMENTATION
 			//
 			uint8 alpha_value = (pixel_value >> 4) & 0xF;
-			curr_buffer_p[dst_index + x_offset + col] = pixel_color | (alpha_value << 12);
+			curr_buffer_p[dst_index + x_offset + (col - skip_cols)] = pixel_color | (alpha_value << 12);
 		}
 	}
 
@@ -1899,7 +2202,7 @@ FontCharsClass::Store_Freetype_Char (WCHAR ch)
 	FontCharsClassCharDataStruct *char_data = W3DNEW FontCharsClassCharDataStruct;
 	char_data->Value = ch;
 	char_data->Width = (short)char_width;
-	char_data->Buffer = BufferList[BufferList.Count() - 1]->Buffer + CurrPixelOffset;
+	char_data->Buffer = BufferList[BufferList.Count() - 1].Buffer + CurrPixelOffset;
 
 	//
 	//	Insert into character array (ASCII or Unicode)

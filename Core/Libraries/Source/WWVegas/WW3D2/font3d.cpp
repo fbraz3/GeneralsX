@@ -41,10 +41,10 @@
 #include "assetmgr.h"
 #include "texture.h"
 #include <assert.h>
-#include <wwdebug.h>
+#include <WWDebug/wwdebug.h>
 #include "surfaceclass.h"
 #include "texture.h"
-#include "vector2i.h"
+#include "WWMath/vector2i.h"
 
 static	SurfaceClass	*_surface;
 

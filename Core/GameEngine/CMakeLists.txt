@@ -1,5 +1,5 @@
 set(GAMEENGINE_SRC
-#    Include/Common/AcademyStats.h
+    Include/Common/AcademyStats.h
 #    Include/Common/ActionManager.h
     Include/Common/AddonCompat.h
     Include/Common/ArchiveFile.h
@@ -13,26 +13,26 @@ set(GAMEENGINE_SRC
     Include/Common/AudioRequest.h
     Include/Common/AudioSettings.h
 #    Include/Common/BattleHonors.h
-#    Include/Common/BezFwdIterator.h
-#    Include/Common/BezierSegment.h
+    Include/Common/BezFwdIterator.h
+    Include/Common/BezierSegment.h
 #    Include/Common/BitFlags.h
 #    Include/Common/BitFlagsIO.h
 #    Include/Common/BorderColors.h
 #    Include/Common/BuildAssistant.h
 #    Include/Common/ClientUpdateModule.h
-#    Include/Common/CommandLine.h
+    Include/Common/CommandLine.h
     Include/Common/crc.h
     Include/Common/CRCDebug.h
 #    Include/Common/CriticalSection.h
 #    Include/Common/CustomMatchPreferences.h
-#    Include/Common/DamageFX.h
+    Include/Common/DamageFX.h
 #    Include/Common/DataChunk.h
     Include/Common/Debug.h
     Include/Common/Diagnostic/SimulationMathCrc.h
-#    Include/Common/Dict.h
+    Include/Common/Dict.h
 #    Include/Common/Directory.h
 #    Include/Common/DisabledTypes.h
-#    Include/Common/DiscreteCircle.h
+    Include/Common/DiscreteCircle.h
 #    Include/Common/DrawModule.h
     Include/Common/DynamicAudioEventInfo.h
 #    Include/Common/encrypt.h
@@ -64,16 +64,16 @@ set(GAMEENGINE_SRC
 #    Include/Common/INIException.h
 #    Include/Common/KindOf.h
 #    Include/Common/LadderPreferences.h
-#    Include/Common/Language.h
+    Include/Common/Language.h
 #    Include/Common/LatchRestore.h
 #    Include/Common/List.h
     Include/Common/LocalFile.h
     Include/Common/LocalFileSystem.h
     Include/Common/MapObject.h
-#    Include/Common/MapReaderWriterInfo.h
-#    Include/Common/MessageStream.h
+    Include/Common/MapReaderWriterInfo.h
+    Include/Common/MessageStream.h
     Include/Common/MiniDumper.h
-#    Include/Common/MiniLog.h
+    Include/Common/MiniLog.h
     Include/Common/MiscAudio.h
 #    Include/Common/MissionStats.h
 #    Include/Common/ModelState.h
@@ -89,7 +89,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/Override.h
 #    Include/Common/PartitionSolver.h
 #    Include/Common/PerfMetrics.h
-#    Include/Common/PerfTimer.h
+    Include/Common/PerfTimer.h
 #    Include/Common/Player.h
 #    Include/Common/PlayerList.h
 #    Include/Common/PlayerTemplate.h
@@ -122,39 +122,40 @@ set(GAMEENGINE_SRC
     Include/Common/SubsystemInterface.h
 #    Include/Common/Team.h
 #    Include/Common/Terrain.h
-#    Include/Common/TerrainTypes.h
+    Include/Common/TerrainTypes.h
 #    Include/Common/Thing.h
 #    Include/Common/ThingFactory.h
 #    Include/Common/ThingSort.h
-#    Include/Common/ThingTemplate.h
+    Include/Common/ThingTemplate.h
 #    Include/Common/TunnelTracker.h
     Include/Common/UnicodeString.h
 #    Include/Common/UnitTimings.h
 #    Include/Common/Upgrade.h
     #Include/Common/urllaunch.h # unused
     Include/Common/UserPreferences.h
-#    Include/Common/version.h
+    Include/Common/version.h
 #    Include/Common/WellKnownKeys.h
     Include/Common/WorkerProcess.h
+    Include/Common/WorkingDirectory.h
     Include/Common/Xfer.h
     Include/Common/XferCRC.h
     Include/Common/XferDeepCRC.h
     Include/Common/XferLoad.h
     Include/Common/XferSave.h
     Include/GameClient/Anim2D.h
-#    Include/GameClient/AnimateWindowManager.h
+    Include/GameClient/AnimateWindowManager.h
 #    Include/GameClient/CampaignManager.h
     Include/GameClient/ChallengeGenerals.h
     Include/GameClient/ClientInstance.h
     Include/GameClient/ClientRandomValue.h
     Include/GameClient/Color.h
-#    Include/GameClient/CommandXlat.h
-#    Include/GameClient/ControlBar.h
-#    Include/GameClient/ControlBarResizer.h
-#    Include/GameClient/ControlBarScheme.h
+    Include/GameClient/CommandXlat.h
+    Include/GameClient/ControlBar.h
+    Include/GameClient/ControlBarResizer.h
+    Include/GameClient/ControlBarScheme.h
     Include/GameClient/Credits.h
     Include/GameClient/DebugDisplay.h
-#    Include/GameClient/Diplomacy.h
+    Include/GameClient/Diplomacy.h
 #    Include/GameClient/DisconnectMenu.h
     Include/GameClient/Display.h
     Include/GameClient/DisplayString.h
@@ -162,9 +163,9 @@ set(GAMEENGINE_SRC
 #    Include/GameClient/Drawable.h
 #    Include/GameClient/DrawableInfo.h
     Include/GameClient/DrawGroupInfo.h
-#    Include/GameClient/EstablishConnectionsMenu.h
+    Include/GameClient/EstablishConnectionsMenu.h
 #    Include/GameClient/Eva.h
-#    Include/GameClient/ExtendedMessageBox.h
+    Include/GameClient/ExtendedMessageBox.h
 #    Include/GameClient/FontDesc.h
     Include/GameClient/FXList.h
     Include/GameClient/Gadget.h
@@ -184,44 +185,46 @@ set(GAMEENGINE_SRC
     Include/GameClient/GameText.h
     Include/GameClient/GameWindow.h
     Include/GameClient/GameWindowGlobal.h
-#    Include/GameClient/GameWindowID.h
-#    Include/GameClient/GameWindowManager.h
+    Include/GameClient/GameWindowID.h
+    Include/GameClient/GameWindowManager.h
     Include/GameClient/GameWindowTransitions.h
     Include/GameClient/GlobalLanguage.h
     Include/GameClient/GraphDraw.h
 #    Include/GameClient/GUICallbacks.h
-#    Include/GameClient/GUICommandTranslator.h
+    Include/GameClient/GUICommandTranslator.h
     Include/GameClient/HeaderTemplate.h
-#    Include/GameClient/HintSpy.h
-#    Include/GameClient/HotKey.h
+    Include/GameClient/HintSpy.h
+    Include/GameClient/HotKey.h
     Include/GameClient/Image.h
     Include/GameClient/IMEManager.h
 #    Include/GameClient/InGameUI.h
+    Include/GameClient/Intro.h
     Include/GameClient/Keyboard.h
 #    Include/GameClient/KeyDefs.h
     Include/GameClient/LanguageFilter.h
     Include/GameClient/Line2D.h
     Include/GameClient/LoadScreen.h
-#    Include/GameClient/LookAtXlat.h
+    Include/GameClient/LookAtXlat.h
     Include/GameClient/MapUtil.h
-#    Include/GameClient/MessageBox.h
-#    Include/GameClient/MetaEvent.h
+    Include/GameClient/MessageBox.h
+    Include/GameClient/MetaEvent.h
     Include/GameClient/Module/AnimatedParticleSysBoneClientUpdate.h
     Include/GameClient/Module/BeaconClientUpdate.h
     Include/GameClient/Module/SwayClientUpdate.h
     Include/GameClient/Mouse.h
     Include/GameClient/ParabolicEase.h
     Include/GameClient/ParticleSys.h
-#    Include/GameClient/PlaceEventTranslator.h
+    Include/GameClient/PlaceEventTranslator.h
     Include/GameClient/ProcessAnimateWindow.h
     Include/GameClient/RadiusDecal.h
     Include/GameClient/RayEffect.h
+    Include/GameClient/SaveLoadFeedback.h
     Include/GameClient/SelectionInfo.h
-#    Include/GameClient/SelectionXlat.h
+    Include/GameClient/SelectionXlat.h
 #    Include/GameClient/Shadow.h
-#    Include/GameClient/Shell.h
-#    Include/GameClient/ShellHooks.h
-#    Include/GameClient/ShellMenuScheme.h
+    Include/GameClient/Shell.h
+    Include/GameClient/ShellHooks.h
+    Include/GameClient/ShellMenuScheme.h
     Include/GameClient/Smudge.h
     Include/GameClient/Snow.h
     Include/GameClient/Statistics.h
@@ -232,7 +235,7 @@ set(GAMEENGINE_SRC
     Include/GameClient/Water.h
     Include/GameClient/WindowLayout.h
     Include/GameClient/WindowVideoManager.h
-#    Include/GameClient/WindowXlat.h
+    Include/GameClient/WindowXlat.h
     Include/GameClient/WinInstanceData.h
 #    Include/GameLogic/AI.h
 #    Include/GameLogic/AIDock.h
@@ -252,6 +255,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/FiringTracker.h
 #    Include/GameLogic/FPUControl.h
 #    Include/GameLogic/GameLogic.h
+    Include/GameLogic/GameMode.h
 #    Include/GameLogic/GhostObject.h
 #    Include/GameLogic/Locomotor.h
 #    Include/GameLogic/LocomotorSet.h
@@ -483,17 +487,25 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/ObjectIter.h
 #    Include/GameLogic/ObjectScriptStatusBits.h
 #    Include/GameLogic/ObjectTypes.h
+     Include/GameLogic/Pathfinder/Path.h
+     Include/GameLogic/Pathfinder/PathfindCell.h
+     Include/GameLogic/Pathfinder/PathfindCellInfo.h
+     Include/GameLogic/Pathfinder/PathfindCellList.h
+     Include/GameLogic/Pathfinder/PathfindLayer.h
+     Include/GameLogic/Pathfinder/PathfindZoneManager.h
+     Include/GameLogic/Pathfinder/PathNode.h
+     Include/GameLogic/Pathfinder/ZoneBlock.h
 #    Include/GameLogic/PartitionManager.h
-#    Include/GameLogic/PolygonTrigger.h
+    Include/GameLogic/PolygonTrigger.h
 #    Include/GameLogic/Powers.h
     Include/GameLogic/RankInfo.h
 #    Include/GameLogic/ScriptActions.h
 #    Include/GameLogic/ScriptConditions.h
 #    Include/GameLogic/ScriptEngine.h
 #    Include/GameLogic/Scripts.h
-#    Include/GameLogic/SidesList.h
+    Include/GameLogic/SidesList.h
 #    Include/GameLogic/Squad.h
-#    Include/GameLogic/TerrainLogic.h
+    Include/GameLogic/TerrainLogic.h
 #    Include/GameLogic/TurretAI.h
 #    Include/GameLogic/VictoryConditions.h
 #    Include/GameLogic/Weapon.h
@@ -538,6 +550,7 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/LANAPI.h
     Include/GameNetwork/LANAPICallbacks.h
     Include/GameNetwork/LANGameInfo.h
+    Include/GameNetwork/LANInterfaceDevice.h
     Include/GameNetwork/LANPlayer.h
     Include/GameNetwork/NAT.h
     Include/GameNetwork/NetCommandList.h
@@ -555,7 +568,7 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/User.h
     Include/GameNetwork/WOLBrowser/FEBDispatch.h
     Include/GameNetwork/WOLBrowser/WebBrowser.h
-#    Include/Precompiled/PreRTS.h
+    Include/Precompiled/PreRTS.h
     Source/Common/AddonCompat.cpp
     Source/Common/Audio/AudioEventRTS.cpp
     Source/Common/Audio/AudioRequest.cpp
@@ -565,16 +578,16 @@ set(GAMEENGINE_SRC
     Source/Common/Audio/GameSounds.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
     #Source/Common/Audio/urllaunch.cpp # unused
-#    Source/Common/Bezier/BezFwdIterator.cpp
-#    Source/Common/Bezier/BezierSegment.cpp
+    Source/Common/Bezier/BezFwdIterator.cpp
+    Source/Common/Bezier/BezierSegment.cpp
 #    Source/Common/BitFlags.cpp
-#    Source/Common/CommandLine.cpp
+    Source/Common/CommandLine.cpp
     Source/Common/crc.cpp
     Source/Common/CRCDebug.cpp
-#    Source/Common/DamageFX.cpp
+    Source/Common/DamageFX.cpp
     Source/Common/Diagnostic/SimulationMathCrc.cpp
-#    Source/Common/Dict.cpp
-#    Source/Common/DiscreteCircle.cpp
+    Source/Common/Dict.cpp
+    Source/Common/DiscreteCircle.cpp
     Source/Common/FramePacer.cpp
     Source/Common/FrameRateLimit.cpp
 #    Source/Common/GameEngine.cpp
@@ -583,45 +596,45 @@ set(GAMEENGINE_SRC
     Source/Common/GameUtility.cpp
 #    Source/Common/GlobalData.cpp
     Source/Common/INI/INI.cpp
-#    Source/Common/INI/INIAiData.cpp
-#    Source/Common/INI/INIAnimation.cpp
+    Source/Common/INI/INIAiData.cpp
+    Source/Common/INI/INIAnimation.cpp
     Source/Common/INI/INIAudioEventInfo.cpp
-#    Source/Common/INI/INICommandButton.cpp
-#    Source/Common/INI/INICommandSet.cpp
-#    Source/Common/INI/INIControlBarScheme.cpp
-#    Source/Common/INI/INICrate.cpp
-#    Source/Common/INI/INIDamageFX.cpp
-#    Source/Common/INI/INIDrawGroupInfo.cpp
-#    Source/Common/INI/INIGameData.cpp
-#    Source/Common/INI/INIMapCache.cpp
-#    Source/Common/INI/INIMapData.cpp
-#    Source/Common/INI/INIMappedImage.cpp
+    Source/Common/INI/INICommandButton.cpp
+    Source/Common/INI/INICommandSet.cpp
+    Source/Common/INI/INIControlBarScheme.cpp
+    Source/Common/INI/INICrate.cpp
+    Source/Common/INI/INIDamageFX.cpp
+    Source/Common/INI/INIDrawGroupInfo.cpp
+    Source/Common/INI/INIGameData.cpp
+    Source/Common/INI/INIMapCache.cpp
+    Source/Common/INI/INIMapData.cpp
+    Source/Common/INI/INIMappedImage.cpp
     Source/Common/INI/INIMiscAudio.cpp
-#    Source/Common/INI/INIModel.cpp
-#    Source/Common/INI/INIMultiplayer.cpp
-#    Source/Common/INI/INIObject.cpp
-#    Source/Common/INI/INIParticleSys.cpp
-#    Source/Common/INI/INISpecialPower.cpp
-#    Source/Common/INI/INITerrain.cpp
-#    Source/Common/INI/INITerrainBridge.cpp
-#    Source/Common/INI/INITerrainRoad.cpp
-#    Source/Common/INI/INIUpgrade.cpp
+    Source/Common/INI/INIModel.cpp
+    Source/Common/INI/INIMultiplayer.cpp
+    Source/Common/INI/INIObject.cpp
+    Source/Common/INI/INIParticleSys.cpp
+    Source/Common/INI/INISpecialPower.cpp
+    Source/Common/INI/INITerrain.cpp
+    Source/Common/INI/INITerrainBridge.cpp
+    Source/Common/INI/INITerrainRoad.cpp
+    Source/Common/INI/INIUpgrade.cpp
     Source/Common/INI/INIVideo.cpp
-#    Source/Common/INI/INIWater.cpp
-#    Source/Common/INI/INIWeapon.cpp
-#    Source/Common/INI/INIWebpageURL.cpp
-#    Source/Common/Language.cpp
-#    Source/Common/MessageStream.cpp
-#    Source/Common/MiniLog.cpp
+    Source/Common/INI/INIWater.cpp
+    Source/Common/INI/INIWeapon.cpp
+    Source/Common/INI/INIWebpageURL.cpp
+    Source/Common/Language.cpp
+    Source/Common/MessageStream.cpp
+    Source/Common/MiniLog.cpp
 #    Source/Common/MultiplayerSettings.cpp
 #    Source/Common/NameKeyGenerator.cpp
     Source/Common/OptionPreferences.cpp
 #    Source/Common/PartitionSolver.cpp
-#    Source/Common/PerfTimer.cpp
+    Source/Common/PerfTimer.cpp
     Source/Common/RandomValue.cpp
 #    Source/Common/Recorder.cpp
     Source/Common/ReplaySimulation.cpp
-#    Source/Common/RTS/AcademyStats.cpp
+    Source/Common/RTS/AcademyStats.cpp
 #    Source/Common/RTS/ActionManager.cpp
 #    Source/Common/RTS/Energy.cpp
 #    Source/Common/RTS/Handicap.cpp
@@ -681,16 +694,17 @@ set(GAMEENGINE_SRC
     Source/Common/System/XferCRC.cpp
     Source/Common/System/XferLoad.cpp
     Source/Common/System/XferSave.cpp
-#    Source/Common/TerrainTypes.cpp
+    Source/Common/TerrainTypes.cpp
 #    Source/Common/Thing/DrawModule.cpp
 #    Source/Common/Thing/Module.cpp
 #    Source/Common/Thing/ModuleFactory.cpp
 #    Source/Common/Thing/Thing.cpp
 #    Source/Common/Thing/ThingFactory.cpp
-#    Source/Common/Thing/ThingTemplate.cpp
+    Source/Common/Thing/ThingTemplate.cpp
     Source/Common/UserPreferences.cpp
-#    Source/Common/version.cpp
+    Source/Common/version.cpp
     Source/Common/WorkerProcess.cpp
+    Source/Common/WorkingDirectory.cpp
     Source/GameClient/ClientInstance.cpp
     Source/GameClient/Color.cpp
     Source/GameClient/Credits.cpp
@@ -705,26 +719,26 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/Eva.cpp
     Source/GameClient/FXList.cpp
 #    Source/GameClient/GameClient.cpp
-#    Source/GameClient/GameClientDispatch.cpp
+    Source/GameClient/GameClientDispatch.cpp
     Source/GameClient/GameText.cpp
     Source/GameClient/GlobalLanguage.cpp
     Source/GameClient/GraphDraw.cpp
-#    Source/GameClient/GUI/AnimateWindowManager.cpp
+    Source/GameClient/GUI/AnimateWindowManager.cpp
     Source/GameClient/GUI/ChallengeGenerals.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBar.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarBeacon.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarCommand.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarCommandProcessing.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarMultiSelect.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarObserver.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarOCLTimer.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarPrintPositions.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarResizer.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarScheme.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarStructureInventory.cpp
-#    Source/GameClient/GUI/ControlBar/ControlBarUnderConstruction.cpp
+    Source/GameClient/GUI/ControlBar/ControlBar.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarBeacon.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarCommand.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarCommandProcessing.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarMultiSelect.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarObserver.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarOCLTimer.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarPrintPositions.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarResizer.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarScheme.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarStructureInventory.cpp
+    Source/GameClient/GUI/ControlBar/ControlBarUnderConstruction.cpp
 #    Source/GameClient/GUI/DisconnectMenu/DisconnectMenu.cpp
-#    Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp
+    Source/GameClient/GUI/EstablishConnectionsMenu/EstablishConnectionsMenu.cpp
     Source/GameClient/GUI/Gadget/GadgetCheckBox.cpp
     Source/GameClient/GUI/Gadget/GadgetComboBox.cpp
     Source/GameClient/GUI/Gadget/GadgetHorizontalSlider.cpp
@@ -739,18 +753,18 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GameFont.cpp
     Source/GameClient/GUI/GameWindow.cpp
     Source/GameClient/GUI/GameWindowGlobal.cpp
-#    Source/GameClient/GUI/GameWindowManager.cpp
-#    Source/GameClient/GUI/GameWindowManagerScript.cpp
+    Source/GameClient/GUI/GameWindowManager.cpp
+    Source/GameClient/GUI/GameWindowManagerScript.cpp
     Source/GameClient/GUI/GameWindowTransitions.cpp
-#    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
-#    Source/GameClient/GUI/GUICallbacks/ControlBarCallback.cpp
-#    Source/GameClient/GUI/GUICallbacks/ControlBarPopupDescription.cpp
-#    Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
-#    Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp
-#    Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp
-#    Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp
-#    Source/GameClient/GUI/GUICallbacks/InGameChat.cpp
-#    Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp
+    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
+    Source/GameClient/GUI/GUICallbacks/ControlBarCallback.cpp
+    Source/GameClient/GUI/GUICallbacks/ControlBarPopupDescription.cpp
+    Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
+    Source/GameClient/GUI/GUICallbacks/ExtendedMessageBox.cpp
+    Source/GameClient/GUI/GUICallbacks/GeneralsExpPoints.cpp
+    Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp
+    Source/GameClient/GUI/GUICallbacks/InGameChat.cpp
+    Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/ChallengeMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/CreditsMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/DifficultySelect.cpp
@@ -792,32 +806,34 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
-#    Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
-#    Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
+    Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
+    Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
+    Source/GameClient/GUI/GUICallbacks/SaveLoadFeedback.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
     Source/GameClient/GUI/IMEManager.cpp
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
-#    Source/GameClient/GUI/Shell/Shell.cpp
-#    Source/GameClient/GUI/Shell/ShellMenuScheme.cpp
+    Source/GameClient/GUI/Shell/Shell.cpp
+    Source/GameClient/GUI/Shell/ShellMenuScheme.cpp
     Source/GameClient/GUI/WindowLayout.cpp
     Source/GameClient/GUI/WindowVideoManager.cpp
     Source/GameClient/GUI/WinInstanceData.cpp
 #    Source/GameClient/InGameUI.cpp
     Source/GameClient/Input/Keyboard.cpp
     Source/GameClient/Input/Mouse.cpp
+    Source/GameClient/Intro.cpp
     Source/GameClient/LanguageFilter.cpp
     Source/GameClient/Line2D.cpp
     Source/GameClient/MapUtil.cpp
-#    Source/GameClient/MessageStream/CommandXlat.cpp
-#    Source/GameClient/MessageStream/GUICommandTranslator.cpp
-#    Source/GameClient/MessageStream/HintSpy.cpp
-#    Source/GameClient/MessageStream/HotKey.cpp
-#    Source/GameClient/MessageStream/LookAtXlat.cpp
-#    Source/GameClient/MessageStream/MetaEvent.cpp
-#    Source/GameClient/MessageStream/PlaceEventTranslator.cpp
-#    Source/GameClient/MessageStream/SelectionXlat.cpp
-#    Source/GameClient/MessageStream/WindowXlat.cpp
+    Source/GameClient/MessageStream/CommandXlat.cpp
+    Source/GameClient/MessageStream/GUICommandTranslator.cpp
+    Source/GameClient/MessageStream/HintSpy.cpp
+    Source/GameClient/MessageStream/HotKey.cpp
+    Source/GameClient/MessageStream/LookAtXlat.cpp
+    Source/GameClient/MessageStream/MetaEvent.cpp
+    Source/GameClient/MessageStream/PlaceEventTranslator.cpp
+    Source/GameClient/MessageStream/SelectionXlat.cpp
+    Source/GameClient/MessageStream/WindowXlat.cpp
     Source/GameClient/ParabolicEase.cpp
     Source/GameClient/RadiusDecal.cpp
     Source/GameClient/SelectionInfo.cpp
@@ -849,9 +865,9 @@ set(GAMEENGINE_SRC
 #    Source/GameLogic/AI/AITNGuard.cpp
 #    Source/GameLogic/AI/Squad.cpp
 #    Source/GameLogic/AI/TurretAI.cpp
-#    Source/GameLogic/Map/PolygonTrigger.cpp
-#    Source/GameLogic/Map/SidesList.cpp
-#    Source/GameLogic/Map/TerrainLogic.cpp
+    Source/GameLogic/Map/PolygonTrigger.cpp
+    Source/GameLogic/Map/SidesList.cpp
+    Source/GameLogic/Map/TerrainLogic.cpp
 #    Source/GameLogic/Object/Armor.cpp
 #    Source/GameLogic/Object/Behavior/AutoHealBehavior.cpp
 #    Source/GameLogic/Object/Behavior/BattleBusSlowDeathBehavior.cpp
@@ -1144,7 +1160,7 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/udp.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
-#    Source/Precompiled/PreRTS.cpp
+    Source/Precompiled/PreRTS.cpp
 )
 
 if(RTS_GAMEMEMORY_ENABLE)
@@ -1172,11 +1188,12 @@ add_library(corei_gameengine_public INTERFACE)
 target_sources(corei_gameengine_private INTERFACE ${GAMEENGINE_SRC})
 
 target_include_directories(corei_gameengine_private INTERFACE
-#    Include/Precompiled
+    Include/Precompiled
 )
 
 target_link_libraries(corei_gameengine_private INTERFACE
     corei_always
+    core_profile_legacy
 )
 
 target_compile_definitions(corei_gameengine_private INTERFACE
@@ -1184,7 +1201,7 @@ target_compile_definitions(corei_gameengine_private INTERFACE
 )
 
 target_precompile_headers(corei_gameengine_private INTERFACE
-#    Include/Precompiled/PreRTS.h
+    Include/Precompiled/PreRTS.h
 )
 
 target_include_directories(corei_gameengine_public INTERFACE
@@ -1194,7 +1211,9 @@ target_include_directories(corei_gameengine_public INTERFACE
 target_link_libraries(corei_gameengine_public INTERFACE
     core_compression
     core_browserdispatch
+    dbghelploader
     #core_wwvegas
+    corei_platform
     d3d8lib
     gamespy::gamespy
     stlport

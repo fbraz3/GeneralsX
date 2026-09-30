@@ -36,7 +36,7 @@
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/utime.h>
-#include <trim.h>
+#include <WWLib/trim.h>
 
 static const char *nodxtPrefix[] = {
 	"zhca",
@@ -94,7 +94,7 @@ static void debugLog(const char *fmt, ...)
 
 #else
 
-#define DEBUG_LOG(x) {}
+#define DEBUG_LOG(x)
 
 #endif // RTS_DEBUG
 
@@ -144,8 +144,8 @@ public:
 	Directory(const std::string& dirPath);
 	~Directory() {}
 
-	FileInfoSet* getFiles( void );
-	FileInfoSet* getSubdirs( void );
+	FileInfoSet* getFiles();
+	FileInfoSet* getSubdirs();
 
 protected:
 	std::string m_dirPath;
@@ -256,12 +256,12 @@ Directory::Directory( const std::string& dirPath ) : m_dirPath(dirPath)
 	SetCurrentDirectory( currDir );
 }
 
-FileInfoSet* Directory::getFiles( void )
+FileInfoSet* Directory::getFiles()
 {
 	return &m_files;
 }
 
-FileInfoSet* Directory::getSubdirs( void )
+FileInfoSet* Directory::getSubdirs()
 {
 	return &m_subdirs;
 }
@@ -346,6 +346,7 @@ void compressOrigFiles(const std::string& sourceDirName, const std::string& targ
 
 	DEBUG_LOG(("Compressing textures with command line of '%s'", commandLine.c_str()));
 	int ret = system(commandLine.c_str());
+	(void)ret;
 	DEBUG_LOG(("system(%s) returned %d", commandLine.c_str(), ret));
 	DeleteFile(tmpFname);
 
@@ -411,6 +412,7 @@ void copyOrigFiles(const std::string& sourceDirName, const std::string& targetDi
 			DEBUG_LOG(("Cannot chmod '%s'", dest.c_str()));
 		}
 		BOOL res = CopyFile(src.c_str(), dest.c_str(), FALSE);
+		(void)res;
 		DEBUG_LOG(("Copying file: %s returns %d", src.c_str(), res));
 	}
 }
@@ -472,7 +474,7 @@ static void scanDir( const std::string& sourceDirName, const std::string& target
 		FileInfoSet::iterator fit = sourceFiles->find(f);
 		if (fit != sourceFiles->end())
 		{
-			FileInfo sf = *fit;
+			const FileInfo &sf = *fit;
 			if (f.modTime < sf.modTime)
 			{
 				/**
@@ -563,7 +565,7 @@ static void scanDir( const std::string& sourceDirName, const std::string& target
 			FileInfoSet::iterator fit = cacheFiles->find(f);
 			if (fit != cacheFiles->end())
 			{
-				FileInfo cf = *fit;
+				const FileInfo &cf = *fit;
 				if (cf.modTime < f.modTime)
 				{
 					origFilesToCompress.insert(fname);

@@ -9,28 +9,14 @@ target_compile_definitions(core_wwcommon INTERFACE
 # GeneralsX @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
 target_link_libraries(core_wwcommon INTERFACE
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
+    dbghelploader
+    milesloader
     stlport
+    usp10loader
 )
-
-# GeneralsX @build BenderAI 13/02/2026 Platform-specific multimedia stubs
-if(WIN32)
-    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles stubs are disabled.
-    if(TARGET milesstub)
-        target_link_libraries(core_wwcommon INTERFACE
-            milesstub
-        )
-    endif()
-endif()
 
 target_include_directories(core_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    WW3D2
-    WWAudio
-    WWDebug
-    # WWDownload # is not added because headers are included as "WWDownload/file.h"
-    WWLib
-    WWMath
-    WWSaveLoad
 )
 
 add_subdirectory(WW3D2)
@@ -47,13 +33,6 @@ add_library(core_wwvegas INTERFACE)
 
 target_include_directories(core_wwvegas INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    WW3D2
-    WWAudio
-    WWDebug
-    # WWDownload # is not added because headers are included as "WWDownload/file.h"
-    WWLib
-    WWMath
-    WWSaveLoad
 )
 
 target_link_libraries(core_wwvegas INTERFACE

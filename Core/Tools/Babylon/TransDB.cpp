@@ -80,7 +80,7 @@ const char *GetLangName ( LangID langid )
 {
 	LANGINFO *item;
 
-	if ( ( item = GetLangInfo ( langid )) )
+	if ( ( item = GetLangInfo ( langid )) != nullptr )
 	{
 		return item->name;
 	}
@@ -106,7 +106,7 @@ LANGINFO *GetLangInfo ( char *language )
 	return nullptr;
 }
 
-TransDB* FirstTransDB ( void )
+TransDB* FirstTransDB ()
 {
 	ListNode *first;
 
@@ -196,7 +196,7 @@ void					TransDB::RemoveLabel ( BabylonLabel *label )
 {
 	ListNode *node;
 
-	if ( (node = labels.Find ( label )) )
+	if ( (node = labels.Find ( label )) != nullptr )
 	{
 		node->Remove ();
 		label->SetDB ( nullptr );
@@ -216,7 +216,7 @@ void					TransDB::RemoveObsolete ( BabylonText *text )
 {
 	ListNode *node;
 
-	if ( (node = obsolete.Find ( text )) )
+	if ( (node = obsolete.Find ( text )) != nullptr )
 	{
 		node->Remove ();
 		obsolete_bin->Remove ( text );
@@ -227,7 +227,7 @@ void					TransDB::RemoveObsolete ( BabylonText *text )
 	}
 }
 
-int					TransDB::NumLabelsChanged ( void )
+int					TransDB::NumLabelsChanged ()
 {
 	BabylonLabel	*label;
 	ListSearch sh;
@@ -248,7 +248,7 @@ int					TransDB::NumLabelsChanged ( void )
 	return changed;
 }
 
-int					TransDB::NumLabels ( void )
+int					TransDB::NumLabels ()
 {
 
 	return labels.NumItems();
@@ -258,7 +258,7 @@ BabylonLabel*			TransDB::FirstLabel	( ListSearch& sh )
 {
 	ListNode *node;
 
-	if ( ( node = sh.FirstNode ( &labels )))
+	if ( ( node = sh.FirstNode ( &labels )) != nullptr)
 	{
 		return (BabylonLabel *) node->Item ();
 	}
@@ -270,7 +270,7 @@ BabylonLabel*			TransDB::NextLabel		( ListSearch& sh)
 {
 	ListNode *node;
 
-	if ( ( node = sh.Next ()))
+	if ( ( node = sh.Next ()) != nullptr)
 	{
 		return (BabylonLabel *) node->Item ();
 	}
@@ -282,7 +282,7 @@ BabylonText*			TransDB::FirstObsolete	( ListSearch& sh )
 {
 	ListNode *node;
 
-	if ( ( node = sh.FirstNode ( &obsolete )))
+	if ( ( node = sh.FirstNode ( &obsolete )) != nullptr)
 	{
 		return (BabylonText *) node->Item ();
 	}
@@ -294,7 +294,7 @@ BabylonText*			TransDB::NextObsolete		( ListSearch& sh)
 {
 	ListNode *node;
 
-	if ( ( node = sh.Next ()))
+	if ( ( node = sh.Next ()) != nullptr)
 	{
 		return (BabylonText *) node->Item ();
 	}
@@ -319,7 +319,6 @@ BabylonText*			TransDB::FindSubText		( OLECHAR *pattern, int item )
 	ListSearch sh;
 	BabylonText		*text;
 	ListSearch sh_text;
-	int plen = wcslen ( pattern );
 
 	label = FirstLabel ( sh );
 
@@ -356,7 +355,7 @@ BabylonText*			TransDB::FindText		( int id )
 	return (BabylonText *) text_id_bin->Get ( id );
 }
 
-BabylonText*			TransDB::FindNextText		( void )
+BabylonText*			TransDB::FindNextText		()
 {
 
 	return (BabylonText *) text_bin->GetNext ( );
@@ -367,14 +366,14 @@ BabylonText*			TransDB::FindObsolete		( OLECHAR *name )
 	return (BabylonText *) obsolete_bin->Get ( name );
 }
 
-BabylonText*			TransDB::FindNextObsolete		( void )
+BabylonText*			TransDB::FindNextObsolete		()
 {
 
 	return (BabylonText *) obsolete_bin->GetNext ( );
 
 }
 
-int					TransDB::Clear				( void )
+int					TransDB::Clear				()
 {
 	ListSearch sh;
 	BabylonLabel *label;
@@ -387,7 +386,7 @@ int					TransDB::Clear				( void )
 	label_bin->Clear ();
 	obsolete_bin->Clear ();
 
-	while ( node = sh.FirstNode ( &labels ) )
+	while ( (node = sh.FirstNode ( &labels )) != nullptr )
 	{
 		node->Remove ();
 		label = (BabylonLabel *) node->Item ();
@@ -396,7 +395,7 @@ int					TransDB::Clear				( void )
 		delete node;
 	}
 
-	while ( node = sh.FirstNode ( &obsolete ) )
+	while ( (node = sh.FirstNode ( &obsolete )) != nullptr )
 	{
 		node->Remove ();
 		text = (BabylonText *) node->Item ();
@@ -422,7 +421,7 @@ int					TransDB::Clear				( void )
 	return count;
 }
 
-void					TransDB::ClearChanges				( void )
+void					TransDB::ClearChanges				()
 {
 	ListSearch sh;
 	BabylonLabel *label;
@@ -444,7 +443,7 @@ void					TransDB::ClearChanges				( void )
 	NotChanged ();
 }
 
-void					TransDB::ClearProcessed				( void )
+void					TransDB::ClearProcessed				()
 {
 	ListSearch sh;
 	BabylonLabel *label;
@@ -458,7 +457,7 @@ void					TransDB::ClearProcessed				( void )
 	NotProcessed ();
 }
 
-void					TransDB::ClearMatched				( void )
+void					TransDB::ClearMatched				()
 {
 	ListSearch sh;
 	BabylonLabel *label;
@@ -472,7 +471,7 @@ void					TransDB::ClearMatched				( void )
 	NotMatched ();
 }
 
-void					TransDB::AddToTree		( CTreeCtrl *tc, HTREEITEM parent, int changes, void (*cb) ( void ) )
+void					TransDB::AddToTree		( CTreeCtrl *tc, HTREEITEM parent, int changes, void (*cb) () )
 {
 	HTREEITEM		item;
 	HTREEITEM		ilabels, iobsolete;
@@ -526,7 +525,7 @@ void					TransDB::AddToTree		( CTreeCtrl *tc, HTREEITEM parent, int changes, voi
 
 }
 
-TransDB*			TransDB::Next				( void )
+TransDB*			TransDB::Next				()
 {
 	ListNode *next;
 
@@ -541,7 +540,7 @@ TransDB*			TransDB::Next				( void )
 
 }
 
-void BabylonLabel::init ( void )
+void BabylonLabel::init ()
 {
 	db = nullptr;
 	comment = nullptr;
@@ -550,7 +549,7 @@ void BabylonLabel::init ( void )
 	name = nullptr;
 }
 
-BabylonLabel::BabylonLabel ( void )
+BabylonLabel::BabylonLabel ()
 {
 	init ();
 	name = new OLEString ( );
@@ -572,7 +571,7 @@ BabylonLabel::~BabylonLabel ( )
 	delete listener;
 }
 
-void					BabylonLabel::Remove			( void )
+void					BabylonLabel::Remove			()
 {
 	if ( db )
 	{
@@ -584,7 +583,7 @@ void					BabylonLabel::RemoveText ( BabylonText *txt )
 {
 	ListNode *node;
 
-	if ( (node = text.Find ( txt )) )
+	if ( (node = text.Find ( txt )) != nullptr )
 	{
 		node->Remove ();
 		txt->SetDB ( nullptr );
@@ -609,14 +608,14 @@ void					BabylonLabel::AddText			( BabylonText *new_text )
 	new_text->SetLabel ( this );
 }
 
-int					BabylonLabel::Clear				( void )
+int					BabylonLabel::Clear				()
 {
 	ListSearch sh;
 	BabylonText *txt;
 	ListNode *node;
 	int count = 0;
 
-	while ( node = sh.FirstNode ( &text ) )
+	while ( (node = sh.FirstNode ( &text )) != nullptr )
 	{
 		node->Remove ();
 		txt = (BabylonText *) node->Item ();
@@ -633,7 +632,7 @@ int					BabylonLabel::Clear				( void )
 	return count;
 }
 
-BabylonLabel*			BabylonLabel::Clone				( void )
+BabylonLabel*			BabylonLabel::Clone				()
 {
 	BabylonLabel *clone = new BabylonLabel();
 	BabylonText *txt;
@@ -662,7 +661,7 @@ BabylonText*			BabylonLabel::FirstText		( ListSearch& sh )
 {
 	ListNode *node;
 
-	if ( ( node = sh.FirstNode ( &text )))
+	if ( ( node = sh.FirstNode ( &text )) != nullptr)
 	{
 		return (BabylonText *) node->Item ();
 	}
@@ -674,7 +673,7 @@ BabylonText*			BabylonLabel::NextText		( ListSearch& sh)
 {
 	ListNode *node;
 
-	if ( ( node = sh.Next (  )))
+	if ( ( node = sh.Next (  )) != nullptr)
 	{
 		return (BabylonText *) node->Item ();
 	}
@@ -722,7 +721,7 @@ void					BabylonLabel::SetDB				( TransDB *new_db )
 
 }
 
-void					BabylonLabel::ClearChanges				( void )
+void					BabylonLabel::ClearChanges				()
 {
 	BabylonText *ntext;
 	ListSearch sh;
@@ -740,7 +739,7 @@ void					BabylonLabel::ClearChanges				( void )
 
 }
 
-void					BabylonLabel::ClearProcessed				( void )
+void					BabylonLabel::ClearProcessed				()
 {
 	BabylonText *ntext;
 	ListSearch sh;
@@ -758,7 +757,7 @@ void					BabylonLabel::ClearProcessed				( void )
 
 }
 
-void					BabylonLabel::ClearMatched				( void )
+void					BabylonLabel::ClearMatched				()
 {
 	BabylonText *ntext;
 	ListSearch sh;
@@ -776,7 +775,7 @@ void					BabylonLabel::ClearMatched				( void )
 
 }
 
-int					BabylonLabel::AllMatched				( void )
+int					BabylonLabel::AllMatched				()
 {
 	BabylonText *ntext;
 	ListSearch sh;
@@ -796,7 +795,7 @@ int					BabylonLabel::AllMatched				( void )
 	return TRUE;
 }
 
-BabylonText::BabylonText( void )
+BabylonText::BabylonText()
 {
 	init ();
 	text = new OLEString (  );
@@ -804,7 +803,7 @@ BabylonText::BabylonText( void )
 
 }
 
-int BabylonText::IsSent ( void )
+int BabylonText::IsSent ()
 {
 	return sent;
 }
@@ -874,7 +873,7 @@ void					BabylonLabel::AddToTree		( CTreeCtrl *tc, HTREEITEM parent, int changes
 
 }
 
-void BabylonText::init ( void )
+void BabylonText::init ()
 {
 	db = nullptr;
 	label = nullptr;
@@ -908,7 +907,7 @@ void					BabylonText::SetDB				( TransDB *new_db )
 	}
 
 
-	if ( (db = new_db) )
+	if ( (db = new_db) != nullptr )
 	{
 		AssignID ();
 		db->AddText ( this );
@@ -925,7 +924,7 @@ void					BabylonText::SetDB				( TransDB *new_db )
 
 }
 
-void					BabylonText::Remove			( void )
+void					BabylonText::Remove			()
 {
 	if ( label )
 	{
@@ -933,7 +932,7 @@ void					BabylonText::Remove			( void )
 	}
 }
 
-int						BabylonText::IsDialog ( void )
+int						BabylonText::IsDialog ()
 {
 
 	return strcmp (WaveSB(), "" );
@@ -1082,7 +1081,7 @@ Translation*			BabylonText::FirstTranslation		( ListSearch& sh )
 {
 	ListNode *node;
 
-	if ( ( node = sh.FirstNode ( &translations )))
+	if ( ( node = sh.FirstNode ( &translations )) != nullptr)
 	{
 		return (Translation *) node->Item ();
 	}
@@ -1094,7 +1093,7 @@ Translation*			BabylonText::NextTranslation		( ListSearch& sh)
 {
 	ListNode *node;
 
-	if ( ( node = sh.Next (  )))
+	if ( ( node = sh.Next (  )) != nullptr)
 	{
 		return (Translation *) node->Item ();
 	}
@@ -1123,14 +1122,14 @@ Translation*			BabylonText::GetTranslation		( LangID langid )
 	return trans;
 }
 
-int					BabylonText::Clear				( void )
+int					BabylonText::Clear				()
 {
 	ListSearch sh;
 	Translation *trans;
 	ListNode *node;
 	int count = 0;
 
-	while ( node = sh.FirstNode ( &translations ) )
+	while ( (node = sh.FirstNode ( &translations )) != nullptr )
 	{
 		node->Remove ();
 		trans = (Translation *) node->Item ();
@@ -1146,7 +1145,7 @@ int					BabylonText::Clear				( void )
 	return count;
 }
 
-BabylonText*			BabylonText::Clone				( void )
+BabylonText*			BabylonText::Clone				()
 {
 	BabylonText *clone = new BabylonText();
 	Translation *trans;
@@ -1168,7 +1167,7 @@ BabylonText*			BabylonText::Clone				( void )
 	return clone;
 }
 
-void					BabylonText::ClearChanges				( void )
+void					BabylonText::ClearChanges				()
 {
 	Translation *trans;
 	ListSearch sh;
@@ -1186,7 +1185,7 @@ void					BabylonText::ClearChanges				( void )
 
 }
 
-void					BabylonText::ClearProcessed				( void )
+void					BabylonText::ClearProcessed				()
 {
 	Translation *trans;
 	ListSearch sh;
@@ -1204,7 +1203,7 @@ void					BabylonText::ClearProcessed				( void )
 
 }
 
-void					BabylonText::ClearMatched				( void )
+void					BabylonText::ClearMatched				()
 {
 	Translation *trans;
 	ListSearch sh;
@@ -1222,7 +1221,7 @@ void					BabylonText::ClearMatched				( void )
 
 }
 
-void					BabylonText::AssignID ( void )
+void					BabylonText::AssignID ()
 {
 	if ( id != -1 )
 	{
@@ -1268,7 +1267,7 @@ void					BabylonText::Set ( char *string )
 	Changed ();
 }
 
-void					BabylonText::InvalidateAllWaves			( void  )
+void					BabylonText::InvalidateAllWaves			()
 {
 	Translation *trans;
 	ListSearch sh;
@@ -1286,7 +1285,7 @@ void					BabylonText::InvalidateAllWaves			( void  )
 
 }
 
-void					BabylonText::InvalidateWave			( void )
+void					BabylonText::InvalidateWave			()
 {
 
 	WaveInfo.SetValid ( FALSE );
@@ -1361,7 +1360,7 @@ void					BabylonText::AddToTree		( CTreeCtrl *tc, HTREEITEM parent, int changes 
 
 }
 
-Translation::Translation ( void )
+Translation::Translation ()
 {
 	text = new OLEString (  );
 	comment = new OLEString (  );
@@ -1376,7 +1375,7 @@ Translation::~Translation ( )
 	delete comment;
 }
 
-int Translation::IsSent ( void )
+int Translation::IsSent ()
 {
 	return sent;
 }
@@ -1391,7 +1390,7 @@ void					Translation::SetDB				( TransDB *new_db )
 	db = new_db;
 }
 
-Translation*			Translation::Clone				( void )
+Translation*			Translation::Clone				()
 {
 	Translation *clone = new Translation();
 
@@ -1477,7 +1476,7 @@ int TransDB::Warnings ( CBabylonDlg *dlg )
 				}
 				warnings++;
 			}
-			else if ( !DuplicatesAllowed() && ( existing_text = FindText ( text->Get () )))
+			else if ( !DuplicatesAllowed() && ( existing_text = FindText ( text->Get () )) != nullptr)
 			{
 				warnings++;
 				if ( dlg )
@@ -1506,7 +1505,7 @@ int TransDB::Warnings ( CBabylonDlg *dlg )
 	{
 		DupNode *dup;
 
-		while ( (dup = (DupNode*)dups.LastNode ()))
+		while ( (dup = (DupNode*)dups.LastNode ()) != nullptr)
 		{
 			sprintf ( buffer, "Warning:: text at line %5d is a duplicate of text on line %5d",
 									dup->Duplicate()->LineNumber(), dup->Original()->LineNumber());
@@ -1564,7 +1563,7 @@ int TransDB::Errors ( CBabylonDlg *dlg )
 
 		}
 
-		if ( ( existing_label = FindLabel ( label->Name () )))
+		if ( ( existing_label = FindLabel ( label->Name () )) != nullptr)
 		{
 			errors++;
 			if ( dlg )
@@ -1583,7 +1582,7 @@ int TransDB::Errors ( CBabylonDlg *dlg )
 
 		while ( text )
 		{
-				if ( ( existing_text = (BabylonText *) tbin->Get ( text->Get () )))
+				if ( ( existing_text = (BabylonText *) tbin->Get ( text->Get () )) != nullptr)
 				{
 					errors++;
 					if ( dlg )
@@ -1637,18 +1636,16 @@ int TransDB::Errors ( CBabylonDlg *dlg )
 	return errors;
 }
 
-CWaveInfo::CWaveInfo ( void )
+CWaveInfo::CWaveInfo ()
 {
 	wave_valid = FALSE;
 	missing = TRUE;
 }
 
-void TransDB::VerifyDialog( LangID langid, void (*cb) (void) )
+void TransDB::VerifyDialog( LangID langid, void (*cb) () )
 {
 	BabylonLabel *label;
 	ListSearch sh_label;
-	int count = 0;
-	LANGINFO *linfo = GetLangInfo ( langid );
 
 	label = FirstLabel ( sh_label );
 
@@ -1714,10 +1711,8 @@ int TransDB::ReportDialog( DLGREPORT *report, LangID langid, void (*print) ( con
 {
 	BabylonLabel *label;
 	ListSearch sh_label;
-	int count = 0;
 	DLGREPORT _info;
 	DLGREPORT *info = &_info;
-	int skip_verify = FALSE;
 	LANGINFO *linfo = GetLangInfo ( langid );
 
 	if ( report )
@@ -1785,8 +1780,6 @@ int TransDB::ReportTranslations( TRNREPORT *report, LangID langid, void (*print)
 {
 	BabylonLabel *label;
 	ListSearch sh_label;
-	int count = 0;
-	int first_error = FALSE;
 	TRNREPORT _info;
 	TRNREPORT *info = &_info;
 
@@ -1809,7 +1802,6 @@ int TransDB::ReportTranslations( TRNREPORT *report, LangID langid, void (*print)
 
 		while ( text )
 		{
-			int textnum = 0;
 			Translation *trans;
 			int too_big = FALSE;
 
@@ -1818,7 +1810,7 @@ int TransDB::ReportTranslations( TRNREPORT *report, LangID langid, void (*print)
 				info->numstrings++;
 				if ( langid != LANGID_US )
 				{
-					if ( (trans = text->GetTranslation ( langid ) ))
+					if ( (trans = text->GetTranslation ( langid ) ) != nullptr)
 					{
 						if ( maxlen && trans->Len() > maxlen )
 						{

@@ -6661,7 +6661,7 @@ Bool ScriptEngine::isSpecialPowerTriggered( Int playerIndex, const AsciiString& 
 
 	for (ListAsciiStringObjectIDIt findIt = specialList->begin(); findIt != specialList->end(); ++findIt)
 	{
-		AsciiStringObjectIDPair pair = *findIt;
+		const AsciiStringObjectIDPair &pair = *findIt;
 		if (pair.first == completedPower && (sourceObj == INVALID_ID || sourceObj == pair.second))
 		{
 			if (removeFromList) {
@@ -6686,7 +6686,7 @@ Bool ScriptEngine::isSpecialPowerMidway( Int playerIndex, const AsciiString& com
 
 	for (ListAsciiStringObjectIDIt findIt = specialList->begin(); findIt != specialList->end(); ++findIt)
 	{
-		AsciiStringObjectIDPair pair = *findIt;
+		const AsciiStringObjectIDPair &pair = *findIt;
 		if (pair.first == completedPower && (sourceObj == INVALID_ID || sourceObj == pair.second))
 		{
 			if (removeFromList) {
@@ -6711,7 +6711,7 @@ Bool ScriptEngine::isSpecialPowerComplete( Int playerIndex, const AsciiString& c
 
 	for (ListAsciiStringObjectIDIt findIt = specialList->begin(); findIt != specialList->end(); ++findIt)
 	{
-		AsciiStringObjectIDPair pair = *findIt;
+		const AsciiStringObjectIDPair &pair = *findIt;
 		if (pair.first == completedPower && (sourceObj == INVALID_ID || sourceObj == pair.second))
 		{
 			if (removeFromList) {
@@ -6736,7 +6736,7 @@ Bool ScriptEngine::isUpgradeComplete( Int playerIndex, const AsciiString& upgrad
 
 	for (ListAsciiStringObjectIDIt findIt = specialList->begin(); findIt != specialList->end(); ++findIt)
 	{
-		AsciiStringObjectIDPair pair = *findIt;
+		const AsciiStringObjectIDPair &pair = *findIt;
 		if (pair.first == upgrade && (sourceObj == INVALID_ID || sourceObj == pair.second))
 		{
 			if (removeFromList) {
@@ -6853,7 +6853,7 @@ void ScriptEngine::adjustToppleDirection( Object *object, Coord2D *direction)
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::adjustToppleDirection( Object *object, Coord3D *direction)
 {
-	AsciiString objName = object->getName();
+	const AsciiString &objName = object->getName();
 	if (objName.isEmpty() || !direction) {
 		return;
 	}
@@ -6903,7 +6903,8 @@ Bool ScriptEngine::evaluateConditions( Script *pScript, Team *thisTeam, Player *
 			}
 			pCondition = pCondition->getNext();
 		}
-		if (andTerm) { // The outer list is OR'ed - so any true inner means we are true.
+		if (andTerm) {
+			// The outer list is OR'ed - so any true inner means we are true.
 			testValue = true;
 			break;
 		}
@@ -7082,12 +7083,21 @@ void ScriptEngine::removeAllSequentialScripts(Object *obj)
 	for (it = m_sequentialScripts.begin(); it != m_sequentialScripts.end(); /* empty */) {
 		SequentialScript *seqScript = (*it);
 		if (!seqScript) {
+			++it;
 			continue;
 		}
 		if (seqScript->m_objectID == id) {
-			cleanupSequentialScript(it, TRUE);
+			it = cleanupSequentialScript(it, TRUE);
+
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+			// TheSuperHackers @info Preserve the original (bugged) traversal behavior by skipping the next element, if any.
+			if (it != m_sequentialScripts.end()) {
+				++it;
+			}
+#endif
 		}
-		++it;
+		else
+			++it;
 	}
 }
 
@@ -7329,7 +7339,8 @@ void ScriptEngine::evaluateAndProgressAllSequentialScripts()
 						itAdvanced = true;
 					}
 
-					if (itAdvanced) {	// check to make sure they aren't dead.
+					if (itAdvanced) {
+						// check to make sure they aren't dead.
 						if (obj && obj->isEffectivelyDead()) {
 							it = cleanupSequentialScript(it, true);
 							continue;
@@ -9022,6 +9033,7 @@ static const std::string F_SIZE =					"Size";
 static const std::string F_STARTSIZERATE ="StartSizeRate";
 static const std::string F_SIZERATE =			"SizeRate";
 static const std::string F_SIZERATEDAMP =	"SizeRateDamping";
+static const std::string F_VOLPARTICLEDEPTH = "VolParticleDepth";
 
 static const std::string F_ALPHA1 =				"Alpha1";
 static const std::string F_ALPHA2 =				"Alpha2";
@@ -9072,7 +9084,7 @@ static const std::string F_VOLSPHERERAD	=	"VolSphereRadius";
 static const std::string F_VOLCYLRAD =		"VolCylinderRadius";
 static const std::string F_VOLCYLLEN =		"VolCylinderLength";
 static const std::string F_ISHOLLOW =			"IsHollow";
-static const std::string F_ISXYPLANAR =		"IsGroundAligned";
+static const std::string F_PARTICLEALIGNMENT =		"IsGroundAligned";
 static const std::string F_ISEMITABOVEGROUNDONLY
 																			=		"IsEmitAboveGroundOnly";
 static const std::string F_ISPARTICLEUPTOWARDSEMITTER
@@ -9183,6 +9195,9 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	sprintf(buff1, FORMAT_STRING, templ->m_sizeRateDamping.getMinimumValue());
 	sprintf(buff2, FORMAT_STRING, templ->m_sizeRateDamping.getMaximumValue());
 	thisEntry.append(SEP_HEAD).append(F_SIZERATEDAMP).append(EQ_WITH_SPACES).append(buff1).append(SEP_SPACE).append(buff2).append(SEP_EOL);
+
+	sprintf(buff1, "%d", templ->m_volumeParticleDepth);
+	thisEntry.append(SEP_HEAD).append(F_VOLPARTICLEDEPTH).append(EQ_WITH_SPACES).append(buff1).append(SEP_EOL);
 
 	sprintf(buff1, FORMAT_STRING, templ->m_alphaKey[0].var.getMinimumValue());
 	sprintf(buff2, FORMAT_STRING, templ->m_alphaKey[0].var.getMaximumValue());
@@ -9371,7 +9386,7 @@ void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *templ )
 	}
 
 	thisEntry.append(SEP_HEAD).append(F_ISHOLLOW).append(EQ_WITH_SPACES).append((templ->m_isEmissionVolumeHollow ? STR_TRUE : STR_FALSE)).append(SEP_EOL);
-	thisEntry.append(SEP_HEAD).append(F_ISXYPLANAR).append(EQ_WITH_SPACES).append((templ->m_isGroundAligned ? STR_TRUE : STR_FALSE)).append(SEP_EOL);
+	thisEntry.append(SEP_HEAD).append(F_PARTICLEALIGNMENT).append(EQ_WITH_SPACES).append(GroundAlignmentTypeNames[templ->m_particleAlignment]).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_ISEMITABOVEGROUNDONLY).append(EQ_WITH_SPACES).append((templ->m_isEmitAboveGroundOnly ? STR_TRUE : STR_FALSE)).append(SEP_EOL);
 	thisEntry.append(SEP_HEAD).append(F_ISPARTICLEUPTOWARDSEMITTER).append(EQ_WITH_SPACES).append((templ->m_isParticleUpTowardsEmitter ? STR_TRUE : STR_FALSE)).append(SEP_EOL);
 
@@ -9442,12 +9457,15 @@ static void _updateAndSetCurrentSystem()
 			// to be a tiny memory overwrite, now it is a crash since destroy() now has a function call.
 
 			ParticleSystemTemplate *parentTemp = TheParticleSystemManager->findParentTemplate(pTemp->getName(), 0);
-			ParticleSystem *parentSystem = TheParticleSystemManager->createParticleSystem(parentTemp);
+			if (parentTemp) {
+				ParticleSystem *parentSystem = nullptr;
+				parentSystem = TheParticleSystemManager->createParticleSystem(parentTemp);
 
-			if (parentSystem) {
-				ParticleSystem::mergeRelatedParticleSystems(parentSystem, st_particleSystem, true);
-				parentSystem->stop();
-				parentSystem->destroy();
+				if (parentSystem) {
+					ParticleSystem::mergeRelatedParticleSystems(parentSystem, st_particleSystem, true);
+					parentSystem->stop();
+					parentSystem->destroy();
+				}
 			}
 
 			Coord3D pos;
@@ -9487,7 +9505,8 @@ static void _reloadParticleSystemFromINI( AsciiString particleSystemName )
 			iniFile->nextLine(linebuff, INI_MAX_CHARS_PER_LINE);
 		}
 
-		{	// copy it to a temp file
+		{
+			// copy it to a temp file
 			if (iniFile->eof()) {
 				throw 0;
 			}

@@ -45,11 +45,15 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/CriticalSection.h"
+#include "WWLib/utf8.h"
 
 
 // -----------------------------------------------------
 
 /*static*/ const AsciiString AsciiString::TheEmptyString;
+
+namespace
+{
 
 //-----------------------------------------------------------------------------
 inline char* skipSeps(char* p, const char* seps)
@@ -83,6 +87,37 @@ inline char* skipNonWhitespace(char* p)
 	return p;
 }
 
+
+//-----------------------------------------------------------------------------
+struct StringCaseInfo
+{
+	StringCaseInfo()
+		: length(0)
+		, lowercaseCount(0)
+		, uppercaseCount(0)
+	{}
+
+	size_t length;
+	size_t lowercaseCount;
+	size_t uppercaseCount;
+};
+
+static StringCaseInfo getStringCaseInfo(const char *str)
+{
+	StringCaseInfo info;
+	const char* begin = str;
+	while (*str)
+	{
+		info.lowercaseCount += (size_t)(bool)islower((unsigned char)*str);
+		info.uppercaseCount += (size_t)(bool)isupper((unsigned char)*str);
+		++str;
+	}
+	info.length = static_cast<size_t>(str - begin);
+	return info;
+}
+
+} // namespace
+
 // -----------------------------------------------------
 AsciiString::AsciiString(const AsciiString& stringSrc) : m_data(stringSrc.m_data)
 {
@@ -96,7 +131,8 @@ AsciiString::AsciiString(const AsciiString& stringSrc) : m_data(stringSrc.m_data
 #ifdef RTS_DEBUG
 void AsciiString::validate() const
 {
-	if (!m_data) return;
+	if (!m_data)
+		return;
 	DEBUG_ASSERTCRASH(m_data->m_refCount > 0, ("m_refCount is zero"));
 	DEBUG_ASSERTCRASH(m_data->m_refCount < 32000, ("m_refCount is suspiciously large"));
 	DEBUG_ASSERTCRASH(m_data->m_numCharsAllocated > 0, ("m_numCharsAllocated is zero"));
@@ -151,9 +187,6 @@ void AsciiString::ensureUniqueBufferOfSize(int numCharsNeeded, Bool preserveData
 	AsciiStringData* newData = (AsciiStringData*)TheDynamicMemoryAllocator->allocateBytesDoNotZero(actualBytes, "STR_AsciiString::ensureUniqueBufferOfSize");
 	newData->m_refCount = 1;
 	newData->m_numCharsAllocated = (actualBytes - sizeof(AsciiStringData))/sizeof(char);
-#if defined(RTS_DEBUG)
-	newData->m_debugptr = newData->peek();	// just makes it easier to read in the debugger
-#endif
 
 	if (m_data && preserveData)
 		strcpy(newData->peek(), m_data->peek());
@@ -272,11 +305,20 @@ char*  AsciiString::getBufferForRead(Int len)
 void AsciiString::translate(const UnicodeString& stringSrc)
 {
 	validate();
-	/// @todo srj put in a real translation here; this will only work for 7-bit ascii
-	clear();
-	Int len = stringSrc.getLength();
-	for (Int i = 0; i < len; i++)
-		concat((char)stringSrc.getCharAt(i));
+	// GeneralsX @feature bobtista 28/08/2026 Import UTF-8 conversion in place of the 7-bit-only implementation.
+	// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
+	const WideChar* src = stringSrc.str();
+	const size_t srcLen = wcslen(src);
+	const size_t dstLen = Wide_To_Utf8_Len(src, srcLen);
+	if (dstLen == 0)
+	{
+		clear();
+	}
+	else
+	{
+		ensureUniqueBufferOfSize((Int)dstLen + 1, false, nullptr, nullptr);
+		Wide_To_Utf8(peek(), dstLen + 1, src, srcLen);
+	}
 	validate();
 }
 
@@ -370,19 +412,49 @@ void AsciiString::trimEnd(const char c)
 void AsciiString::toLower()
 {
 	validate();
-	if (m_data)
-	{
-		char buf[MAX_FORMAT_BUF_LEN];
-		strcpy(buf, peek());
 
-		char *c = buf;
-		while (c && *c)
-		{
-			*c = tolower(*c);
-			c++;
-		}
-		set(buf);
+	if (m_data == nullptr)
+		return;
+
+	const StringCaseInfo info = getStringCaseInfo(m_data->peek());
+
+	if (info.uppercaseCount == 0)
+		return;
+
+	ensureUniqueBufferOfSize(info.length + 1, true, nullptr, nullptr);
+
+	char* str = m_data->peek();
+	while (*str)
+	{
+		*str = tolower((unsigned char)*str);
+		++str;
 	}
+
+	validate();
+}
+
+// -----------------------------------------------------
+void AsciiString::toUpper()
+{
+	validate();
+
+	if (m_data == nullptr)
+		return;
+
+	const StringCaseInfo info = getStringCaseInfo(m_data->peek());
+
+	if (info.lowercaseCount == 0)
+		return;
+
+	ensureUniqueBufferOfSize(info.length + 1, true, nullptr, nullptr);
+
+	char* str = m_data->peek();
+	while (*str)
+	{
+		*str = toupper((unsigned char)*str);
+		++str;
+	}
+
 	validate();
 }
 

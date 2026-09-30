@@ -166,8 +166,8 @@ void DynamicShroudClearingRangeUpdate::animateGridDecals()
 
 	for (int d = 0; d < GRID_FX_DECAL_COUNT; ++d)
 	{
-		pos.x = ctr->x + (sinf(angle) * radius);
-		pos.y = ctr->y + (cosf(angle) * radius);
+		pos.x = ctr->x + (WWMath::Sin(angle) * radius);
+		pos.y = ctr->y + (WWMath::Cos(angle) * radius);
 
 		pos.x -= ((Int)pos.x)%23;
 		pos.y -= ((Int)pos.y)%23;
@@ -270,10 +270,12 @@ UpdateSleepTime DynamicShroudClearingRangeUpdate::update()
 	if( m_changeIntervalCountdown > 0 )
 		m_changeIntervalCountdown--;
 	else
-	{// reset per change timer
+	{
+		// reset per change timer
 		m_changeIntervalCountdown = ( m_state == DSCRU_GROWING ? md->m_growInterval : md->m_changeInterval);
 		me->setShroudClearingRange( m_currentClearingRange );
-		if (m_state == DSCRU_DONE_FOREVER) { // We are done forever, and have done the final update, so sleep.+
+		if (m_state == DSCRU_DONE_FOREVER) {
+			// We are done forever, and have done the final update, so sleep.+
 			m_state = DSCRU_SLEEPING;
 		}
 	}

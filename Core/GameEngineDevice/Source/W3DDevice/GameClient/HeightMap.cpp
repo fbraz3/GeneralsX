@@ -50,13 +50,13 @@
 #ifndef USE_FLAT_HEIGHT_MAP // Flat height map uses flattened textures. jba. [3/20/2003]
 
 #include <stdlib.h>
-#include <assetmgr.h>
-#include <texture.h>
-#include <tri.h>
-#include <colmath.h>
-#include <coltest.h>
-#include <rinfo.h>
-#include <camera.h>
+#include <WW3D2/assetmgr.h>
+#include <WW3D2/texture.h>
+#include <WWMath/tri.h>
+#include <WWMath/colmath.h>
+#include <WW3D2/coltest.h>
+#include <WW3D2/rinfo.h>
+#include <WW3D2/camera.h>
 #include <d3dx8core.h>
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -77,7 +77,6 @@
 #include "W3DDevice/GameClient/W3DRoadBuffer.h"
 #include "W3DDevice/GameClient/W3DBridgeBuffer.h"
 #include "W3DDevice/GameClient/W3DWaypointBuffer.h"
-#include "W3DDevice/GameClient/W3DCustomEdging.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
@@ -306,7 +305,6 @@ Int HeightMapRenderObjClass::updateVB(DX8VertexBufferClass	*pVB, VERTEX_FORMAT *
 {
 	Int i,j;
 	Vector3 lightRay[MAX_GLOBAL_LIGHTS];
-	const Coord3D *lightPos;
 	Int xCoord, yCoord;
 	Int vn0,un0,vp1,up1;
 	Vector3 l2r,n2f,normalAtTexel;
@@ -319,6 +317,12 @@ Int HeightMapRenderObjClass::updateVB(DX8VertexBufferClass	*pVB, VERTEX_FORMAT *
 #ifdef RTS_DEBUG
 		assert(x0 >= originX && y0 >= originY && x1>x0 && y1>y0 && x1<=originX+VERTEX_BUFFER_TILE_LENGTH && y1<=originY+VERTEX_BUFFER_TILE_LENGTH);
 #endif
+
+		for (Int lightIndex=0; lightIndex < TheGlobalData->m_numGlobalLights; lightIndex++)
+		{
+			const Coord3D& lightPos = TheGlobalData->m_terrainLightPos[lightIndex];
+			lightRay[lightIndex].Set(-lightPos.x, -lightPos.y, -lightPos.z);
+		}
 
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(pVB);
 		VERTEX_FORMAT *vbHardware = (VERTEX_FORMAT*)lockVtxBuffer.Get_Vertex_Array();
@@ -361,12 +365,6 @@ Int HeightMapRenderObjClass::updateVB(DX8VertexBufferClass	*pVB, VERTEX_FORMAT *
 
 				pMap->getUVData(mapX, mapY, U, V);
 				pMap->getAlphaUVData(mapX, mapY, UA, VA, alpha, &flipForBlend);
-
-				for (Int lightIndex=0; lightIndex < TheGlobalData->m_numGlobalLights; lightIndex++)
-				{
-					lightPos=&TheGlobalData->m_terrainLightPos[lightIndex];
-					lightRay[lightIndex].Set(-lightPos->x,-lightPos->y,	-lightPos->z);
-				}
 
 				//top-left sample
 				l2r.Set(2*MAP_XY_FACTOR,0,MAP_HEIGHT_SCALE*(pMap->getDisplayHeight(mapX+cellOffset, mapY) - pMap->getDisplayHeight(un0, mapY)));
@@ -911,7 +909,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 	}
 
 	if (!m_extraBlendTilePositions)
-	{	//Need to allocate memory
+	{
+		//Need to allocate memory
 		m_extraBlendTilePositions = NEW Int[DEFAULT_MAX_MAP_EXTRABLEND_TILES];
 		m_extraBlendTilePositionsSize = DEFAULT_MAX_MAP_EXTRABLEND_TILES;
 	}
@@ -926,7 +925,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 		Int y = m_extraBlendTilePositions[j] >> 16;
 		if (x >= partialRange.lo.x && x < partialRange.hi.x &&
 			y >= partialRange.lo.y && y < partialRange.hi.y)
-		{	//this tile is inside region being updated so remove it by shifting tile array
+		{
+			//this tile is inside region being updated so remove it by shifting tile array
 			memcpy(m_extraBlendTilePositions+j,m_extraBlendTilePositions+j+1,(m_numExtraBlendTiles-1-j)*sizeof(Int));
 			m_numExtraBlendTiles--;
 			j--;	//need to look at index j again because this tile was removed
@@ -942,7 +942,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 			Bool flipState,cliffState;
 			if (htMap->getExtraAlphaUVData(i,j,U,V,alpha,&flipState, &cliffState))
 			{	if (m_numExtraBlendTiles >= m_extraBlendTilePositionsSize)
-				{	//no more room to store extra blend tiles so enlarge the buffer.
+				{
+					//no more room to store extra blend tiles so enlarge the buffer.
 					Int *tempPositions=NEW Int[m_extraBlendTilePositionsSize+512];
 					memcpy(tempPositions, m_extraBlendTilePositions, m_extraBlendTilePositionsSize*sizeof(Int));
 					delete [] m_extraBlendTilePositions;
@@ -1048,6 +1049,8 @@ m_vertexBufferTiles(nullptr),
 m_vertexBufferBackup(nullptr),
 m_originX(0),
 m_originY(0),
+m_desiredDrawWidth(WorldHeightMap::NORMAL_DRAW_WIDTH),
+m_desiredDrawHeight(WorldHeightMap::NORMAL_DRAW_HEIGHT),
 m_oversizeDrawWidth(0),
 m_oversizeDrawHeight(0),
 m_indexBuffer(nullptr),
@@ -1081,45 +1084,19 @@ void HeightMapRenderObjClass::adjustTerrainLOD(Int adj)
 		case	TERRAIN_LOD_MIN: TheWritableGlobalData->m_useCloudMap = false;
 									TheWritableGlobalData->m_useLightMap = false ;
 									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = false;
-									TheWritableGlobalData->m_useHalfHeightMap = true;
-									break;
-		case TERRAIN_LOD_HALF_CLOUDS: TheWritableGlobalData->m_useCloudMap = true;
-									TheWritableGlobalData->m_useLightMap = true;
-									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = false;
-									TheWritableGlobalData->m_useHalfHeightMap = true;
-									break;
-		case TERRAIN_LOD_STRETCH_NO_CLOUDS: TheWritableGlobalData->m_useCloudMap = false;
-									TheWritableGlobalData->m_useLightMap = false;
-									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = true;
-									TheWritableGlobalData->m_useHalfHeightMap = false;
-									break;
-		case TERRAIN_LOD_STRETCH_CLOUDS: TheWritableGlobalData->m_useCloudMap = true;
-									TheWritableGlobalData->m_useLightMap = true;
-									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = true;
-									TheWritableGlobalData->m_useHalfHeightMap = false;
 									break;
 		case TERRAIN_LOD_NO_CLOUDS: TheWritableGlobalData->m_useCloudMap = false;
 									TheWritableGlobalData->m_useLightMap = false;
 									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = false;
-									TheWritableGlobalData->m_useHalfHeightMap = false;
 									break;
 		default:
 		case TERRAIN_LOD_NO_WATER: TheWritableGlobalData->m_useCloudMap = true;
 									TheWritableGlobalData->m_useLightMap = true;
 									TheWritableGlobalData->m_useWaterPlane = false;
-									TheWritableGlobalData->m_stretchTerrain = false;
-									TheWritableGlobalData->m_useHalfHeightMap = false;
 									break;
 		case TERRAIN_LOD_MAX: TheWritableGlobalData->m_useCloudMap = true;
 									TheWritableGlobalData->m_useLightMap = true;
 									TheWritableGlobalData->m_useWaterPlane = true;
-									TheWritableGlobalData->m_stretchTerrain = false;
-									TheWritableGlobalData->m_useHalfHeightMap = false;
 									break;
 	}
 	if (m_map==nullptr) return;
@@ -1178,17 +1155,13 @@ void HeightMapRenderObjClass::oversizeTerrain(Int tilesToOversize)
 	{
 		m_oversizeDrawWidth = WorldHeightMap::NORMAL_DRAW_WIDTH + VERTEX_BUFFER_TILE_LENGTH * tilesToOversize;
 		m_oversizeDrawHeight = WorldHeightMap::NORMAL_DRAW_HEIGHT + VERTEX_BUFFER_TILE_LENGTH * tilesToOversize;
-		m_oversizeDrawWidth = std::min(m_oversizeDrawWidth, m_map->getXExtent());
-		m_oversizeDrawHeight = std::min(m_oversizeDrawHeight, m_map->getYExtent());
-		setTerrainDrawSize(m_oversizeDrawWidth, m_oversizeDrawHeight);
+		setTerrainDrawSize(0, 0);
 	}
 	else
 	{
 		m_oversizeDrawWidth = 0;
 		m_oversizeDrawHeight = 0;
-		Int width = std::min((Int)WorldHeightMap::NORMAL_DRAW_WIDTH, m_map->getXExtent());
-		Int height = std::min((Int)WorldHeightMap::NORMAL_DRAW_HEIGHT, m_map->getYExtent());
-		setTerrainDrawSize(width, height);
+		setTerrainDrawSize(m_desiredDrawWidth, m_desiredDrawHeight);
 	}
 }
 
@@ -1197,15 +1170,17 @@ void HeightMapRenderObjClass::setTerrainDrawSize(Int width, Int height)
 	if (m_map == nullptr)
 		return;
 
-	if (m_oversizeDrawWidth != 0)
-		width = m_oversizeDrawWidth;
-	else
-		width = std::min(width, m_map->getXExtent());
+	if (width > 0)
+		m_desiredDrawWidth = width;
 
-	if (m_oversizeDrawHeight != 0)
-		height = m_oversizeDrawHeight;
-	else
-		height = std::min(height, m_map->getYExtent());
+	if (height > 0)
+		m_desiredDrawHeight = height;
+
+	width = std::max(m_oversizeDrawWidth, m_desiredDrawWidth);
+	height = std::max(m_oversizeDrawHeight, m_desiredDrawHeight);
+
+	width = std::min(width, m_map->getXExtent());
+	height = std::min(height, m_map->getYExtent());
 
 	if (width == m_map->getDrawWidth() && height == m_map->getDrawHeight())
 		return;
@@ -1226,7 +1201,7 @@ void HeightMapRenderObjClass::setTerrainDrawSize(Int width, Int height)
 	//delete m_shroud;
 	//m_shroud = nullptr;
 	initHeightData(m_map->getDrawWidth(), m_map->getDrawHeight(), m_map, nullptr, FALSE);
-	m_needFullUpdate = true;
+	scheduleFullUpdate();
 }
 
 
@@ -1260,7 +1235,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 			Int m_mapDX=pMap->getXExtent();
 			Int m_mapDY=pMap->getYExtent();
 			if (!m_extraBlendTilePositions)
-			{	//Need to allocate memory
+			{
+				//Need to allocate memory
 				m_extraBlendTilePositions = NEW Int[DEFAULT_MAX_MAP_EXTRABLEND_TILES];
 				m_extraBlendTilePositionsSize = DEFAULT_MAX_MAP_EXTRABLEND_TILES;
 			}
@@ -1275,7 +1251,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 					Bool flipState,cliffState;
 					if (pMap->getExtraAlphaUVData(i,j,U,V,alpha,&flipState, &cliffState))
 					{	if (m_numExtraBlendTiles >= m_extraBlendTilePositionsSize)
-						{	//no more room to store extra blend tiles so enlarge the buffer.
+						{
+							//no more room to store extra blend tiles so enlarge the buffer.
 							Int *tempPositions=NEW Int[m_extraBlendTilePositionsSize+512];
 							memcpy(tempPositions, m_extraBlendTilePositions, m_extraBlendTilePositionsSize*sizeof(Int));
 							delete [] m_extraBlendTilePositions;
@@ -1293,7 +1270,7 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 
 	m_originX = 0;
 	m_originY = 0;
-	m_needFullUpdate = true;
+	scheduleFullUpdate();
 
 	// If the size changed, we need to allocate.
 	Bool needToAllocate = (x != m_x || y != m_y);
@@ -1302,7 +1279,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 		needToAllocate = true;
 	}
 	if (data && needToAllocate && m_treeBuffer != nullptr)
-	{	//requested heightmap different from old one.
+	{
+		//requested heightmap different from old one.
 		freeIndexVertexBuffers();
 		//Create static index buffers.  These will index the vertex buffers holding the map.
 		m_indexBuffer=NEW_REF(DX8IndexBufferClass,(VERTEX_BUFFER_TILE_LENGTH*VERTEX_BUFFER_TILE_LENGTH*2*3));
@@ -1670,8 +1648,17 @@ void HeightMapRenderObjClass::updateCenter(CameraClass *camera, const Vector3 *c
 
 	BaseHeightMapRenderObjClass::updateCenter(camera, cameraPivot, pLightsIterator);
 
+	m_updating = true;
+
 	if (m_x >= m_map->getXExtent() && m_y >= m_map->getYExtent())
-  {
+	{
+		if (m_needFullUpdate)
+		{
+			m_needFullUpdate = false;
+			updateBlock(0, 0, m_x-1, m_y-1, m_map, pLightsIterator);
+		}
+
+		m_updating = false;
 		return; // no need to center.
 	}
 
@@ -1792,7 +1779,6 @@ void HeightMapRenderObjClass::updateCenter(CameraClass *camera, const Vector3 *c
 
 	WorldHeightMap::DrawArea newDrawArea = m_map->createDrawArea(newOrgX, newOrgY);
 
-	m_updating = true;
 	if (m_needFullUpdate)
 	{
 		m_needFullUpdate = false;
@@ -1904,7 +1890,6 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		W3DShaderManager::updateCloud();
 	}
 
-	Matrix3D tm(Transform);
 #if 0 // There is some weirdness sometimes with the dx8 static buffers.
 			// This usually fixes terrain flashing.  jba.
 	static Int delay = 1;
@@ -1946,8 +1931,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	ShaderClass::Invalidate();
 
-	//	tm.Scale(ObjSpaceExtent);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
+	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 
 	//Apply the shader and material
 
@@ -1959,7 +1943,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		((SceneClass *)rinfo.Camera.Get_User_Data())->Get_Extra_Pass_Polygon_Mode() == SceneClass::EXTRA_PASS_CLEAR_LINE)
 	{
 			if (WW3D::Is_Texturing_Enabled())
-			{	//first pass where we just fill the z-buffer
+			{
+				//first pass where we just fill the z-buffer
 
 				devicePasses=1;	//one pass solid, next in wireframe.
 				doMultiPassWireFrame=TRUE;
@@ -1973,7 +1958,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 				}
 			}
 			else
-			{	//wireframe pass
+			{
+				//wireframe pass
 				//Set to vertex diffuse lighting
 				DX8Wrapper::Set_Material(m_vertexMaterialClass);
 				//Set shader to non-textured solid color from vertex
@@ -1997,23 +1983,27 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
  		//set correct shader based on current settings
  		if (!ShaderClass::Is_Backface_Culling_Inverted())
- 		{	//not reflection pass
+ 		{
+ 			//not reflection pass
  			if (TheGlobalData->m_useLightMap && doCloud)
  			{	st=W3DShaderManager::ST_TERRAIN_BASE_NOISE12;
  			}
  			else
  			if (TheGlobalData->m_useLightMap)
- 			{	//lightmap only
+ 			{
+ 				//lightmap only
  				st=W3DShaderManager::ST_TERRAIN_BASE_NOISE2;
  			}
  			else
  			if (doCloud)
- 			{	//cloudmap only
+ 			{
+ 				//cloudmap only
  				st=W3DShaderManager::ST_TERRAIN_BASE_NOISE1;
  			}
  		}
  		else
- 		{	//reflection pass, just do base texture
+ 		{
+ 			//reflection pass, just do base texture
  			st=W3DShaderManager::ST_TERRAIN_BASE;
  		}
 
@@ -2091,15 +2081,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		Int yCoordMax = m_y+m_map->getDrawOrgY()-1;
 		Int xCoordMin = m_map->getDrawOrgX();
 		Int xCoordMax = m_x+m_map->getDrawOrgX()-1;
-	#ifdef TEST_CUSTOM_EDGING
-		// Draw edging just before last pass.
-		DX8Wrapper::Set_Texture(0,nullptr);
-		DX8Wrapper::Set_Texture(1,nullptr);
-		m_stageTwoTexture->restore();
-		m_customEdging->drawEdging(m_map, xCoordMin, xCoordMax, yCoordMin, yCoordMax,
-			m_stageZeroTexture, doCloud?m_stageTwoTexture: nullptr, TheGlobalData->m_useLightMap?m_stageThreeTexture: nullptr);
-	#endif
-	#ifdef DO_ROADS
+#ifdef DO_ROADS
 		DX8Wrapper::Set_Texture(0,nullptr);
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
@@ -2118,16 +2100,12 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	if (m_propBuffer) {
 		m_propBuffer->drawProps(rinfo);
 	}
-	#ifdef DO_SCORCH
 		DX8Wrapper::Set_Texture(0,nullptr);
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
 
-		ShaderClass::Invalidate();
-		if (!ShaderClass::Is_Backface_Culling_Inverted()) {
-			drawScorches();
-		}
-	#endif
+		drawScorches();
+
 		DX8Wrapper::Set_Texture(0,nullptr);
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
@@ -2262,7 +2240,8 @@ void HeightMapRenderObjClass::renderExtraBlendTiles()
 			if (x >= drawStartX && x < drawEdgeX &&
 				y >= drawStartY && y < drawEdgeY &&
 				m_map->getExtraAlphaUVData(x,y,U,V,alpha,&flipState, &cliffState))
-			{	//this tile is inside visible region and has 3rd blend layer.
+			{
+				//this tile is inside visible region and has 3rd blend layer.
 
 				Int idx = x+y*xExtent;
 
@@ -2392,11 +2371,13 @@ void HeightMapRenderObjClass::renderExtraBlendTiles()
 				st = W3DShaderManager::ST_ROAD_BASE_NOISE12;
  			}
  			else if (TheGlobalData->m_useLightMap)
- 			{	//lightmap only
+ 			{
+ 				//lightmap only
  				st = W3DShaderManager::ST_ROAD_BASE_NOISE2;
  			}
  			else if (doCloud)
- 			{	//cloudmap only
+ 			{
+ 				//cloudmap only
  				st = W3DShaderManager::ST_ROAD_BASE_NOISE1;
  			}
 

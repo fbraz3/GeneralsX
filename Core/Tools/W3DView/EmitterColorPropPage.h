@@ -22,9 +22,9 @@
 //
 
 #include "resource.h"
-#include "vector3.h"
+#include "WWMath/vector3.h"
 #include "ColorBar.h"
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 
 // Forward declarations
 class EmitterInstanceListClass;
@@ -39,7 +39,7 @@ class EmitterColorPropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterColorPropPageClass (EmitterInstanceListClass *pemitter_list = nullptr);
-	~EmitterColorPropPageClass ();
+	~EmitterColorPropPageClass () override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterColorPropPageClass)

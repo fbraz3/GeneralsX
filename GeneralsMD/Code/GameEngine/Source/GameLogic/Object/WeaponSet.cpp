@@ -208,6 +208,7 @@ void WeaponSet::crc( Xfer *xfer )
 	* 1: Initial version
 	* 2: TheSuperHackers @tweak Upgrade damage type flags from integer to BitFlags for Generals.
 	*    Zero Hour already had this at version 1.
+	* 3: TheSuperHackers @bugfix bobtista 14/08/2026 Now serialize m_hasPitchLimit instead of m_hasDamageWeapon twice
 	*/
 // ------------------------------------------------------------------------------------------------
 void WeaponSet::xfer( Xfer *xfer )
@@ -216,7 +217,7 @@ void WeaponSet::xfer( Xfer *xfer )
 #if RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 1;
 #else
-	const XferVersion currentVersion = 2;
+	const XferVersion currentVersion = 3;
 #endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
@@ -238,6 +239,9 @@ void WeaponSet::xfer( Xfer *xfer )
 			const ThingTemplate* tt = TheThingFactory->findTemplate(ttName);
 			if (tt == nullptr)
 				throw INI_INVALID_DATA;
+
+			// TheSuperHackers @fix bobtista 27/01/2026 Use the same final override as Object.
+			tt = static_cast<const ThingTemplate*>(tt->getFinalOverride());
 
 			m_curWeaponTemplateSet = tt->findWeaponTemplateSet(wsFlags);
 			if (m_curWeaponTemplateSet == nullptr)
@@ -293,7 +297,7 @@ void WeaponSet::xfer( Xfer *xfer )
 	}
 #endif
 
-	xfer->xferBool(&m_hasDamageWeapon);
+	xfer->xferBool(version >= 3 ? &m_hasPitchLimit : &m_hasDamageWeapon);
 	xfer->xferBool(&m_hasDamageWeapon);
 
 #if RTS_GENERALS
@@ -668,7 +672,8 @@ CanAttackResult WeaponSet::getAbleToUseWeaponAgainstTarget( AbleToAttackType att
 			Bool handled = FALSE;
 			ContainModuleInterface *contain = containedBy ? containedBy->getContain() : nullptr;
 			if( contain && contain->isGarrisonable() && contain->isEnclosingContainerFor( source ))
-			{                                       // non enclosing garrison containers do not use firepoints. Lorenzen, 6/11/03
+			{
+				// non enclosing garrison containers do not use firepoints. Lorenzen, 6/11/03
 				//For contained things, we need to fake-move objects to the best garrison point in order
 				//to get precise range checks.
 				Coord3D targetPos = *pos;
@@ -786,9 +791,9 @@ CanAttackResult WeaponSet::getAbleToUseWeaponAgainstTarget( AbleToAttackType att
 // selected and get the "attack if I move" cursor against an enemy. since the stinger site can't
 // move or fire, you shouldn't really EVER get this cursor for it. and since we just verified above
 // that our slaves (the soldiers) can attack correctly, just nork it.
-		if (source->isKindOf( KINDOF_IMMOBILE )
-				&& source->isKindOf( KINDOF_SPAWNS_ARE_THE_WEAPONS )
-				&& okResult == ATTACKRESULT_POSSIBLE_AFTER_MOVING)
+		if (source->isKindOf( KINDOF_IMMOBILE ) &&
+				source->isKindOf( KINDOF_SPAWNS_ARE_THE_WEAPONS ) &&
+				okResult == ATTACKRESULT_POSSIBLE_AFTER_MOVING)
 			okResult = ATTACKRESULT_POSSIBLE;
 
 		return okResult;

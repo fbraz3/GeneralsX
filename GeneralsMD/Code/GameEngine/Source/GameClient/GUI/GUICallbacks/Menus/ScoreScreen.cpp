@@ -77,6 +77,7 @@
 #include "GameLogic/VictoryConditions.h"
 #include "GameClient/Display.h"
 #include "GameClient/GUICallbacks.h"
+#include "GameClient/SaveLoadFeedback.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Gadget.h"
@@ -101,6 +102,17 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/ChallengeGenerals.h"
 
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
+#include <cinttypes>
+extern NGMPGame* TheNGMPGame;
+#endif
+
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -109,7 +121,7 @@ static NameKeyType parentID = NAMEKEY_INVALID;
 static NameKeyType buttonOkID = NAMEKEY_INVALID;
 ///static NameKeyType buttonRehostID = NAMEKEY_INVALID;
 static NameKeyType textEntryChatID = NAMEKEY_INVALID;
-static NameKeyType buttonEmoteID = NAMEKEY_INVALID;
+static NameKeyType buttonChatID = NAMEKEY_INVALID;
 static NameKeyType chatBoxBorderID = NAMEKEY_INVALID;
 static NameKeyType buttonContinueID = NAMEKEY_INVALID;
 static NameKeyType buttonBuddiesID = NAMEKEY_INVALID;
@@ -121,7 +133,7 @@ static GameWindow *buttonOk = nullptr;
 //static GameWindow *buttonRehost = nullptr;
 static GameWindow *buttonContinue = nullptr;
 static GameWindow *textEntryChat = nullptr;
-static GameWindow *buttonEmote = nullptr;
+static GameWindow *buttonChat = nullptr;
 static GameWindow *chatBoxBorder = nullptr;
 static GameWindow *buttonBuddies = nullptr;
 static GameWindow *staticTextGameSaved = nullptr;
@@ -192,8 +204,18 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 
 void startNextCampaignGame()
 {
-	TheShell->popImmediate();
-	TheShell->hideShell();
+	// GeneralsX @bugfix coolswood 18/07/2026 Fix Generals Challenge defeat during the next mission's intro cinematic.
+	// The previous ordering performed popImmediate()/hideShell() before queuing MSG_NEW_GAME(GAME_SINGLE_PLAYER).
+	// Hiding the shell triggers the next menu's init (e.g. SaveLoad), which calls Shell::showShellMap(TRUE),
+	// and showShellMap appends its own MSG_NEW_GAME(GAME_SHELL) for the shell map and overwrites m_pendingFile
+	// with the shell map name. That GAME_SHELL message then races ahead of the GAME_SINGLE_PLAYER message and
+	// is processed first by onNewGame(): with m_gameMode == GAME_SHELL the isChallengeCampaign check is false,
+	// TheGameInfo stays null, placeNetworkBuildingsForPlayer() is skipped, the local player never receives a
+	// starting base, and the map's "PLAYER_HAS_N_OR_FEWER_BUILDINGS" script fires doDefeat() a few frames after
+	// the map loads (visible as the defeat screen during the intro cinematic). Fix: set m_pendingFile and queue
+	// MSG_NEW_GAME(GAME_SINGLE_PLAYER) BEFORE the shell teardown so our message is first in the queue, and
+	// re-assert m_pendingFile afterwards in case Shell::showShellMap clobbered it. The shell's duplicate
+	// MSG_NEW_GAME(GAME_SHELL) now lands behind ours and is rejected by the onNewGame() guard.
 	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
 	if (TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 	{
@@ -215,11 +237,19 @@ void startNextCampaignGame()
 			TheGameLogic->clearGameData();
 	}
 
-	// send a message to the logic for a new game
+	// Queue MSG_NEW_GAME(GAME_SINGLE_PLAYER) before popImmediate()/hideShell(): this guarantees it sits ahead
+	// of any MSG_NEW_GAME(GAME_SHELL) that the shell teardown may append via Shell::showShellMap(TRUE).
 	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 	msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 	msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
 	msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
+
+	TheShell->popImmediate();
+	TheShell->hideShell();
+
+	// Re-assert the real pending file: prepareNewGame() copies m_pendingFile into m_mapName, so the value
+	// present here is what actually loads. Shell::showShellMap(TRUE) may have overwritten it above.
+	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
 
 	InitRandom(0);
 }
@@ -270,7 +300,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	parentID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ParentScoreScreen" );
 	buttonOkID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonOk" );
 	textEntryChatID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:TextEntryChat" );
-	buttonEmoteID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonEmote" );
+	buttonChatID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonEmote" ); // TODO Rename ButtonEmote to ButtonChat in .wnd file
 	listboxChatWindowScoreScreenID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ListboxChatWindowScoreScreen" );
 	listboxAcademyWindowScoreScreenID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ListboxWarschoolAdvice" );
 	staticTextAcademyTitleID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:StaticTextWarSchool" );
@@ -284,7 +314,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	buttonOk = TheWindowManager->winGetWindowFromId( parent, buttonOkID );
 	textEntryChat = TheWindowManager->winGetWindowFromId( parent, textEntryChatID );
-	buttonEmote = TheWindowManager->winGetWindowFromId( parent,buttonEmoteID  );
+	buttonChat = TheWindowManager->winGetWindowFromId( parent,buttonChatID  );
 	listboxChatWindowScoreScreen = TheWindowManager->winGetWindowFromId( parent, listboxChatWindowScoreScreenID );
 	listboxAcademyWindowScoreScreen = TheWindowManager->winGetWindowFromId( parent, listboxAcademyWindowScoreScreenID );
 	staticTextAcademyTitle = TheWindowManager->winGetWindowFromId( parent, staticTextAcademyTitleID );
@@ -576,6 +606,22 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 							startNextCampaignGame();
 						}
 					}
+					else if (screenType == SCORESCREEN_INTERNET)
+					{
+#if defined(SAGE_USE_NGMP)
+						NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+						if (pLobbyInterface != nullptr)
+						{
+							uint64_t currentMatchID = pLobbyInterface->GetCurrentMatchID();
+
+							if (currentMatchID != 0)
+							{
+								std::string strMatchURL = NGMP::GetMatchViewURL(currentMatchID);
+								NGMP::OpenURL(strMatchURL);
+							}
+						}
+#endif
+					}
 				}
 			}
 			else if ( controlID == buttonBuddiesID )
@@ -592,7 +638,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				saveReplayLayout->bringForward();
 			}
 
-			else if ( controlID == buttonEmoteID )
+			else if ( controlID == buttonChatID )
 			{
 				// read the user's input
 				txtInput.set(GadgetTextEntryGetText( textEntryChat ));
@@ -603,7 +649,9 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
+					{
+						TheLAN->RequestPlayerChat(txtInput);
+					}
 					//add the gamespy chat request here
 			}
 			for(Int i = 0; i < MAX_SLOTS; ++i)
@@ -661,7 +709,9 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				// Echo the user's input to the chat window
 				if (!txtInput.isEmpty())
 					if(TheLAN)
-						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
+					{
+						TheLAN->RequestPlayerChat(txtInput);
+					}
 					//add the gamespy chat request here
 
 			}
@@ -685,8 +735,8 @@ void initSkirmish()
 	grabMultiPlayerInfo();
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (chatBoxBorder)
 		chatBoxBorder->winHide(TRUE);
 	if (buttonBuddies)
@@ -815,8 +865,8 @@ void finishSinglePlayerInit()
 {
 	if(TheCampaignManager->isVictorious())
 	{
-		if (TheCampaignManager->getCurrentCampaign()
-		 && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+		if (TheCampaignManager->getCurrentCampaign() &&
+		 TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		{
 			// display challenge style win/loss
 			AsciiString name = TheCampaignManager->getCurrentMission()->m_generalName;
@@ -887,8 +937,8 @@ void finishSinglePlayerInit()
 					buttonContinue->winHide(TRUE);
 				if (textEntryChat)
 					textEntryChat->winHide(TRUE);
-				if (buttonEmote)
-					buttonEmote->winHide(TRUE);
+				if (buttonChat)
+					buttonChat->winHide(TRUE);
 				if (listboxChatWindowScoreScreen)
 					listboxChatWindowScoreScreen->winHide(TRUE);
 				if( listboxAcademyWindowScoreScreen )
@@ -925,15 +975,15 @@ void finishSinglePlayerInit()
 			GadgetButtonSetText(buttonContinue, TheGameText->fetch("GUI:SaveAndContinue"));
 
 			// auto save game
-			TheGameState->missionSave();
+			presentSaveResult( TheGameState->missionSave() );
 			if(staticTextGameSaved)
 				staticTextGameSaved->winHide(FALSE);
 		}
 	}
 	else
 	{
-		if (TheCampaignManager->getCurrentCampaign()
-		 && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+		if (TheCampaignManager->getCurrentCampaign() &&
+		 TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		{
 			// display challenge style win/loss
 			AsciiString name = TheCampaignManager->getCurrentMission()->m_generalName;
@@ -971,8 +1021,8 @@ void finishSinglePlayerInit()
 		buttonContinue->winHide(FALSE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(TRUE);
@@ -989,8 +1039,8 @@ void finishSinglePlayerInit()
 //		buttonRehost->winHide(TRUE);
 
 	// need to do this here
-	if ( TheCampaignManager->getCurrentCampaign()
-	 && !TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+	if ( TheCampaignManager->getCurrentCampaign() &&
+	 !TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
 		TheTransitionHandler->setGroup("ScoreScreenShow");
 }
 
@@ -1004,8 +1054,8 @@ void initReplaySinglePlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (chatBoxBorder)
 		chatBoxBorder->winHide(TRUE);
 	if (buttonContinue)
@@ -1035,8 +1085,8 @@ void initLANMultiPlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(FALSE);
-	if (buttonEmote)
-		buttonEmote->winHide(FALSE);
+	if (buttonChat)
+		buttonChat->winHide(FALSE);
 	if (buttonContinue)
 		buttonContinue->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
@@ -1063,13 +1113,68 @@ void initInternetMultiPlayer()
 	if(staticTextGameSaved)
 		staticTextGameSaved->winHide(TRUE);
 	if (buttonContinue)
+#if defined(SAGE_USE_NGMP)
+		buttonContinue->winHide(FALSE);
+#else
 		buttonContinue->winHide(TRUE);
+#endif
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(FALSE);
+
+#if defined(SAGE_USE_NGMP)
+	// attempt to register our outcome
+	NGMP_OnlineServices_StatsInterface* pStatsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+	if (pStatsInterface != nullptr)
+	{
+		Player* localPlayer = ThePlayerList->getLocalPlayer();
+
+		if (localPlayer != nullptr && TheNGMPGame)
+		{
+			if (!TheNGMPGame->HasCommittedOutcome() && !TheNGMPGame->IsCommittingOutcome())
+			{
+				TheNGMPGame->SetCommittingOutcome(true);
+				pStatsInterface->CommitMyOutcome(localPlayer->getScoreKeeper(), TheVictoryConditions->isLocalAlliedVictory());
+			}
+		}
+	}
+
+	// Leave the lobby / populate match info
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface != nullptr)
+	{
+		if (pLobbyInterface->IsInLobby())
+		{
+			LobbyEntry& lobby = pLobbyInterface->GetCurrentLobby();
+
+			UnicodeString strMatchID;
+			strMatchID.format(L"\nMatch ID: %" PRIu64, lobby.match_id);
+
+			UnicodeString strMatchURL;
+
+			if (lobby.match_id == 0)
+			{
+				buttonContinue->winHide(TRUE);
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, UnicodeString(L"\nMatch data is not available online because the match had AI present OR less than 2 human players."), GameSpyColor[GSCOLOR_DEFAULT], -1);
+			}
+			else
+			{
+				buttonContinue->winHide(FALSE);
+				std::string matchUrl = NGMP::GetMatchViewURL(lobby.match_id);
+				strMatchURL = UnicodeString(L"\nView match data, participants, replays, anti-cheat data: ");
+				strMatchURL.concat(NGMP::UTF8ToUnicode(matchUrl));
+
+				buttonContinue->winSetText(UnicodeString(L"VIEW MATCH ONLINE"));
+
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, strMatchID, GameSpyColor[GSCOLOR_DEFAULT], -1);
+				GadgetListBoxAddEntryText(listboxAcademyWindowScoreScreen, strMatchURL, GameSpyColor[GSCOLOR_DEFAULT], -1);
+			}
+		}
+	}
+#endif
 
 	//Provide academy advice in internet games.
 	if( listboxAcademyWindowScoreScreen )
@@ -1105,8 +1210,8 @@ void initReplayMultiPlayer()
 		staticTextGameSaved->winHide(TRUE);
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
-	if (buttonEmote)
-		buttonEmote->winHide(TRUE);
+	if (buttonChat)
+		buttonChat->winHide(TRUE);
 	if (listboxChatWindowScoreScreen)
 		listboxChatWindowScoreScreen->winHide(TRUE);
 	if( listboxAcademyWindowScoreScreen )
@@ -1649,17 +1754,31 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 	if ( screenType == SCORESCREEN_INTERNET )
 	{
 		DEBUG_LOG(("populatePlayerInfo() - SCORESCREEN_INTERNET"));
-		if (TheGameSpyGame && !TheGameSpyGame->getUseStats()
-		 && !TheGameSpyGame->isQMGame() )  //QuickMatch games always record stats
+#if defined(SAGE_USE_NGMP)
+		if (TheNGMPGame && !TheNGMPGame->getUseStats()
+			&& !TheNGMPGame->isQMGame())  //QuickMatch games always record stats
+			return;	//the host has requested not to record stats for this game.
+#else
+		if (TheGameSpyGame && !TheGameSpyGame->getUseStats() &&
+		 !TheGameSpyGame->isQMGame() )  //QuickMatch games always record stats
 			return;	//the host has requested not to record stats for this game.
 
 		Int localID = TheGameSpyInfo->getLocalProfileID();
 		if (localID)
+#endif
 		{
-			Int localSlotNum = TheGameSpyGame->getLocalSlotNum();
+#if defined(SAGE_USE_NGMP)
+			Int localSlotNum = TheNGMPGame ? TheNGMPGame->getLocalSlotNum() : -1;
+#else
+			Int localSlotNum = TheGameSpyGame ? TheGameSpyGame->getLocalSlotNum() : -1;
+#endif
 			if (player->isLocalPlayer())
 			{
-				GameSpyGameSlot *localSlot = TheGameSpyGame->getGameSpySlot(localSlotNum);
+#if defined(SAGE_USE_NGMP)
+				GameSlot *localSlot = TheNGMPGame ? TheNGMPGame->getGameSpySlot(localSlotNum) : nullptr;
+#else
+				GameSpyGameSlot *localSlot = TheGameSpyGame ? TheGameSpyGame->getGameSpySlot(localSlotNum) : nullptr;
+#endif
 				if (localSlot)
 				{
 					if (TheVictoryConditions->amIObserver())
@@ -1669,6 +1788,13 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 						return;
 					}
 
+#if defined(SAGE_USE_NGMP)
+					NGMP_OnlineServices_StatsInterface* pStatsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+					if (pStatsInterface != nullptr)
+					{
+						// Tracked via CommitMyOutcome
+					}
+#else
 					PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(localID);
 
 					UnsignedInt latestHumanInGame = 0;
@@ -2026,6 +2152,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 					GameSpyMiscPreferences mPref;
 					mPref.setCachedStats(GameSpyPSMessageQueueInterface::formatPlayerKVPairs(stats).c_str());
 					mPref.write();
+#endif
 				}
 			}
 		}
@@ -2042,15 +2169,13 @@ void grabMultiPlayerInfo()
 	typedef ScoreMap::reverse_iterator RevScoreMapIt;
 
 	Int playerCount = 0;
-	AsciiString playerName;
-	Player *player;
 	ScoreMap scores;
 	ScoreMapIt it;
 	scores.clear();
 	Int adder = 1; // Varible used to add on an offset to the score to make sure we don't add people to the same map
 
-	player = ThePlayerList->getLocalPlayer();
-	if (player)
+	Player *localPlayer = ThePlayerList->getLocalPlayer();
+	if (localPlayer)
 	{
 		const Image *image = TheMappedImageCollection->findImageByName("MutiPlayer_ScoreScreen");
 		if(image)
@@ -2063,8 +2188,7 @@ void grabMultiPlayerInfo()
 	// Add each player and score to the map. THis allows us to sort the players based on score.
 	for( Int i = 0; i < MAX_SLOTS; ++i)
 	{
-		playerName.format("player%d",i);
-		player = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(playerName));
+		Player *player = ThePlayerList->getPlayerFromSlotIndex(i);
 		if(player)
 		{
 			Int score = player->getScoreKeeper()->calculateScore();

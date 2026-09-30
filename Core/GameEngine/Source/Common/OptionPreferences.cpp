@@ -38,6 +38,7 @@
 #include "Common/OptionPreferences.h"
 
 #include "GameClient/ClientInstance.h"
+#include "GameClient/Display.h"
 #include "GameClient/LookAtXlat.h"
 #include "GameClient/Mouse.h"
 
@@ -203,6 +204,18 @@ Bool OptionPreferences::getAlternateMouseModeEnabled()
 	return FALSE;
 }
 
+Bool OptionPreferences::getRightMouseScrollWithAlternateMouseEnabled() const
+{
+	OptionPreferences::const_iterator it = find("UseRightMouseScrollWithAlternateMouse");
+	if (it == end())
+		return TheGlobalData->m_useRightMouseScrollWithAlternateMouse;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
 Bool OptionPreferences::getRetaliationModeEnabled()
 {
 	OptionPreferences::const_iterator it = find("Retaliation");
@@ -225,6 +238,18 @@ Bool OptionPreferences::getDoubleClickAttackMoveEnabled()
 		return TRUE;
 
 	return FALSE;
+}
+
+Int OptionPreferences::getJpegQuality() const
+{
+	OptionPreferences::const_iterator it = find("JpegQuality");
+	if (it == end())
+		return DEFAULT_JPEG_QUALITY;
+
+	// TheSuperHackers @info bobtista 14/07/2026 Clamp the quality to 50-95: above 95 the file
+	// size increases significantly with no visible benefit, below 50 the image degrades visibly.
+	const Int quality = atoi(it->second.str());
+	return clamp(50, quality, 95);
 }
 
 Real OptionPreferences::getScrollFactor()
@@ -424,18 +449,6 @@ Int OptionPreferences::getStaticGameDetail()
 		return TheGameLODManager->getStaticLODLevel();
 
 	return TheGameLODManager->getStaticGameLODIndex(it->second);
-}
-
-Bool OptionPreferences::getSendDelay()
-{
-	OptionPreferences::const_iterator it = find("SendDelay");
-	if (it == end())
-		return TheGlobalData->m_firewallSendDelay;
-
-	if (stricmp(it->second.str(), "yes") == 0) {
-		return TRUE;
-	}
-	return FALSE;
 }
 
 Int OptionPreferences::getFirewallBehavior()
@@ -875,3 +888,96 @@ Bool OptionPreferences::getShowMoneyPerMinute() const
 	}
 	return FALSE;
 }
+
+Real OptionPreferences::getMaxCameraHeight() const
+{
+	OptionPreferences::const_iterator it = find("MaxCameraHeight");
+	if (it == end())
+		return TheGlobalData->m_maxCameraHeight;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 100.0f)
+		val = 100.0f;
+	if (val > 1000.0f)
+		val = 1000.0f;
+	return val;
+}
+
+Real OptionPreferences::getMinCameraHeight() const
+{
+	OptionPreferences::const_iterator it = find("MinCameraHeight");
+	if (it == end())
+		return TheGlobalData->m_minCameraHeight;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 50.0f)
+		val = 50.0f;
+	if (val > 300.0f)
+		val = 300.0f;
+	return val;
+}
+
+Real OptionPreferences::getCameraPitch() const
+{
+	OptionPreferences::const_iterator it = find("CameraPitch");
+	if (it == end())
+		return TheGlobalData->m_cameraPitch;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 20.0f)
+		val = 20.0f;
+	if (val > 60.0f)
+		val = 60.0f;
+	return val;
+}
+
+Real OptionPreferences::getTerrainDrawDistanceScale() const
+{
+	OptionPreferences::const_iterator it = find("TerrainDrawDistanceScale");
+	if (it == end())
+		return TheGlobalData->m_terrainDrawDistanceScale;
+
+	Real val = (Real)atof(it->second.str());
+	if (val < 1.0f)
+		val = 1.0f;
+	if (val > 2.0f)
+		val = 2.0f;
+	return val;
+}
+
+Real OptionPreferences::getGameWindowTransitionSpeedMultiplier() const
+{
+	OptionPreferences::const_iterator it = find("GameWindowTransitionSpeedMultiplier");
+	if (it == end())
+		return 1.0f;
+
+	Real speed = (Real) atof(it->second.str());
+	return clamp(1.0f, speed, 1000.0f);
+}
+
+// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+Int OptionPreferences::getSkirmishTickRate() const
+{
+	OptionPreferences::const_iterator it = find("TickRate");
+	if (it == end())
+	{
+		it = find("GameSpeed");
+	}
+	if (it == end())
+	{
+		it = find("SkirmishTickRate");
+	}
+	if (it == end())
+	{
+		return LOGICFRAMES_PER_SECOND;
+	}
+
+	Int rate = atoi(it->second.str());
+	if (rate <= 0)
+	{
+		return LOGICFRAMES_PER_SECOND;
+	}
+
+	return clamp(5, rate, 120);
+}
+

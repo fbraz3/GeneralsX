@@ -174,13 +174,14 @@ double EulerAnglesClass::Get_Angle(int i)
  *=============================================================================================*/
 void EulerAnglesClass::From_Matrix(const Matrix3D & M, int order)
 {
+	// GeneralsX @bugfix Mr. Meeseeks 17/07/2026 Use deterministic WWMath::Sqrt instead of raw sqrt
 	int i,j,k,h,n,s,f;
 
 	Order = order;
 	_euler_unpack_order(order,i,j,k,h,n,s,f);
 
 	if (s == EULER_REPEAT_YES) {
-		double sy = sqrt(M[i][j]*M[i][j] + M[i][k]*M[i][k]);
+		double sy = WWMath::Sqrt(M[i][j]*M[i][j] + M[i][k]*M[i][k]);
 
 		if (sy > 16*FLT_EPSILON) {
 
@@ -197,7 +198,7 @@ void EulerAnglesClass::From_Matrix(const Matrix3D & M, int order)
 
 	} else {
 
-		double cy = sqrt(M[i][i]*M[i][i] + M[j][i]*M[j][i]);
+		double cy = WWMath::Sqrt(M[i][i]*M[i][i] + M[j][i]*M[j][i]);
 
 		if (cy > 16*FLT_EPSILON) {
 
@@ -219,22 +220,22 @@ void EulerAnglesClass::From_Matrix(const Matrix3D & M, int order)
 	// Trying to "clean" up the eulers, special cased for XYZr
 	if (order == EulerOrderXYZr) {
 
-		const double PI = 3.141592654;
+		const double PIVal = 3.141592654;
 
-		double x2 = PI + Angle[0];
-		double y2 = PI - Angle[1];
-		double z2 = PI + Angle[2];
+		double x2 = PIVal + Angle[0];
+		double y2 = PIVal - Angle[1];
+		double z2 = PIVal + Angle[2];
 
-		if (x2 > PI) {
-			x2 = x2 - 2*PI;
+		if (x2 > PIVal) {
+			x2 = x2 - 2*PIVal;
 		}
 
-		if (y2 > PI) {
-			y2 = y2 - 2*PI;
+		if (y2 > PIVal) {
+			y2 = y2 - 2*PIVal;
 		}
 
-		if (z2 > PI) {
-			z2 = z2 - 2*PI;
+		if (z2 > PIVal) {
+			z2 = z2 - 2*PIVal;
 		}
 
 		double mag0 = Angle[0]*Angle[0] + Angle[1]*Angle[1] + Angle[2]*Angle[2];

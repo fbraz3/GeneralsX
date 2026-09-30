@@ -8,13 +8,15 @@ option(RTS_BUILD_OPTION_PROFILE_TRACY "Build code with Tracy profiling enabled."
 option(RTS_BUILD_OPTION_DEBUG "Build code with the \"Debug\" configuration." OFF)
 option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
-option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support (Windows default ON, Linux/macOS via pkg-config)" ON)
+option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
+option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON)
 option(RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT "Isolate legacy Win32 input/engine files from modern Windows64 path" OFF)
 
 # GeneralsX @feature fbraz3 29/09/2026 Enable SDL3 windowing/input option for Windows as well as Linux/macOS
 # Linux/macOS/Windows SDL3 and OpenAL options
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS/Windows)" OFF)
 option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
+option(SAGE_USE_MINIAUDIO "Use MiniAudio for audio backend (Linux/macOS)" OFF)
 
 # GeneralsX @feature BenderAI 21/04/2026 In-game update checker via GitHub Releases API (SDL3+libcurl builds only)
 # Default ON when SDL3 is enabled, but only if the user has not explicitly set SAGE_UPDATE_CHECK.
@@ -25,6 +27,11 @@ endif()
 
 # macOS port option (Phase 5)
 option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)" OFF)
+
+# SagePatch — optional QoL features for casual play (screenshot, cursor lock,
+# brightness, camera/scroll INI overrides). Compiles to a separate shared lib
+# that is loaded via DYLD_INSERT_LIBRARIES (macOS) / LD_PRELOAD (Linux) at runtime.
+option(RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS/Linux, requires SDL3)" ON)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -40,10 +47,12 @@ add_feature_info(DebugBuild RTS_BUILD_OPTION_DEBUG "Building as a \"Debug\" buil
 add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address sanitizer")
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
+add_feature_info(DeepCRC RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch")
 add_feature_info(IsolateLegacyWinInput RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT "Isolating legacy Win32 input/engine files from modern path")
 add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux/macOS/Windows)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
+add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 
@@ -118,15 +127,38 @@ if(SAGE_USE_OPENAL)
     message(STATUS "OpenAL audio backend enabled")
 endif()
 
+# GeneralsX @feature fbraz 11/06/2026 MiniAudio audio backend (alternative to OpenAL)
+if(SAGE_USE_MINIAUDIO)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_MINIAUDIO)
+    message(STATUS "MiniAudio audio backend enabled")
+endif()
+
 # GeneralsX @feature BenderAI 21/04/2026 Update check compile definition
 if(SAGE_UPDATE_CHECK)
     target_compile_definitions(core_config INTERFACE SAGE_UPDATE_CHECK)
     message(STATUS "In-game update checker enabled")
 endif()
 
+# GeneralsX @feature GeneralsOnline NGMP protocol option
+if(IS_VS6_BUILD)
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" OFF)
+else()
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" ON)
+endif()
+add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (GeneralsOnline)")
+
+if(SAGE_USE_NGMP)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_NGMP)
+endif()
+
 if(SAGE_USE_GLM)
     target_compile_definitions(core_config INTERFACE SAGE_USE_GLM)
     message(STATUS "GLM math library enabled (DirectX 8 replacement)")
+endif()
+
+if(RTS_BUILD_OPTION_DEEP_CRC)
+    target_compile_definitions(core_config INTERFACE DEEP_CRC_TO_MEMORY=1)
+    message(STATUS "Deep CRC logging on sync mismatch enabled")
 endif()
 
 # macOS MoltenVK detection (Phase 5)

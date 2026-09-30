@@ -38,10 +38,13 @@
 #include "Common/UserPreferences.h"
 #include "GameLogic/GameLogic.h"
 
+#include "GameNetwork/LANInterfaceDevice.h"
 
 static const UnsignedShort lobbyPort = 8086; ///< This is the UDP port used by all LANAPI communication
 
 AsciiString GetMessageTypeString(UnsignedInt type);
+
+
 
 const UnsignedInt LANAPI::s_resendDelta = 10 * 1000;	///< This is how often we announce ourselves to the world
 /*
@@ -100,7 +103,12 @@ void LANAPI::init()
 	m_gameStartTime = 0;
 	m_gameStartSeconds = 0;
 	m_transport->reset();
+#ifdef _WIN32
 	m_transport->init(m_localIP, lobbyPort);
+#else
+	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Bind to INADDR_ANY on POSIX to reliably receive broadcasts across interfaces.
+	m_transport->init(INADDR_ANY, lobbyPort);
+#endif
 	m_transport->allowBroadcasts(true);
 
 	m_pendingAction = ACT_NONE;
@@ -183,24 +191,80 @@ void LANAPI::sendMessage(LANMessage *msg, UnsignedInt ip /* = 0 */)
 {
 	if (ip != 0)
 	{
-		m_transport->queueSend(ip, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct LAN sends for cross-platform diagnostics.
+		Bool queued = m_transport->queueSend(ip, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		DEBUG_LOG(("LANAPI::sendMessage - direct type=%s dst=%d.%d.%d.%d:%d queued=%d",
+			GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(ip), lobbyPort, queued));
+		(void)queued;
+		/* 		fprintf(stderr, "[LAN86] send direct type=%u dst=%d.%d.%d.%d:%d queued=%d\n",
+			msg->messageType, PRINTF_IP_AS_4_INTS(ip), lobbyPort, queued); */
 	}
-	else if ((m_currentGame != nullptr) && (m_currentGame->getIsDirectConnect()))
+	// GeneralsX @bugfix GitHubCopilot 12/04/2026 Prefer directed fan-out for in-game state/control packets to avoid cross-platform broadcast loss.
+	const Bool shouldUseDirectedFanout = (m_currentGame != nullptr)
+		&& ((m_currentGame->getIsDirectConnect())
+			|| (!m_inLobby && msg != nullptr && (
+				msg->messageType == LANMessage::MSG_GAME_OPTIONS
+				|| msg->messageType == LANMessage::MSG_GAME_START
+				|| msg->messageType == LANMessage::MSG_GAME_START_TIMER
+				|| msg->messageType == LANMessage::MSG_REQUEST_GAME_LEAVE
+				|| msg->messageType == LANMessage::MSG_SET_ACCEPT
+				|| msg->messageType == LANMessage::MSG_MAP_AVAILABILITY
+				|| msg->messageType == LANMessage::MSG_CHAT
+				|| msg->messageType == LANMessage::MSG_INACTIVE)));
+
+	if (shouldUseDirectedFanout)
 	{
 		Int localSlot = m_currentGame->getLocalSlotNum();
+		Bool sentAny = FALSE;
 		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
 			if (i != localSlot) {
 				GameSlot *slot = m_currentGame->getSlot(i);
 				if ((slot != nullptr) && (slot->isHuman())) {
-					m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+					// GeneralsX @build GitHubCopilot 11/04/2026 Instrument direct-connect fan-out sends.
+					Bool queued = m_transport->queueSend(slot->getIP(), lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+					sentAny = TRUE;
+					(void)queued;
+					/* 					fprintf(stderr, "[LAN86] send directed-fanout type=%s dst=%d.%d.%d.%d:%d queued=%d\n",
+						GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(slot->getIP()), lobbyPort, queued);
+					fflush(stderr); */
 				}
 			}
+		}
+
+		if (!sentAny)
+		{
+			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			(void)queued;
+			/* 			fprintf(stderr, "[LAN86] send directed-fanout-fallback-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+			fflush(stderr); */
 		}
 	}
 	else
 	{
-		m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+		// GeneralsX @feature GitHubCopilot 12/04/2026 Send discovery/control broadcast packets to interface subnet broadcast addresses before global broadcast.
+		Bool sentAny = FALSE;
+		UnsignedInt subnetBroadcasts[8];
+		Int subnetCount = LANInterfaceDevice::getSubnetBroadcastAddresses(m_localIP, subnetBroadcasts, ARRAY_SIZE(subnetBroadcasts));
+		for (Int i = 0; i < subnetCount; ++i)
+		{
+			UnsignedInt dst = subnetBroadcasts[i];
+			Bool queued = m_transport->queueSend(dst, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			sentAny = TRUE;
+			(void)queued;
+			/* 			fprintf(stderr, "[LAN86] send subnet-broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(dst), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+			fflush(stderr); */
+		}
+		if (!sentAny)
+		{
+			Bool queued = m_transport->queueSend(m_broadcastAddr, lobbyPort, (unsigned char *)msg, sizeof(LANMessage) /*, 0, 0 */);
+			(void)queued;
+			/* 			fprintf(stderr, "[LAN86] send broadcast type=%s dst=%d.%d.%d.%d:%d local=%d.%d.%d.%d queued=%d\n",
+				GetMessageTypeString(msg->messageType).str(), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort, PRINTF_IP_AS_4_INTS(m_localIP), queued);
+			fflush(stderr); */
+		}
 	}
 }
 
@@ -337,12 +401,14 @@ void LANAPI::update()
 	if ((m_transport->update() == FALSE) && (LANSocketErrorDetected == FALSE)) {
 		if (m_isInLANMenu == TRUE) {
 			LANSocketErrorDetected = TRUE;
+			/* 			fprintf(stderr, "[LAN86] LANAPI::update transport update failed while in LAN menu local=%d.%d.%d.%d\n",
+				PRINTF_IP_AS_4_INTS(m_localIP));
+			fflush(stderr); */
 		}
 	}
 
 	// Handle any new messages
-	int i;
-	for (i=0; i<MAX_MESSAGES && !LANbuttonPushed; ++i)
+	for (size_t i = 0; i < ARRAY_SIZE(m_transport->m_inBuffer) && !LANbuttonPushed; ++i)
 	{
 		if (m_transport->m_inBuffer[i].length > 0)
 		{
@@ -350,11 +416,20 @@ void LANAPI::update()
 			UnsignedInt senderIP = m_transport->m_inBuffer[i].addr;
 			if (senderIP == m_localIP)
 			{
+				/* 				fprintf(stderr, "[LAN86] recv self-echo type=%u (%s) from %d.%d.%d.%d ignored\n",
+					((LANMessage *)(m_transport->m_inBuffer[i].data))->messageType,
+					GetMessageTypeString(((LANMessage *)(m_transport->m_inBuffer[i].data))->messageType).str(),
+					PRINTF_IP_AS_4_INTS(senderIP));
+				fflush(stderr); */
 				m_transport->m_inBuffer[i].length = 0;
 				continue;
 			}
 
 			LANMessage *msg = (LANMessage *)(m_transport->m_inBuffer[i].data);
+			/* 			fprintf(stderr, "[LAN86] recv type=%s (%u) len=%d from %d.%d.%d.%d local=%d.%d.%d.%d\n",
+				GetMessageTypeString(msg->messageType).str(), msg->messageType, m_transport->m_inBuffer[i].length,
+				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(m_localIP));
+			fflush(stderr); */
 			//DEBUG_LOG(("LAN message type %s from %ls (%s@%s)", GetMessageTypeString(msg->messageType).str(),
 			//	msg->name, msg->userName, msg->hostName));
 			switch (msg->messageType)
@@ -427,10 +502,16 @@ void LANAPI::update()
 
 			default:
 				DEBUG_LOG(("Unknown LAN message type %d", msg->messageType));
+				/* 				fprintf(stderr, "[LAN86] recv unknown type=%u from %d.%d.%d.%d\n",
+					msg->messageType, PRINTF_IP_AS_4_INTS(senderIP)); */
 			}
 
 			// Mark it as read
 			m_transport->m_inBuffer[i].length = 0;
+		}
+		else
+		{
+			break;
 		}
 	}
 	if(LANbuttonPushed)
@@ -439,20 +520,25 @@ void LANAPI::update()
 	if (now > s_resendDelta + m_lastResendTime)
 	{
 		m_lastResendTime = now;
+		/* 		fprintf(stderr, "[LAN86] periodic resend tick local=%d.%d.%d.%d inLobby=%d currentGame=%d amHost=%d\n",
+			PRINTF_IP_AS_4_INTS(m_localIP), m_inLobby, (m_currentGame != nullptr), AmIHost()); */
 
 		if (m_inLobby)
 		{
+			/* 			fprintf(stderr, "[LAN86] periodic action=RequestSetName lobby\n"); */
 			RequestSetName(m_name);
 		}
 		else if (m_currentGame && !m_currentGame->isGameInProgress())
 		{
 			if (AmIHost())
 			{
+				/* 				fprintf(stderr, "[LAN86] periodic action=host-announce/options\n"); */
 				RequestGameOptions( GenerateGameOptionsString(), true );
 				RequestGameAnnounce();
 			}
 			else
 			{
+				/* 				fprintf(stderr, "[LAN86] periodic action=joiner-hello\n"); */
 #if TELL_COMPUTER_IDENTITY_IN_LAN_LOBBY
 				AsciiString text;
 				text.format("User=%s", m_userName.str());
@@ -499,6 +585,9 @@ void LANAPI::update()
 		if (game != m_currentGame && game->getLastHeard() + s_resendDelta*2 < now)
 		{
 			// He's gone!
+			// GeneralsX @build GitHubCopilot 12/04/2026 Trace lobby-game pruning to verify whether hosts disappear due to hearbeat expiry.
+			/* 			fprintf(stderr, "[LAN86] prune game host=%d.%d.%d.%d name=%ls lastHeard=%u now=%u delta=%u\n",
+				PRINTF_IP_AS_4_INTS(game->getHostIP()), game->getName().str(), game->getLastHeard(), now, s_resendDelta * 2); */
 			removeGame(game);
 			LANGameInfo *nextGame = game->getNext();
 			delete game;
@@ -563,6 +652,10 @@ void LANAPI::update()
 		switch (m_pendingAction)
 		{
 		case ACT_JOIN:
+			// GeneralsX @build GitHubCopilot 12/04/2026 Surface join timeout details to stderr for LAN/direct-connect diagnostics.
+			/* 			fprintf(stderr, "[LAN86] action timeout action=ACT_JOIN local=%d.%d.%d.%d remote=%d.%d.%d.%d currentGame=%ls\n",
+				PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_directConnectRemoteIP),
+				(m_currentGame != nullptr) ? m_currentGame->getName().str() : L"<null>"); */
 			OnGameJoin(RET_TIMEOUT, nullptr);
 			m_pendingAction = ACT_NONE;
 			m_currentGame = nullptr;
@@ -575,6 +668,8 @@ void LANAPI::update()
 			m_inLobby = true;
 			break;
 		case ACT_JOINDIRECTCONNECT:
+			/* 			fprintf(stderr, "[LAN86] action timeout action=ACT_JOINDIRECTCONNECT local=%d.%d.%d.%d remote=%d.%d.%d.%d\n",
+				PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_directConnectRemoteIP)); */
 			OnGameJoin(RET_TIMEOUT, nullptr);
 			m_pendingAction = ACT_NONE;
 			m_currentGame = nullptr;
@@ -616,6 +711,10 @@ void LANAPI::RequestLocations()
 	LANMessage msg;
 	msg.messageType = LANMessage::MSG_REQUEST_LOCATIONS;
 	fillInLANMessage( &msg );
+	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN discovery probes emitted by this client.
+	/* 	fprintf(stderr, "[LAN86] RequestLocations local=%d.%d.%d.%d broadcast=%d.%d.%d.%d port=%d\n",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(m_broadcastAddr), lobbyPort);
+	fflush(stderr); */
 	sendMessage(&msg);
 }
 
@@ -643,6 +742,10 @@ void LANAPI::RequestGameJoin( LANGameInfo *game, UnsignedInt ip /* = 0 */ )
 	AsciiString s;
 	GetStringFromRegistry("\\ergc", "", s);
 	strlcpy(msg.GameToJoin.serial, s.str(), ARRAY_SIZE(msg.GameToJoin.serial));
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace REQUEST_JOIN targets and pending-action transitions for LAN/direct-connect joins.
+	/* 	fprintf(stderr, "[LAN86] RequestGameJoin local=%d.%d.%d.%d hostIP=%d.%d.%d.%d sendIP=%d.%d.%d.%d prevPending=%d game=%ls direct=%d\n",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(game->getSlot(0)->getIP()), PRINTF_IP_AS_4_INTS(ip),
+		m_pendingAction, game->getName().str(), game->getIsDirectConnect()); */
 
 	sendMessage(&msg, ip);
 
@@ -665,6 +768,9 @@ void LANAPI::RequestGameJoinDirectConnect(UnsignedInt ipaddress)
 	}
 
 	m_directConnectRemoteIP = ipaddress;
+	// GeneralsX @build GitHubCopilot 12/04/2026 Trace direct-connect discovery requests and pending-action transitions.
+	/* 	fprintf(stderr, "[LAN86] RequestGameJoinDirectConnect local=%d.%d.%d.%d remote=%d.%d.%d.%d prevPending=%d\n",
+		PRINTF_IP_AS_4_INTS(m_localIP), PRINTF_IP_AS_4_INTS(ipaddress), m_pendingAction); */
 
 	LANMessage msg;
 	msg.messageType = LANMessage::MSG_REQUEST_GAME_INFO;
@@ -711,11 +817,16 @@ void LANAPI::RequestGameAnnounce()
 	{
 		if (m_currentGame->getIP(0) == m_localIP || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
 		{
+			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
+			if (gameOpts.isEmpty())
+			{
+				return;
+			}
+
 			LANMessage reply;
 			fillInLANMessage( &reply );
 			reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
 
-			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			strlcpy(reply.GameInfo.options,gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
 			// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 			CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
@@ -840,10 +951,12 @@ void LANAPI::RequestGameStartTimer( Int seconds )
 
 void LANAPI::RequestGameOptions( AsciiString gameOptions, Bool isPublic, UnsignedInt ip /* = 0 */ )
 {
-	DEBUG_ASSERTCRASH(gameOptions.getLength() < m_lanMaxOptionsLength, ("Game options string is too long!"));
+	DEBUG_ASSERTCRASH(gameOptions.getLength() <= m_lanMaxOptionsLength, ("Game options string is too long!"));
 
-	if (!m_currentGame)
+	if (!m_currentGame || gameOptions.isEmpty())
+	{
 		return;
+	}
 
 	LANMessage msg;
 	fillInLANMessage( &msg );
@@ -1273,10 +1386,22 @@ Bool LANAPI::SetLocalIP( UnsignedInt localIP )
 {
 	Bool retval = TRUE;
 	m_localIP = localIP;
+	// GeneralsX @build GitHubCopilot 11/04/2026 Trace LAN socket rebind lifecycle for issue #86 diagnostics.
+	/* 	fprintf(stderr, "[LAN86] SetLocalIP rebind from %d.%d.%d.%d to %d.%d.%d.%d:%d\n",
+		PRINTF_IP_AS_4_INTS(oldIP), PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort);
+	fflush(stderr); */
 
 	m_transport->reset();
+#ifdef _WIN32
 	retval = m_transport->init(m_localIP, lobbyPort);
+#else
+	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Bind to INADDR_ANY on POSIX to reliably receive broadcasts across interfaces.
+	retval = m_transport->init(INADDR_ANY, lobbyPort);
+#endif
 	m_transport->allowBroadcasts(true);
+	/* 	fprintf(stderr, "[LAN86] SetLocalIP result init=%d allowBroadcasts=%d local=%d.%d.%d.%d:%d\n",
+		retval, broadcastsEnabled, PRINTF_IP_AS_4_INTS(m_localIP), lobbyPort);
+	fflush(stderr); */
 
 	return retval;
 }

@@ -37,9 +37,9 @@
 
 #pragma once
 
-#include "always.h"
-#include "bittype.h"
-#include "iostruct.h"
+#include "WWLib/always.h"
+#include "WWLib/bittype.h"
+#include "WWLib/iostruct.h"
 #include <limits.h>
 
 /********************************************************************************
@@ -723,14 +723,14 @@ struct W3dVertexMaterialStruct
 
 	bool operator == (W3dVertexMaterialStruct vm)
 	{
-		return (	  Attributes   == vm.Attributes
-				  && Ambient	   == vm.Ambient
-				  && Diffuse	   == vm.Diffuse
-				  && Specular	   == vm.Specular
-				  && Emissive	   == vm.Emissive
-				  && Shininess	   == vm.Shininess
-				  && Opacity	   == vm.Opacity
-				  && Translucency == vm.Translucency);
+		return (	  Attributes   == vm.Attributes &&
+				  Ambient	   == vm.Ambient &&
+				  Diffuse	   == vm.Diffuse &&
+				  Specular	   == vm.Specular &&
+				  Emissive	   == vm.Emissive &&
+				  Shininess	   == vm.Shininess &&
+				  Opacity	   == vm.Opacity &&
+				  Translucency == vm.Translucency);
 	}
 
 	bool operator != (W3dVertexMaterialStruct vm)
@@ -2270,4 +2270,4 @@ struct W3dShdSubMeshHeaderStruct
 /*
 ** Include the obsolete structures and chunk ID's
 */
-#include "w3d_obsolete.h"
+#include "WW3D2/w3d_obsolete.h"

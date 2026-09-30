@@ -39,7 +39,7 @@
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "ww3dformat.h"
 // GeneralsX @build fbraz 10/02/2026 Include DXVK d3d8.h on Linux
 #include <d3d8.h>

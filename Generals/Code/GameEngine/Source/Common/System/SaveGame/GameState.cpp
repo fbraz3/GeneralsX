@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#include <cstdio>
 #ifndef _WIN32
 #include <filesystem>
 #include "socket_compat.h"
@@ -62,6 +63,7 @@
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/SidesList.h"
 #include "GameLogic/TerrainLogic.h"
+#include "Lib/PathUtil.h"
 
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -217,7 +219,8 @@ UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	if (GetVersionEx(&osvi))
-	{	//check if we're running Win9x variant since they may need different characters
+	{
+		//check if we're running Win9x variant since they may need different characters
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 		{
 			char dateBuffer[ DATE_BUFFER_SIZE ];
@@ -256,7 +259,8 @@ UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 	OSVERSIONINFO	osvi;
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 	if (GetVersionEx(&osvi))
-	{	//check if we're running Win9x variant since they may need different characters
+	{
+		//check if we're running Win9x variant since they may need different characters
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 		{
 			char timeBuffer[ DATE_BUFFER_SIZE ];
@@ -402,6 +406,13 @@ void GameState::addSnapshotBlock( AsciiString blockName, Snapshot *snapshot, Sna
 		DEBUG_CRASH(( "addSnapshotBlock: Invalid parameters" ));
 		return;
 
+	}
+
+	// Snapshots with xfer disabled are not registered, so their blocks are omitted when saving
+	// and are skipped like unknown blocks when loading.
+	if( !snapshot->isXferEnabled() )
+	{
+		return;
 	}
 
 	// add to the list
@@ -553,8 +564,8 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 /** Save the current state of the engine in a save file
 	* NOTE: filename is a *filename only* */
 // ------------------------------------------------------------------------------------------------
-SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
-															SaveFileType saveType, SnapshotType which )
+SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
+													SaveFileType saveType, SnapshotType which )
 {
 
 	// if there is no filename, this is a new file being created, find an appropriate filename
@@ -564,7 +575,7 @@ SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
 	{
 
 		DEBUG_CRASH(( "GameState::saveGame - Unable to find valid filename for save game" ));
-		return SC_NO_FILE_AVAILABLE;
+		return SaveResult( SC_NO_FILE_AVAILABLE );
 
 	}
 
@@ -582,10 +593,8 @@ SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
 	try {
 		xferSave.open( filepath );
 	} catch(...) {
-		// print error message to the user
-		TheInGameUI->message( "GUI:Error" );
 		DEBUG_LOG(( "Error opening file '%s'", filepath.str() ));
-		return SC_ERROR;
+		return SaveResult( SC_UNABLE_TO_OPEN_FILE, filename );
 	}
 
 	// save our save file type
@@ -613,35 +622,23 @@ SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
 	catch( ... )
 	{
 
-		UnicodeString ufilepath;
-		ufilepath.translate(filepath);
-
-		UnicodeString msg;
-		msg.format( TheGameText->fetch("GUI:ErrorSavingGame"), ufilepath.str() );
-
-		MessageBoxOk(TheGameText->fetch("GUI:Error"), msg, nullptr);
-
 		// close the file and get out of here
 		xferSave.close();
-		return SC_ERROR;
+		return SaveResult( SC_ERROR, filename );
 
 	}
 
 	// close the file
 	xferSave.close();
 
-	// print message to the user for game successfully saved
-	UnicodeString msg = TheGameText->fetch( "GUI:GameSaveComplete" );
-	TheInGameUI->message( msg );
-
-	return SC_OK;
+	return SaveResult( SC_OK, filename );
 
 }
 
 // ------------------------------------------------------------------------------------------------
 /** A mission save */
 // ------------------------------------------------------------------------------------------------
-SaveCode GameState::missionSave()
+SaveResult GameState::missionSave()
 {
 
 	// get campaign
@@ -685,8 +682,7 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 	//
 	TheGameStateMap->clearScratchPadMaps();
 
-	// construct path to file
-	AsciiString filepath = getFilePathInSaveDirectory(gameInfo.filename);
+	AsciiString filepath = getSaveGamePathForRead(gameInfo.filename);
 
 	// open the save file
 	XferLoad xferLoad;
@@ -738,15 +734,6 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 			TheGameLogic->clearGameData( FALSE );
 		TheGameEngine->reset();
 
-		// print error message to the user
-		UnicodeString ufilepath;
-		ufilepath.translate(filepath);
-
-		UnicodeString msg;
-		msg.format( TheGameText->fetch("GUI:ErrorLoadingGame"), ufilepath.str() );
-
-		MessageBoxOk(TheGameText->fetch("GUI:Error"), msg, nullptr);
-
 		return SC_INVALID_DATA;	// you can't use a naked "throw" outside of a catch statement!
 
 	}
@@ -779,6 +766,72 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 }
 
 //-------------------------------------------------------------------------------------------------
+static void showQueuedSaveGameLoadFailure( void )
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SaveGameLoadFailedTitle", L"CANNOT LOAD SAVE");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SaveGameLoadFailed", L"The saved game file could not be opened or is invalid.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
+// ------------------------------------------------------------------------------------------------
+/** Load the save game requested on startup, after the shell has been initialized */
+// ------------------------------------------------------------------------------------------------
+// GeneralsX @feature bobtista 28/08/2026 Import queued save loading and release-visible failure diagnostics.
+// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3001
+void GameState::loadQueuedSaveGame()
+{
+	AvailableGameInfo gameInfo;
+	gameInfo.filename = TheGlobalData->m_loadSaveGame;
+	gameInfo.next = nullptr;
+	gameInfo.prev = nullptr;
+
+	TheWritableGlobalData->m_loadSaveGame.clear();
+
+	if( gameInfo.filename.endsWithNoCase( SAVE_GAME_EXTENSION ) == FALSE )
+	{
+		DEBUG_LOG(("Save game '%s' is not a save game file", gameInfo.filename.str()));
+		showQueuedSaveGameLoadFailure();
+		return;
+	}
+
+	// getSaveGameInfoFromFile throws when the file is missing, so check before reading it
+	if( doesSaveGameExist( gameInfo.filename ) == FALSE )
+	{
+		std::fprintf(stderr, "Save game '%s' was not found\n", gameInfo.filename.str());
+		std::fflush(stderr);
+		showQueuedSaveGameLoadFailure();
+		return;
+	}
+
+	// getSaveGameInfoFromFile throws on a malformed file instead of returning a SaveCode
+	try
+	{
+		getSaveGameInfoFromFile( gameInfo.filename, &gameInfo.saveGameInfo );
+	}
+	catch( ... )
+	{
+		std::fprintf(stderr, "Save game '%s' could not be read\n", gameInfo.filename.str());
+		std::fflush(stderr);
+		showQueuedSaveGameLoadFailure();
+		return;
+	}
+
+	// this hides the shell, keeping the menu screens on the stack for when the game ends
+	TheGameLogic->prepareNewGame( GAME_SINGLE_PLAYER, DIFFICULTY_NORMAL, 0 );
+
+	if( loadGame( gameInfo ) != SC_OK )
+	{
+		std::fprintf(stderr, "Failed to load save game '%s'\n", gameInfo.filename.str());
+		std::fflush(stderr);
+		if( TheGameLogic->isInGame() )
+			TheGameLogic->clearGameData( FALSE );
+		TheGameEngine->reset();
+		TheGameEngine->setQuitting( TRUE );
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 AsciiString GameState::getSaveDirectory() const
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
@@ -797,6 +850,17 @@ AsciiString GameState::getFilePathInSaveDirectory(const AsciiString& leaf) const
 	AsciiString tmp = getSaveDirectory();
 	tmp.concat(leaf);
 	return tmp;
+}
+
+//-------------------------------------------------------------------------------------------------
+AsciiString GameState::getSaveGamePathForRead(const AsciiString& filenameOrPath) const
+{
+	if (isAbsolutePath(filenameOrPath.str()))
+	{
+		return filenameOrPath;
+	}
+
+	return getFilePathInSaveDirectory(filenameOrPath);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -965,8 +1029,7 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 Bool GameState::doesSaveGameExist( AsciiString filename )
 {
 
-	// construct full path to file
-	AsciiString filepath = getFilePathInSaveDirectory(filename);
+	AsciiString filepath = getSaveGamePathForRead(filename);
 
 	// open file
 	XferLoad xfer;
@@ -1010,6 +1073,8 @@ void GameState::getSaveGameInfoFromFile( AsciiString filename, SaveGameInfo *sav
 		return;
 
 	}
+
+	filename = getSaveGamePathForRead( filename );
 
 	// open file for partial loading
 	XferLoad xferLoad;

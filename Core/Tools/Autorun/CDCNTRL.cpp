@@ -88,7 +88,7 @@ void Last_Error_Text ( LPCTSTR szPrefix, HRESULT hr );
  * HISTORY:                                                                                    *
  *   2/17/99 2:03AM ST : Created                                                               *
  *=============================================================================================*/
-CDControlClass::CDControlClass(void)
+CDControlClass::CDControlClass()
 {
 }
 
@@ -105,7 +105,7 @@ CDControlClass::CDControlClass(void)
  * HISTORY:                                                                                    *
  *   2/17/99 2:03AM ST : Created                                                               *
  *=============================================================================================*/
-CDControlClass::~CDControlClass(void)
+CDControlClass::~CDControlClass()
 {
 }
 
@@ -266,7 +266,7 @@ bool CDControlClass::Lock_Volume( HANDLE volume )
 	assert( WinVersion.Is_WinNT( ));
 
 	unsigned long bytes_returned	= 0;
-	unsigned long sleep_amount		= LOCK_TIMEOUT / LOCK_RETRIES;
+//	unsigned long sleep_amount		= LOCK_TIMEOUT / LOCK_RETRIES;
 
 	/*
 	** Do this in a loop until a timeout period has expired
@@ -301,7 +301,7 @@ bool CDControlClass::Unlock_Volume(HANDLE volume)
 	assert( WinVersion.Is_WinNT());
 
 	unsigned long bytes_returned;
-	unsigned long sleep_amount	= LOCK_TIMEOUT / LOCK_RETRIES;
+//	unsigned long sleep_amount	= LOCK_TIMEOUT / LOCK_RETRIES;
 
 	/*
 	** Do this in a loop until a timeout period has expired
@@ -908,7 +908,7 @@ bool CDControlClass::Auto_Eject_Volume_95 (HANDLE vwin32, char drive)
  * HISTORY:                                                                                    *
  *   2/17/99 0:26AM ST : Created                                                               *
  *=============================================================================================*/
-HANDLE WINAPI CDControlClass::Open_VWin32 (void)
+HANDLE WINAPI CDControlClass::Open_VWin32 ()
 {
 	assert (WinVersion.Is_Win9x());
 	HANDLE result = CreateFile ( TEXT("\\\\.\\vwin32"), 0, 0, nullptr, 0, FILE_FLAG_DELETE_ON_CLOSE, nullptr);

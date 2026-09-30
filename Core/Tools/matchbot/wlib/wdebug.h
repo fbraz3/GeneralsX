@@ -172,10 +172,10 @@ extern CritSec DebugLibSemaphore;
 // They are defined to {} for consistency when DEBUG is defined
 
 #define DBG(X)
-#define DBGSTREAM(X)  {}
-#define PVAR(v)       {}
-#define DBGMSG(X)     {}
-#define VERBOSE(X)    {}
+#define DBGSTREAM(X)
+#define PVAR(v)
+#define DBGMSG(X)
+#define VERBOSE(X)
 
 #else  // DEBUG _is_ defined
 
@@ -308,8 +308,8 @@ class MsgManager
    static void                enableWarn(int flag);
    static void                enableError(int flag);
 
-   static ostream            *debugStream(void);
-   static ostream            *infoStream(void);
-   static ostream            *warnStream(void);
-   static ostream            *errorStream(void);
+   static ostream            *debugStream();
+   static ostream            *infoStream();
+   static ostream            *warnStream();
+   static ostream            *errorStream();
 };

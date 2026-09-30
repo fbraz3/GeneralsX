@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include "WW3D2/dllist.h"
+#include <Utility/hash_map_adapter.h>
 #include "WWMath/vector2.h"
 #include "WWMath/vector3.h"
+#include <deque>
 
 #ifndef USING_STLPORT
 #include <unordered_map>
@@ -30,7 +31,7 @@
 
 #define SET_SMUDGE_PARAMETERS(smudge,pos,offset,size,opacity) (smudge->m_pos=pos;smudge->m_offset=offset;smudge->m_size=size;smudge->m_opacity=opacity;)
 
-struct Smudge : public DLNodeClass<Smudge>
+struct Smudge
 {
 	typedef void *Identifier;
 
@@ -51,6 +52,8 @@ struct Smudge : public DLNodeClass<Smudge>
 	smudgeVertex m_verts[5];	//5 vertices of this smudge (in counter-clockwise order, starting at top-left, ending in center.)
 };
 
+typedef std::deque<Smudge*> SmudgeDeque;
+
 #ifdef USING_STLPORT
 namespace std
 {
@@ -61,7 +64,7 @@ namespace std
 }
 #endif // USING_STLPORT
 
-struct SmudgeSet : public DLNodeClass<SmudgeSet>
+struct SmudgeSet
 {
 	friend class SmudgeManager;
 
@@ -74,11 +77,10 @@ struct SmudgeSet : public DLNodeClass<SmudgeSet>
 	void resetDraw();
 
 	Smudge *addSmudgeToSet(Smudge::Identifier identifier); ///< add and return a smudge to the set with the given identifier
-	void removeSmudgeFromSet(Smudge *&smudge); ///< remove and invalidate the given smudge
 	Smudge *findSmudge(Smudge::Identifier identifier); ///< find the smudge that belongs to this identifier
 
-	DLListClass<Smudge> &getUsedSmudgeList() { return m_usedSmudgeList;}
-	Int getUsedSmudgeCount() { return m_usedSmudgeCount; }	///<active smudges that need rendering.
+	SmudgeDeque& getUsedSmudgeList() { return m_usedSmudgeList; }
+	UnsignedInt getUsedSmudgeCount() const { return m_usedSmudgeList.size(); }	///<active smudges that need rendering.
 
 private:
 	// GeneralsX @bugfix GitHub Copilot 22/05/2026 Use std::unordered_map on modern toolchains where std::hash_map is unavailable.
@@ -88,11 +90,12 @@ private:
 	typedef std::unordered_map<Smudge::Identifier, Smudge *> SmudgeIdToPtrMap;
 	#endif
 
-	DLListClass<Smudge> m_usedSmudgeList;	///<list of smudges in this set.
+	SmudgeDeque m_usedSmudgeList;	///<list of smudges in this set.
 	SmudgeIdToPtrMap m_usedSmudgeMap;
-	static DLListClass<Smudge> m_freeSmudgeList;	///<list of unused smudges for use by SmudgeSets.
-	Int m_usedSmudgeCount;
+	static SmudgeDeque m_freeSmudgeList;	///<list of unused smudges for use by SmudgeSets.
 };
+
+typedef std::deque<SmudgeSet*> SmudgeSetDeque;
 
 class SmudgeManager
 {
@@ -108,7 +111,6 @@ public:
 	void resetDraw(); ///< reset whether all smudges need to be drawn
 
 	SmudgeSet *addSmudgeSet(); ///< add and return a new smudge set
-	void removeSmudgeSet(SmudgeSet *&smudgeSet); ///< remove and invalidate the given smudge set
 	Smudge *findSmudge(Smudge::Identifier identifier); ///< find the smudge from any smudge set
 	Int getSmudgeCountLastFrame() {return m_smudgeCountLastFrame;} ///<return number of smudges submitted last frame.
 	Bool getHardwareSupport() { return m_hardwareSupportStatus != SMUDGE_SUPPORT_NO;}
@@ -119,8 +121,8 @@ protected:
 
 	HardwareSmudgeSupport m_hardwareSupportStatus;///< flag whether we verified that the effect is supported by hardware.
 
-	DLListClass<SmudgeSet> m_usedSmudgeSetList;	///<used SmudgeSets
-	DLListClass<SmudgeSet> m_freeSmudgeSetList;	///<unused SmudgeSets ready for re-use.
+	SmudgeSetDeque m_usedSmudgeSetList;	///<used SmudgeSets
+	SmudgeSetDeque m_freeSmudgeSetList;	///<unused SmudgeSets ready for re-use.
 	Int m_smudgeCountLastFrame;	//number of total smudges in manager last frame.
 };
 

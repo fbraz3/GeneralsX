@@ -34,7 +34,7 @@
 #include "WW3D2/hanim.h"
 #include "WW3D2/camera.h"
 
-#include "assetmgr.h"
+#include "WW3D2/assetmgr.h"
 
 #include "W3DDevice/Common/W3DConvert.h"
 #include "W3DDevice/GameClient/W3DMouse.h"
@@ -44,8 +44,8 @@
 #include "GameClient/Display.h"
 #include "GameClient/Image.h"
 #include "GameClient/InGameUI.h"
-#include "mutex.h"
-#include "thread.h"
+#include "WWLib/mutex.h"
+#include "WWLib/thread.h"
 
 
 //Since there can't be more than 1 mouse, might as well keep these static.
@@ -192,7 +192,8 @@ Bool W3DMouse::loadD3DCursorTextures(MouseCursor cursor)
 	m_currentFrames=0;
 
 	if (animFrames == 1)
-	{	//single animation frame without trailing numbers
+	{
+		//single animation frame without trailing numbers
 		snprintf(FrameName, ARRAY_SIZE(FrameName), "%s.tga", baseName);
 		cursorTextures[cursor][0]=	am->Get_Texture(FrameName);
 		m_currentD3DSurface[0]=cursorTextures[cursor][0]->Get_Surface_Level();
@@ -373,7 +374,8 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	m_directionFrame=0;
 #ifdef _WIN32
 	if (m_currentRedrawMode == RM_WINDOWS)
-	{	//Windows default cursor needs to refreshed whenever we get a WM_SETCURSOR
+	{
+		//Windows default cursor needs to refreshed whenever we get a WM_SETCURSOR
 		m_currentD3DCursor=NONE;
 		m_currentW3DCursor=NONE;
 		m_currentPolygonCursor=NONE;
@@ -503,7 +505,8 @@ void W3DMouse::draw()
 		{	m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
 
 			if (TheDisplay && !TheDisplay->getWindowed())
-			{	//if we're full-screen, need to manually move cursor image
+			{
+				//if we're full-screen, need to manually move cursor image
 				POINT ptCursor;
 
 				GetCursorPos( &ptCursor );
@@ -618,7 +621,8 @@ void W3DMouse::setRedrawMode(RedrawMode mode)
 	switch (mode)
 	{
 		case RM_WINDOWS:
-		{	//Windows mouse doesn't need an update thread.
+		{
+			//Windows mouse doesn't need an update thread.
 			if (thread.Is_Running())
 				thread.Stop();
 			freeD3DAssets();	//using Windows resources
@@ -631,7 +635,8 @@ void W3DMouse::setRedrawMode(RedrawMode mode)
 		break;
 
 		case RM_W3D:
-		{	//Model mouse updated only at render time so doesn't
+		{
+			//Model mouse updated only at render time so doesn't
 			//require thread.
 			if (thread.Is_Running())
 				thread.Stop();
@@ -644,7 +649,8 @@ void W3DMouse::setRedrawMode(RedrawMode mode)
 		break;
 
 		case RM_POLYGON:
-		{	//Polygon mouse updated only at render time so doesn't
+		{
+			//Polygon mouse updated only at render time so doesn't
 			//require thread.
 			if (thread.Is_Running())
 				thread.Stop();
@@ -658,7 +664,8 @@ void W3DMouse::setRedrawMode(RedrawMode mode)
 		break;
 
 		case RM_DX8:
-		{	//this cursor type is drawn by DX8 and can be refreshed
+		{
+			//this cursor type is drawn by DX8 and can be refreshed
 			//independent of rendering rate.  Uses another thread to do
 			//position updates.
 			initD3DAssets();	//make sure textures loaded.

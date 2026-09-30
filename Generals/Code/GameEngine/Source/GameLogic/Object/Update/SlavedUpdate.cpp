@@ -162,7 +162,8 @@ UpdateSleepTime SlavedUpdate::update()
 		Team *masterTeam = master->getTeam();
 		Team *myTeam     = me->getTeam();
 		if ( masterTeam->getRelationship( myTeam ) != ALLIES )
-		{//slaver must have been hijacked or something..	// we will join his team
+		{
+			//slaver must have been hijacked or something..	// we will join his team
 			me->defect( masterTeam, 0 );
 		}
 
@@ -191,11 +192,11 @@ UpdateSleepTime SlavedUpdate::update()
 	if( data->m_repairRatePerSecond > 0.0f )
 	{
 		BodyModuleInterface *body = master->getBodyModule();
-		if( body )
+		if (body)
 		{
 			Real health = body->getHealth();
 			Real maxHealth = body->getMaxHealth();
-			healthPercentage = (Int)(health / maxHealth * 100.0f);
+			healthPercentage = (Int)(WWMath::Div_FixNaN(health, maxHealth, 0.0f) * 100.0f);
 		}
 	}
 
@@ -292,19 +293,19 @@ void SlavedUpdate::doAttackLogic( const Object *target )
 	{
 		//The distance is too far, so calculate the best allowable position.
 		Coord3D vector;
-		vector.set( targetPos );
-		vector.sub( master->getPosition() );
+		vector.set( *targetPos );
+		vector.sub( *master->getPosition() );
 		vector.normalize();
 		vector.scale( data->m_attackRange );
 
 		//Now that we have calculated the vector relative to me, add it to my position to get my goal.
-		attackPosition.set( master->getPosition() );
-		attackPosition.add( &vector );
+		attackPosition.set( *master->getPosition() );
+		attackPosition.add( vector );
 	}
 	else
 	{
 		//We are close enough, so use the target position -- easy!
-		attackPosition.set( targetPos );
+		attackPosition.set( *targetPos );
 	}
 
 	//Finally, if we have a wander distance, then randomly select a point within
@@ -355,19 +356,19 @@ void SlavedUpdate::doScoutLogic( const Coord3D *mastersDestination )
 	{
 		//The distance is too far, so calculate the best allowable position.
 		Coord3D vector;
-		vector.set( mastersDestination );
-		vector.sub( master->getPosition() );
+		vector.set( *mastersDestination );
+		vector.sub( *master->getPosition() );
 		vector.normalize();
 		vector.scale( data->m_scoutRange );
 
 		//Now that we have calculated the vector relative to me, add it to my position to get my goal.
-		scoutPosition.set( master->getPosition() );
-		scoutPosition.add( &vector );
+		scoutPosition.set( *master->getPosition() );
+		scoutPosition.add( vector );
 	}
 	else
 	{
 		//We are close enough, so use the target position -- easy!
-		scoutPosition.set( mastersDestination );
+		scoutPosition.set( *mastersDestination );
 	}
 
 	//Finally, if we have a wander distance, then randomly select a point within
@@ -478,7 +479,7 @@ void SlavedUpdate::doRepairLogic()
 			locomotor->setUsePreciseZPos( closeEnoughForZPrecision );
 		}
 		Coord3D pos;
-		pos.set( master->getPosition() );
+		pos.set( *master->getPosition() );
 		Real altitude = GameLogicRandomValueReal( data->m_repairMinAltitude, data->m_repairMaxAltitude );
 		pos.z += altitude;
 		ai->aiMoveToPosition( &pos, CMD_FROM_AI );
@@ -616,27 +617,30 @@ void SlavedUpdate::setRepairState( RepairStates repairState )
 				if( !data->m_weldingSysName.isEmpty() )
 				{
 					const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( data->m_weldingSysName );
-					ParticleSystem *weldingSys = TheParticleSystemManager->createParticleSystem(tmp);
-					if( weldingSys )
+					if( tmp )
 					{
-						Coord3D pos;
-						//Get the bone position
-						if( draw->getPristineBonePositions( data->m_weldingFXBone.str(), 0, &pos, nullptr, 1 ) )
+						ParticleSystem *weldingSys = TheParticleSystemManager->createParticleSystem(tmp);
+						if( weldingSys )
 						{
-							pos.add( obj->getPosition() );
-						}
-						else
-						{
-							pos.set( obj->getPosition() );
-						}
+							Coord3D pos;
+							//Get the bone position
+							if( draw->getPristineBonePositions( data->m_weldingFXBone.str(), 0, &pos, nullptr, 1 ) )
+							{
+								pos.add( *obj->getPosition() );
+							}
+							else
+							{
+								pos.set( *obj->getPosition() );
+							}
 
-						weldingSys->setPosition( &pos );
-						Real time = (Real)(m_framesToWait * LOGICFRAMES_PER_SECOND);
-						weldingSys->setLifetimeRange( time, time );
+							weldingSys->setPosition( &pos );
+							Real time = (Real)(m_framesToWait * LOGICFRAMES_PER_SECOND);
+							weldingSys->setLifetimeRange( time, time );
 
-						AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_repairSparks;
-						soundToPlay.setPosition( &pos );
-						TheAudio->addAudioEvent( &soundToPlay );
+							AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_repairSparks;
+							soundToPlay.setPosition( &pos );
+							TheAudio->addAudioEvent( &soundToPlay );
+						}
 					}
 				}
 
@@ -670,7 +674,7 @@ void SlavedUpdate::moveToNewRepairSpot()
 	{
 		//Allow me to wander away from the pinnedPosition.
 		Real randomDirection = GameLogicRandomValue( 0, 2*PI );
-		m_guardPointOffset.set( master->getPosition() );
+		m_guardPointOffset.set( *master->getPosition() );
 		m_guardPointOffset.x += data->m_repairRange * Cos( randomDirection );
 		m_guardPointOffset.y += data->m_repairRange * Sin( randomDirection );
 		m_guardPointOffset.z = TheTerrainLogic->getGroundHeight( m_guardPointOffset.x, m_guardPointOffset.y );

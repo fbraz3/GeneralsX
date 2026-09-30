@@ -123,7 +123,7 @@ bool SceneSetupDlg::ValidateEditFloat (int control_id)
 /////////////////////////////////////////////////////////////////////////////
 // SceneSetupDlg Public Methods
 
-int SceneSetupDlg::DoModal (void)
+int SceneSetupDlg::DoModal ()
 {
 	// Put up the dialog box.
 	BOOL result = DialogBoxParam(AppInstance, MAKEINTRESOURCE(IDD_SCENE_SETUP),
@@ -155,8 +155,6 @@ BOOL CALLBACK _thunk_dialog_proc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 BOOL CALLBACK SceneSetupDlg::DialogProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	int code = HIWORD(wParam);
-
 	switch (uMsg)
 	{
 

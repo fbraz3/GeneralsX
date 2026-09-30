@@ -64,6 +64,7 @@ public:
 	virtual void parseUserList( const GameInfo *game ) = 0;						///< Parse a userlist, creating connections
 	virtual void startGame() = 0;																	///< Sets the network game frame counter to -1
 	virtual UnsignedInt getRunAhead() = 0;												///< Get the current RunAhead value
+	virtual UnsignedInt getBufferedFramesAvailable() = 0;
 	virtual UnsignedInt getFrameRate() = 0;												///< Get the current allowed frame rate.
 	virtual UnsignedInt getPacketArrivalCushion() = 0;						///< Get the smallest packet arrival cushion since this was last called.
 
@@ -104,7 +105,11 @@ public:
 	virtual void attachTransport(Transport *transport) = 0;
 	virtual void initTransport() = 0;
 	virtual Bool sawCRCMismatch() = 0;
+#if DEEP_CRC_TO_MEMORY
+	virtual void setSawCRCMismatch(const UnicodeString& strMismatchDetails) = 0;
+#else
 	virtual void setSawCRCMismatch() = 0;
+#endif
 
 	virtual Bool isPlayerConnected(Int playerID) = 0;
 

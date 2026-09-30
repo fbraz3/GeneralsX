@@ -345,9 +345,9 @@ void EMPUpdate::doDisableAttack()
 		{
 			//Victim position
 			Coord3D coord;
-			coord.set( intendedVictim->getPosition() );
+			coord.set( *intendedVictim->getPosition() );
 			//Subtract this object (distance from missile to victim's previous position)
-			coord.sub( pos );
+			coord.sub( *pos );
 
 			Real lengthSqr = coord.lengthSqr();
 			if( lengthSqr <= radius * 2.0f || lengthSqr <= 40.0f * 40.0f )
@@ -449,11 +449,12 @@ UpdateSleepTime LeafletDropBehavior::update()
     // start shoveling out those leaflets, boys.
 	  const LeafletDropBehaviorModuleData *data = getLeafletDropBehaviorModuleData();
 	  const ParticleSystemTemplate *tmp = data->m_leafletFXParticleSystem;
-	  ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
-	  if (sys)
+	  if (tmp)
 	  {
-		  sys->attachToObject(getObject());
-	  }
+		  ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
+		  if (sys)
+			  sys->attachToObject(getObject());
+    }
 
     m_fxFired = TRUE; // hey, at least we tried.
   }

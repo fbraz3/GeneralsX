@@ -28,8 +28,8 @@
 #include "GameNetwork/NetCommandRef.h"
 
 /**
- * The NetCommandList is a ordered linked list of NetCommandRef objects.
- * The list is ordered based on the command id, player id, and command type.
+ * The NetCommandList is an ordered linked list of NetCommandRef objects.
+ * The list is ordered by command type, player id, and sort number.
  * It is ordered in this way to aid in constructing the packets efficiently.
  * The list keeps track of the last message inserted in order to accommodate
  * adding commands in order more efficiently since that is whats going to be
@@ -50,7 +50,6 @@ public:
 	void init();									///< Initialize the list
 	void reset();									///< Reset the list to the initial state.
 	NetCommandRef * addMessage(NetCommandMsg *cmdMsg);	///< Add message to the list in its properly ordered place.
-	NetCommandRef * addMessage(NetCommandRef *&msg);	///< Add message to the list in its properly ordered place.
 	Bool isEqualCommandMsg(NetCommandMsg *msg1, NetCommandMsg *msg2);
 	NetCommandRef * getFirstMessage();				///< Get the first message on the list.
 	NetCommandRef * findMessage(NetCommandMsg *msg);	///< Find and return a reference to the given message if one exists.

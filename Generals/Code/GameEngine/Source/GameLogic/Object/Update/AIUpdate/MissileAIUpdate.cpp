@@ -223,7 +223,7 @@ void MissileAIUpdate::projectileFireAtObjectOrPosition( const Object *victim, co
 	Real deltaZ = victimPos->z - obj->getPosition()->z;
 	Real dx = victimPos->x - obj->getPosition()->x;
 	Real dy = victimPos->y - obj->getPosition()->y;
-	Real xyDist = sqrt(sqr(dx)+sqr(dy));
+	Real xyDist = WWMath::SqrtOrigin(sqr(dx)+sqr(dy));
 	if (xyDist<1) xyDist = 1;
 	Real zFactor = 0;
 	if (deltaZ>0) {
@@ -521,7 +521,20 @@ void MissileAIUpdate::doAttackState(Bool turnOK)
 	if(curLoco && curLoco->getPreferredHeight() > 0)
 	{
 		// Am I close enough to the target to ignore my preferred height setting?
-		Real distanceToTargetSquared = ThePartitionManager->getDistanceSquared( getObject(), getGoalPosition(), FROM_CENTER_2D );
+#if RETAIL_COMPATIBLE_CRC
+		Real distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalPosition(), FROM_CENTER_2D);
+#else
+		// TheSuperHackers @bugfix Stubbjax 23/08/2026 Diving missiles now use their target's position to determine distance
+		// when applicable rather than the goal position. This allows them to properly determine when to dive on moving targets.
+		Real distanceToTargetSquared;
+		if (m_isTrackingTarget && (getGoalObject() != nullptr)) {
+			distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalObject(), FROM_CENTER_2D);
+		}
+		else {
+			distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalPosition(), FROM_CENTER_2D);
+		}
+#endif
+
 		Real diveDistanceSquared = d->m_diveDistance;
 		if (curLoco && curLoco->getPreferredHeight()) {
 				diveDistanceSquared *= diveDistanceSquared;
@@ -581,7 +594,7 @@ void MissileAIUpdate::doKillState()
 				closeEnough = curLoco->getMaxSpeedForCondition(BODY_PRISTINE);
 			}
 			Real distanceToTargetSq = ThePartitionManager->getDistanceSquared( getObject(), getGoalObject(), FROM_CENTER_3D);
-			//DEBUG_LOG(("Distance to target %f, closeEnough %f", sqrt(distanceToTargetSq), closeEnough));
+			//DEBUG_LOG(("Distance to target %f, closeEnough %f", WWMath::SqrtOrigin(distanceToTargetSq), closeEnough));
 			if (distanceToTargetSq < closeEnough*closeEnough) {
 				Coord3D pos = *getGoalObject()->getPosition();
 				getObject()->setPosition(&pos);
@@ -619,7 +632,7 @@ UpdateSleepTime MissileAIUpdate::update()
 	Coord3D newPos = *getObject()->getPosition();
 	if (m_noTurnDistLeft > 0.0f && m_state >= IGNITION)
 	{
-		Real distThisTurn = sqrtf(sqr(newPos.x-m_prevPos.x) + sqr(newPos.y-m_prevPos.y) + sqr(newPos.z-m_prevPos.z));
+		Real distThisTurn = WWMath::SqrtfOrigin(sqr(newPos.x-m_prevPos.x) + sqr(newPos.y-m_prevPos.y) + sqr(newPos.z-m_prevPos.z));
 		m_noTurnDistLeft -= distThisTurn;
 		m_prevPos = newPos;
 	}

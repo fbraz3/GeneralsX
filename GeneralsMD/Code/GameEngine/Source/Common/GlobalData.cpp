@@ -32,8 +32,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#include "ww3d.h"
-#include "texturefilter.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/texturefilter.h"
 
 #include "Common/GlobalData.h"
 
@@ -58,6 +58,7 @@
 #include "GameLogic/Module/BodyModule.h"
 
 #include "GameClient/Color.h"
+#include "GameClient/Display.h"
 #include "GameClient/TerrainVisual.h"
 
 #include "GameNetwork/FirewallHelper.h"
@@ -97,6 +98,9 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseFPSLimit",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useFpsLimit ) },
 	{ "DumpAssetUsage",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_dumpAssetUsage ) },
 	{ "FramesPerSecondLimit",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_framesPerSecondLimit ) },
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	{ "SkirmishTickRate",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
+	{ "TickRate",									INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
 	{ "ChipsetType",							INI::parseInt,				nullptr,			offsetof( GlobalData, m_chipSetType ) },
 	{ "MaxShellScreens",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_maxShellScreens ) },
 	{ "UseCloudMap",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useCloudMap ) },
@@ -205,6 +209,7 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 #endif
 	{ "MaxCameraHeight",						INI::parseReal,				nullptr,			offsetof( GlobalData, m_maxCameraHeight ) },
 	{ "MinCameraHeight",						INI::parseReal,				nullptr,			offsetof( GlobalData, m_minCameraHeight ) },
+	{ "TerrainDrawDistanceScale",				INI::parseReal,				nullptr,			offsetof( GlobalData, m_terrainDrawDistanceScale ) },
 	{ "TerrainHeightAtEdgeOfMap",					INI::parseReal,				nullptr,			offsetof( GlobalData, m_terrainHeightAtEdgeOfMap ) },
 	{ "UnitDamagedThreshold",				INI::parseReal,				nullptr,			offsetof( GlobalData, m_unitDamagedThresh ) },
 	{ "UnitReallyDamagedThreshold",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_unitReallyDamagedThresh ) },
@@ -646,9 +651,12 @@ GlobalData::GlobalData()
 	m_useTreeSway = TRUE;
 	m_useDrawModuleLOD = FALSE;
 	m_useHeatEffects = TRUE;
-	m_useFpsLimit = FALSE;
+	// GeneralsX @tweak felipebraz 20/06/2026 Default render FPS limit to 60 FPS instead of uncapped/0.
+	m_useFpsLimit = TRUE;
 	m_dumpAssetUsage = FALSE;
-	m_framesPerSecondLimit = 0;
+	m_framesPerSecondLimit = 60;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	m_skirmishTickRate = LOGICFRAMES_PER_SECOND;
 	m_chipSetType = 0;
 	m_headless = FALSE;
 	m_checkForUpdates = TRUE;
@@ -670,6 +678,7 @@ GlobalData::GlobalData()
 	m_enableDynamicLOD = TRUE;
 	m_enableStaticLOD = TRUE;
 	m_rightMouseAlwaysScrolls = FALSE;
+	m_jpegQuality = DEFAULT_JPEG_QUALITY;
 	m_useWaterPlane = FALSE;
 	m_useCloudPlane = FALSE;
 	m_downwindAngle = ( -0.785f );//Northeast!
@@ -868,6 +877,7 @@ GlobalData::GlobalData()
 #endif
 	m_minCameraHeight = 100.0f;
 	m_maxCameraHeight = 300.0f;
+	m_terrainDrawDistanceScale = 1.0f;
 	m_terrainHeightAtEdgeOfMap = 0.0f;
 
 	m_unitDamagedThresh = 0.5f;
@@ -960,7 +970,6 @@ GlobalData::GlobalData()
 //	m_languageFilterPref = false;
 	m_languageFilterPref = true;
 	m_firewallBehavior = FirewallHelperClass::FIREWALL_TYPE_UNKNOWN;
-	m_firewallSendDelay = FALSE;
 	m_firewallPortOverride = 0;
 	m_firewallPortAllocationDelta = 0;
 	m_loadScreenDemo = FALSE;
@@ -978,6 +987,8 @@ GlobalData::GlobalData()
 
 	m_showMoneyPerMinute = FALSE;
 	m_allowMoneyPerMinuteForPlayer = FALSE;
+
+	m_gameWindowTransitionSpeedMultiplier = 1.0f;
 
 	m_debugShowGraphicalFramerate = FALSE;
 
@@ -1028,8 +1039,6 @@ GlobalData::GlobalData()
 	m_shellMapOn =TRUE;
 	m_playIntro = TRUE;
 	m_playSizzle = TRUE;
-	m_afterIntro = FALSE;
-	m_allowExitOutOfMovies = FALSE;
 	m_loadScreenRender = FALSE;
 
 	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
@@ -1071,7 +1080,11 @@ GlobalData::GlobalData()
 	//-allAdvice feature
 	//m_allAdvice = FALSE;
 
+	m_useAlternateMouse = FALSE;
+	// GeneralsX @bugfix Meeseeks 18/06/2026 Default to TRUE to allow right-click drag scrolling under alternate controls by default
+	m_useRightMouseScrollWithAlternateMouse = TRUE;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
+	m_doubleClickAttackMove = FALSE;
 
 }
 
@@ -1212,13 +1225,14 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	// override INI values with user preferences
 	OptionPreferences optionPref;
 	TheWritableGlobalData->m_useAlternateMouse = optionPref.getAlternateMouseModeEnabled();
+	TheWritableGlobalData->m_useRightMouseScrollWithAlternateMouse = optionPref.getRightMouseScrollWithAlternateMouseEnabled();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
+	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();
 	TheWritableGlobalData->m_keyboardScrollFactor = optionPref.getScrollFactor();
 	TheWritableGlobalData->m_drawScrollAnchor = optionPref.getDrawScrollAnchor();
 	TheWritableGlobalData->m_moveScrollAnchor = optionPref.getMoveScrollAnchor();
 	TheWritableGlobalData->m_defaultIP = optionPref.getLANIPAddress();
-	TheWritableGlobalData->m_firewallSendDelay = optionPref.getSendDelay();
 	TheWritableGlobalData->m_firewallBehavior = optionPref.getFirewallBehavior();
 	TheWritableGlobalData->m_firewallPortAllocationDelta = optionPref.getFirewallPortAllocationDelta();
 	TheWritableGlobalData->m_firewallPortOverride = optionPref.getFirewallPortOverride();
@@ -1233,6 +1247,9 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_gameTimeFontSize = optionPref.getGameTimeFontSize();
 	TheWritableGlobalData->m_playerInfoListFontSize = optionPref.getPlayerInfoListFontSize();
 	TheWritableGlobalData->m_showMoneyPerMinute = optionPref.getShowMoneyPerMinute();
+	TheWritableGlobalData->m_gameWindowTransitionSpeedMultiplier = optionPref.getGameWindowTransitionSpeedMultiplier();
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
 
 	TheWritableGlobalData->m_antiAliasLevel = optionPref.getAntiAliasing();
 	TheWritableGlobalData->m_textureFilteringMode = optionPref.getTextureFilterMode();
@@ -1241,7 +1258,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	Int val=optionPref.getGammaValue();
 	//generate a value between 0.6 and 2.0.
 	if (val < 50)
-	{	//darker gamma
+	{
+		//darker gamma
 		if (val <= 0)
 			TheWritableGlobalData->m_displayGamma = 0.6f;
 		else
@@ -1440,9 +1458,11 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 	{
 		const char* home = getenv("HOME");
 		if (home) {
-			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH" / "";
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH";
 			std::filesystem::create_directories(path);
 			userDataDir = path.string().c_str();
+			if (!userDataDir.endsWith("/"))
+				userDataDir.concat('/');
 		} else {
 			userDataDir = "./";
 		}
@@ -1464,9 +1484,11 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 			path = "./";
 		}
 
-		path = path / "GeneralsX" / "GeneralsZH" / "";
+		path = path / "GeneralsX" / "GeneralsZH";
 		std::filesystem::create_directories(path);
 		userDataDir = path.string().c_str();
+		if (!userDataDir.endsWith("/"))
+			userDataDir.concat('/');
 	}
 #endif
 

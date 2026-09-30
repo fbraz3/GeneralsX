@@ -687,7 +687,8 @@ float project_to_sphere(float r, float x, float y)
 
 	if (d < r * (SQRT2/(2.0f)))			// inside sphere
 		z = WWMath::Sqrt(r * r - d * d);
-	else {								// on hyperbola
+	else {
+		// on hyperbola
 		t = r / SQRT2;
 		z = t * t / d;
 	}
@@ -696,7 +697,7 @@ float project_to_sphere(float r, float x, float y)
 }
 
 
-void Quaternion::Randomize(void)
+void Quaternion::Randomize()
 {
 	X = ((float) (rand() & 0xFFFF)) / 65536.0f;
 	Y = ((float) (rand() & 0xFFFF)) / 65536.0f;

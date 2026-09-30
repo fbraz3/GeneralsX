@@ -47,8 +47,11 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-// GeneralsX @build BenderAI 12/02/2026 Use compat header for Linux mbstring compatibility
+#ifdef _WIN32
+#include <mbstring.h>
+#else
 #include "mbstring_compat.h"
+#endif
 
 #include "Common/Debug.h"
 #include "Common/Language.h"
@@ -101,29 +104,29 @@ class IMEManager : public IMEManagerInterface
 	public:
 
 		IMEManager();
-		~IMEManager();
+		~IMEManager() override;
 
-		virtual void					init();
-		virtual void					reset();
-		virtual void					update();
+		virtual void					init() override;
+		virtual void					reset() override;
+		virtual void					update() override;
 
-		virtual void					attach( GameWindow *window );		///< attach IME to specified window
-		virtual void					detach();								///< detach IME from current window
-		virtual void					enable();									///< Enable IME
-		virtual void					disable();								///< Disable IME
-		virtual Bool					isEnabled();							///< Is IME enabled
-		virtual Bool					isAttachedTo( GameWindow *window );	///< Is the manager attached toa window
-		virtual GameWindow*		getWindow();							///< Returns the window we are currently attached to
-		virtual Bool					isComposing();						///< Manager is currently composing new input string
-		virtual void					getCompositionString( UnicodeString &string ); ///< Return the current composition string
-		virtual Int						getCompositionCursorPosition();			///< Returns the composition cursor position
-		virtual Int						getIndexBase();						///< Get index base for candidate list
+		virtual void					attach( GameWindow *window ) override;		///< attach IME to specified window
+		virtual void					detach() override;								///< detach IME from current window
+		virtual void					enable() override;									///< Enable IME
+		virtual void					disable() override;								///< Disable IME
+		virtual Bool					isEnabled() override;							///< Is IME enabled
+		virtual Bool					isAttachedTo( GameWindow *window ) override;	///< Is the manager attached toa window
+		virtual GameWindow*		getWindow() override;							///< Returns the window we are currently attached to
+		virtual Bool					isComposing() override;						///< Manager is currently composing new input string
+		virtual void					getCompositionString( UnicodeString &string ) override; ///< Return the current composition string
+		virtual Int						getCompositionCursorPosition() override;			///< Returns the composition cursor position
+		virtual Int						getIndexBase() override;						///< Get index base for candidate list
 
-		virtual Int						getCandidateCount();						///< Returns the total number of candidates
-		virtual const UnicodeString* getCandidate( Int index );	///< Returns the candidate string
-		virtual Int						getSelectedCandidateIndex();		///< Returns the indexed of the currently selected candidate
-		virtual Int						getCandidatePageSize();					///< Returns the page size for the candidates list
-		virtual Int						getCandidatePageStart();				///< Returns the index of the first visibel candidate
+		virtual Int						getCandidateCount() override;						///< Returns the total number of candidates
+		virtual const UnicodeString* getCandidate( Int index ) override;	///< Returns the candidate string
+		virtual Int						getSelectedCandidateIndex() override;		///< Returns the indexed of the currently selected candidate
+		virtual Int						getCandidatePageSize() override;					///< Returns the page size for the candidates list
+		virtual Int						getCandidatePageStart() override;				///< Returns the index of the first visibel candidate
 
 
 
@@ -131,8 +134,8 @@ class IMEManager : public IMEManagerInterface
 		virtual Bool serviceIMEMessage(	void *windowsHandle,
 												UnsignedInt message,
 												Int wParam,
-												Int lParam );
-		virtual Int result();														///< result return value of last serviced IME message
+												Int lParam ) override;
+		virtual Int result() override;														///< result return value of last serviced IME message
 
 	protected:
 
@@ -728,7 +731,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				//First remove the composition characters
 				m_composing = FALSE;
 				while (m_compositionCharsDisplayed > 0)
-				{	//if cursor has moved since start of composition, we need to move it back using backspace message
+				{
+					//if cursor has moved since start of composition, we need to move it back using backspace message
 					TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 					m_compositionCharsDisplayed--;
 				}
@@ -784,7 +788,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -801,13 +806,15 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				}
 				else
 				if (lParam & CS_INSERTCHAR && lParam & CS_NOMOVECARET)
-				{	//we are supposed to display the composition character without moving the cursor. (it's a candidate).
+				{
+					//we are supposed to display the composition character without moving the cursor. (it's a candidate).
 					if (m_window)
 					{
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -825,13 +832,15 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 				}
 				else
 				if (lParam & GCS_COMPSTR)
-				{	//we are supposed to display the composition character without moving the cursor. (it's a candidate).
+				{
+					//we are supposed to display the composition character without moving the cursor. (it's a candidate).
 					if (m_window)
 					{
 						m_composing = FALSE; // reset this flag before calling GWM_IME_CHAR
 
 						while (m_compositionCharsDisplayed > 0)
-						{	//if cursor has moved since start of composition, we need to move it back using backspace message
+						{
+							//if cursor has moved since start of composition, we need to move it back using backspace message
 							TheWindowManager->winSendInputMsg( m_window, GWM_CHAR, KEY_BACKSPACE, KEY_STATE_DOWN);
 							m_compositionCharsDisplayed--;
 						}
@@ -950,7 +959,8 @@ Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	In
 					case IMN_SETCOMPOSITIONFONT:     //This message is sent when the font of the input context is updated.
 					case IMN_SETCOMPOSITIONWINDOW:   //This message is sent when the style or position of the composition window is updated.
 					case IMN_PRIVATE:                //This message is for your own use, it seems.
-*/				default:
+*/
+				default:
 						m_result =  1;
 						return TRUE;
 				}
@@ -1617,4 +1627,3 @@ IMEManagerInterface *CreateIMEManagerInterface( void )
 }
 
 #endif // _WIN32
-

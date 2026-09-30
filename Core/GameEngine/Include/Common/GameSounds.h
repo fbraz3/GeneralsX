@@ -45,8 +45,8 @@
 #include "Common/GameAudio.h"
 #include "Common/GameType.h"
 
-// Forward declarations
 class AudioEventRTS;
+class DynamicAudioEventRTS;
 
 class SoundManager : public SubsystemInterface
 {
@@ -67,16 +67,7 @@ class SoundManager : public SubsystemInterface
 		virtual void setCameraAudibleDistance( Real audibleDistance );
 		virtual Real getCameraAudibleDistance();
 
-		virtual void addAudioEvent(AudioEventRTS *&eventToAdd);	// pre-copied
-
-		virtual void notifyOf2DSampleStart();
-		virtual void notifyOf3DSampleStart();
-
-		virtual void notifyOf2DSampleCompletion();
-		virtual void notifyOf3DSampleCompletion();
-
-		virtual Int getAvailableSamples();
-		virtual Int getAvailable3DSamples();
+		virtual Bool addAudioEvent(DynamicAudioEventRTS *eventToAdd);	// pre-copied
 
 		// empty string means that this sound wasn't found or some error occurred. CHECK FOR EMPTY STRING.
 		virtual AsciiString getFilenameForPlayFromAudioEvent( const AudioEventRTS *eventToGetFrom );
@@ -87,12 +78,4 @@ class SoundManager : public SubsystemInterface
 	protected:
 		virtual Bool violatesVoice( AudioEventRTS *event );
 		virtual Bool isInterrupting( AudioEventRTS *event );
-
-
-	protected:
-		UnsignedInt m_num2DSamples;
-		UnsignedInt m_num3DSamples;
-
-		UnsignedInt m_numPlaying2DSamples;
-		UnsignedInt m_numPlaying3DSamples;
 };

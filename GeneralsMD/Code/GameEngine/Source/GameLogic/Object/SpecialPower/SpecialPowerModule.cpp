@@ -64,6 +64,7 @@ SpecialPowerModuleData::SpecialPowerModuleData()
 	m_specialPowerTemplate = nullptr;
 	m_updateModuleStartsAttack = false;
 	m_startsPaused = FALSE;
+	m_startsReady = FALSE;
 	m_scriptedSpecialPowerOnly = FALSE;
 
 }
@@ -79,6 +80,7 @@ SpecialPowerModuleData::SpecialPowerModuleData()
 		{ "SpecialPowerTemplate",			INI::parseSpecialPowerTemplate, nullptr, offsetof( SpecialPowerModuleData, m_specialPowerTemplate ) },
 		{ "UpdateModuleStartsAttack", INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_updateModuleStartsAttack ) },
 		{ "StartsPaused",							INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_startsPaused ) },
+		{ "StartsReady",							INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_startsReady ) },
 		{ "InitiateSound",						INI::parseAudioEventRTS,				nullptr, offsetof( SpecialPowerModuleData, m_initiateSound ) },
 		{ "ScriptedSpecialPowerOnly", INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_scriptedSpecialPowerOnly ) },
 		{ nullptr, nullptr, nullptr, 0 }
@@ -97,11 +99,10 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 									: BehaviorModule( thing, moduleData )
 {
 
-#if RETAIL_COMPATIBLE_CRC
+	// TheSuperHackers @bugfix fbraz 13/07/2026: Always initialize to 0.
+	// Disabling RETAIL_COMPATIBLE_CRC previously forced this to 0xFFFFFFFF, which caused unpaused
+	// targetless special powers (like Spy Satellite and Battle Plans) to never become ready.
 	m_availableOnFrame = 0;
-#else
-	m_availableOnFrame = 0xFFFFFFFF;
-#endif
 	m_pausedCount = 0;
 	m_pausedOnFrame = 0;
 	m_pausedPercent = 0.0f;
@@ -114,7 +115,12 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 		//A sharedNSync special only startPowerRecharges when first scienced or when executed,
 		//Since a new module with same SPTemplates may construct at any time.
 		if ( getSpecialPowerTemplate()->isSharedNSync() == FALSE )
+		{
 			startPowerRecharge();
+
+			if (startsReady())
+				m_availableOnFrame = TheGameLogic->getFrame();
+		}
 	}
 	// WE USED TO DO THE POLL-EVERYBODY-AND-VOTE-ON-WHO-TO-SYNC-TO THING HERE,
 	// BUT NO MORE, NOW IT IS HANDLED IN PLAYER
@@ -370,6 +376,16 @@ Real SpecialPowerModule::getPercentReady() const
 	return percent;
 }
 
+Bool SpecialPowerModule::startsReady() const
+{
+#if RETAIL_COMPATIBLE_CRC
+	return false;
+#endif
+
+	const SpecialPowerModuleData* modData = getSpecialPowerModuleData();
+	return modData->m_startsReady;
+}
+
 //-------------------------------------------------------------------------------------------------
 // A special power module that is only supposed to be fired via scripts. An example of this
 // are the various cargo plane units we have. Scripters can launch specials from them after
@@ -455,14 +471,14 @@ Bool SpecialPowerModule::initiateIntentToDoSpecialPower( const Object *targetObj
 		}
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// GeneralsX @bugfix Copilot 06/09/2026 Stop a rejected missile-launcher intent before recording or triggering it.
+	// Upstream reference: Mauller, PR #1218
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/1218
 	if (m_availableOnFrame == 0xFFFFFFFF)
 	{
 		DEBUG_ASSERTCRASH(!valid, ("Using MissileLauncherBuildingUpdate escape path when valid is set to true"));
 		return false;
 	}
-#endif
 
 	getObject()->getControllingPlayer()->getAcademyStats()->recordSpecialPowerUsed( getSpecialPowerModuleData()->m_specialPowerTemplate );
 
@@ -725,11 +741,9 @@ void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angl
 	//will then start processing each frame.
 	initiateIntentToDoSpecialPower( nullptr, loc, nullptr, commandOptions );
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// GeneralsX @bugfix Copilot 06/09/2026 Do not trigger a location power after its update module rejected the intent.
 	if (m_availableOnFrame == 0xFFFFFFFF)
 		return;
-#endif
 
 	//Only trigger the special power immediately if the updatemodule doesn't start the attack.
 	//An example of a case that wouldn't trigger immediately is for a unit that needs to

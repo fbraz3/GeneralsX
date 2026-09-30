@@ -29,7 +29,6 @@
 #pragma once
 
 #include "Lib/BaseType.h"
-#include "ref_ptr.h"
 
 #include "Common/Geometry.h"
 #include "Common/Snapshot.h"
@@ -449,7 +448,7 @@ public:
 	void onContainedBy( Object *containedBy );
 	void onRemovedFrom( Object *removedFrom );
 	Int getTransportSlotCount() const;
-	void friend_setContainedBy( Object *containedBy ) { m_containedBy = containedBy; }
+	void friend_setContainedBy( Object *containedBy );
 	const Object* getEnclosingContainedBy() const; ///< Find the first enclosing container in the containment chain.
 	const Object* getOuterObject() const; ///< Get the top-level object
 
@@ -821,7 +820,7 @@ private:
 };
 
 // deleteInstance is not meant to be used with Object in order to require the use of TheGameLogic->destroyObject()
-void deleteInstance(Object* object) CPP_11(= delete);
+void deleteInstance(Object* object) FUNCTION_DELETE;
 
 // describe an object as an AsciiString: e.g. "Object 102 (KillerBuggy) [GLARocketBuggy, owned by player 2 (GLAIntroPlayer)]"
 AsciiString DebugDescribeObject(const Object *obj);

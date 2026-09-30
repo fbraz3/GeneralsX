@@ -32,7 +32,6 @@
 
 #include "gamespy/ghttp/ghttp.h"
 
-#include "Lib/BaseType.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -108,6 +107,8 @@ void DoCompressTest();
 // window ids -------------------------------------------------------------------------------------
 static NameKeyType mainMenuID = NAMEKEY_INVALID;
 static NameKeyType skirmishID = NAMEKEY_INVALID;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static NameKeyType buttonCustomMissionID = NAMEKEY_INVALID;
 static NameKeyType onlineID = NAMEKEY_INVALID;
 static NameKeyType networkID = NAMEKEY_INVALID;
 static NameKeyType optionsID = NAMEKEY_INVALID;
@@ -145,6 +146,8 @@ static GameWindow *parentMainMenu = nullptr;
 static GameWindow *buttonSinglePlayer = nullptr;
 static GameWindow *buttonMultiPlayer = nullptr;
 static GameWindow *buttonSkirmish = nullptr;
+// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+static GameWindow *buttonCustomMission = nullptr;
 static GameWindow *buttonOnline = nullptr;
 static GameWindow *buttonNetwork = nullptr;
 static GameWindow *buttonOptions = nullptr;
@@ -394,7 +397,11 @@ static void initLabelVersion()
 	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:LabelVersion" );
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( nullptr, versionID );
 	UnicodeString creditText;
-	creditText.translate("GeneralsX - Multiplatform C&C Generals");
+	if (TheVersion) {
+		creditText = TheVersion->getUnicodeProjectWatermark();
+	} else {
+		creditText.translate("GeneralsX - Multiplatform C&C Generals");
+	}
 
 	if (labelVersion)
 	{
@@ -415,7 +422,7 @@ static void initLabelVersion()
 			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
 			instData.m_textLabelString = "GeneralsXCreditLabel";
 
-			const Int width = 560;
+			const Int width = TheDisplay->getWidth() - 16;
 			const Int height = 28;
 			const Int x = 8;
 			const Int y = TheDisplay->getHeight() - height - 8;
@@ -433,7 +440,11 @@ static void initLabelVersion()
 			if (fallbackCreditLabel)
 			{
 				// GeneralsX @tweak BenderAI 31/03/2026 Keep fallback watermark subtle and aligned to bottom-left target placement.
-				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", 12, FALSE));
+				int baseSize = 12;
+				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
+				fallbackCreditLabel->winSetFont(TheWindowManager->winFindFont("Arial", scaledSize, FALSE));
 				fallbackCreditLabel->winSetEnabledTextColors(GameMakeColor(255, 220, 60, 255), GameMakeColor(0, 0, 0, 0));
 				GadgetStaticTextSetText(fallbackCreditLabel, creditText);
 			}
@@ -464,6 +475,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	mainMenuID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuParent" );
 //	campaignID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCampaign" );
 	skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMissionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCustomMission" );
 	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
@@ -502,6 +515,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonSinglePlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonSinglePlayerID );
 	buttonMultiPlayer = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonMultiPlayerID );
 	buttonSkirmish = TheWindowManager->winGetWindowFromId( parentMainMenu, skirmishID );
+	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+	buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCustomMissionID );
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
@@ -852,7 +867,11 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 
 			if (updateNotifyButton)
 			{
-				GameFont* font = TheWindowManager->winFindFont("Arial", 10, FALSE);
+				int baseSize = 10;
+				float scaleY = TheDisplay ? ((float)TheDisplay->getHeight() / 600.0f) : 1.0f;
+				int scaledSize = (scaleY > 1.0f) ? (int)(baseSize * scaleY * 0.70f) : baseSize;
+				if (scaledSize < baseSize) scaledSize = baseSize;
+				GameFont* font = TheWindowManager->winFindFont("Arial", scaledSize, FALSE);
 				if (font)
 					updateNotifyButton->winSetFont(font);
 
@@ -1443,6 +1462,24 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheShell->push( "Menus/SkirmishGameOptionsMenu.wnd" );
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_SKIRMISH_SELECTED]);
 			}
+			// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
+			else if( controlID == buttonCustomMissionID )
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				buttonPushed = TRUE;
+				campaignSelected = TRUE;
+				if (dropDownWindows[DROPDOWN_SINGLE])
+					dropDownWindows[DROPDOWN_SINGLE]->winHide(FALSE);
+				TheTransitionHandler->remove("MainMenuFactionSkirmish");
+
+				if (TheTransitionHandler && TheTransitionHandler->hasGroup("MainMenuSinglePlayerMenuBackCustomMission"))
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackCustomMission");
+				else if (TheTransitionHandler)
+					TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
+
+				TheShell->push( "Menus/MapSelectMenu.wnd" );
+			}
 			else if( controlID == onlineID )
 			{
 				if(dontAllowTransitions)
@@ -1452,7 +1489,11 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
 
+#if defined(SAGE_USE_NGMP)
+				TheShell->push( "Menus/GameSpyLoginProfile.wnd" );
+#else
 				StartPatchCheck();
+#endif
 //				localAnimateWindowManager->reverseAnimateWindow();
 				dropDown = DROPDOWN_NONE;
 

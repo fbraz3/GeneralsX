@@ -21,11 +21,13 @@
 // Author: Stephan Vedder, March 2025
 #pragma once
 #include "Common/AsciiString.h"
+#include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
 #include <AL/al.h>
 #include <AL/alc.h>
 
 class AudioEventRTS;
+class DynamicAudioEventRTS;
 
 enum
 {
@@ -81,11 +83,10 @@ public:
 	OpenALAudioManager();
 	virtual ~OpenALAudioManager();
 
-	virtual void nextMusicTrack(void);
-	virtual void prevMusicTrack(void);
+	virtual AsciiString nextMusicTrack(void);
+	virtual AsciiString prevMusicTrack(void);
 	virtual Bool isMusicPlaying(void) const;
 	virtual Bool hasMusicTrackCompleted(const AsciiString &trackName, Int numberOfTimes) const;
-	virtual AsciiString getMusicTrackName(void) const;
 
 	virtual void openDevice(void);
 	virtual void closeDevice(void);
@@ -122,6 +123,8 @@ public:
 	virtual UnsignedInt getNum2DSamples(void) const;
 	virtual UnsignedInt getNum3DSamples(void) const;
 	virtual UnsignedInt getNumStreams(void) const;
+	virtual UnsignedInt getNumAvailable2DSamples() const;
+	virtual UnsignedInt getNumAvailable3DSamples() const;
 
 	virtual Bool doesViolateLimit(AudioEventRTS *event) const;
 	virtual Bool isPlayingLowerPriority(AudioEventRTS *event) const;
@@ -154,8 +157,6 @@ public:
 
 	virtual void closeAnySamplesUsingFile(const void *fileToClose) override;
 
-	virtual Bool has3DSensitiveStreamsPlaying(void) const;
-
 protected:
 	// 3-D functions
 	virtual void setDeviceListenerPosition(void);
@@ -179,7 +180,7 @@ protected:
 	void initSamplePools(void);
 	void processRequest(AudioRequest *req);
 
-	void playAudioEvent(AudioEventRTS *event);
+	void playAudioEvent(AudioRequest *req);
 	void stopAudioEvent(AudioHandle handle);
 	void pauseAudioEvent(AudioHandle handle);
 

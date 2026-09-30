@@ -46,16 +46,9 @@ typedef unsigned short	uint16;
 typedef signed char		sint8;
 typedef signed short	sint16;
 
-// TheSuperHackers @build 10/02/2026 BenderAI  
-// uint32/sint32: Use fixed-width types on 64-bit platforms (long is 64-bit on Linux/macOS x64)
-#if defined(__linux__) || defined(__APPLE__)
-    typedef uint32_t uint32;
-    typedef int32_t  sint32;
-#else
-    // Windows: long is always 32-bit
-    typedef unsigned long uint32;
-    typedef signed long   sint32;
-#endif
+// GeneralsX @build 06/09/2026 fbraz3: Use uint32_t/int32_t on all platforms to match GameNetworkingSockets/Steamworks uint32 (unsigned int) and avoid MSVC C2371 redefinition
+typedef uint32_t uint32;
+typedef int32_t  sint32;
 
 typedef unsigned int    uint;
 typedef signed int      sint;
@@ -68,7 +61,7 @@ typedef signed int      sint;
     typedef unsigned __int64 __uint64;
     typedef unsigned __int64 _uint64;
 #endif
-// Note: Linux GCC/Clang use int64_t typedefs from debug_debug.h or profile_f unclevel.h
+// Note: Linux GCC/Clang use int64_t typedefs from debug_debug.h or profile_funclevel.h
 
 typedef float				float32;
 typedef double				float64;
@@ -92,10 +85,3 @@ typedef unsigned short	USHORT;
 typedef const char *		LPCSTR;
 typedef int             INT;
 typedef unsigned int    UINT;
-
-#if defined(_MSC_VER) && _MSC_VER < 1300
-#ifndef _WCHAR_T_DEFINED
-typedef unsigned short wchar_t;
-#define _WCHAR_T_DEFINED
-#endif
-#endif

@@ -56,25 +56,16 @@ if [[ ! -d "${DXVK_LIB_DIR}" ]]; then
     exit 1
 fi
 
-# Check if SDL3 libraries exist
+# Check if SDL3 libraries exist (optional if using system SDL3)
 if [[ ! -d "${SDL3_LIB_DIR}" ]]; then
-    echo "ERROR: SDL3 libraries not found at ${SDL3_LIB_DIR}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
+    echo "INFO: SDL3 build directory not found, assuming system SDL3 is used"
 fi
 
 if [[ ! -d "${SDL3_IMAGE_LIB_DIR}" ]]; then
-    echo "ERROR: SDL3_image libraries not found at ${SDL3_IMAGE_LIB_DIR}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
+    echo "INFO: SDL3_image build directory not found, assuming system SDL3_image is used"
 fi
 
-# Check if GameSpy library exists
-if [[ ! -f "${GAMESPY_LIB}" ]]; then
-    echo "ERROR: GameSpy library not found at ${GAMESPY_LIB}"
-    echo "Build first: ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
-    exit 1
-fi
+# GameSpy check removed (it is static and built into the binary)
 
 # Create runtime directory if needed
 mkdir -p "${RUNTIME_DIR}"
@@ -90,13 +81,26 @@ cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d8.so* "${RUNTIME_DIR}/"
 cp -v "${DXVK_LIB_DIR}"/libdxvk_d3d9.so* "${RUNTIME_DIR}/" 2>/dev/null || true
 
 # Copy SDL3 and SDL3_image libraries (for cursor loading and window management)
-echo "  Copying SDL3 libraries..."
-cp -v "${SDL3_LIB_DIR}"/libSDL3.so* "${RUNTIME_DIR}/"
-cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
+if compgen -G "${SDL3_LIB_DIR}/libSDL3.so*" > /dev/null; then
+    echo "  Copying SDL3 libraries..."
+    cp -v "${SDL3_LIB_DIR}"/libSDL3.so* "${RUNTIME_DIR}/"
+fi
+if compgen -G "${SDL3_IMAGE_LIB_DIR}/libSDL3_image.so*" > /dev/null; then
+    echo "  Copying SDL3_image libraries..."
+    cp -v "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${RUNTIME_DIR}/"
+fi
 
-# Copy GameSpy library (for online multiplayer)
-echo "  Copying GameSpy library..."
-cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+# Copy GameSpy library (only if built as shared)
+if [[ -f "${GAMESPY_LIB}" ]]; then
+    echo "  Copying GameSpy library..."
+    cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
+fi
+
+# Copy GameNetworkingSockets library (for NGMP P2P multiplayer)
+if compgen -G "${BUILD_DIR}/bin/libGameNetworkingSockets.so*" > /dev/null || compgen -G "${BUILD_DIR}/lib/libGameNetworkingSockets.so*" > /dev/null; then
+    echo "  Copying GameNetworkingSockets library..."
+    cp -v "${BUILD_DIR}"/bin/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || cp -v "${BUILD_DIR}"/lib/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+fi
 
 copy_ldd_deps() {
     local root="$1"
@@ -125,30 +129,31 @@ copy_ldd_deps() {
 }
 
 # GeneralsX @build GitHubCopilot 17/05/2026 Deploy FFmpeg runtime libs transitively so runtime does not depend on host SONAME layout.
+# GeneralsX @tweak Antigravity 09/07/2026 Support multiple host architectures and paths (Fedora/Red Hat, Arch, Debian/Ubuntu)
 echo "  Copying FFmpeg runtime libraries..."
 shopt -s nullglob
-ffmpeg_roots=(
-    "${FFMPEG_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_LIB_DIR}"/libswscale.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavcodec.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavformat.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libavutil.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswresample.so*
-    "${FFMPEG_DEP_LIB_DIR}"/libswscale.so*
-)
+ffmpeg_roots=()
+for dir in "${FFMPEG_LIB_DIR}" "${FFMPEG_DEP_LIB_DIR}" "/usr/lib64" "/lib64" "/usr/lib" "/lib"; do
+    ffmpeg_roots+=(
+        "${dir}"/libavcodec.so*
+        "${dir}"/libavformat.so*
+        "${dir}"/libavutil.so*
+        "${dir}"/libswresample.so*
+        "${dir}"/libswscale.so*
+    )
+done
 shopt -u nullglob
 for ffmpeg_root in "${ffmpeg_roots[@]}"; do
     cp -a "${ffmpeg_root}" "${RUNTIME_DIR}/" 2>/dev/null || true
     copy_ldd_deps "${ffmpeg_root}"
 done
 
-if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
-    echo "ERROR: Missing required runtime library: libavcodec.so*"
-    echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
-    exit 1
+if ldd "${BINARY_SRC}" | grep -q "libavcodec.so"; then
+    if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
+        echo "ERROR: Missing required runtime library: libavcodec.so*"
+        echo "Install FFmpeg runtime/dev packages (e.g. libavcodec-dev) and rebuild/deploy"
+        exit 1
+    fi
 fi
 
 # Set RPATH so executable finds libraries in same directory
@@ -157,6 +162,31 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsXZH" 2>/dev/null || {
     echo "WARNING: patchelf not found. Install with: sudo apt install patchelf"
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
+
+# SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
+# When the .so exists, deploy it. The engine auto-creates SagePatch.ini with
+# defaults in the user data directory on first run.
+SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
+if [[ -f "${SAGE_PATCH_LIB}" ]]; then
+    echo "  Deploying SagePatch (libsage_patch.so)..."
+    cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
+fi
+
+# GeneralsX @build BenderAI 08/06/2026 Deploy ExtrasMenu.wnd so the engine can
+# load it via TheFileSystem (local files override BIG archives).
+EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
+if [[ -f "${EXTRAS_WND_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Window/Menus"
+    cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+fi
+
+echo "  Deploying fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RUNTIME_DIR}/fonts/"
+fi
 
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
@@ -173,7 +203,25 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 # Set DXVK environment
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
+# DXVK HUD is disabled by default because Generals has a native FPS counter.
+# Set DXVK_HUD=fps,memory,version or similar to customize. See DXVK docs for full list.
 export DXVK_HUD="${DXVK_HUD:-0}"
+
+# SagePatch (optional QoL features). Loaded via LD_PRELOAD so it can interpose
+# SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor lock,
+# Ctrl+PageUp/PageDown brightness, Ctrl+1..5 window snap).
+if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+    if [[ -n "${LD_PRELOAD:-}" ]]; then
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so:${LD_PRELOAD}"
+    else
+        export LD_PRELOAD="${SCRIPT_DIR}/libsage_patch.so"
+    fi
+fi
+
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+fi
 
 # GeneralsX @feature felipebraz 25/02/2026 Auto-detect base Generals install path
 # Set CNC_GENERALS_INSTALLPATH if not already set and ../Generals/ exists
@@ -228,8 +276,14 @@ if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
     echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
 fi
 
+# The engine resolves Local FS lookups (Data/INI/Default/... overrides, etc.)
+# relative to the binary's cwd. Without this cd, anything launched via absolute
+# path misses every loose INI / asset and only sees BIG-archived data.
+cd "${SCRIPT_DIR}"
+
 # Run game with all arguments
-exec "${SCRIPT_DIR}/GeneralsXZH" "$@"
+"./GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 EOF
 chmod +x "${RUNTIME_DIR}/run.sh"
 

@@ -74,21 +74,21 @@
 
 #include "rendobj.h"
 #include "assetmgr.h"
-#include "win.h"
-#include "pot.h"
+#include "WWLib/win.h"
+#include "WWMath/pot.h"
 #include "scene.h"
-#include "colmath.h"
+#include "WWMath/colmath.h"
 #include "coltest.h"
 #include "inttest.h"
-#include "wwdebug.h"
+#include "WWDebug/wwdebug.h"
 #include "matinfo.h"
 #include "htree.h"
 #include "predlod.h"
 #include "camera.h"
 #include "ww3d.h"
-#include "chunkio.h"
-#include "persistfactory.h"
-#include "saveload.h"
+#include "WWLib/chunkio.h"
+#include "WWSaveLoad/persistfactory.h"
+#include "WWSaveLoad/saveload.h"
 #include "ww3dids.h"
 #include "intersec.h"
 
@@ -322,7 +322,7 @@ float RenderObjClass::Get_Screen_Size(CameraClass &camera)
 	// accurate (perhaps by using the object-space bounding-box)
 	Vector3 cam = camera.Get_Position();
 
-	ViewportClass viewport = camera.Get_Viewport();
+	const ViewportClass &viewport = camera.Get_Viewport();
 	Vector2 vpr_min, vpr_max;
 	camera.Get_View_Plane(vpr_min, vpr_max);
 	float width_factor = viewport.Width() / (vpr_max.X - vpr_min.X);
@@ -1277,7 +1277,7 @@ void RenderObjPersistFactoryClass::Save(ChunkSaveClass & csave,PersistClass * ob
 {
 	RenderObjClass * robj = (RenderObjClass *)obj;
 	const char * name = robj->Get_Name();
-	Matrix3D tm = robj->Get_Transform();
+	const Matrix3D& tm = robj->Get_Transform();
 
 	csave.Begin_Chunk(RENDOBJFACTORY_CHUNKID_VARIABLES);
 	WRITE_MICRO_CHUNK(csave,RENDOBJFACTORY_VARIABLE_OBJPOINTER,robj);

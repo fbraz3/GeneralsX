@@ -27,18 +27,18 @@
 #include "W3DViewView.h"
 #include "Utils.h"
 #include "ColorUtils.h"
-#include "verchk.h"
-#include "wwmath.h"
-#include "WWAudio.h"
+#include "WWLib/verchk.h"
+#include "WWMath/wwmath.h"
+#include "WWAudio/WWAudio.h"
 #include "ViewerAssetMgr.h"
 #include "Globals.h"
 #include "AnimatedSoundOptionsDialog.h"
-#include "animatedsoundmgr.h"
+#include "WW3D2/animatedsoundmgr.h"
 
 
 #undef STRICT
-#include "ww3d.h"
-#include "assetmgr.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/assetmgr.h"
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -275,13 +275,13 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAboutDlg)
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
 	//{{AFX_MSG(CAboutDlg)
-	virtual BOOL OnInitDialog();
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -331,7 +331,8 @@ void Debug_Refs()
 		RefCountNodeClass * search = first;
 		while (search->Is_Valid()) {
 
-			if (search == node) {	// if this is not the first one
+			if (search == node) {
+				// if this is not the first one
 				if (count != 0) {
 					display = false;
 					break;

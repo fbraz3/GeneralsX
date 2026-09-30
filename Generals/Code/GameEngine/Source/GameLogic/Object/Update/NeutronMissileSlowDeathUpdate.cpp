@@ -29,7 +29,9 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <cmath>
 #include "Common/GameState.h"
+#include "Common/GlobalData.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "GameClient/FXList.h"
@@ -287,6 +289,47 @@ UpdateSleepTime NeutronMissileSlowDeathBehavior::update()
 
 }
 
+static void debugDrawBlastCircle( const Coord3D *center, Real radius, Real tileWidth,
+																 Int frameDuration, const RGBColor &color )
+{
+	extern void addIcon(const Coord3D *pos, Real width, Int frameDuration, RGBColor color);
+
+	if( !std::isfinite( radius ) || radius <= 0.0f || !std::isfinite( tileWidth ) || tileWidth <= 0.0f )
+		return;
+
+	// space the icons roughly one tile apart along the circumference, within sane bounds
+	tileWidth = max( tileWidth, 1.0f );
+	// GeneralsX @bugfix arazmj 27/08/2026 Keep debug blast visualization deterministic across platforms.
+	// Upstream reference: xezon, PR #3160
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3160
+	Real segmentCount = WWMath::Ceil( (2.0f * PI * radius) / tileWidth * 0.5f );
+	if( !std::isfinite( segmentCount ) )
+		segmentCount = 256.0f;
+	Int segments = (Int)clamp( 1.0f, segmentCount, 256.0f );
+
+	for( Int i = 0; i < segments; ++i )
+	{
+		Real angle = (2.0f * PI * i) / segments;
+		Coord3D pos;
+
+		pos.x = center->x + radius * WWMath::Cos( angle );
+		pos.y = center->y + radius * WWMath::Sin( angle );
+		pos.z = TheTerrainLogic->getGroundHeight( pos.x, pos.y );
+
+		addIcon( &pos, tileWidth, frameDuration, color );
+	}
+}
+
+static void debugDrawBlastRadii( Object *missile, const BlastInfo *blastInfo, Real tileWidth, Int frameDuration )
+{
+	constexpr const RGBColor innerColor = { 0.0f, 1.0f, 1.0f }; // cyan, everything in here takes full damage
+	constexpr const RGBColor outerColor = { 1.0f, 1.0f, 0.0f }; // yellow, damage falls off out here
+	const Coord3D *missilePos = missile->getPosition();
+
+	debugDrawBlastCircle( missilePos, blastInfo->innerRadius, tileWidth, frameDuration, innerColor );
+	debugDrawBlastCircle( missilePos, blastInfo->outerRadius, tileWidth, frameDuration, outerColor );
+}
+
 // ------------------------------------------------------------------------------------------------
 /** Do a single blast for the bomb */
 // ------------------------------------------------------------------------------------------------
@@ -312,11 +355,28 @@ void NeutronMissileSlowDeathBehavior::doBlast( const BlastInfo *blastInfo )
 	damageInfo.in.m_amount = blastInfo->minDamage;
 
 	// scan objects around us and do damage to objects we have "passed over" and are behind us
+	// TheSuperHackers @todo Optimize this function. Iterates through the blasts even if they apply zero damage.
 	if( blastInfo->outerRadius )
 	{
+#if defined(RTS_DEBUG)
+		if( TheGlobalData->m_debugProjectilePath && (blastInfo->maxDamage > 0.0f || blastInfo->minDamage > 0.0f) )
+		{
+			constexpr const Int frameDuration = 60 * LOGICFRAMES_PER_SECOND;
+			debugDrawBlastRadii( missile, blastInfo, TheGlobalData->m_debugProjectileTileWidth, frameDuration );
+		}
+#endif
+
+#if RETAIL_COMPATIBLE_CRC || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_SEARCH
+		const DistanceCalculationType dc = FROM_CENTER_2D;
+#else
+		// TheSuperHackers @bugfix xezon 16/08/2026 From FROM_CENTER_2D,
+		// because objects that reach into the outer radius should also receive damage.
+		const DistanceCalculationType dc = FROM_BOUNDINGSPHERE_3D;
+#endif
+
 		ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( missilePos,
 																																			 blastInfo->outerRadius,
-																																			 FROM_CENTER_2D,
+																																			 dc,
 																																			 nullptr );
 		MemoryPoolObjectHolder hold( iter );
 		Object *other;
@@ -329,10 +389,26 @@ void NeutronMissileSlowDeathBehavior::doBlast( const BlastInfo *blastInfo )
 			// get other position
 			otherPos = other->getPosition();
 
+#if RETAIL_COMPATIBLE_CRC || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_DAMAGE
 			// compute vector from the missile to other object
-			forceVector.x = otherPos->x - missilePos->x;
-			forceVector.y = otherPos->y - missilePos->y;
-			forceVector.z = otherPos->z - missilePos->z;
+			forceVector = *otherPos - *missilePos;
+#else
+			// compute vector from the missile to other object
+			// TheSuperHackers @tweak xezon 16/08/2026 No longer calculate the force vector to the center of the object,
+			// but to half way between the closest edge and the center of the object. This way a more appropriate
+			// damage value is sampled for a large structure inside the damage fall off range.
+			const Coord3D missileToObjectCenter = *otherPos - *missilePos;
+
+			Coord3D missileToObjectEdge;
+			ThePartitionManager->getVectorTo(other, missilePos, FROM_BOUNDINGSPHERE_3D, missileToObjectEdge);
+
+			// flip direction
+			missileToObjectEdge = -missileToObjectEdge;
+
+			// take the average between the edge and center vectors
+			forceVector = missileToObjectEdge + missileToObjectCenter;
+			forceVector.scale(0.5f);
+#endif
 
 			// try to topple other object
 			other->topple( &forceVector, blastInfo->toppleSpeed, TOPPLE_OPTIONS_NO_BOUNCE |

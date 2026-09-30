@@ -342,6 +342,7 @@ public:  // ********************************************************************
 		ACTIONTYPE_MAKE_DEFECTOR,
 		ACTIONTYPE_SET_RALLY_POINT,
 		ACTIONTYPE_COMBATDROP_INTO,
+		ACTIONTYPE_SABOTAGE_BUILDING,
 
 		NUM_ACTIONTYPES
 	};
@@ -354,6 +355,7 @@ public:  // ********************************************************************
 	virtual void update() override;														///< Update the UI by calling preDraw(), draw(), and postDraw()
 	virtual void reset() override;															///< Reset
 	//-----------------------------------------------------------------------------------------------
+	void validate();
 
 	// interface for the popup messages
 	virtual void popupMessage( const AsciiString& message, Int x, Int y, Int width, Bool pause, Bool pauseMusic);
@@ -433,7 +435,7 @@ public:  // ********************************************************************
 	// Drawable selection mechanisms
 	virtual void selectDrawable( Drawable *draw );					///< Mark given Drawable as "selected"
 	virtual void deselectDrawable( Drawable *draw );				///< Clear "selected" status from Drawable
-	virtual void deselectAllDrawables( Bool postMsg = true );							///< Clear the "select" flag from all drawables
+	virtual void deselectAllDrawables();							///< Clear the "select" flag from all drawables
 	virtual Int getSelectCount() { return m_selectCount; }		///< Get count of currently selected drawables
 	virtual Int getMaxSelectCount() { return m_maxSelectCount; }	///< Get the max number of selected drawables
 	virtual UnsignedInt getFrameSelectionChanged() { return m_frameSelectionChanged; }	///< Get the max number of selected drawables
@@ -538,10 +540,12 @@ public:  // ********************************************************************
 	void setCameraRotateRight( Bool set )		{ m_cameraRotatingRight = set; }
 	void setCameraZoomIn( Bool set )				{ m_cameraZoomingIn = set; }
 	void setCameraZoomOut( Bool set )				{ m_cameraZoomingOut = set; }
+  void setCameraTrackingDrawable( Bool set ) { m_cameraTrackingDrawable = set; }
 	Bool isCameraRotatingLeft() const { return m_cameraRotatingLeft; }
 	Bool isCameraRotatingRight() const { return m_cameraRotatingRight; }
 	Bool isCameraZoomingIn() const { return m_cameraZoomingIn; }
 	Bool isCameraZoomingOut() const { return m_cameraZoomingOut; }
+  Bool isCameraTrackingDrawable() const { return m_cameraTrackingDrawable; }
 	void resetCamera();
 
 	virtual void addIdleWorker( Object *obj );
@@ -585,6 +589,9 @@ private:
 public:
 	void registerWindowLayout(WindowLayout *layout); // register a layout for updates
 	void unregisterWindowLayout(WindowLayout *layout); // stop updates for this layout
+
+  void triggerDoubleClickAttackMoveGuardHint();
+
 
 public:
 	// World 2D animation methods
@@ -647,7 +654,7 @@ protected:
 	struct MilitarySubtitleData
 	{
 		UnicodeString subtitle;										///< The complete subtitle to be drawn, each line is separated by L"\n"
-		UnsignedInt index;												///< the current index that we are at through the sibtitle
+		UnsignedInt index;												///< the current index that we are at through the subtitle
 		ICoord2D position;												///< Where on the screen the subtitle should be drawn
 		DisplayString *displayStrings[MAX_SUBTITLE_LINES];	///< We'll only allow MAX_SUBTITLE_LINES worth of display strings
 		UnsignedInt currentDisplayString;					///< contains the current display string we're on. (also lets us know the last display string allocated
@@ -726,6 +733,8 @@ protected:
 	Int													m_maxSelectCount;												///< Max number of objects to select
 	UnsignedInt									m_frameSelectionChanged;								///< Frame when the selection last changed.
 
+  Int                         m_duringDoubleClickAttackMoveGuardHintTimer; ///< Frames left to draw the doubleClickFeedbackTimer
+  Coord3D                     m_duringDoubleClickAttackMoveGuardHintStashedPosition;
 
 	// Video playback data
 	VideoBuffer*								m_videoBuffer;			///< video playback buffer
@@ -789,6 +798,7 @@ protected:
 		{
 			LabelType_Team,
 			LabelType_Money,
+			LabelType_MoneyPerMinute,
 			LabelType_Rank,
 			LabelType_Xp,
 
@@ -799,6 +809,7 @@ protected:
 		{
 			ValueType_Team,
 			ValueType_Money,
+			ValueType_MoneyPerMinute,
 			ValueType_Rank,
 			ValueType_Xp,
 			ValueType_Name,
@@ -930,6 +941,7 @@ protected:
 	Bool												m_cameraRotatingLeft;
 	Bool 												m_cameraRotatingRight;
 	Bool 												m_cameraZoomingIn;
+	Bool 												m_cameraTrackingDrawable;
 	Bool 												m_cameraZoomingOut;
 
 	Bool												m_drawRMBScrollAnchor;

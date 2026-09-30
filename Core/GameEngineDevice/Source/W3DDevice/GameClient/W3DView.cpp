@@ -34,6 +34,7 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include "GameLogic/FPUControl.h"
 #include <windows.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +69,7 @@
 #include "GameLogic/AI.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/AIPathfind.h"			///< For AI debug (yes, I'm cheating for now)
 #include "GameLogic/ExperienceTracker.h"
+#include "GameLogic/FPUControl.h"							///< GeneralsX @bugfix costin-alupului 20/07/2026 setFPMode() so screen->world pick math runs under the engine's expected FP mode
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
@@ -92,8 +94,6 @@
 
 #include "WW3D2/dx8renderer.h"
 #include "WW3D2/light.h"
-#include "WW3D2/camera.h"
-#include "WW3D2/coltype.h"
 #include "WW3D2/predlod.h"
 #include "WW3D2/ww3d.h"
 
@@ -101,7 +101,6 @@
 
 // 30 fps
 Real TheW3DFrameLengthInMsec = MSEC_PER_LOGICFRAME_REAL; // default is 33msec/frame == 30fps. but we may change it depending on sys config.
-static const Int MAX_REQUEST_CACHE_SIZE = 40;	// Any size larger than 10, or examine code below for changes. jkmcd.
 static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much to overscan in the 3D screen region
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
@@ -163,6 +162,7 @@ W3DView::W3DView()
 
 	m_3DCamera = nullptr;
 	m_2DCamera = nullptr;
+	m_timeMultiplier = 1;
 
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
 	m_initialGroundLevel = 10.0f;
@@ -176,9 +176,7 @@ W3DView::W3DView()
 	m_shakeIntensity = 0.0f;
 	m_FXPitch = 1.0f;
 	m_freezeTimeForCameraMovement = false;
-	m_cameraHasMovedSinceRequest = true;
-	m_locationRequests.clear();
-	m_locationRequests.reserve(MAX_REQUEST_CACHE_SIZE + 10);	// This prevents the vector from ever re-allocating
+	m_lastScreenToTerrainValid = false;
 
 	//Enhancements from CNC3 WST 4/15/2003. JSC Integrated 5/20/03.
 	m_scriptedState = 0;
@@ -222,6 +220,7 @@ void W3DView::setHeight(Int height)
 	// showing or hiding the control bar will change the viewable area.
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -244,6 +243,7 @@ void W3DView::setWidth(Int width)
 
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -647,6 +647,13 @@ Bool W3DView::isWithinCameraHeightConstraints() const
 //-------------------------------------------------------------------------------------------------
 void W3DView::getPickRay(const ICoord2D *screen, Vector3 *rayStart, Vector3 *rayEnd)
 {
+	// GeneralsX @bugfix costin-alupului 20/07/2026 The projection/unproject math below relies on the
+	// engine's FP mode (the same mode GameLogic::update() re-asserts each frame for its fast
+	// float->int conversions). On macOS/ARM this can otherwise be left in an unexpected state, making
+	// picks resolve to the wrong world position. Re-assert it here so every caller of getPickRay()
+	// (screenToTerrain, pickDrawable, screenToWorldAtZ, ...) gets a correct ray. (#215, #222)
+	setFPMode();
+
 	Real logX;
 	Real logY;
 	Real screenX = screen->x - m_originX;
@@ -659,7 +666,7 @@ void W3DView::getPickRay(const ICoord2D *screen, Vector3 *rayStart, Vector3 *ray
 	m_3DCamera->Un_Project(*rayEnd,Vector2(logX,logY));	//get world space point
 	*rayEnd -= *rayStart;	//vector camera to world space point
 	rayEnd->Normalize();	//make unit vector
-	*rayEnd *= m_3DCamera->Get_Depth();	//adjust length to reach far clip plane
+	*rayEnd *= m_3DCamera->Get_Depth() * 2;	//adjust length to reach far clip plane and beyond
 	*rayEnd += *rayStart;	//get point on far clip plane along ray from camera.
 }
 
@@ -779,28 +786,18 @@ void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 		const Vector3 camPos = transform.Get_Translation();
 		const Vector3 camDir = -transform.Get_Z_Vector();
 
-		const Int loX = heightMap->getDrawOrgX() - heightMap->getBorderSize();
-		const Int loY = heightMap->getDrawOrgY() - heightMap->getBorderSize();
-		const Int hiX = loX + heightMap->getDrawWidth();
-		const Int hiY = loY + heightMap->getDrawHeight();
-
-		// Convert to world coordinates
-		const Real minX = loX * MAP_XY_FACTOR;
-		const Real minY = loY * MAP_XY_FACTOR;
-		const Real maxX = hiX * MAP_XY_FACTOR;
-		const Real maxY = hiY * MAP_XY_FACTOR;
-
+		const Region2D region = heightMap->getDrawRegion2D();
 		const Real minZ = TheTerrainRenderObject->getMinHeight();
 
 		// Bounding sphere
 		Vector3 center;
-		center.X = (minX + maxX) * 0.5f;
-		center.Y = (minY + maxY) * 0.5f;
+		center.X = (region.lo.x + region.hi.x) * 0.5f;
+		center.Y = (region.lo.y + region.hi.y) * 0.5f;
 		center.Z = minZ - 1.0f; // -1 to avoid Z clipping when looking straight down
 
 		// Half extents
-		const Real dx = (maxX - minX) * 0.5f;
-		const Real dy = (maxY - minY) * 0.5f;
+		const Real dx = (region.hi.x - region.lo.x) * 0.5f;
+		const Real dy = (region.hi.y - region.lo.y) * 0.5f;
 
 		// Project center
 		const Vector3 v = center - camPos;
@@ -810,7 +807,7 @@ void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 		const Real projectedRadiusToEdge = fabs(dx * camDir.X) + fabs(dy * camDir.Y);
 
 		// Final far plane
-		farZ = projectedDistanceToCenter + projectedRadiusToEdge;
+		farZ = std::max(projectedDistanceToCenter + projectedRadiusToEdge, 0.0f);
 	}
 	else
 	{
@@ -841,7 +838,7 @@ void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 //-------------------------------------------------------------------------------------------------
 void W3DView::setCameraTransform(const Matrix3D &transform)
 {
-	m_cameraHasMovedSinceRequest = true;
+	m_lastScreenToTerrainValid = false;
 
 #if defined(RTS_DEBUG)
 	m_3DCamera->Set_View_Plane( m_FOV, -1 );
@@ -1480,6 +1477,7 @@ void W3DView::update()
 						Matrix3D camXForm;
 						camXForm.Look_At(camtran,objPos,0);
 						m_3DCamera->Set_Transform(camXForm);
+						m_lastScreenToTerrainValid = false;
 					}
 				}
 			}
@@ -1696,8 +1694,7 @@ void W3DView::update()
 	}
 
 #ifdef DO_SEISMIC_SIMULATIONS
-  // Give the terrain a chance to refresh animating (Seismic) regions, if any.
-  TheTerrainVisual->updateSeismicSimulations();
+	TheTerrainVisual->updateSeismicSimulations();
 #endif
 
 	Region3D axisAlignedRegion;
@@ -1710,9 +1707,14 @@ void W3DView::update()
 
 //-------------------------------------------------------------------------------------------------
 /** Find region which contains all drawables in 3D space. */
+// TheSuperHackers @fix Now gives back a proper region on low camera pitch by falling back to
+// the drawn terrain area or map extents.
 //-------------------------------------------------------------------------------------------------
 void W3DView::getAxisAlignedViewRegion(Region3D &axisAlignedRegion)
 {
+	Region3D mapExtent;
+	TheTerrainLogic->getExtent( &mapExtent );
+
 	//
 	// get the 4 points in 3D space of the 4 corners of the view, we will use a z = 0.0f
 	// value so that we can get everything ... even stuff below the terrain
@@ -1721,18 +1723,29 @@ void W3DView::getAxisAlignedViewRegion(Region3D &axisAlignedRegion)
 	//   \     /
 	//    4---3
 	Coord3D box[ 4 ];
-	getScreenCornerWorldPointsAtZ( &box[ 0 ], &box[ 1 ], &box[ 2 ], &box[ 3 ], 0.0f );
-
-	//
-	// take those 4 corners projected into the world and create an axis aligned bounding
-	// box, we will use this box to iterate the drawables in 3D space
-	//
-	axisAlignedRegion.setFromPointsNoZ(box, ARRAY_SIZE(box));
+	if( getScreenCornerWorldPointsAtZ( &box[ 0 ], &box[ 1 ], &box[ 2 ], &box[ 3 ], 0.0f ) == PlaneClass::INSIDE_SEGMENT )
+	{
+		//
+		// take those 4 corners projected into the world and create an axis aligned bounding
+		// box, we will use this box to iterate the drawables in 3D space
+		//
+		axisAlignedRegion.setXYFromPoints(box, ARRAY_SIZE(box));
+	}
+	else
+	{
+		if( WorldHeightMap *heightMap = TheTerrainRenderObject->getMap() )
+		{
+			const Region2D region = heightMap->getDrawRegion2D();
+			axisAlignedRegion.setXY(region);
+		}
+		else
+		{
+			axisAlignedRegion = mapExtent;
+		}
+	}
 
 	// low and high regions will be based of the extent of the map
-	Region3D mapExtent;
-	Real safeValue = 999999;
-	TheTerrainLogic->getExtent( &mapExtent );
+	constexpr const Real safeValue = 999999;
 	axisAlignedRegion.lo.z = mapExtent.lo.z - safeValue;
 	axisAlignedRegion.hi.z = mapExtent.hi.z + safeValue;
 
@@ -1775,7 +1788,8 @@ Bool W3DView::setViewFilterMode(FilterModes filterMode)
 	if (m_viewFilterMode != FM_NULL_MODE &&
 		m_viewFilter != FT_NULL_FILTER) {
 		if (!W3DShaderManager::filterSetup(m_viewFilter, m_viewFilterMode))
-		{	//setup failed so restore previous mode.
+		{
+			//setup failed so restore previous mode.
 			m_viewFilterMode = oldMode;
 			return FALSE;
 		}
@@ -1793,7 +1807,8 @@ Bool W3DView::setViewFilter(FilterTypes filter)
 	if (m_viewFilterMode != FM_NULL_MODE &&
 		m_viewFilter != FT_NULL_FILTER) {
 		if (!W3DShaderManager::filterSetup(m_viewFilter, m_viewFilterMode))
-		{	//setup failed so restore previous mode.
+		{
+			//setup failed so restore previous mode.
 			m_viewFilter = oldFilter;
 			return FALSE;
 		};
@@ -2507,6 +2522,7 @@ Int W3DView::iterateDrawablesInRegion( IRegion2D *screenRegion,
 //-------------------------------------------------------------------------------------------------
 Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickType pickType )
 {
+	ScopedFPUGuard fpuGuard;
 	RenderObjClass *renderObj = nullptr;
 	Drawable *draw = nullptr;
 	DrawableInfo *drawInfo = nullptr;
@@ -2562,36 +2578,26 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 //-------------------------------------------------------------------------------------------------
 /** convert a pixel (x,y) to a location in the world on the terrain.
 	Screen coordinates assumed in absolute values relative to full display resolution.  */
+// TheSuperHackers @fix Now returns whether a terrain intersection exists to let callers handle the
+// failure condition.
 //-------------------------------------------------------------------------------------------------
-void W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
+Bool W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 {
-	// sanity
 	if( screen == nullptr || world == nullptr || TheTerrainRenderObject == nullptr )
-		return;
+		return false;
 
-	if (m_cameraHasMovedSinceRequest) {
-		m_locationRequests.clear();
-		m_cameraHasMovedSinceRequest = false;
-	}
-
-	if (m_locationRequests.size() > MAX_REQUEST_CACHE_SIZE) {
-		m_locationRequests.erase(m_locationRequests.begin(), m_locationRequests.begin() + 10);
-	}
-
-
-	// We insert them at the end for speed (no copies needed), but using the princ of locality, we should
-	// start searching where we most recently inserted
-	for (int i = m_locationRequests.size() - 1; i >= 0; --i) {
-		if (m_locationRequests[i].first.x == screen->x && m_locationRequests[i].first.y == screen->y) {
-			(*world) = m_locationRequests[i].second;
-			return;
-		}
+	if (m_lastScreenToTerrainValid &&
+		m_lastScreenToTerrainScreen.x == screen->x && m_lastScreenToTerrainScreen.y == screen->y)
+	{
+		*world = m_lastScreenToTerrainWorld;
+		return true;
 	}
 
 	Vector3 rayStart,rayEnd;
 	LineSegClass lineseg;
 	CastResultStruct result;
 	Vector3 intersection(0,0,0);
+	Bool hasIntersection = false;
 
 	getPickRay(screen,&rayStart,&rayEnd);
 
@@ -2599,11 +2605,11 @@ void W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 
 	RayCollisionTestClass raytest(lineseg,&result);
 
+	// Get the point of intersection according to W3D
 	if( TheTerrainRenderObject->Cast_Ray(raytest) )
 	{
-		// get the point of intersection according to W3D
 		intersection = result.ContactPoint;
-
+		hasIntersection = true;
 	}
 
 	// Pick bridges.
@@ -2611,17 +2617,21 @@ void W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 	Drawable *bridge = TheTerrainLogic->pickBridge(rayStart, rayEnd, &bridgePt);
 	if (bridge && bridgePt.Z > intersection.Z) {
 		intersection = bridgePt;
+		hasIntersection = true;
 	}
+
+	if (!hasIntersection)
+		return false;
 
 	world->x = intersection.X;
 	world->y = intersection.Y;
 	world->z = intersection.Z;
 
-	PosRequest req;
-	req.first = (*screen);
-	req.second = (*world);
-	m_locationRequests.push_back(req);	// Insert this request at the end, requires no extra copies
+	m_lastScreenToTerrainScreen = *screen;
+	m_lastScreenToTerrainWorld = *world;
+	m_lastScreenToTerrainValid = true;
 
+	return true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2647,7 +2657,7 @@ void W3DView::lookAt( const Coord3D *o )
 		m_3DCamera->Un_Project(rayEnd,Vector2(0.0f,0.0f));	//get world space point
 		rayEnd -= rayStart;	//vector camera to world space point
 		rayEnd.Normalize();	//make unit vector
-		rayEnd *= m_3DCamera->Get_Depth();	//adjust length to reach far clip plane
+		rayEnd *= m_3DCamera->Get_Depth() * 2;	//adjust length to reach far clip plane and beyond
 		rayStart.Set(pos.x, pos.y, pos.z);
 		rayEnd += rayStart;	//get point on far clip plane along ray from camera.
 		lineseg.Set(rayStart,rayEnd);
@@ -2663,8 +2673,7 @@ void W3DView::lookAt( const Coord3D *o )
 		}
 	}
 
-	Coord2D pos2D = { pos.x, pos.y };
-	setPosition2D(pos2D);
+	setPosition2D(pos.asCoord2D());
 
 	resetPivotToGround();
 
@@ -3673,16 +3682,31 @@ void W3DView::shake( const Coord3D *epicenter, CameraShakeType shakeType )
 
 //-------------------------------------------------------------------------------------------------
 /** Transform the screen pixel coord passed in, to a world coordinate at the specified z value */
+// TheSuperHackers @fix Now returns whether a Z plane intersection exists to let callers handle the
+// failure condition.
 //-------------------------------------------------------------------------------------------------
-void W3DView::screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z )
+PlaneClass::IntersectionResType W3DView::screenToWorldAtZ( const ICoord2D *screen, Coord3D *world, Real z )
 {
 	Vector3 rayStart, rayEnd;
 
-	getPickRay( s, &rayStart, &rayEnd );
-	w->x = Vector3::Find_X_At_Z( z, rayStart, rayEnd );
-	w->y = Vector3::Find_Y_At_Z( z, rayStart, rayEnd );
-	w->z = z;
+	getPickRay( screen, &rayStart, &rayEnd );
 
+	PlaneClass plane;
+	plane.N = Vector3(0, 0, 1);
+	plane.D = z;
+	float t;
+	PlaneClass::IntersectionResType intersectionType = plane.Compute_Intersection(rayStart, rayEnd, &t);
+
+	if (intersectionType != PlaneClass::NO_INTERSECTION)
+	{
+		Vector3 intersectPos;
+		intersectPos = rayStart + (rayEnd-rayStart) * t;
+		world->x = intersectPos.X;
+		world->y = intersectPos.Y;
+		world->z = z;
+	}
+
+	return intersectionType;
 }
 
 void W3DView::cameraEnableSlaveMode(const AsciiString & objectName, const AsciiString & boneName)
@@ -3727,30 +3751,61 @@ void W3DView::Add_Camera_Shake (const Coord3D & position,float radius,float dura
 	CameraShakerSystem.Add_Camera_Shake(vpos,radius,duration,power);
 }
 
+bool W3DView::getDesiredTerrainDrawSize(ICoord2D &dimensions) const
+{
+	if (TheGlobalData && TheGlobalData->m_drawEntireTerrain)
+	{
+		DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
+
+		if (const WorldHeightMap *heightMap = TheTerrainRenderObject->getMap())
+		{
+			dimensions.x = heightMap->getXExtent();
+			dimensions.y = heightMap->getYExtent();
+			return true;
+		}
+
+		return false;
+	}
+
+	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
+
+	if (cameraPitch > ViewDefaultLowPitchRadians || !m_isUserControlled)
+	{
+		// TheSuperHackers @info The scripted camera always uses the regular draw sizes
+		// and uses terrain oversize if it needs to enlarge.
+		dimensions.x = WorldHeightMap::NORMAL_DRAW_WIDTH;
+		dimensions.y = WorldHeightMap::NORMAL_DRAW_HEIGHT;
+		return true;
+	}
+
+	// TheSuperHackers @tweak xezon 31/12/2025 Increases visible terrain area when lowering the camera pitch.
+	// Note: The default camera pitch in Generals was 37.5, which we prefer to keep the normal draw size for.
+	dimensions.x = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
+	dimensions.y = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
+	return true;
+}
+
 void W3DView::updateTerrain()
 {
 	DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
 
+	ICoord2D drawSize;
+
+	if (getDesiredTerrainDrawSize(drawSize))
+	{
+		const Real terrainScale = TheGlobalData->m_terrainDrawDistanceScale;
+		if (terrainScale != 1.0f)
+		{
+			drawSize.x = static_cast<Int>(drawSize.x * terrainScale);
+			drawSize.y = static_cast<Int>(drawSize.y * terrainScale);
+		}
+		TheTerrainRenderObject->setTerrainDrawSize(drawSize.x, drawSize.y);
+	}
+
 	RefRenderObjListIterator *it = W3DDisplay::m_3DScene->createLightsIterator();
+
 	const Vector3 cameraPivot(m_pos.x, m_pos.y, m_pos.z);
-	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
-	Int drawWidth;
-	Int drawHeight;
 
-	if (cameraPitch > ViewDefaultLowPitchRadians)
-	{
-		drawWidth = WorldHeightMap::NORMAL_DRAW_WIDTH;
-		drawHeight = WorldHeightMap::NORMAL_DRAW_HEIGHT;
-	}
-	else
-	{
-		// TheSuperHackers @tweak xezon 31/12/2025 Increases visible terrain area when lowering the camera pitch.
-		// Note: The default camera pitch in Generals was 37.5, which we prefer to keep the normal draw size for.
-		drawWidth = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
-		drawHeight = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
-	}
-
-	TheTerrainRenderObject->setTerrainDrawSize(drawWidth, drawHeight);
 	TheTerrainRenderObject->updateCenter(m_3DCamera, &cameraPivot, it);
 
 	if (it)

@@ -34,7 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 #include "stdafx.h"
 #include "wdump.h"
 #include "chunk_d.h"
@@ -509,8 +509,6 @@ void ChunkTableClass::List_W3D_CHUNK_VERTEX_COLORS(ChunkItem *Item, CListCtrl *l
 	assert(Item->Length % sizeof(W3dRGBStruct) == 0);
 	int counter = 0;
 	char buf[256];
-
-	int sz = sizeof(W3dRGBStruct);
 
 	while(data < max) {
 
@@ -1105,6 +1103,7 @@ void ChunkTableClass::List_W3D_CHUNK_FX_SHADER_CONSTANT(ChunkItem* Item, CListCt
 		uint32 texturestrlen = *(uint32 *)chunkdata;
 		chunkdata += 4;
 		char* texture = (char*)chunkdata;
+		chunkdata += texturestrlen;
 		AddItem(list, counter, "Texture", texture);
 	}
 	else if (type >= CONSTANT_TYPE_FLOAT1 && type <= CONSTANT_TYPE_FLOAT4)

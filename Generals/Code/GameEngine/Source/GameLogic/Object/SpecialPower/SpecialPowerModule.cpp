@@ -63,6 +63,7 @@ SpecialPowerModuleData::SpecialPowerModuleData()
 	m_specialPowerTemplate = nullptr;
 	m_updateModuleStartsAttack = false;
 	m_startsPaused = FALSE;
+	m_startsReady = FALSE;
 	m_scriptedSpecialPowerOnly = FALSE;
 
 }
@@ -78,6 +79,7 @@ SpecialPowerModuleData::SpecialPowerModuleData()
 		{ "SpecialPowerTemplate",			INI::parseSpecialPowerTemplate, nullptr, offsetof( SpecialPowerModuleData, m_specialPowerTemplate ) },
 		{ "UpdateModuleStartsAttack", INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_updateModuleStartsAttack ) },
 		{ "StartsPaused",							INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_startsPaused ) },
+		{ "StartsReady",							INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_startsReady ) },
 		{ "InitiateSound",						INI::parseAudioEventRTS,				nullptr, offsetof( SpecialPowerModuleData, m_initiateSound ) },
 		{ "ScriptedSpecialPowerOnly", INI::parseBool,									nullptr, offsetof( SpecialPowerModuleData, m_scriptedSpecialPowerOnly ) },
 		{ nullptr, nullptr, nullptr, 0 }
@@ -96,11 +98,10 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 									: BehaviorModule( thing, moduleData )
 {
 
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @bugfix felipebraz 15/07/2026 Always initialize to 0.
+	// Disabling RETAIL_COMPATIBLE_CRC previously forced this to 0xFFFFFFFF, which caused unpaused
+	// targetless special powers (like Spy Satellite and Battle Plans) to never become ready.
 	m_availableOnFrame = 0;
-#else
-	m_availableOnFrame = 0xFFFFFFFF;
-#endif
 	m_pausedCount = 0;
 	m_pausedOnFrame = 0;
 	m_pausedPercent = 0.0f;
@@ -113,7 +114,12 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 		//A sharedNSync special only startPowerRecharges when first scienced or when executed,
 		//Since a new module with same SPTemplates may construct at any time.
 		if ( getSpecialPowerTemplate()->isSharedNSync() == FALSE )
+		{
 			startPowerRecharge();
+
+			if (startsReady())
+				m_availableOnFrame = TheGameLogic->getFrame();
+		}
 	}
 	// WE USED TO DO THE POLL-EVERYBODY-AND-VOTE-ON-WHO-TO-SYNC-TO THING HERE,
 	// BUT NO MORE, NOW IT IS HANDLED IN PLAYER
@@ -271,7 +277,7 @@ Bool SpecialPowerModule::isModuleForPower( const SpecialPowerTemplate *specialPo
 //-------------------------------------------------------------------------------------------------
 Bool SpecialPowerModule::isReady() const
 {
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	// this is a cheat ... remove this for release!
 	if( TheGlobalData->m_specialPowerUsesDelay == FALSE )
 		return TRUE;
@@ -303,7 +309,7 @@ Bool SpecialPowerModule::isReady() const
 //-------------------------------------------------------------------------------------------------
 Real SpecialPowerModule::getPercentReady() const
 {
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	if( TheGlobalData->m_specialPowerUsesDelay == FALSE )
 		return 1.0f;
 #endif
@@ -345,6 +351,16 @@ Real SpecialPowerModule::getPercentReady() const
 	return percent;
 }
 
+Bool SpecialPowerModule::startsReady() const
+{
+#if RETAIL_COMPATIBLE_CRC
+	return false;
+#endif
+
+	const SpecialPowerModuleData* modData = getSpecialPowerModuleData();
+	return modData->m_startsReady;
+}
+
 //-------------------------------------------------------------------------------------------------
 // A special power module that is only supposed to be fired via scripts. An example of this
 // are the various cargo plane units we have. Scripters can launch specials from them after
@@ -363,7 +379,7 @@ Bool SpecialPowerModule::isScriptOnly() const
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::startPowerRecharge()
 {
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	// this is a cheat ... remove this for release!
 	if( TheGlobalData->m_specialPowerUsesDelay == FALSE )
 		return;

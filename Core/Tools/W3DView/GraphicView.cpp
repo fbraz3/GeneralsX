@@ -22,31 +22,31 @@
 #include "StdAfx.h"
 #include "W3DView.h"
 #include "GraphicView.h"
-#include "ww3d.h"
+#include "WW3D2/ww3d.h"
 #include "Globals.h"
 #include "W3DViewDoc.h"
 #include <process.h>
-#include "quat.h"
+#include "WWMath/quat.h"
 #include "MainFrm.h"
 #include "Utils.h"
 #include "mmsystem.h"
-#include "light.h"
+#include "WW3D2/light.h"
 #include "ViewerAssetMgr.h"
-#include "rcfile.h"
-#include "part_emt.h"
-#include "part_buf.h"
-#include "hlod.h"
+#include "WWLib/rcfile.h"
+#include "WW3D2/part_emt.h"
+#include "WW3D2/part_buf.h"
+#include "WW3D2/hlod.h"
 #include "ViewerScene.h"
 #include "ScreenCursor.h"
-#include "mesh.h"
-#include "coltest.h"
-#include "MPU.h"
-#include "dazzle.h"
-#include "SoundScene.h"
-#include "WWAudio.h"
-#include "metalmap.h"
-#include "dx8wrapper.h"
-#include "matrix3.h"
+#include "WW3D2/mesh.h"
+#include "WW3D2/coltest.h"
+#include "WWLib/MPU.h"
+#include "WW3D2/dazzle.h"
+#include "WWAudio/SoundScene.h"
+#include "WWAudio/WWAudio.h"
+#include "WW3D2/metalmap.h"
+#include "WW3D2/dx8wrapper.h"
+#include "WWMath/matrix3.h"
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -71,7 +71,6 @@ IMPLEMENT_DYNCREATE(CGraphicView, CView)
 ////////////////////////////////////////////////////////////////////////////
 CGraphicView::CGraphicView ()
     : m_bInitialized (FALSE),
-      m_pCamera (nullptr),
       m_TimerID (0),
       m_bMouseDown (FALSE),
       m_bRMouseDown (FALSE),
@@ -83,7 +82,6 @@ CGraphicView::CGraphicView ()
       m_objectRotation (NoRotation),
 		m_LightRotation (NoRotation),
 		m_bLightMeshInScene (false),
-		m_pLightMesh (nullptr),
 		m_ParticleCountUpdate (0),
 		m_CameraBonePosX (false),
 		m_UpdateCounter (0),
@@ -130,9 +128,6 @@ END_MESSAGE_MAP()
 void
 CGraphicView::OnDraw (CDC* pDC)
 {
-	// Get the document to display
-    CW3DViewDoc* doc = (CW3DViewDoc *)GetDocument();
-
     // Are we in a valid state?
     if (!pDC->IsPrinting ())
     {
@@ -212,7 +207,7 @@ CGraphicView::InitializeGraphicView ()
     if (bReturn && (m_pCamera == nullptr))
     {
         // Instantiate a new camera class
-	    m_pCamera = new CameraClass ();
+	    m_pCamera.Assign_No_Add_Ref (new CameraClass ());
         bReturn = (m_pCamera != nullptr);
 
         // Were we successful in creating a camera?
@@ -230,7 +225,7 @@ CGraphicView::InitializeGraphicView ()
 		  //
 		  //	Attach the 'listener' to the camera
 		  //
-		  WWAudioClass::Get_Instance ()->Get_Sound_Scene ()->Attach_Listener_To_Obj (m_pCamera);
+		  WWAudioClass::Get_Instance ()->Get_Sound_Scene ()->Attach_Listener_To_Obj (m_pCamera.Peek());
     }
 
 	Reset_FOV ();
@@ -240,7 +235,7 @@ CGraphicView::InitializeGraphicView ()
 		ResourceFileClass light_mesh_file (nullptr, "Light.w3d");
 		WW3DAssetManager::Get_Instance()->Load_3D_Assets (light_mesh_file);
 
-		m_pLightMesh = WW3DAssetManager::Get_Instance()->Create_Render_Obj ("LIGHT");
+		m_pLightMesh.Assign_No_Add_Ref (WW3DAssetManager::Get_Instance()->Create_Render_Obj ("LIGHT"));
 		ASSERT (m_pLightMesh != nullptr);
 		m_bLightMeshInScene = false;
 	 }
@@ -323,8 +318,8 @@ CGraphicView::OnDestroy ()
 	//
 	// Free the camera object
 	//
-	REF_PTR_RELEASE (m_pCamera);
-	REF_PTR_RELEASE (m_pLightMesh);
+	m_pCamera.Clear();
+	m_pLightMesh.Clear();
 
 	// Is there an update thread running?
 	if (m_TimerID == 0) {
@@ -520,7 +515,7 @@ CGraphicView::RepaintView
 		// Wait for all previous rendering to complete before starting benchmark.
 		DWORD profile_time = ::Get_CPU_Clock (pt_high);
 
-		WW3D::Render (doc->GetScene (), m_pCamera, FALSE, FALSE);
+		WW3D::Render (doc->GetScene (), m_pCamera.Peek(), FALSE, FALSE);
 
 		// Wait for all rendering to complete before stopping benchmark.
 		DWORD milliseconds = (::Get_CPU_Clock (pt_high) - profile_time) / 1000;
@@ -531,7 +526,7 @@ CGraphicView::RepaintView
 		WW3D::Render (doc->GetCursorScene (), doc->Get2DCamera (), FALSE, FALSE);
 
 		// Render the dazzles
-		doc->Render_Dazzles(m_pCamera);
+		doc->Render_Dazzles(m_pCamera.Peek());
 
 		// Finish out the rendering process
 		WW3D::End_Render ();
@@ -570,11 +565,12 @@ CGraphicView::RepaintView
 void
 CGraphicView::UpdateDisplay ()
 {
+	/*
 	// Get the document to display
     CW3DViewDoc* doc = (CW3DViewDoc *)GetDocument();
 
     // Are we in a valid state?
-    /*if (m_bInitialized && doc->GetScene ())
+    if (m_bInitialized && doc->GetScene ())
     {
         RenderObjClass *pCRenderObj = doc->GetDisplayedObject ();
         if (pCRenderObj)
@@ -589,7 +585,7 @@ CGraphicView::UpdateDisplay ()
 
 		// Render the current view inside the frame
         WW3D::Begin_Render (TRUE, TRUE, Vector3 (0.2,0.4,0.6));
-		WW3D::Render (doc->GetScene (), m_pCamera, FALSE, FALSE);
+		WW3D::Render (doc->GetScene (), m_pCamera.Peek(), FALSE, FALSE);
 		WW3D::End_Render ();
     } */
 }
@@ -651,7 +647,6 @@ CGraphicView::WindowProc
 	} else if (message == WM_KEYUP) {
 
 		if ((wParam == VK_CONTROL) && (m_bLightMeshInScene == true)) {
-			CW3DViewDoc* doc = (CW3DViewDoc *)GetDocument();
 			m_pLightMesh->Remove ();
 			m_bLightMeshInScene = false;
 		}
@@ -777,7 +772,6 @@ CGraphicView::OnMouseMove
     CPoint point
 )
 {
-	int iDeltaX = m_lastPoint.x-point.x;
 	int iDeltaY = m_lastPoint.y-point.y;
 
 	// Get the document to display

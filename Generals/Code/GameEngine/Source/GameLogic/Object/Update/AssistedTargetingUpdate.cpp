@@ -49,23 +49,30 @@
 //-------------------------------------------------------------------------------------------------
 void AssistedTargetingUpdateModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
-  UpdateModuleData::buildFieldParse(p);
+	UpdateModuleData::buildFieldParse(p);
 	static const FieldParse dataFieldParse[] =
 	{
 		{ "AssistingClipSize",		INI::parseInt,		nullptr, offsetof( AssistedTargetingUpdateModuleData, m_clipSize ) },
 		{ "AssistingWeaponSlot",	INI::parseLookupList,	TheWeaponSlotTypeNamesLookupList, offsetof( AssistedTargetingUpdateModuleData, m_weaponSlot ) },
-		{ "LaserFromAssisted",		INI::parseThingTemplate,				nullptr, offsetof( AssistedTargetingUpdateModuleData, m_laserFromAssisted ) },
-		{ "LaserToTarget",				INI::parseThingTemplate,				nullptr, offsetof( AssistedTargetingUpdateModuleData, m_laserToTarget ) },
+		{ "LaserFromAssisted",		INI::parseAsciiString,				nullptr, offsetof( AssistedTargetingUpdateModuleData, m_laserFromAssistedName ) },
+		{ "LaserToTarget",				INI::parseAsciiString,				nullptr, offsetof( AssistedTargetingUpdateModuleData, m_laserToTargetName ) },
 		{ nullptr, nullptr, nullptr, 0 }
 	};
-  p.add(dataFieldParse);
+	p.add(dataFieldParse);
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 AssistedTargetingUpdate::AssistedTargetingUpdate( Thing *thing, const ModuleData* moduleData ) : UpdateModule( thing, moduleData )
 {
+	const AssistedTargetingUpdateModuleData* d = getAssistedTargetingUpdateModuleData();
+
+	m_laserFromAssisted = TheThingFactory->findTemplate(d->m_laserFromAssistedName);
+	m_laserToTarget = TheThingFactory->findTemplate(d->m_laserToTargetName);
+#if RTS_GENERALS || !RETAIL_COMPATIBLE_CRC
+	// TheSuperHackers @info Zero Hour needs the update to run once to avoid mismatches with retail.
 	setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -100,10 +107,10 @@ void AssistedTargetingUpdate::assistAttack( const Object *requestingObject, Obje
 	me->setWeaponLock( md->m_weaponSlot, LOCKED_TEMPORARILY );
 	me->getAI()->aiAttackObject( victimObject, md->m_clipSize, CMD_FROM_AI );
 
-	if( md->m_laserFromAssisted )
-		makeFeedbackLaser( md->m_laserFromAssisted, requestingObject, me );
-	if( md->m_laserToTarget )
-		makeFeedbackLaser( md->m_laserToTarget, me, victimObject );
+	if( m_laserFromAssisted )
+		makeFeedbackLaser( m_laserFromAssisted, requestingObject, me );
+	if( m_laserToTarget )
+		makeFeedbackLaser( m_laserToTarget, me, victimObject );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -174,8 +181,6 @@ void AssistedTargetingUpdate::xfer( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void AssistedTargetingUpdate::loadPostProcess()
 {
-
 	// extend base class
 	UpdateModule::loadPostProcess();
-
 }

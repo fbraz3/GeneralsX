@@ -29,7 +29,7 @@ export LD_LIBRARY_PATH="${GAME_DIR}:${LD_LIBRARY_PATH:-}"
 # Set DXVK environment
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"  # Override with 'debug' if needed
-export DXVK_HUD="${DXVK_HUD:-devinfo,fps}"       # Show GPU info + FPS overlay; override with DXVK_HUD=0 to disable
+export DXVK_HUD="${DXVK_HUD:-0}"                 # Disabled by default; Generals has native FPS counter
 
 # GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD (LLVM 20.x crash workaround)
 # libvulkan_lvp.so (LLVMpipe) crashes during static initialization with LLVM 20.x.
@@ -94,7 +94,8 @@ cd "${GAME_DIR}"
 mkdir -p logs
 
 # Launch with arguments (pass all script args to game)
-exec "${GAME_BINARY}" "$@" 2>&1 |tee "$LOG_FILE"
+"${GAME_BINARY}" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "${LOG_FILE}"
+exit ${PIPESTATUS[0]}
 
 echo 
 echo "------------------------"

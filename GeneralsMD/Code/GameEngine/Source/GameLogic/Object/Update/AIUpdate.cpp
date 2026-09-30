@@ -63,7 +63,9 @@
 #include "GameLogic/Module/DeliverPayloadAIUpdate.h"
 #include "GameLogic/Module/HackInternetAIUpdate.h"
 #include "GameLogic/Module/HordeUpdate.h"
+#include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Object.h"
+
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/PolygonTrigger.h"
 #include "GameLogic/ScriptEngine.h"
@@ -1679,10 +1681,10 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 	m_retryPath = false;
 	Region3D extent;
 	TheTerrainLogic->getMaximumPathfindExtent(&extent);
-	if (!extent.isInRegionNoZ(destination)) {
+	if (!extent.isInRegionNoZ(*destination)) {
 		// We're going off the map.
 		Coord3D pos = *getObject()->getPosition();
-		if (!extent.isInRegionNoZ(&pos))	{
+		if (!extent.isInRegionNoZ(pos))	{
 			// We're starting off the map.  Since we're off the map, we can't pathfind so just build a path.
 			return computeQuickPath(destination);
 		}
@@ -1977,7 +1979,7 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 				// If the move is a short distance, just do a find closest path to our current
 				// position.  This will unstack us if we are on top of another unit. jba.
 				Coord3D objPos = *getObject()->getPosition();
-				goal.sub(&objPos);
+				goal.sub(objPos);
 				if (goal.length()<3*PATHFIND_CELL_SIZE_F) {
 					destroyPath();
 					TheAI->pathfinder()->adjustDestination(getObject(), m_locomotorSet, &objPos);
@@ -2272,7 +2274,7 @@ UpdateSleepTime AIUpdateInterface::doLocomotor()
 							}
 							else
 							{
-								Real dist = sqrtf(dSqr);
+								Real dist = WWMath::SqrtfOrigin(dSqr);
 								if (dist<1) dist = 1;
 								pos.x += 2*PATHFIND_CELL_SIZE_F*dx/(dist*LOGICFRAMES_PER_SECOND);
 								pos.y += 2*PATHFIND_CELL_SIZE_F*dy/(dist*LOGICFRAMES_PER_SECOND);
@@ -2301,11 +2303,11 @@ UpdateSleepTime AIUpdateInterface::doLocomotor()
 		m_curMaxBlockedSpeed = FAST_AS_POSSIBLE;
 	}
 
-	if (m_curLocomotor != nullptr
-			&& m_locomotorGoalType == NONE
-			&& m_doFinalPosition == FALSE
-			&& m_isBlocked == FALSE
-			&& requiresConstantCalling == FALSE)
+	if (m_curLocomotor != nullptr &&
+			m_locomotorGoalType == NONE &&
+			m_doFinalPosition == FALSE &&
+			m_isBlocked == FALSE &&
+			requiresConstantCalling == FALSE)
 	{
 		return UPDATE_SLEEP_FOREVER;
 	}
@@ -2359,8 +2361,8 @@ void AIUpdateInterface::setLocomotorGoalNone()
 Bool AIUpdateInterface::isDoingGroundMovement() const
 {
 
-  if (getObject()->isDisabledByType( DISABLED_UNMANNED )
-   && getObject()->isKindOf( KINDOF_PRODUCED_AT_HELIPAD ) )
+  if (getObject()->isDisabledByType( DISABLED_UNMANNED ) &&
+   getObject()->isKindOf( KINDOF_PRODUCED_AT_HELIPAD ) )
   {
     return TRUE; // an unmanned helicopter gets grounded, eventually.
   }
@@ -2473,7 +2475,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 					dest = m_path->getLastNode()->getPosition();
 				}
 				Real distance = ThePartitionManager->getDistanceSquared( me, dest, FROM_CENTER_3D );
-				return sqrt( distance );// Other paths return dots of normalized vectors, so one sqrt ain't so bad
+				return WWMath::SqrtOrigin( distance );// Other paths return dots of normalized vectors, so one sqrt ain't so bad
 			}
 			else
 			{
@@ -2505,7 +2507,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 				{
 					if (sqr(dist) > distSqr)
 					{
-						return sqrt(distSqr);
+						return WWMath::SqrtOrigin(distSqr);
 					}
 					else
 					{
@@ -2514,7 +2516,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 				}
 
 				if (dist<PATHFIND_CELL_SIZE_F || sqr(dist) < distSqr)
-					return sqrtf(distSqr);
+					return WWMath::SqrtfOrigin(distSqr);
 				else
 					return dist;
 
@@ -3554,7 +3556,13 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	// this fixes an obscure bug with mine-clearing: if you tell someone to clear mines and put the centerpoint
 	// inside a building, the dozer/worker will just go thru the building to that spot. ick. so if you find that
 	// this clause (below) is problematic, you'll probably have to find another way to fix this mine-clearing bug. (srj)
+#if RETAIL_COMPATIBLE_CRC
 	if (weapon && weapon->isContactWeapon() && !isPathAvailable(&localPos))
+#else
+  // TheSuperHackers @bugfix Stubbjax 23/08/2026 Only find a new position if the target is not within the attack range of the weapon.
+	// This allows contact weapons such as suicide bombs to immediately detonate without first pathing to a nearby position.
+	if (weapon && weapon->isContactWeapon() && !weapon->isWithinAttackRange(getObject(), &localPos) && !isPathAvailable(&localPos))
+#endif
 	{
 		FindPositionOptions fpOptions;
 		fpOptions.minRadius = 0.0f;
@@ -3823,14 +3831,23 @@ void AIUpdateInterface::privateExit( Object *objectToExit, CommandSourceType cmd
 	if (!objectToExit)
 	{
 		objectToExit = us->getContainedBy();
-	}
 
-	if (!objectToExit)
-		return;
+		if (!objectToExit)
+			return;
+	}
+	else
+	{
+		// TheSuperHackers @bugfix Caball009 / Okladnoj 10/08/2026 Don't process invalid exit commands,
+		// because an object should not attempt to exit something it's not contained by.
+#if !RETAIL_COMPATIBLE_CRC
+		const ContainModuleInterface *contain = objectToExit->getContain();
+		if (contain == nullptr || !contain->isContained(us))
+			return;
+#endif
+	}
 
   if ( objectToExit->isDisabledByType( DISABLED_SUBDUED ) )
     return;
-
 
 	// we must go thru this state (rather than calling exitObjectViaDoor directly!),
 	// because a few containers might need to delay to allow
@@ -3852,10 +3869,20 @@ void AIUpdateInterface::privateExitInstantly( Object *objectToExit, CommandSourc
 	if (!objectToExit)
 	{
 		objectToExit = us->getContainedBy();
-	}
 
-	if (!objectToExit)
-		return;
+		if (!objectToExit)
+			return;
+	}
+	else
+	{
+		// TheSuperHackers @bugfix Caball009 / Okladnoj 10/08/2026 Don't process invalid exit commands,
+		// because an object should not attempt to exit something it's not contained by.
+#if !RETAIL_COMPATIBLE_CRC
+		const ContainModuleInterface *contain = objectToExit->getContain();
+		if (contain == nullptr || !contain->isContained(us))
+			return;
+#endif
+	}
 
   if ( objectToExit->isDisabledByType( DISABLED_SUBDUED ) )
     return;
@@ -4056,7 +4083,7 @@ void AIUpdateInterface::privateGuardPosition( const Coord3D *pos, GuardMode guar
 		// Clip to playable area.
 		Region3D r;
 		TheTerrainLogic->getExtent(&r);
-		if (!r.isInRegionNoZ(&adjPos))
+		if (!r.isInRegionNoZ(adjPos))
 			adjPos = TheTerrainLogic->findClosestEdgePoint(&adjPos);
 	}
 	m_locationToGuard = adjPos;
@@ -4638,9 +4665,9 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 
 	// Instead of shroud affecting the ability to attack, it affects the ability to target.
 	// The same checks apply as the old WeaponSet check (now commented out, search for getShroudedStatus)
-	if( calledByAI
-			&& obj->getControllingPlayer()
-			&& obj->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN
+	if( calledByAI &&
+			obj->getControllingPlayer() &&
+			obj->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN
 		)
 	{
 		flags |= AI::UNFOGGED;

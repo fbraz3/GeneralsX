@@ -285,6 +285,9 @@ GameEngine::~GameEngine()
 	delete TheSubsystemList;
 	TheSubsystemList = nullptr;
 
+	delete TheSkirmishGameInfo;
+	TheSkirmishGameInfo = nullptr;
+
 	delete TheNetwork;
 	TheNetwork = nullptr;
 
@@ -407,6 +410,91 @@ void GameEngine::init()
 		TheWritableGlobalData->parseCustomDefinition();
 		fprintf(stderr, "INFO: GameEngine::init() - TheWritableGlobalData parseCustomDefinition complete\n");
 
+	// GeneralsX @feature felipebraz 08/06/2026 Auto-create SagePatch.ini in user data dir with defaults.
+	{
+		static const char *const USER_GAME_DATA_INI_PATH = "Data\\INI\\GameData.ini";
+
+		AsciiString sagePatchPath = TheWritableGlobalData->getPath_UserData();
+		sagePatchPath.concat("SagePatch.ini");
+
+		if (!TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			FILE *f = fopen(sagePatchPath.str(), "w");
+			if (f)
+			{
+				fprintf(f,
+					"; -----------------------------------------------------------------------------\n"
+					"; SagePatch - Casual QoL overrides for GeneralsX\n"
+					";\n"
+					"; Loaded by the engine after the BIG-archived Data/INI/GameData.ini, so values here\n"
+					"; override (not append to) the originals. A loose Data/INI/GameData.ini that you author\n"
+					"; yourself is applied after this file and therefore still wins over it.\n"
+					"; -----------------------------------------------------------------------------\n"
+					"\n"
+					"GameData\n"
+					"  ; Slightly higher than vanilla (310); further out without seeing past the map border.\n"
+					"  MaxCameraHeight = 350.0\n"
+					"  ; Slightly lower than vanilla (120) so casual zoom-in feels useful.\n"
+					"  MinCameraHeight = 100.0\n"
+					"  ; Still soft-disabled so the user can push past max without a hard clamp.\n"
+					"  EnforceMaxCameraHeight = No\n"
+					"  ; Keyboard scroll - vanilla 0.5 is sluggish, double it.\n"
+					"  KeyboardScrollSpeedFactor = 1.0\n"
+					"  ; ~5%% more terrain drawn at max zoom to fix terrain pop-in.\n"
+					"  TerrainDrawDistanceScale = 1.05\n"
+					// GeneralsX @tweak felipebraz 20/06/2026 Default render FPS limit to 60 FPS in SagePatch.ini
+					"  UseFPSLimit = Yes\n"
+					"  FramesPerSecondLimit = 60\n"
+					"End\n"
+				);
+				fclose(f);
+			}
+		}
+
+		if (TheLocalFileSystem->doesFileExist(sagePatchPath.str()))
+		{
+			// Check and migrate existing SagePatch.ini for 60 FPS
+			FILE *f = fopen(sagePatchPath.str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				long size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				char *buffer = new char[size + 1];
+				fread(buffer, 1, size, f);
+				buffer[size] = 0;
+				fclose(f);
+
+				if (!strstr(buffer, "FramesPerSecondLimit"))
+				{
+					char *endPos = strstr(buffer, "End");
+					if (endPos != nullptr)
+					{
+						*endPos = '\0';
+						FILE *fw = fopen(sagePatchPath.str(), "wb");
+						if (fw)
+						{
+							fprintf(fw, "%s  ; Migrated 60 FPS defaults\n  UseFPSLimit = Yes\n  FramesPerSecondLimit = 60\nEnd\n", buffer);
+							fclose(fw);
+						}
+					}
+				}
+				delete[] buffer;
+			}
+
+			ini.load(sagePatchPath, INI_LOAD_OVERWRITE, nullptr);
+
+			// GeneralsX @bugfix kumait 13/08/2026 SagePatch defaults must not clobber a user-authored
+			// Data/INI/GameData.ini. That loose file shadows the BIG-archived one when the engine loads
+			// GameData above, so replaying it here restores user precedence over SagePatch. Installs
+			// without a loose GameData.ini are unaffected, and the archived original is never reloaded.
+			if (TheLocalFileSystem->doesFileExist(USER_GAME_DATA_INI_PATH))
+			{
+				ini.load(USER_GAME_DATA_INI_PATH, INI_LOAD_OVERWRITE, nullptr);
+			}
+		}
+	}
+
 
 
 	#if defined(RTS_DEBUG)
@@ -459,6 +547,8 @@ void GameEngine::init()
 		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, nullptr); // must be before the game text
 		TheGlobalLanguageData->parseCustomDefinition();
 		initSubsystem(TheAudio,"TheAudio", createAudioManager(TheGlobalData->m_headless), nullptr);
+		if (!TheAudio->isMusicAlreadyLoaded())
+			setQuitting(TRUE);
 
 #if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
 		TheNameKeyGenerator->syncNameKeyID();
@@ -504,6 +594,10 @@ void GameEngine::init()
 
 #if defined(RTS_DEBUG)
 		ini.loadFileDirectory("Data\\INI\\CommandMapDebug", INI_LOAD_MULTIFILE, nullptr);
+#endif
+
+#if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, nullptr, INI::LoadFlags_SearchSubDirs); // Added in Zero Hour
 #endif
 
 		TheMetaMap->generateMetaMap();
@@ -599,9 +693,6 @@ void GameEngine::init()
 			}
 		}
 
-		if(!TheGlobalData->m_playIntro)
-			TheWritableGlobalData->m_afterIntro = TRUE;
-
 	}
 	catch (ErrorCode ec)
 	{
@@ -622,9 +713,6 @@ void GameEngine::init()
 	{
 		RELEASE_CRASH(("Uncaught Exception during initialization."));
 	}
-
-	if(!TheGlobalData->m_playIntro)
-		TheWritableGlobalData->m_afterIntro = TRUE;
 
 	resetSubsystems();
 
@@ -675,7 +763,7 @@ void GameEngine::resetSubsystems()
 /// -----------------------------------------------------------------------------------------------
 Bool GameEngine::canUpdateGameLogic(UnsignedInt logicTimeQueryFlags)
 {
-	// Must be first.
+	// This updates the paused game status of the game logic.
 	TheGameLogic->preUpdate();
 
 	TheFramePacer->setTimeFrozen(isTimeFrozen());
@@ -710,15 +798,15 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 /// -----------------------------------------------------------------------------------------------
 Bool GameEngine::canUpdateRegularGameLogic(UnsignedInt logicTimeQueryFlags)
 {
-#if RETAIL_COMPATIBLE_CRC
-	// GeneralsX @bugfix BenderAI 22/05/2026 Preserve pre-sync replay pacing semantics for retail-compatible CRC mode.
-	const Bool enabled = TheFramePacer->isLogicTimeScaleEnabled();
-	const Int logicTimeScaleFps = TheFramePacer->getLogicTimeScaleFps();
-	const Int maxRenderFps = TheFramePacer->getFramesPerSecondLimit();
-#else
 	const Int logicTimeScaleFps = TheFramePacer->getActualLogicTimeScaleFps(logicTimeQueryFlags);
+
+	if (logicTimeScaleFps <= 0)
+	{
+		return false;
+	}
+
+	const Bool enabled = TheFramePacer->isLogicTimeScaleEnabled();
 	const Int maxRenderFps = TheFramePacer->getActualFramesPerSecondLimit();
-#endif
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	const Bool useFastMode = TheGlobalData->m_TiVOFastMode;
@@ -726,11 +814,7 @@ Bool GameEngine::canUpdateRegularGameLogic(UnsignedInt logicTimeQueryFlags)
 	const Bool useFastMode = TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame();
 #endif
 
-#if RETAIL_COMPATIBLE_CRC
 	if (useFastMode || !enabled || logicTimeScaleFps >= maxRenderFps)
-#else
-	if (useFastMode || logicTimeScaleFps >= maxRenderFps)
-#endif
 	{
 		// Logic time scale is uncapped or larger equal Render FPS. Update straight away.
 		return true;
@@ -780,24 +864,15 @@ void GameEngine::update()
 			}
 		}	// end VERIFY_CRC block
 
-		// GeneralsX @bugfix BenderAI 22/05/2026 Keep old logic-time query flags in retail-compatible CRC mode to avoid replay drift.
-		const UnsignedInt logicTimeQueryFlags = RETAIL_COMPATIBLE_CRC
-			? 0
-			: (FramePacer::IgnoreFrozenTime | FramePacer::IgnoreHaltedGame);
-		const Bool canUpdate = canUpdateGameLogic(logicTimeQueryFlags);
-		const Bool canUpdateLogic = canUpdate && !TheFramePacer->isGameHalted() && !TheFramePacer->isTimeFrozen();
-		const Bool canUpdateScript = canUpdate && !TheFramePacer->isGameHalted();
-
-		if (canUpdateLogic)
+		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.
+		if (canUpdateGameLogic(FramePacer::IgnoreFrozenTime))
 		{
-			TheGameClient->step();
 			TheGameLogic->UPDATE();
-		}
-		else if (canUpdateScript)
-		{
-			// TheSuperHackers @info Still update the Script Engine to allow
-			// for scripted camera movements while the time is frozen.
-			TheScriptEngine->UPDATE();
+
+			if (!TheFramePacer->isTimeFrozen())
+			{
+				TheGameClient->step();
+			}
 		}
 	}
 }
@@ -881,13 +956,10 @@ void GameEngine::execute()
 
 			TheFramePacer->update();
 
-			// GeneralsX @build BenderAI 18/02/2026 - Call display step and draw every frame
-			// This was missing, causing only magenta screen (no UI rendering)
-			if (TheDisplay != nullptr)
-			{
-				TheDisplay->step();
-				TheDisplay->draw();
-			}
+			// GeneralsX @bugfix MrMeeseeks 17/06/2026 Remove double-present call to fix uncapped FPS and game running too fast (matches Zero Hour / GeneralsMD)
+			// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
+			// GameClient::update() dispatches TheDisplay->DRAW() each frame.
+			// Do NOT add an extra draw() call here - it would double-present per frame.
 		}
 
 #ifdef PERF_TIMERS
@@ -936,7 +1008,8 @@ exit the app.
 void GameEngine::checkAbnormalQuitting()
 {
 	if (TheRecorder->isMultiplayer() && TheGameLogic->isInInternetGame())
-	{	//Should not be quitting at this time, record it as a cheat.
+	{
+		//Should not be quitting at this time, record it as a cheat.
 
 		Int localID = TheGameSpyInfo->getLocalProfileID();
 		PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(localID);
@@ -969,7 +1042,7 @@ void GameEngine::checkAbnormalQuitting()
 
 		UserPreferences pref;
 		AsciiString userPrefFilename;
-		userPrefFilename.format("GeneralsOnline\\MiscPref%d.ini", stats.id);
+		userPrefFilename.format("GeneralsOnline/MiscPref%d.ini", stats.id);
 		DEBUG_LOG(("using the file %s", userPrefFilename.str()));
 		pref.load(userPrefFilename);
 
@@ -1103,3 +1176,14 @@ void updateTGAtoDDS()
 
 	system(CONVERT_EXEC1);
 }
+
+// If we're using the Wide character version of MessageBox, then there's no additional
+// processing necessary. Please note that this is a sleazy way to get this information,
+// but pending a better one, this'll have to do.
+// TheSuperHackers @build fighter19 11/02/2026 MessageBox detection (Windows-only)
+#ifdef _WIN32
+extern const Bool TheSystemIsUnicode = (((void*) (::MessageBox)) == ((void*) (::MessageBoxW)));
+#else
+extern const Bool TheSystemIsUnicode = true;  // Linux: Always Unicode (UTF-8)
+#endif
+

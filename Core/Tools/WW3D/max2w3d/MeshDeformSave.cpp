@@ -65,8 +65,6 @@ MeshDeformSaveClass::Initialize
 	//
 	//	Attempt to gain access to the IDerivedObject this node references
 	//
-	int test = object->SuperClassID ();
-	int test2 = GEN_DERIVOB_CLASS_ID;
 	if ((object != nullptr) &&
 		 (object->SuperClassID () == GEN_DERIVOB_CLASS_ID)) {
 
@@ -145,7 +143,7 @@ MeshDeformSaveClass::Initialize
 //
 ///////////////////////////////////////////////////////////////////////////
 void
-MeshDeformSaveClass::Reset (void)
+MeshDeformSaveClass::Reset ()
 {
 	//
 	//	Delete all the damage sets
@@ -370,7 +368,7 @@ MeshDeformSaveClass::Re_Index (MeshBuilderClass &builder)
 //
 ///////////////////////////////////////////////////////////////////////////
 bool
-MeshDeformSaveClass::Does_Deformer_Modify_DCG (void)
+MeshDeformSaveClass::Does_Deformer_Modify_DCG ()
 {
 	bool retval = false;
 

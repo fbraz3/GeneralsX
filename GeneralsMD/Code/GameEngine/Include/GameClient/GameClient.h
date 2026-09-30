@@ -44,6 +44,7 @@ class Drawable;
 class FontLibrary;
 class GameWindowManager;
 class InGameUI;
+class Intro;
 class Keyboard;
 class Mouse;
 class ParticleSystemManager;
@@ -155,6 +156,8 @@ public:
 	void incrementRenderedObjectCount() { m_renderedObjectCount++; }
 	virtual void notifyTerrainObjectMoved(Object *obj) = 0;
 
+	Bool skipCurrentIntroStage();
+
 	static Bool isMovieAbortRequested();
 
 protected:
@@ -181,6 +184,7 @@ protected:
 
 private:
 
+	Intro* m_intro;
 	UnsignedInt m_renderedObjectCount;													///< Keeps track of the number of rendered objects -- resets each frame.
 
 	//---------------------------------------------------------------------------

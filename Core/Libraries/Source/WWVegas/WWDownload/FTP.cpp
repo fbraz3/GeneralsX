@@ -93,6 +93,9 @@ static inline size_t strlcat(char *dst, const char *src, size_t dstsize)
 // TODO: Implement _splitpath for Linux (currently no-op)
 #define _splitpath(a,b,c,d,e) (void)0
 #endif
+#include <ctime>
+#include <errno.h>
+#include "WWLib/WWCommon.h"
 //#include "wlib/wstring.h"
 
 #include "DownloadDebug.h"
@@ -1057,7 +1060,6 @@ HRESULT  Cftp::RecvReply( LPCSTR pReplyBuffer, int iSize, int * piRetCode )
 unsigned long MyIPAddress( int sockfd )
 {
 
-	int		 test = 99;
 	int i;
 	char pBuffer[ 256 ];
 	char * pAddr;
@@ -1068,7 +1070,11 @@ unsigned long MyIPAddress( int sockfd )
 	if( sockfd != -1 )
 	{
 		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+#ifdef _WIN32
+		int addrlen = sizeof( sin );
+#else
 		socklen_t addrlen = sizeof( sin );
+#endif
 		getsockname( sockfd, (struct sockaddr *)&sin, &addrlen );
 
 		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 POSIX in_addr uses s_addr directly (not S_un.S_addr)
@@ -1191,7 +1197,11 @@ int Cftp::SendNewPort()
 
 
 		// GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Use socklen_t for getsockname (POSIX compatibility)
+#ifdef _WIN32
+		int addrlen = sizeof( m_DataSockAddr);
+#else
 		socklen_t addrlen = sizeof( m_DataSockAddr);
+#endif
 
 		getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &addrlen );
 
@@ -1891,7 +1901,7 @@ bool Prepare_Directories(const char *rootdir, const char *filename)
 	char newdir[256];
 
 	const char *cptr=filename;
-	while(cptr=strchr(cptr,'\\'))
+	while((cptr=strchr(cptr,'\\')) != nullptr)
 	{
 		strlcpy(tempstr,filename,cptr-filename + 1);
 		snprintf(newdir, ARRAY_SIZE(newdir), "%s\\%s", rootdir, tempstr);
@@ -1903,7 +1913,6 @@ bool Prepare_Directories(const char *rootdir, const char *filename)
 	}
 	return(true);
 }
-
 
 
 

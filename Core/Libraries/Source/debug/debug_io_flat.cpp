@@ -33,7 +33,7 @@
 #include "internal_io.h"
 #include <stdlib.h>
 #include <windows.h>
-#include <WWCommon.h>
+#include <WWLib/WWCommon.h>
 #include <new>      // needed for placement new prototype
 
 DebugIOFlat::OutputStream::OutputStream(const char *filename, unsigned maxSize):
@@ -77,7 +77,6 @@ void DebugIOFlat::OutputStream::Delete(const char *path)
     char *fileNameOnly=strrchr(m_fileName,'\\');
     fileNameOnly=fileNameOnly?fileNameOnly+1:m_fileName;
 
-    unsigned pathLen=strlen(path);
     for (;;)
     {
       // absolute path?

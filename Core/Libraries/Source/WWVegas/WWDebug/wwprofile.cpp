@@ -49,28 +49,18 @@
  *   WWProfileManager::Release_In_Order_Iterator -- Return an "in-order" iterator              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "wwprofile.h"
-#include "FastAllocator.h"
+#include "WWLib/FastAllocator.h"
 #include "wwdebug.h"
 //#include "systimer.h"
-#include "systimer.h"
-#include "RAWFILE.h"
-#include "ffactory.h"
-#include "simplevec.h"
-#include "cpudetect.h"
-#include "hashtemplate.h"
+#include "WWLib/systimer.h"
+#include "WWLib/RAWFILE.h"
+#include "WWLib/ffactory.h"
+#include "WWLib/simplevec.h"
+#include "WWLib/cpudetect.h"
+#include "WWLib/hashtemplate.h"
 #include <Utility/intrin_compat.h>
-
-// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW has no _int64/__int64 builtins (MSVC extension); provide typedef.
-#if defined(_WIN32) && defined(__MINGW32__)
-#  ifndef _int64
-     typedef long long _int64;
-#  endif
-#  ifndef __int64
-     typedef long long __int64;
-#  endif
-#endif
 
 static SimpleDynVecClass<WWProfileHierarchyNodeClass*> ProfileCollectVector;
 static double TotalFrameTimes;
@@ -362,8 +352,13 @@ WWProfileHierarchyNodeClass	*	WWProfileManager::CurrentRootNode = &WWProfileMana
 int									WWProfileManager::FrameCounter = 0;
 __int64								WWProfileManager::ResetTime = 0;
 
-// GeneralsX @bugfix GitHub Copilot 24/05/2026 Keep profiler thread identity in the exact platform-native type returned by GetCurrentThreadId.
-static decltype(::GetCurrentThreadId())		ThreadID = static_cast<decltype(::GetCurrentThreadId())>(0);
+// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - ThreadID type must match THREAD_ID on all platforms
+#ifdef _WIN32
+static unsigned int				ThreadID = static_cast<unsigned int>(-1);
+#else
+#include "thread_compat.h"
+static THREAD_ID				ThreadID = {};  // Default-initialized thread ID (platform-specific)
+#endif
 
 
 /***********************************************************************************************
@@ -962,11 +957,14 @@ void	WWProfileInOrderIterator::First()
 
 void	WWProfileInOrderIterator::Next()
 {
-	if ( CurrentNode->Get_Child() ) {				// If I have a child, go to child
+	if ( CurrentNode->Get_Child() ) {
+		// If I have a child, go to child
 		CurrentNode = CurrentNode->Get_Child();
-	} else if ( CurrentNode->Get_Sibling() ) {	// If I have a sibling, go to sibling
+	} else if ( CurrentNode->Get_Sibling() ) {
+		// If I have a sibling, go to sibling
 		CurrentNode = CurrentNode->Get_Sibling();
-	} else {											//	if not, go to my parent's sibling, or his.......
+	} else {
+		//	if not, go to my parent's sibling, or his.......
 		// Find a parent with a sibling....
 		bool done = false;
 		while ( CurrentNode != nullptr && !done ) {
@@ -1002,10 +1000,8 @@ WWTimeItClass::~WWTimeItClass()
 	__int64 End;
 	WWProfile_Get_Ticks( &End );
 	End -= Time;
-#ifdef WWDEBUG
-	float time = End * WWProfile_Get_Inv_Processor_Ticks_Per_Second();
-	WWDEBUG_SAY(( "*** WWTIMEIT *** %s took %1.9f", Name, time ));
-#endif
+
+	WWDEBUG_SAY(( "*** WWTIMEIT *** %s took %1.9f", Name, End * WWProfile_Get_Inv_Processor_Ticks_Per_Second() ));
 }
 
 
@@ -1131,4 +1127,3 @@ WWProfileHierarchyInfoClass::~WWProfileHierarchyInfoClass()
 	delete Child;
 	delete Sibling;
 }
-

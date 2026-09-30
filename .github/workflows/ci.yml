@@ -43,6 +43,7 @@ jobs:
               - 'CMakeLists.txt'
               - 'CMakePresets.json'
               - '.github/workflows/build-*.yml'
+              - '.github/workflows/replay-tests*.yml'
               - '.github/workflows/ci.yml'
             base-should-build:
               - 'Generals/**'
@@ -52,6 +53,7 @@ jobs:
               - 'CMakeLists.txt'
               - 'CMakePresets.json'
               - '.github/workflows/build-*.yml'
+              - '.github/workflows/replay-tests*.yml'
               - '.github/workflows/ci.yml'
 
       - name: Build Trigger Summary
@@ -90,7 +92,14 @@ jobs:
     secrets: inherit
 
   build-windows:
-    name: Build Windows (SDL3)
+    name: Build Windows (MSVC x86)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/build-windows.yml
+    secrets: inherit
+
+  build-windows-sdl3:
+    name: Build Windows (SDL3 x64)
     needs: detect-changes
     if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/build-windows-sdl3.yml
@@ -98,39 +107,44 @@ jobs:
       preset: windows64-deploy
     secrets: inherit
 
-  # GeneralsX @build BenderAI 18/05/2026 Deterministic replay tests run after Flatpak build on Linux and app build on macOS.
-  # Each job downloads the built artifact, extracts game assets (ASSETS_KEY secret) and
-  # platform replays from fbraz3/GeneralsXReplays, then runs headless replay simulations.
-  # GeneralsX @tweak BenderAI 22/05/2026 Temporarily disable replay CI gates during upstream sync stabilization; keep build gates active.
   replay-test-linux:
     name: Replay Tests (linux)
     needs: [build-linux-flatpak]
-    if: false
+    if: needs.build-linux-flatpak.result == 'success'
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: linux-flatpak
-      game-artifact: linux-flatpak-generalsxzh-linux64-deploy
+      game-artifact: linux-x86_64-GeneralsXZH.flatpak
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
   replay-test-macos:
     name: Replay Tests (macos)
     needs: [build-macos]
-    if: false
+    if: needs.build-macos.result == 'success'
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos
-      game-artifact: macos-generalsxzh-app
+      game-artifact: macos-arm64-GeneralsXZH.zip
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
   replay-test-windows:
-    name: Replay Tests (windows)
+    name: Replay Tests (windows x86)
     needs: [build-windows]
-    if: false
-    uses: ./.github/workflows/replay-tests.yml
+    if: needs.build-windows.result == 'success'
+    uses: ./.github/workflows/replay-tests-windows.yml
     with:
-      platform: windows
+      game-artifact: windows-x86-GeneralsXZH-replay-test-only.zip
+    secrets:
+      ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
+
+  replay-test-windows-sdl3:
+    name: Replay Tests (windows SDL3 x64)
+    needs: [build-windows-sdl3]
+    if: needs.build-windows-sdl3.result == 'success'
+    uses: ./.github/workflows/replay-tests-windows.yml
+    with:
       game-artifact: windows-bundle-generalsxzh-windows64-deploy
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
@@ -138,7 +152,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [build-linux-flatpak, build-macos, build-windows, replay-test-linux, replay-test-macos, replay-test-windows]
+    needs: [build-linux-flatpak, build-macos, build-windows, build-windows-sdl3, replay-test-linux, replay-test-macos, replay-test-windows, replay-test-windows-sdl3]
     if: always()
     steps:
       - name: Generate Summary
@@ -149,21 +163,24 @@ jobs:
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows (MinGW x64) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows (x86 MSVC) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows (SDL3 x64) | ${{ needs.build-windows-sdl3.result == 'success' && '✅ Success' || needs.build-windows-sdl3.result == 'skipped' && '⏭️ Skipped' || needs.build-windows-sdl3.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Replay Tests | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux ZH replays | ${{ needs.replay-test-linux.result == 'success' && '✅ Pass' || needs.replay-test-linux.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-linux.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS ZH replays | ${{ needs.replay-test-macos.result == 'success' && '✅ Pass' || needs.replay-test-macos.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows ZH replays | ${{ needs.replay-test-windows.result == 'success' && '✅ Pass' || needs.replay-test-windows.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows x86 ZH replays | ${{ needs.replay-test-windows.result == 'success' && '✅ Pass' || needs.replay-test-windows.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows SDL3 ZH replays | ${{ needs.replay-test-windows-sdl3.result == 'success' && '✅ Pass' || needs.replay-test-windows-sdl3.result == 'skipped' && '⏭️ Skipped' || needs.replay-test-windows-sdl3.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if Any Build or Replay Test Failed
         if: |
           needs.build-linux-flatpak.result == 'failure' ||
           needs.build-macos.result == 'failure' ||
           needs.build-windows.result == 'failure' ||
+          needs.build-windows-sdl3.result == 'failure' ||
           needs.replay-test-linux.result == 'failure' ||
           needs.replay-test-macos.result == 'failure' ||
-          needs.replay-test-windows.result == 'failure'
+          needs.replay-test-windows.result == 'failure' ||
+          needs.replay-test-windows-sdl3.result == 'failure'
         run: exit 1
-

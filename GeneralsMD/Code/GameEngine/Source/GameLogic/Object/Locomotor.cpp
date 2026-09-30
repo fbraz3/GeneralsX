@@ -232,9 +232,9 @@ static void calcDirectionToApplyThrust(
 
 	Bool foundSolution = false;
 	Real distToGoalSqr = vecToGoal.Length2();
-	Real distToGoal = sqrt(distToGoalSqr);
+	Real distToGoal = WWMath::SqrtOrigin(distToGoalSqr);
 	Real curVelMagSqr = curVel.Length2();
-	Real curVelMag = sqrt(curVelMagSqr);
+	Real curVelMag = WWMath::SqrtOrigin(curVelMagSqr);
 	Real maxAccelSqr = sqr(maxAccel);
 
 	Real denom = curVelMagSqr - maxAccelSqr;
@@ -423,6 +423,13 @@ void LocomotorTemplate::validate()
 			m_minSpeed = 0.01f;
 		}
 	}
+
+#if RTS_GENERALS
+	// TheSuperHackers @info DecelerationPitchLimit was just added in Zero Hour and is therefore defaulted to
+	// AccelerationPitchLimit when zero to preserve the original behavior of Generals.
+	if (m_decelPitchLimit == 0.0f)
+		m_decelPitchLimit = m_accelPitchLimit;
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -461,7 +468,7 @@ const FieldParse* LocomotorTemplate::getFieldParse() const
 		{ "GroupMovementPriority", INI::parseIndexList, TheLocomotorPriorityNames, offsetof(LocomotorTemplate, m_movePriority) },		\
 
 		{ "AccelerationPitchLimit", INI::parseAngleReal, nullptr, offsetof(LocomotorTemplate, m_accelPitchLimit) },
-		{ "DecelerationPitchLimit", INI::parseAngleReal, nullptr, offsetof(LocomotorTemplate, m_decelPitchLimit) },
+		{ "DecelerationPitchLimit", INI::parseAngleReal, nullptr, offsetof(LocomotorTemplate, m_decelPitchLimit) }, // Added in Zero Hour
 		{ "BounceAmount", INI::parseAngularVelocityReal, nullptr, offsetof(LocomotorTemplate, m_bounceKick) },
 		{ "PitchStiffness", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_pitchStiffness) },
 		{ "RollStiffness", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_rollStiffness) },
@@ -497,10 +504,10 @@ const FieldParse* LocomotorTemplate::getFieldParse() const
 		{ "WanderLengthFactor",				 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_wanderLengthFactor) },
 		{ "WanderAboutPointRadius",				 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_wanderAboutPointRadius) },
 
-		{ "RudderCorrectionDegree",		 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_rudderCorrectionDegree) },
-		{ "RudderCorrectionRate",			 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_rudderCorrectionRate) },
-		{ "ElevatorCorrectionDegree",	 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_elevatorCorrectionDegree) },
-		{ "ElevatorCorrectionRate",		 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_elevatorCorrectionRate) },
+		{ "RudderCorrectionDegree",		 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_rudderCorrectionDegree) }, // Added in Zero Hour
+		{ "RudderCorrectionRate",			 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_rudderCorrectionRate) }, // Added in Zero Hour
+		{ "ElevatorCorrectionDegree",	 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_elevatorCorrectionDegree) }, // Added in Zero Hour
+		{ "ElevatorCorrectionRate",		 INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_elevatorCorrectionRate) }, // Added in Zero Hour
 		{ nullptr, nullptr, nullptr, 0 }
 
 	};
@@ -996,7 +1003,7 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 	Real dx = goalPos.x - obj->getPosition()->x;
 	Real dy = goalPos.y - obj->getPosition()->y;
 	Real dz = goalPos.z - obj->getPosition()->z;
-	Real dist = sqrt(dx*dx+dy*dy);
+	Real dist = WWMath::SqrtOrigin(dx*dx+dy*dy);
 	if (dist>onPathDistToGoal)
 	{
 		if (!obj->isKindOf(KINDOF_PROJECTILE) && dist>2*onPathDistToGoal)
@@ -1079,7 +1086,7 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 					break;
 			case LOCO_WHEELS_FOUR:
 			case LOCO_MOTORCYCLE:
-					moveTowardsPositionWheels( obj, physics, goalPos, onPathDistToGoal, desiredSpeed );
+					moveTowardsPositionWheels(obj, physics, goalPos, onPathDistToGoal, desiredSpeed);
 					break;
 			case LOCO_TREADS:
 					moveTowardsPositionTreads(obj, physics, goalPos, onPathDistToGoal, desiredSpeed);
@@ -1114,7 +1121,7 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 			// Projectiles never stop braking once they start.  jba.
 			obj->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_BRAKING ) );
 			// Projectiles cheat in 3 dimensions.
-			dist = sqrt(dx*dx+dy*dy+dz*dz);
+			dist = WWMath::SqrtOrigin(dx*dx+dy*dy+dz*dz);
 			Real vel = physics->getVelocityMagnitude();
 			if (vel < MIN_VEL)
 				vel = MIN_VEL;
@@ -1289,7 +1296,7 @@ void Locomotor::moveTowardsPositionWheels(Object* obj, PhysicsBehavior *physics,
 	Real angle = obj->getOrientation();
 //	Real relAngle = ThePartitionManager->getRelativeAngle2D( obj, &goalPos );
 //	Real desiredAngle = angle + relAngle;
-	Real desiredAngle = atan2(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
+	Real desiredAngle = WWMath::Atan2Origin(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
 	Real relAngle = stdAngleDiff(desiredAngle, angle);
 
 	Bool moveBackwards = false;
@@ -1564,7 +1571,7 @@ Bool Locomotor::fixInvalidPosition(Object* obj, PhysicsBehavior *physics)
 		//physics->clearAcceleration();
 
 		if (dot<0) {
-			dot = sqrt(-dot);
+			dot = WWMath::SqrtOrigin(-dot);
 			correctionNormalized.x *= dot*physics->getMass();
 			correctionNormalized.y *= dot*physics->getMass();
 			physics->applyMotiveForce(&correctionNormalized);
@@ -1628,7 +1635,7 @@ void Locomotor::moveTowardsPositionLegs(Object* obj, PhysicsBehavior *physics, c
 	Real angle = obj->getOrientation();
 //	Real relAngle = ThePartitionManager->getRelativeAngle2D( obj, &goalPos );
 //	Real desiredAngle = angle + relAngle;
-	Real desiredAngle = atan2(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
+	Real desiredAngle = WWMath::Atan2Origin(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
 
 	if (m_template->m_wanderWidthFactor != 0.0f) {
 		Real angleLimit = PI/8 * m_template->m_wanderWidthFactor;
@@ -1761,7 +1768,7 @@ void Locomotor::moveTowardsPositionClimb(Object* obj, PhysicsBehavior *physics, 
 	Real angle = obj->getOrientation();
 //	Real relAngle = ThePartitionManager->getRelativeAngle2D( obj, &goalPos );
 //	Real desiredAngle = angle + relAngle;
-	Real desiredAngle = atan2(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
+	Real desiredAngle = WWMath::Atan2Origin(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
 	Real relAngle = stdAngleDiff(desiredAngle, angle);
 
 	if (moveBackwards) {
@@ -1852,7 +1859,7 @@ void Locomotor::moveTowardsPositionWings(Object* obj, PhysicsBehavior *physics, 
 			Real angleTowardPos =
 					(isNearlyZero(dx) && isNearlyZero(dy)) ?
 					obj->getOrientation() :
-					atan2(dy, dx);
+					WWMath::Atan2Origin(dy, dx);
 
 			Real aimDir = (PI - PI/8);
 			angleTowardPos += aimDir;
@@ -2086,7 +2093,7 @@ Real Locomotor::calcLiftToUseAtPt(Object* obj, PhysicsBehavior *physics, Real cu
 			//	thus
 			// a = 2(dz - v t)/t^2
 			//	and
-			// t = (-v +- sqrt(v*v + 2*a*dz))/a
+			// t = (-v +- WWMath::SqrtOrigin(v*v + 2*a*dz))/a
 			//
 			// but if we assume t=1, then
 			//	a=2(dz-v)
@@ -2148,7 +2155,7 @@ PhysicsTurningType Locomotor::rotateObjAroundLocoPivot(Object* obj, const Coord3
 		Real dy = goalPos.y - turnPos.y;
 		// If we are very close to the goal, we twitch due to rounding error.  So just return. jba.
 		if (fabs(dx)<0.1f && fabs(dy)<0.1f) return TURN_NONE;
-		Real desiredAngle = atan2(dy, dx);
+		Real desiredAngle = WWMath::Atan2Origin(dy, dx);
 		Real amount = stdAngleDiff(desiredAngle, angle);
 		if (relAngle) *relAngle = amount;
 		if (amount>maxTurnRate) {
@@ -2170,7 +2177,7 @@ PhysicsTurningType Locomotor::rotateObjAroundLocoPivot(Object* obj, const Coord3
 		// so, the thing is, we want to rotate ourselves so that our *center* is rotated
 		// by the given amount, but the rotation must be around turnPos. so do a little
 		// back-calculation.
-		Real angleDesiredForTurnPos = atan2(desiredPos.y - turnPos.y, desiredPos.x - turnPos.x);
+		Real angleDesiredForTurnPos = WWMath::Atan2Origin(desiredPos.y - turnPos.y, desiredPos.x - turnPos.x);
 		amount = angleDesiredForTurnPos - angle;
 #endif
 		/// @todo srj -- there's probably a more efficient & more direct way to do this. find it.
@@ -2186,7 +2193,7 @@ PhysicsTurningType Locomotor::rotateObjAroundLocoPivot(Object* obj, const Coord3
 	}
 	else
 	{
-		Real desiredAngle = atan2(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
+		Real desiredAngle = WWMath::Atan2Origin(goalPos.y - obj->getPosition()->y, goalPos.x - obj->getPosition()->x);
 		Real amount = stdAngleDiff(desiredAngle, angle);
 		if (relAngle) *relAngle = amount;
 		if (amount>maxTurnRate) {
@@ -2520,7 +2527,7 @@ void Locomotor::maintainCurrentPositionWings(Object* obj, PhysicsBehavior *physi
 		Real angleTowardMaintainPos =
 				(isNearlyZero(dx) && isNearlyZero(dy)) ?
 				obj->getOrientation() :
-				atan2(dy, dx);
+				WWMath::Atan2Origin(dy, dx);
 
 		Real aimDir = (PI - PI/8);
 		if (turnRadius < 0)
@@ -2574,14 +2581,6 @@ void Locomotor::maintainCurrentPositionHover(Object* obj, PhysicsBehavior *physi
 			force.x = accelForce * dir->x;
 			force.y = accelForce * dir->y;
 			force.z = 0.0f;
-
-
-      // Apply a random kick (if applicable) to dirty-up visually.
-      // The idea is that chopper pilots have to do course corrections all the time
-      // Because of changes in wind, pressure, etc.
-      // Those changes are added here, then the
-
-
 
 			// apply forces to object
 			physics->applyMotiveForce( &force );

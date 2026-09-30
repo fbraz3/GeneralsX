@@ -71,7 +71,7 @@ WindowsVersionInfo WinVersion;
  * HISTORY:                                                                                    *
  *  04/09/98 jdl : Created.                                                                    *
  *=============================================================================================*/
-WindowsVersionInfo::WindowsVersionInfo(void) :
+WindowsVersionInfo::WindowsVersionInfo() :
 	WindowsVersion(0),
 	MajorVersionNumber(0),
 	MinorVersionNumber(0),
@@ -127,6 +127,7 @@ WindowsVersionInfo::WindowsVersionInfo(void) :
 	version_info.dwOSVersionInfoSize = sizeof( version_info );
 
 	int result = GetVersionEx( &version_info );
+	(void)result;
 	assert( result != 0 );
 
 	//--------------------------------------------------------------------------
@@ -267,7 +268,7 @@ WindowsVersionInfo::WindowsVersionInfo(void) :
  * HISTORY:                                                                                    *
  *   3/30/99 10:29PM ST : Created                                                              *
  *=============================================================================================*/
-char *WindowsVersionInfo::Version_String(void)
+char *WindowsVersionInfo::Version_String()
 {
 	static char _ver95[]   	= {"Windows 95 "};
 	static char _ver98[]   	= {"Windows 98 "};
@@ -319,7 +320,7 @@ char *WindowsVersionInfo::Version_String(void)
  *   10/30/1995 BRR : Created.															*
  *=========================================================================*/
 
-char * WindowsVersionInfo::Version_Name(void)
+char * WindowsVersionInfo::Version_Name()
 {
 	return ( VersionName );
 }
@@ -340,7 +341,7 @@ char * WindowsVersionInfo::Version_Name(void)
  *   10/30/1995 BRR : Created.												*
  *==========================================================================*/
 
-bool WindowsVersionInfo::Meets_Minimum_Version_Requirements	( void )
+bool WindowsVersionInfo::Meets_Minimum_Version_Requirements	()
 {
 //	return(( !IsWin95 && ( Version() >= 400 ))? true : false );
 	return(( Version() >= 400 )? true : false );

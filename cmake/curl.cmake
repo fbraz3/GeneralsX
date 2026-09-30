@@ -2,6 +2,6 @@
 # Finds libcurl via vcpkg on Linux/macOS. Windows builds do not use this module.
 
 if(SAGE_UPDATE_CHECK)
-    find_package(CURL CONFIG REQUIRED)
+    find_package(CURL REQUIRED)
     message(STATUS "libcurl found: ${CURL_VERSION_STRING}")
 endif()

@@ -40,10 +40,10 @@
 #include "assetmgr.h"
 #include "htree.h"
 #include "motchan.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "w3d_file.h"
-#include "wwdebug.h"
-#include <nstrdup.h>
+#include "WWDebug/wwdebug.h"
+#include <WWLib/nstrdup.h>
 
 
 

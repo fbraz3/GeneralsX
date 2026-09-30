@@ -117,6 +117,8 @@ MultiplayerSettings::MultiplayerSettings()
 	// Ensure starting money choices are in ascending order for UI presentation
 	std::sort(m_startingMoneyList.begin(), m_startingMoneyList.end(),
 		[](const Money &a, const Money &b) { return a.countMoney() < b.countMoney(); });
+
+	m_gotDefaultStartingMoney = false;
 }
 
 MultiplayerColorDefinition::MultiplayerColorDefinition()

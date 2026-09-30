@@ -166,7 +166,8 @@ void OCLSpecialPower::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, 
 		fpOptions.flags = FPF_CLEAR_CELLS_ONLY;
 		fpOptions.maxRadius = MAX_ADJUST_RADIUS;
 		if ( ! ThePartitionManager->findPositionAround(&targetCoord, &fpOptions, &targetCoord) )
-    { // if findPosition() fails, then don't monkey with target Coord!
+    {
+    	// if findPosition() fails, then don't monkey with target Coord!
     	targetCoord = *loc;
     }
 
@@ -176,11 +177,9 @@ void OCLSpecialPower::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, 
 	// call the base class action cause we are *EXTENDING* functionality
 	SpecialPowerModule::doSpecialPowerAtLocation( &targetCoord, angle, commandOptions );
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// GeneralsX @bugfix Copilot 06/09/2026 Do not create an OCL after the base special-power intent was rejected.
 	if (m_availableOnFrame == 0xFFFFFFFF)
 		return;
-#endif
 
 	const ObjectCreationList* ocl = findOCL();
 
@@ -207,7 +206,7 @@ void OCLSpecialPower::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, 
 			ObjectCreationList::create( ocl, getObject(), &creationCoord, &targetCoord, angle );
 			break;
 		case USE_OWNER_OBJECT:
-			creationCoord.set( &targetCoord );
+			creationCoord.set( targetCoord );
 			ObjectCreationList::create( ocl, getObject(), &creationCoord, &targetCoord, angle, false );
 			break;
 		case CREATE_ABOVE_LOCATION:
@@ -239,10 +238,14 @@ void OCLSpecialPower::doSpecialPower( UnsignedInt commandOptions )
 		return;
 
 	Coord3D creationCoord;
-	creationCoord.set( getObject()->getPosition() );
+	creationCoord.set( *getObject()->getPosition() );
 
 	// call the base class action cause we are *EXTENDING* functionality
 	SpecialPowerModule::doSpecialPowerAtLocation( &creationCoord, INVALID_ANGLE, commandOptions );
+
+	// GeneralsX @bugfix Copilot 06/09/2026 Do not create a targetless OCL after its intent was rejected.
+	if (m_availableOnFrame == 0xFFFFFFFF)
+		return;
 
 	const ObjectCreationList* ocl = findOCL();
 	ObjectCreationList::create( ocl, getObject(), &creationCoord, &creationCoord, false );
@@ -293,4 +296,3 @@ void OCLSpecialPower::loadPostProcess()
 	SpecialPowerModule::loadPostProcess();
 
 }
-

@@ -181,11 +181,11 @@ LogClass BonePosLog("bonePositions.txt");
 
 #else // DEBUG_CRC
 
-#define BONEPOS_LOG(x) {}
-#define BONEPOS_DUMPMATRIX3D(x) {}
-#define BONEPOS_DUMPMATRIX3DNAMED(x, y) {}
-#define BONEPOS_DUMPREAL(x) {}
-#define BONEPOS_DUMPREALNAMED(x, y) {}
+#define BONEPOS_LOG(x)
+#define BONEPOS_DUMPMATRIX3D(x)
+#define BONEPOS_DUMPMATRIX3DNAMED(x, y)
+#define BONEPOS_DUMPREAL(x)
+#define BONEPOS_DUMPREALNAMED(x, y)
 
 #endif // DEBUG_CRC
 
@@ -2131,10 +2131,10 @@ const ModelConditionInfo* W3DModelDraw::findTransitionForSig(TransitionSig sig) 
 //-------------------------------------------------------------------------------------------------
 Real W3DModelDraw::getCurrentAnimFraction() const
 {
-	if (m_curState != nullptr
-			&& isAnyMaintainFrameFlagSet(m_curState->m_flags)
-			&& m_renderObject != nullptr
-			&& m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD)
+	if (m_curState != nullptr &&
+			isAnyMaintainFrameFlagSet(m_curState->m_flags) &&
+			m_renderObject != nullptr &&
+			m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD)
 	{
 		float framenum, dummy;
 		int mode, numFrames;
@@ -2182,51 +2182,53 @@ void W3DModelDraw::adjustAnimation(const ModelConditionInfo* prevState, Real pre
 
 		const W3DAnimationInfo& animInfo = m_curState->m_animations[m_whichAnimInCurState];
 
-		HAnimClass* animHandle = animInfo.getAnimHandle();	// note that this now returns an ADDREFED handle, which must be released by the caller!
-		if (m_renderObject && animHandle)
+		if (m_renderObject)
 		{
-			Int startFrame = 0;
-			if (m_curState->m_mode == RenderObjClass::ANIM_MODE_ONCE_BACKWARDS ||
-					m_curState->m_mode == RenderObjClass::ANIM_MODE_LOOP_BACKWARDS)
+			HAnimClass* animHandle = animInfo.getAnimHandle();	// note that this now returns an ADDREFED handle, which must be released by the caller!
+			if (animHandle)
 			{
-				startFrame = animHandle->Get_Num_Frames()-1;
-			}
+				Int startFrame = 0;
+				if (m_curState->m_mode == RenderObjClass::ANIM_MODE_ONCE_BACKWARDS ||
+						m_curState->m_mode == RenderObjClass::ANIM_MODE_LOOP_BACKWARDS)
+				{
+					startFrame = animHandle->Get_Num_Frames()-1;
+				}
 
-			if (testFlagBit(m_curState->m_flags, RANDOMIZE_START_FRAME))
-			{
-				startFrame = GameClientRandomValue(0, animHandle->Get_Num_Frames()-1);
-			}
-			else if (testFlagBit(m_curState->m_flags, START_FRAME_FIRST))
-			{
-				startFrame = 0;
-			}
-			else if (testFlagBit(m_curState->m_flags, START_FRAME_LAST))
-			{
-				startFrame = animHandle->Get_Num_Frames()-1;
-			}
-			// order is important here: MAINTAIN_FRAME_ACROSS_STATES is overridden by the other bits, above.
-			else if (isAnyMaintainFrameFlagSet(m_curState->m_flags) &&
-					prevState &&
-					prevState != m_curState &&
-					isAnyMaintainFrameFlagSet(prevState->m_flags) &&
-					isCommonMaintainFrameFlagSet(m_curState->m_flags, prevState->m_flags) &&
-					prevAnimFraction >= 0.0)
-			{
-				startFrame = REAL_TO_INT(prevAnimFraction * animHandle->Get_Num_Frames()-1);
-			}
+				if (testFlagBit(m_curState->m_flags, RANDOMIZE_START_FRAME))
+				{
+					startFrame = GameClientRandomValue(0, animHandle->Get_Num_Frames()-1);
+				}
+				else if (testFlagBit(m_curState->m_flags, START_FRAME_FIRST))
+				{
+					startFrame = 0;
+				}
+				else if (testFlagBit(m_curState->m_flags, START_FRAME_LAST))
+				{
+					startFrame = animHandle->Get_Num_Frames()-1;
+				}
+				// order is important here: MAINTAIN_FRAME_ACROSS_STATES is overridden by the other bits, above.
+				else if (isAnyMaintainFrameFlagSet(m_curState->m_flags) &&
+						prevState &&
+						prevState != m_curState &&
+						isAnyMaintainFrameFlagSet(prevState->m_flags) &&
+						isCommonMaintainFrameFlagSet(m_curState->m_flags, prevState->m_flags) &&
+						prevAnimFraction >= 0.0)
+				{
+					startFrame = REAL_TO_INT(prevAnimFraction * animHandle->Get_Num_Frames()-1);
+				}
 
-			m_renderObject->Set_Animation(animHandle, startFrame, m_curState->m_mode);
-			REF_PTR_RELEASE(animHandle);
-			animHandle = nullptr;
+				m_renderObject->Set_Animation(animHandle, startFrame, m_curState->m_mode);
+				REF_PTR_RELEASE(animHandle);
+				animHandle = nullptr;
 
-			if (m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD)
-			{
-				HLodClass *hlod = (HLodClass*)m_renderObject;
-				Real factor = GameClientRandomValueReal( m_curState->m_animMinSpeedFactor, m_curState->m_animMaxSpeedFactor );
-				hlod->Set_Animation_Frame_Rate_Multiplier( factor );
+				if (m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD)
+				{
+					HLodClass *hlod = (HLodClass*)m_renderObject;
+					Real factor = GameClientRandomValueReal( m_curState->m_animMinSpeedFactor, m_curState->m_animMaxSpeedFactor );
+					hlod->Set_Animation_Frame_Rate_Multiplier( factor );
+				}
 			}
 		}
-
 	}
 	else
 	{
@@ -2495,11 +2497,12 @@ void W3DModelDraw::handleClientTurretPositioning()
 */
 void W3DModelDraw::handleClientRecoil()
 {
-	const W3DModelDrawModuleData* d = getW3DModelDrawModuleData();
-	if (!(m_curState->m_validStuff & ModelConditionInfo::BARRELS_VALID))
+	if (!m_curState || !(m_curState->m_validStuff & ModelConditionInfo::BARRELS_VALID))
 	{
 		return;
 	}
+
+	const W3DModelDrawModuleData* d = getW3DModelDrawModuleData();
 
 	// do recoil, if any
 	for (int wslot = 0; wslot < WEAPONSLOT_COUNT; ++wslot)
@@ -2619,7 +2622,7 @@ void W3DModelDraw::recalcBonesForClientParticleSystems()
 							tmp.Scale(getDrawable()->getScale());
 							m_renderObject->Set_Transform(tmp);					// set to identity transform
 
-							const Matrix3D boneTransform = m_renderObject->Get_Bone_Transform(boneIndex);
+							const Matrix3D& boneTransform = m_renderObject->Get_Bone_Transform(boneIndex);
 							Vector3 vpos = boneTransform.Get_Translation();
 							rotation = boneTransform.Get_Z_Rotation();
 
@@ -2690,7 +2693,7 @@ Bool W3DModelDraw::updateBonesForClientParticleSystems()
 			Int boneIndex = (*it).boneIndex;
 			if ( (sys != nullptr) && (boneIndex != 0)  )
 			{
-    		const Matrix3D boneTransform = m_renderObject->Get_Bone_Transform(boneIndex);// just a little worried about state changes
+    		const Matrix3D& boneTransform = m_renderObject->Get_Bone_Transform(boneIndex);// just a little worried about state changes
 
         Vector3 vpos = boneTransform.Get_Translation();
 
@@ -3512,7 +3515,7 @@ Bool W3DModelDraw::clientOnly_getRenderObjBoundBox(OBBoxClass * boundbox) const
 	AABoxClass aabox;
 	m_renderObject->Get_Obj_Space_Bounding_Box(aabox);
 
-	Matrix3D tm = m_renderObject->Get_Transform();
+	const Matrix3D& tm = m_renderObject->Get_Transform();
 
 	// build an OBB for this AAB,transform
 	OBBoxClass box0(aabox.Center,aabox.Extent);
@@ -3716,7 +3719,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 			if( ! m_renderObject->Is_Hidden() || (logicObject == nullptr) )
 			{
 				// I can ask the drawable's bone position if I am not hidden (if I have no object I have no choice)
-				Matrix3D mtx = m_renderObject->Get_Bone_Transform(info.m_fxBone);
+				const Matrix3D& mtx = m_renderObject->Get_Bone_Transform(info.m_fxBone);
 				Coord3D pos;
 				pos.x = mtx.Get_X_Translation();
 				pos.y = mtx.Get_Y_Translation();
@@ -4142,10 +4145,10 @@ void W3DModelDraw::xfer( Xfer *xfer )
 		{
 				// srj sez: don't save info for transition states, since we can't really
 				// restore them effectively.
-			if ( m_renderObject
-					&& m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD
-					&& m_curState
-					&& m_curState->m_transitionSig == NO_TRANSITION )
+			if ( m_renderObject &&
+					m_renderObject->Class_ID() == RenderObjClass::CLASSID_HLOD &&
+					m_curState &&
+					m_curState->m_transitionSig == NO_TRANSITION )
 			{
 
 				// cast to HLod

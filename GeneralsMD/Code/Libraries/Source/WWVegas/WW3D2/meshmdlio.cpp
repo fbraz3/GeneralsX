@@ -81,13 +81,13 @@
 #include "vertmaterial.h"
 #include "shader.h"
 #include "texture.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "w3derr.h"
 #include "w3d_file.h"
 #include "w3d_util.h"
 #include "assetmgr.h"
-#include "simplevec.h"
-#include "realcrc.h"
+#include "WWLib/simplevec.h"
+#include "WWLib/realcrc.h"
 #include "dx8wrapper.h"
 
 #ifdef _UNIX
@@ -953,6 +953,7 @@ WW3DErrorType MeshModelClass::read_shaders(ChunkLoadClass & cload,MeshLoadContex
 		W3dUtilityClass::Convert_Shader(shader,&newshader);
 
 		int index = context->Add_Shader(newshader);
+		(void)index;
 		WWASSERT(index == (int)i);
 	}
 	return WW3D_ERROR_OK;

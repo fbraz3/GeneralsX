@@ -13,6 +13,9 @@ set(WW3D2_SRC
     #assetmgr.h
     assetstatus.cpp
     assetstatus.h
+    Backend/DX8Backend.cpp
+    Backend/DX8Backend.h
+    Backend/RenderBackend.h
     bitmaphandler.cpp
     bitmaphandler.h
     bmp2d.cpp
@@ -91,6 +94,7 @@ set(WW3D2_SRC
     htree.h
     #htreemgr.cpp
     #htreemgr.h
+    IRenderBackend.h
     intersec.cpp
     intersec.h
     intersec.inl
@@ -182,8 +186,8 @@ set(WW3D2_SRC
     shdlib.h
     snappts.cpp
     snapPts.h
-    #sortingrenderer.cpp
-    #sortingrenderer.h
+    sortingrenderer.cpp
+    sortingrenderer.h
     soundlibrarybridge.h
     soundrobj.cpp
     soundrobj.h
@@ -226,13 +230,20 @@ set(WW3D2_SRC
     w3derr.h
     w3dexclusionlist.cpp
     w3dexclusionlist.h
-    #ww3d.cpp
-    #ww3d.h
+    ww3d.cpp
+    ww3d.h
     ww3dformat.cpp
     ww3dformat.h
     ww3dids.h
     ww3dtrig.h
 )
+
+if(WIN32)
+    list(APPEND WW3D2_SRC
+        FramGrab.cpp
+        framgrab.h
+    )
+endif()
 
 add_library(corei_ww3d2 INTERFACE)
 
@@ -241,6 +252,10 @@ target_sources(corei_ww3d2 INTERFACE ${WW3D2_SRC})
 # GeneralsX @build fbraz 11/02/2026 BenderAI - Enable FreeType text rendering on Linux/macOS
 target_compile_definitions(corei_ww3d2 INTERFACE
     $<$<PLATFORM_ID:Linux,Darwin>:SAGE_USE_FREETYPE>
+)
+
+target_include_directories(corei_ww3d2 INTERFACE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 if (MSVC AND NOT IS_VS6_BUILD)
@@ -262,6 +277,7 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
     core_wwmath
+    corei_platform
     $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
     $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>

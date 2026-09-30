@@ -38,11 +38,11 @@
  *   WWMemoryLogClass::Release_Memory -- frees memory                                          *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "wwmemlog.h"
 #include "wwdebug.h"
-#include "Vector.h"
-#include "FastAllocator.h"
+#include "WWLib/Vector.h"
+#include "WWLib/FastAllocator.h"
 
 #define USE_FAST_ALLOCATOR
 
@@ -154,27 +154,24 @@ const int MAX_CATEGORY_STACK_DEPTH = 1024;
 class ActiveCategoryStackClass : public VectorClass<int>
 {
 public:
-	// GeneralsX @bugfix GitHub Copilot 24/05/2026 Use platform-native thread id type to support both integer and pthread-backed THREAD_ID.
-	using ThreadIDType = decltype(::GetCurrentThreadId());
-
 	ActiveCategoryStackClass() :
 		VectorClass<int>(MAX_CATEGORY_STACK_DEPTH),
-		ThreadID(static_cast<ThreadIDType>(0)),
+		ThreadID(-1),
 		Count(0)
 	{ }
 
-																										// If object was created but not Init'd, ThreadID will be 0 and Count == 0
-																										// If object was created and Init'd, ThreadID will not be 0.  We expect Count to return to 1 after all Pop's
-	virtual ~ActiveCategoryStackClass() override							{ WWASSERT((ThreadID == static_cast<ThreadIDType>(0) && Count == 0) || (ThreadID != static_cast<ThreadIDType>(0) && Count == 1)); }
+																				// If object was created but not Init'd, ThreadID will be -1 and Count == 0
+																				// If object was created and Init'd, ThreadID will not be -1.  We expect Count to return to 1 after all Pop's
+	virtual ~ActiveCategoryStackClass() override							{ WWASSERT((ThreadID == -1 && Count == 0) || (ThreadID != -1 && Count == 1)); }
 
 	ActiveCategoryStackClass & operator = (const ActiveCategoryStackClass & that);
 
 	bool		operator == (const ActiveCategoryStackClass &)	{ return false; }
 	bool		operator != (const ActiveCategoryStackClass &)	{ return true; }
 
-	void		Init(ThreadIDType thread_id)							{ ThreadID = thread_id; Count = 0; Push(MEM_UNKNOWN); }
-	void		Set_Thread_ID(ThreadIDType id)						{ WWASSERT(ThreadID != static_cast<ThreadIDType>(0)); ThreadID = id; }
-	ThreadIDType	Get_Thread_ID()									{ return ThreadID; }
+	void		Init(int thread_id)										{ ThreadID = thread_id; Count = 0; Push(MEM_UNKNOWN); }
+	void		Set_Thread_ID(int id)									{ WWASSERT(ThreadID != -1); ThreadID = id; }
+	int		Get_Thread_ID()										{ return ThreadID; }
 
 	void		Push(int active_category)								{ WWASSERT(ThreadID != -1); (*this)[Count] = active_category; Count++; }
 	void		Pop()													{ WWASSERT(ThreadID != -1) ; Count--; }
@@ -182,7 +179,7 @@ public:
 
 protected:
 
-	ThreadIDType	ThreadID;
+	int		ThreadID;
 	int		Count;
 };
 
@@ -395,7 +392,12 @@ ActiveCategoryStackClass::operator = (const ActiveCategoryStackClass & that)
 ***************************************************************************************************/
 ActiveCategoryStackClass & ActiveCategoryClass::Get_Active_Stack()
 {
-	ActiveCategoryStackClass::ThreadIDType current_thread = ::GetCurrentThreadId();
+	// GeneralsX @bugfix BenderAI 24/02/2026 Phase 5 - Use GetCurrentThreadIdAsInt for int-based thread tracking
+#ifdef _WIN32
+	int current_thread = static_cast<int>(::GetCurrentThreadId());
+#else
+	int current_thread = GetCurrentThreadIdAsInt();
+#endif
 
 	/*
 	** If we already have an allocated category stack for the current thread,

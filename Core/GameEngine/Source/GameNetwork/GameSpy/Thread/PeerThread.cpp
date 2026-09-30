@@ -31,6 +31,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(_UNIX) && !defined(__APPLE__)
+#include <cxxabi.h>
+#endif
+
 #include "Common/Registry.h"
 #include "Common/OptionPreferences.h"
 #include "Common/version.h"
@@ -41,9 +45,9 @@
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 
-#include "strtok_r.h"
-#include "mutex.h"
-#include "thread.h"
+#include "WWLib/strtok_r.h"
+#include "WWLib/mutex.h"
+#include "WWLib/thread.h"
 
 #include "Common/MiniLog.h"
 
@@ -59,7 +63,7 @@ void CheckServers(PEER peer);
 static LogClass s_pingLog("Ping.txt");
 #define PING_LOG(x) s_pingLog.log x
 #else // DEBUG_LOGGING
-#define PING_LOG(x) {}
+#define PING_LOG(x)
 #endif // DEBUG_LOGGING
 
 #ifdef DEBUG_LOGGING
@@ -69,7 +73,7 @@ static LogClass s_stateChangedLog("StateChanged.txt");
 
 #else // DEBUG_LOGGING
 
-#define STATECHANGED_LOG(x) {}
+#define STATECHANGED_LOG(x)
 
 #endif // DEBUG_LOGGING
 
@@ -1776,6 +1780,10 @@ void PeerThreadClass::Thread_Function()
 	DEBUG_LOG(("voluntarily ending peer thread %d", running));
 	peerShutdown( peer );
 
+#if defined(_UNIX) && !defined(__APPLE__)
+	} catch ( abi::__forced_unwind& ) {
+		throw;
+#endif
 	} catch ( ... ) {
 		DEBUG_CRASH(("Exception in peer thread!"));
 

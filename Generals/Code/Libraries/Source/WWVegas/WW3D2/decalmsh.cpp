@@ -56,11 +56,11 @@
 #include "rinfo.h"
 #include "mesh.h"
 #include "meshmdl.h"
-#include "plane.h"
+#include "WWMath/plane.h"
 #include "statistics.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
-#include "simplevec.h"
+#include "WWLib/simplevec.h"
 #include "texture.h"
 #include "dx8wrapper.h"
 
@@ -580,7 +580,7 @@ bool RigidDecalMeshClass::Create_Decal
 
 	material->Release_Ref();
 
-#ifdef WWDEBUG
+#ifdef DEBUG_CRASHING
 	/*
 	** Some paranoid debug code: ensure all tris have valid vertex indices
 	*/
@@ -673,7 +673,7 @@ bool RigidDecalMeshClass::Delete_Decal(uint32 id)
 	}
 	Decals.Delete(decal_index);
 
-#ifdef WWDEBUG
+#ifdef DEBUG_CRASHING
 	/*
 	** Some paranoid debug code: ensure all tris have valid vertex indices
 	*/
@@ -999,7 +999,7 @@ bool SkinDecalMeshClass::Create_Decal(DecalGeneratorClass * generator,
 	*/
 	generator->Add_Mesh(Parent);
 
-#ifdef WWDEBUG
+#ifdef DEBUG_CRASHING
 	/*
 	** Some paranoid debug code: ensure all tris have valid vertex indices
 	*/
@@ -1089,7 +1089,7 @@ bool SkinDecalMeshClass::Delete_Decal(uint32 id)
 	}
 	Decals.Delete(decal_index);
 
-#ifdef WWDEBUG
+#ifdef DEBUG_CRASHING
 	/*
 	** Some paranoid debug code: ensure all tris have valid vertex indices
 	*/

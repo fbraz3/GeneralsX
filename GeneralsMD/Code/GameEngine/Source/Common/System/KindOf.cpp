@@ -71,6 +71,9 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"HEAL_PAD",
 	"STEALTH_GARRISON",
 	"CASH_GENERATOR",
+#if RTS_GENERALS
+	"AIRFIELD",
+#endif
 	"DRAWABLE_ONLY",
 	"MP_COUNT_FOR_VICTORY",
 	"REBUILD_HOLE",
@@ -158,6 +161,7 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"DEMOTRAP",
 	"CONSERVATIVE_BUILDING",
 	"IGNORE_DOCKING_BONES",
+	"NO_ATTACK_WARNING",
 
 	nullptr
 };

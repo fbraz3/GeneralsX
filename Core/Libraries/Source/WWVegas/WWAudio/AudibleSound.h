@@ -37,7 +37,8 @@
 #pragma once
 
 // TheSuperHackers @build 09/02/2026 Conditionally include Miles (Windows only)
-#if !defined(SAGE_USE_OPENAL)
+// GeneralsX @feature fbraz 11/06/2026 Also use MilesStub when MiniAudio is enabled
+#if !defined(SAGE_USE_OPENAL) && !defined(SAGE_USE_MINIAUDIO)
 #pragma warning (push, 3)
 #include "mss.h"
 #pragma warning (pop)
@@ -46,14 +47,14 @@
 #endif
 
 //#include <malloc.h>
-#include "always.h"
-#include "vector3.h"
-#include "matrix3d.h"
-#include "RAWFILE.h"
+#include "WWLib/always.h"
+#include "WWMath/vector3.h"
+#include "WWMath/matrix3d.h"
+#include "WWLib/RAWFILE.h"
 #include "SoundSceneObj.h"
-#include "Vector.h"
-#include "wwstring.h"
-#include "definition.h"
+#include "WWLib/Vector.h"
+#include "WWLib/wwstring.h"
+#include "WWSaveLoad/definition.h"
 
 
 /////////////////////////////////////////////////////////////////////////////////

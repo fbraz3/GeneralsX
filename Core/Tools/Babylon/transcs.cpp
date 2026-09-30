@@ -28,7 +28,7 @@
 #include <string.h>
 #include <memory.h>
 
-void CreateTranslationTable ( void )
+void CreateTranslationTable ()
 {
 	int i;
 	FILE *out;
@@ -36,7 +36,7 @@ void CreateTranslationTable ( void )
 	wchar_t mb;
 	DWORD last_error;
 
-	if ( ! ( out = fopen ( "utable.c", "wt" )))
+	if ( ( out = fopen ( "utable.c", "wt" )) == nullptr)
 	{
 		return;
 	}

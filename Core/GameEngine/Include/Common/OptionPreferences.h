@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "ww3d.h"
-#include "texturefilter.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/texturefilter.h"
 
 #include "Common/UserPreferences.h"
 
@@ -69,8 +69,10 @@ public:
 	void setOnlineIPAddress(UnsignedInt IP);
 	Bool getArchiveReplaysEnabled() const;
 	Bool getAlternateMouseModeEnabled();
+	Bool getRightMouseScrollWithAlternateMouseEnabled() const;
 	Bool getRetaliationModeEnabled();
 	Bool getDoubleClickAttackMoveEnabled();
+	Int getJpegQuality() const;
 	Real getScrollFactor();
 	Bool getDrawScrollAnchor();
 	Bool getMoveScrollAnchor();
@@ -82,7 +84,6 @@ public:
 	Bool getScreenEdgeScrollEnabledInWindowedApp() const;
 	Bool getScreenEdgeScrollEnabledInFullscreenApp() const;
 	ScreenEdgeScrollMode getScreenEdgeScrollMode() const;
-	Bool getSendDelay();
 	Int getFirewallBehavior();
 	Short getFirewallPortAllocationDelta();
 	UnsignedShort getFirewallPortOverride();
@@ -128,4 +129,12 @@ public:
 	Real getResolutionFontAdjustment();
 
 	Bool getShowMoneyPerMinute() const;
+
+	Real getMaxCameraHeight() const;
+	Real getMinCameraHeight() const;
+	Real getCameraPitch() const;
+	Real getTerrainDrawDistanceScale() const;
+	Real getGameWindowTransitionSpeedMultiplier() const;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	Int getSkirmishTickRate() const;
 };

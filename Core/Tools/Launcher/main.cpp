@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 	char* extension = configName;
 	char* tempptr;
 
-	while ((tempptr = strchr(extension + 1, '.')))
+	while ((tempptr = strchr(extension + 1, '.')) != nullptr)
 	{
 		extension = tempptr;
 	}
@@ -250,7 +250,6 @@ int main(int argc, char *argv[])
 	}
 
 	// Look for patch file(s) to apply
-	bool launchgame = true;
 
 	time_t cutoffTime = 0;
 	if (hasSecondEXE)
@@ -339,7 +338,7 @@ void CreatePrimaryWin(const char *prefix)
 }
 
 
-//void DestroyPrimaryWin(void)
+//void DestroyPrimaryWin()
 //{
 //  DestroyWindow(PrimaryWin);
 //  UnregisterClass(classname);

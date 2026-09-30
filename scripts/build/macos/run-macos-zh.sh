@@ -79,6 +79,11 @@ else
     echo "WARNING: ${GAME_DIR}/fontconfig/fonts.conf not found; text rendering may fail."
 fi
 
+# GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+fi
+
 # GeneralsX @tweak BenderAI 13/03/2026 Optional shader-cache reset for terrain debugging.
 # Use GX_CLEAR_DXVK_SHADER_CACHE=1 to force fresh shader compilation.
 if [[ "${GX_CLEAR_DXVK_SHADER_CACHE:-0}" == "1" ]]; then
@@ -100,4 +105,5 @@ echo "   Fontconfig file: ${FONTCONFIG_FILE:-unset}"
 echo ""
 
 cd "${GAME_DIR}"
-exec "${GAME_BINARY}" "$@" 2>&1 | tee "${LOG_FILE}"
+"${GAME_BINARY}" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "${LOG_FILE}"
+exit ${PIPESTATUS[0]}

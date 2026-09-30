@@ -37,6 +37,10 @@ if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
 endif()
 
+# Define VCPKG feature before the project block
+# since they need to be initialized before the toolchain is
+include(cmake/config-vcpkg.cmake)
+
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
@@ -65,14 +69,6 @@ if(MINGW)
     include(cmake/reactos-atl.cmake)
     include(cmake/widl.cmake)
 endif()
-
-# Find/Add build dependencies and stubs shared by all projects
-# GeneralsX @bugfix GitHub Copilot 22/05/2026 Keep Miles/Bink stubs available on Windows x64 MinGW when legacy code paths still reference these symbols.
-if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
-    include(cmake/miles.cmake)
-    include(cmake/bink.cmake)
-endif()
-
 # Always include DX8 headers (needed for both Windows and Linux builds)
 # On Windows: min-dx8-sdk headers
 # On Linux: DXVK headers (for D3D8→Vulkan translation)
@@ -94,33 +90,26 @@ endif()
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
 include(cmake/lzhl.cmake)
+include(cmake/stb.cmake)
 
 # GeneralsX @bugfix fbraz 10/03/2026 Include openal.cmake here (before Core subdirectory)
 # so OpenAL::OpenAL target is available when Core/GameEngineDevice/CMakeLists.txt processes.
 # openal.cmake is self-guarded with if(SAGE_USE_OPENAL), so this is always safe to include.
 include(cmake/openal.cmake)
 
+# GeneralsX @feature fbraz 11/06/2026 Include miniaudio.cmake here (before Core subdirectory)
+# so miniaudio_lib target is available when Core/GameEngineDevice/CMakeLists.txt processes.
+# miniaudio.cmake is self-guarded with if(SAGE_USE_MINIAUDIO), so this is always safe to include.
+include(cmake/miniaudio.cmake)
+
 # GeneralsX @feature BenderAI 21/04/2026 libcurl for in-game update checker (SAGE_UPDATE_CHECK builds)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
 
-# GeneralsX @feature fbraz 03/05/2026 Phase 5: FFmpeg for video playback on Windows64
-# Windows64 (MinGW): FetchContent static build or prebuilt kit at $ENV{FFMPEG_HOME}
-# Linux/macOS: pkg-config detection (existing FindFFmpeg.cmake)
-include(cmake/FindFFmpeg.cmake)
-find_package(FFmpeg QUIET)
-if(FFMPEG_FOUND)
-    message(STATUS "FFmpeg found: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIRS}")
-endif()
+# GeneralsX @feature GeneralsOnline NGMP protocol dependency setup
+include(cmake/ngmp.cmake)
 
-# GeneralsX @feature fbraz 03/05/2026 Phase 5: OpenAL automatic enablement for Windows64
-# Modern Windows path (SDL3+DXVK+OpenAL+FFmpeg) - enable OpenAL by default on Windows
-if(WIN32)
-    set(SAGE_USE_OPENAL ON CACHE BOOL "Enable OpenAL on Windows (modern path)" FORCE)
-    include(cmake/openal.cmake)
-endif()
-
-# GeneralsX @feature BenderAI 21/04/2026 Deterministic math library integration
+# GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
 # gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
 # Upstream reference: Okladnoj, PR #2670
 # https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
@@ -132,12 +121,20 @@ if (IS_VS6_BUILD)
     # If there is a desire to make this work, then a fixed max sdk needs to be created.
     add_subdirectory(Dependencies/MaxSDK)
 endif()
-add_subdirectory(Dependencies/Utility)
 
-# To be removed when abandoning VC6
-if (IS_VS6_BUILD)
-    include_directories(Dependencies/Utility)
-    add_compile_options(/FIUtility/CppMacros.h)
+add_subdirectory(Dependencies/Precompiled)
+add_subdirectory(Dependencies/Utility)
+add_subdirectory(Dependencies/Bink)
+add_subdirectory(Dependencies/Miles)
+if (WIN32)
+    add_subdirectory(Dependencies/DbgHelp)
+    add_subdirectory(Dependencies/Usp10)
+else()
+    add_library(dbghelploader INTERFACE)
+    target_include_directories(dbghelploader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp)
+    target_sources(dbghelploader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp/DbgHelpGuard.cpp)
+    add_library(usp10loader INTERFACE)
+    target_include_directories(usp10loader INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Usp10)
 endif()
 
 add_subdirectory(resources)
@@ -152,13 +149,26 @@ if(UNIX AND NOT RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD/Code/CompatLib)
 endif()
 
+# SagePatch (casual QoL extras: screenshot, cursor lock, brightness, etc.)
+# Must be added before the game targets so sage_patch target exists when we
+# declare the dependency below.
+if(RTS_BUILD_OPTION_SAGE_PATCH)
+    add_subdirectory(Patches/SagePatch)
+endif()
+
 # Add main build targets
 if(RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD)
+    if(TARGET sage_patch)
+        add_dependencies(z_generals sage_patch)
+    endif()
 endif()
 
 if(RTS_BUILD_GENERALS)
     add_subdirectory(Generals)
+    if(TARGET sage_patch)
+        add_dependencies(g_generals sage_patch)
+    endif()
 endif()
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")

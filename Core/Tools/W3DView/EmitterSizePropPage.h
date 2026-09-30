@@ -22,7 +22,7 @@
 //
 
 #include "ColorBar.h"
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 
 // Forward delcarations
 class EmitterInstanceListClass;
@@ -39,7 +39,7 @@ class EmitterSizePropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterSizePropPageClass(EmitterInstanceListClass *pemitter = nullptr);
-	~EmitterSizePropPageClass();
+	~EmitterSizePropPageClass() override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterSizePropPageClass)

@@ -189,7 +189,8 @@ void DynamicMeshModel::Render(RenderInfoClass & rinfo)
 	DynamicVBAccessClass dynamic_vb(buffer_type,dynamic_fvf_type,DynamicMeshVNum);
 	const FVFInfoClass &fvf_info = dynamic_vb.FVF_Info();
 
-	{ // scope for lock
+	{
+		// scope for lock
 
 		DynamicVBAccessClass::WriteLockClass lock(&dynamic_vb);
 		unsigned char *vertices = (unsigned char*)lock.Get_Formatted_Vertex_Array();
@@ -232,7 +233,8 @@ void DynamicMeshModel::Render(RenderInfoClass & rinfo)
 	DynamicIBAccessClass dynamic_ib(buffer_type,DynamicMeshPNum * 3);
 	const TriIndex *tris = Get_Polygon_Array();
 
-	{ // scope for lock
+	{
+		// scope for lock
 
 		DynamicIBAccessClass::WriteLockClass lock(&dynamic_ib);
 		unsigned short * indices = lock.Get_Index_Array();
@@ -323,7 +325,7 @@ void DynamicMeshModel::Render(RenderInfoClass & rinfo)
 			DX8Wrapper::Set_Shader(MatDesc->Get_Single_Shader(pass));
 		}
 
-		SphereClass sphere(Vector3(0.0f,0.0f,0.0f),0.0f);
+		SphereClass sphere;
 		Get_Bounding_Sphere(&sphere);
 
 		// If no texture, shader or material arrays for this pass just draw and go to next pass

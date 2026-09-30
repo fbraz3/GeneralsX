@@ -38,7 +38,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "bmp2d.h"
-#include "pot.h"
+#include "WWMath/pot.h"
 #include "ww3d.h"
 #include "texture.h"
 #include "surfaceclass.h"

@@ -251,8 +251,8 @@ void ParticleUplinkCannonUpdate::onObjectCreated()
 	}
 
 	m_specialPowerModule = obj->getSpecialPowerModule( data->m_specialPowerTemplate );
-	m_connectorNodePosition.set( obj->getPosition() );
-	m_laserOriginPosition.set( obj->getPosition() );
+	m_connectorNodePosition.set( *obj->getPosition() );
+	m_laserOriginPosition.set( *obj->getPosition() );
 
 	//Create instances of the sounds required.
 	m_powerupSound.setEventName( data->m_powerupSoundName );
@@ -284,9 +284,9 @@ Bool ParticleUplinkCannonUpdate::initiateIntentToDoSpecialPower(const SpecialPow
 		m_startAttackFrame = TheGameLogic->getFrame();
 		m_laserStatus = LASERSTATUS_NONE;
 		m_manualTargetMode = true;
-		m_initialTargetPosition.set( targetPos );
-		m_overrideTargetDestination.set( targetPos );
-		m_currentTargetPosition.set( targetPos );
+		m_initialTargetPosition.set( *targetPos );
+		m_overrideTargetDestination.set( *targetPos );
+		m_currentTargetPosition.set( *targetPos );
 	}
 	else
 	{
@@ -294,7 +294,7 @@ Bool ParticleUplinkCannonUpdate::initiateIntentToDoSpecialPower(const SpecialPow
 
 		//All computer controlled players have automatic control -- the "S" curve.
 		UnsignedInt now = TheGameLogic->getFrame();
-		m_initialTargetPosition.set( targetPos );
+		m_initialTargetPosition.set( *targetPos );
 		m_startAttackFrame = max( now, (UnsignedInt)1 );
 		m_laserStatus = LASERSTATUS_NONE;
 		setLogicalStatus( STATUS_READY_TO_FIRE );
@@ -458,11 +458,6 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 				break;
 		}
 
-#if RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @info helmutbuhler 12/06/2025
-		// Note that this code is very brittle for retail compatibility. Inlining isFiring
-		// can cause incompatibility in some circumstances.
-#endif
 		const Bool isFiring = orbitalBirthFrame <= now && now < orbitalDeathFrame;
 		if ( isFiring )
 		{
@@ -474,18 +469,26 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 				//First determine the factor of time completed (ranges between 0.0 and 1.0)
 				Real factor = (Real)(now - orbitalBirthFrame) / (Real)(orbitalDeathFrame - orbitalBirthFrame);
 
-				//We're generating a swath that travels the points between sin( -1PI ) and sin( 1PI )
+				//We're generating a swath that travels the points between WWMath::SinTrig( -1PI ) and WWMath::SinTrig( 1PI )
 				Real radians = (factor * TWO_PI) - PI;
 				Real cxDistance = (factor * data->m_swathOfDeathDistance ) - (data->m_swathOfDeathDistance * 0.5f); //cx is cartesian x
 
 				//Now calculate the amplitude value.
-				Real height = sin( radians );
+				Real height = WWMath::SinTrig( radians );
 				Real cxHeight = height * data->m_swathOfDeathAmplitude;
 
 				Coord3D buildingToInitialTargetVector;
-				buildingToInitialTargetVector.set( &m_initialTargetPosition );
-				buildingToInitialTargetVector.sub( me->getPosition() );
+				buildingToInitialTargetVector.set( m_initialTargetPosition );
+				buildingToInitialTargetVector.sub( *me->getPosition() );
+
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+				// TheSuperHackers @info Caball009 25/09/2026 VC6 is extremely sensitive to the ordering of floating-point operations in this code section.
+				// Nudge the compiler to generate the call to Coord3D::length as sqrt((x*x + y*y) + z*z), rather than sqrt((z*z + x*x) + y*y).
+				// The latter ordering is not retail-compatible here.
+				Real targetDistance = sqrt(sqr(buildingToInitialTargetVector.x) + sqr(buildingToInitialTargetVector.y) + sqr(buildingToInitialTargetVector.z));
+#else
 				Real targetDistance = buildingToInitialTargetVector.length();
+#endif
 
 				//Calculate the point position assuming the target position is on the x axis relative to the building.
 				m_currentTargetPosition.x = cxDistance + targetDistance;
@@ -501,7 +504,7 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 				cartesianTargetVector.Normalize();
 
 				Real dotProduct = Vector2::Dot_Product( buildingToTargetVector, cartesianTargetVector );
-				dotProduct = __min( 0.99999f, __max( -0.99999f, dotProduct ) ); //Account for numerical errors.  Also, acos(-1.00000) is coming out QNAN on the superweapon general map.  Heh.
+				dotProduct = __min( 0.99999f, __max( -0.99999f, dotProduct ) ); //Account for numerical errors.  Also, WWMath::ACosTrig(-1.00000) is coming out QNAN on the superweapon general map.  Heh.
 
 				Real angle = (Real)ACos( dotProduct );
 
@@ -533,7 +536,7 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 
 				//Calculate the distance from our current position to our target dest.
 				Coord3D vector = m_overrideTargetDestination;
-				vector.sub( &m_currentTargetPosition );
+				vector.sub( m_currentTargetPosition );
 				Real distance = vector.length();
 				if( distance < speed )
 				{
@@ -554,7 +557,7 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 			m_currentTargetPosition.z = TheTerrainLogic->getGroundHeight( m_currentTargetPosition.x, m_currentTargetPosition.y );
 
 			Coord3D orbitPosition;
-			orbitPosition.set( &m_currentTargetPosition );
+			orbitPosition.set( m_currentTargetPosition );
 			orbitPosition.z += ORBITAL_BEAM_Z_OFFSET;
 
 			Real scorchRadius = 0.0f;
@@ -849,11 +852,15 @@ void ParticleUplinkCannonUpdate::createConnectorFlare( IntensityTypes intensity 
 	if( str.isNotEmpty() )
 	{
 		const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( str );
-		ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
-		if( system )
+		ParticleSystem *system;
+		if( tmp )
 		{
-			m_connectorSystemID = system->getSystemID();
-			system->setPosition( &m_connectorNodePosition );
+			system = TheParticleSystemManager->createParticleSystem( tmp );
+			if( system )
+			{
+				m_connectorSystemID = system->getSystemID();
+				system->setPosition( &m_connectorNodePosition );
+			}
 		}
 	}
 }
@@ -881,11 +888,14 @@ void ParticleUplinkCannonUpdate::createLaserBaseFlare( IntensityTypes intensity 
 	if( str.isNotEmpty() )
 	{
 		const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( str );
-		ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
-		if( system )
+		if( tmp )
 		{
-			m_laserBaseSystemID = system->getSystemID();
-			system->setPosition( &m_laserOriginPosition );
+			ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
+			if( system )
+			{
+				m_laserBaseSystemID = system->getSystemID();
+				system->setPosition( &m_laserOriginPosition );
+			}
 		}
 	}
 }
@@ -918,7 +928,7 @@ void ParticleUplinkCannonUpdate::createGroundToOrbitLaser( UnsignedInt growthFra
 				if( update )
 				{
 					Coord3D orbitPosition;
-					orbitPosition.set( &m_laserOriginPosition );
+					orbitPosition.set( m_laserOriginPosition );
 					orbitPosition.z += ORBITAL_BEAM_Z_OFFSET;
 					update->initLaser( nullptr, &m_laserOriginPosition, &orbitPosition, growthFrames );
 				}
@@ -957,7 +967,7 @@ void ParticleUplinkCannonUpdate::createOrbitToTargetLaser( UnsignedInt growthFra
 				if( update )
 				{
 					Coord3D orbitPosition;
-					orbitPosition.set( &m_initialTargetPosition );
+					orbitPosition.set( m_initialTargetPosition );
 					orbitPosition.z += ORBITAL_BEAM_Z_OFFSET;
 					update->initLaser( nullptr, &orbitPosition, &m_initialTargetPosition, growthFrames );
 				}

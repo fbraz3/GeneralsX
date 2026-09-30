@@ -176,7 +176,7 @@ void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, ...) {
 
 **Action Plan** (Execute Immediately):
 ```bash
-cd /Users/felipebraz/PhpstormProjects/pessoal/generals-linux
+cd ~/GeneralsX
 
 # Add githubawn remote
 git remote add githubawn ./references/githubawn-nocdpatch

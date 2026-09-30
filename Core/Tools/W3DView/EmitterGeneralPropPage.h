@@ -22,7 +22,7 @@
 //
 
 #include "resource.h"
-#include "shader.h"
+#include "WW3D2/shader.h"
 
 // Forward delcarations
 class EmitterInstanceListClass;
@@ -39,7 +39,7 @@ class EmitterGeneralPropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterGeneralPropPageClass (EmitterInstanceListClass *pemitter_list = nullptr);
-	~EmitterGeneralPropPageClass ();
+	~EmitterGeneralPropPageClass () override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterGeneralPropPageClass)

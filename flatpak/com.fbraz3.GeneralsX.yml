@@ -35,6 +35,36 @@ modules:
         url: https://github.com/g-truc/gli.git
         branch: master
 
+  - name: protobuf
+    buildsystem: cmake-ninja
+    config-opts:
+      - -Dprotobuf_BUILD_TESTS=OFF
+      - -Dprotobuf_BUILD_SHARED_LIBS=ON
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_CXX_STANDARD=17
+    sources:
+      - type: git
+        url: https://github.com/protocolbuffers/protobuf.git
+        tag: v25.3
+        submodules: true
+
+  - name: gamenetworkingsockets
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_TESTS=OFF
+      - -DBUILD_EXAMPLES=OFF
+      - -DBUILD_TOOLS=OFF
+      - -DENABLE_ICE=ON
+      - -DUSE_CRYPTO=OpenSSL
+      - -DBUILD_SHARED_LIB=ON
+      - -DBUILD_STATIC_LIB=OFF
+    sources:
+      - type: git
+        url: https://github.com/ValveSoftware/GameNetworkingSockets.git
+        tag: v1.6.0
+      - type: patch
+        path: ../cmake/patches/gns_ice_thinker_loop.patch
+
   - name: generalsx
     buildsystem: simple
     build-commands:
@@ -57,6 +87,7 @@ modules:
           -DSAGE_USE_OPENAL=ON \
           -DSAGE_USE_GLM=ON \
           -DSAGE_UPDATE_CHECK=ON \
+          -DRTS_BUILD_OPTION_SAGE_PATCH=ON \
           -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
           -DFETCHCONTENT_UPDATES_DISCONNECTED=ON \
           -DFETCHCONTENT_SOURCE_DIR_DXVK=/run/build/generalsx/dxvk-src \
@@ -64,21 +95,28 @@ modules:
           -DFETCHCONTENT_SOURCE_DIR_SDL3_IMAGE=/run/build/generalsx/sdl3-image-src \
           -DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/run/build/generalsx/openal-soft-src \
           -DFETCHCONTENT_SOURCE_DIR_GAMESPY=/run/build/generalsx/gamespy-src \
-          -DFETCHCONTENT_SOURCE_DIR_LZHL=/run/build/generalsx/lzhl-src/CompLibHeader
+          -DFETCHCONTENT_SOURCE_DIR_LZHL=/run/build/generalsx/lzhl-src/CompLibHeader \
+          -DFETCHCONTENT_SOURCE_DIR_GAMEMATH=/run/build/generalsx/gamemath-src \
+          -DFETCHCONTENT_SOURCE_DIR_STB=/run/build/generalsx/stb-src
       - cmake --build build-flatpak --target g_generals -j "${FLATPAK_BUILDER_N_JOBS:-4}"
+      - cmake --build build-flatpak --target sage_patch -j "${FLATPAK_BUILDER_N_JOBS:-4}" || true
       - install -Dm755 build-flatpak/Generals/GeneralsX /app/bin/GeneralsX
       - install -Dm755 flatpak/run-flatpak-generals.sh /app/bin/generalsx-wrapper.sh
       - install -Dm644 flatpak/com.fbraz3.GeneralsX.desktop /app/share/applications/com.fbraz3.GeneralsX.desktop
       - install -Dm644 flatpak/com.fbraz3.GeneralsX.metainfo.xml /app/share/metainfo/com.fbraz3.GeneralsX.metainfo.xml
       - install -Dm644 flatpak/generalsx_icon_512.png /app/share/icons/hicolor/512x512/apps/com.fbraz3.GeneralsX.png
       - install -Dm644 resources/dxvk/dxvk.conf /app/share/generalsx/dxvk.conf
+      - install -d /app/share/fonts
+      - if [ -d assets/fonts ]; then cp assets/fonts/*.ttf assets/fonts/LICENSE.liberation assets/fonts/LICENSE.fontawesome /app/share/fonts/; fi
       - install -d /app/lib
       - cp -a /run/build/generalsx/dxvk-src/lib/libdxvk_d3d8.so* /app/lib/
       - cp -a /run/build/generalsx/dxvk-src/lib/libdxvk_d3d9.so* /app/lib/
-      - cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/
-      - cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/
-      - cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/
+      - if [ -d build-flatpak/_deps/sdl3-build ]; then cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/; fi
+      - if [ -d build-flatpak/_deps/sdl3_image-build ]; then cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/; fi
+      - if [ -d build-flatpak/_deps/openal_soft-build ]; then cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/; fi
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
+      # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
+      - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
       - |
         for f in /app/lib/lib*.so.*; do
           b="$(basename "$f")"
@@ -101,15 +139,47 @@ modules:
 
         export DXVK_WSI_DRIVER="SDL3"
         export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
+
+        # SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock,
+        # Ctrl+PgUp/Dn brightness, Ctrl+1..5 window snap). Loaded via LD_PRELOAD
+        # only if the .so is present in /app/lib.
+        if [[ -f /app/lib/libsage_patch.so && "${SAGE_PATCH_DISABLED:-0}" != "1" ]]; then
+          if [[ -n "${LD_PRELOAD:-}" ]]; then
+            export LD_PRELOAD="/app/lib/libsage_patch.so:${LD_PRELOAD}"
+          else
+            export LD_PRELOAD="/app/lib/libsage_patch.so"
+          fi
+        fi
+        
+        # DXVK HUD is disabled by default because Generals has a native FPS counter.
         export DXVK_HUD="${DXVK_HUD:-0}"
 
         # Keep Vulkan ICD selection to the runtime/driver defaults unless user explicitly overrides.
+
+        # GeneralsX @bugfix felipebraz 19/09/2026 Warn if host NVIDIA GPU is present but Flatpak GL extension is missing (Issue #292)
+        if [[ -e /dev/nvidiactl || -e /dev/nvidia0 ]]; then
+          icd_roots=()
+          for root in /usr/lib* /usr/share/vulkan/icd.d /etc/vulkan/icd.d; do
+            if [[ -d "$root" ]]; then
+              icd_roots+=("$root")
+            fi
+          done
+          if (( ${#icd_roots[@]} == 0 )) || [[ -z "$(find "${icd_roots[@]}" -name "*nvidia*.json" -print -quit 2>/dev/null)" ]]; then
+            echo "WARNING: NVIDIA GPU detected on host, but matching org.freedesktop.Platform.GL.nvidia extension was not found inside the Flatpak sandbox." >&2
+            echo "WARNING: If startup aborts or crashes in Vulkan initialization, run 'flatpak update' on your host to install the required driver extension." >&2
+          fi
+        fi
 
         if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
           export ALSOFT_DISABLE_CPU_EXTS="all"
         fi
         if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
           export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
+        fi
+
+        # GeneralsX @bugfix felipebraz 16/09/2026 Honor user-supplied CNC_GENERALS_PATH if provided (Issue #305)
+        if [[ -n "${CNC_GENERALS_PATH:-}" && -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
+          export CNC_GENERALS_INSTALLPATH="${CNC_GENERALS_PATH}"
         fi
 
         if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
@@ -129,7 +199,15 @@ modules:
         fi
 
         cd "${CNC_GENERALS_INSTALLPATH}"
-        exec /app/bin/GeneralsX "$@"
+        if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+          export CNC_GENERALS_PATH="${CNC_GENERALS_INSTALLPATH}"
+        fi
+
+        # SagePatch INI override: the engine now auto-creates SagePatch.ini with
+        # defaults in the user data directory on first run.
+
+        /app/bin/GeneralsX -setCwd "${CNC_GENERALS_INSTALLPATH}" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+        exit ${PIPESTATUS[0]}
         EOF
       - chmod +x /app/bin/run.sh
     sources:
@@ -163,3 +241,11 @@ modules:
         url: https://github.com/TheSuperHackers/lzhl-1.0
         commit: dfd96e2ca64adaddb35dd4ebadd6add7d5586783
         dest: lzhl-src/CompLibHeader
+      - type: git
+        url: https://github.com/TheSuperHackers/GameMath.git
+        commit: 59f7ccd494f7e7c916a784ac26ef266f9f09d78d
+        dest: gamemath-src
+      - type: git
+        url: https://github.com/TheSuperHackers/stb.git
+        commit: 5c205738c191bcb0abc65c4febfa9bd25ff35234
+        dest: stb-src

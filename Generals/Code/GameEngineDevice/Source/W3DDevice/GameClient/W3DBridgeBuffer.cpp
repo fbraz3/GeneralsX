@@ -49,7 +49,7 @@
 #include "W3DDevice/GameClient/W3DBridgeBuffer.h"
 
 #include "W3DDevice/GameClient/W3DAssetManager.h"
-#include <texture.h>
+#include <WW3D2/texture.h>
 #include "Common/GlobalData.h"
 #include "Common/RandomValue.h"
 #include "Common/ThingFactory.h"
@@ -255,7 +255,7 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	Int i;
 	for (i=0; i<pObj->Get_Num_Sub_Objects(); i++) {
 		RenderObjClass *pSub = pObj->Get_Sub_Object(i);
-		Matrix3D mtx = pSub->Get_Transform();
+		const Matrix3D& mtx = pSub->Get_Transform();
 		if (0==strnicmp(left, pSub->Get_Name(), strlen(left))) {
 			m_leftMtx = mtx;
 			strlcpy(left, pSub->Get_Name(), ARRAY_SIZE(left));
@@ -518,13 +518,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	if (m_sectionMesh == nullptr) {
 		numV = getModelVerticesFixed(destination_vb, *curVertexP, m_leftMtx, m_leftMesh, pLightsIterator);
 		if (!numV)
-		{	//not enough room for vertices
+		{
+			//not enough room for vertices
 			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 			return;
 		}
 		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 		if (!numI)
-		{	//not enough room for indices
+		{
+			//not enough room for indices
 			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 			return;
 		}
@@ -568,13 +570,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	numV = getModelVertices(destination_vb, *curVertexP, xOffset, vec, vecNormal, vecZ, m_start,
 		m_leftMtx, m_leftMesh, pLightsIterator);
 	if (!numV)
-	{	//not enough room for vertices
+	{
+		//not enough room for vertices
 		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 		return;
 	}
 	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 	if (!numI)
-	{	//not enough room for indices
+	{
+		//not enough room for indices
 		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 		return;
 	}
@@ -589,13 +593,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 		numV = getModelVertices(destination_vb, *curVertexP, xOffset+i*spanLength, vec, vecNormal, vecZ, m_start,
 			m_sectionMtx, m_sectionMesh, pLightsIterator);
 		if (!numV)
-		{	//not enough room for vertices
+		{
+			//not enough room for vertices
 			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 			return;
 		}
 		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_sectionMesh);
 		if (!numI)
-		{	//not enough room for indices
+		{
+			//not enough room for indices
 			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 			return;
 		}
@@ -609,13 +615,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	numV = getModelVertices(destination_vb, *curVertexP, xOffset+(numSpans-1)*spanLength, vec, vecNormal, vecZ, m_start,
 		m_rightMtx, m_rightMesh, pLightsIterator);
 	if (!numV)
-	{	//not enough room for vertices
+	{
+		//not enough room for vertices
 		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 		return;
 	}
 	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_rightMesh);
 	if (!numI)
-	{	//not enough room for indices
+	{
+		//not enough room for indices
 		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 		return;
 	}
@@ -1161,7 +1169,8 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	if (!wireframe && cloudTexture)
-	{	//Force a cloud texture projection into stage 1
+	{
+		//Force a cloud texture projection into stage 1
 		W3DShaderManager::setTexture(1,cloudTexture);
 		W3DShaderManager::setShader(W3DShaderManager::ST_CLOUD_TEXTURE,1);
 	}

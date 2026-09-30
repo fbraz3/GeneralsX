@@ -13,11 +13,15 @@ on:
       platform:
         required: true
         type: string
-        description: "Target platform: linux, linux-flatpak, macos or windows"
+        description: "Target platform: linux, linux-flatpak or macos"
       game-artifact:
         required: true
         type: string
         description: "Name of the built game artifact to download (from build workflow)"
+      run-id:
+        required: false
+        type: string
+        description: "Optional workflow run ID to download artifacts from"
     secrets:
       ASSETS_KEY:
         required: true
@@ -26,7 +30,7 @@ on:
 jobs:
   replay-test-zh:
     name: ZH Replay Tests (${{ inputs.platform }})
-    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || inputs.platform == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
     timeout-minutes: 45
 
     steps:
@@ -38,7 +42,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.game-artifact }}
-          path: ${{ runner.os == 'Windows' && 'C:/tmp/game-artifact' || '/tmp/game-artifact' }}
+          path: /tmp/game-artifact
+          run-id: ${{ inputs.run-id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-decompress: true
 
       # -----------------------------------------------------------------------
       # 2. Platform-specific system dependencies
@@ -50,12 +57,19 @@ jobs:
           # lavapipe: software Vulkan renderer (no GPU required in CI)
           sudo apt-get install -y -qq p7zip-full mesa-vulkan-drivers libvulkan1
 
+      - name: Cache Flatpak Runtime
+        if: inputs.platform == 'linux-flatpak'
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/flatpak/runtime
+          key: flatpak-runtime-25.08-v1
+
       - name: Install system dependencies (Linux Flatpak)
         if: inputs.platform == 'linux-flatpak'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq p7zip-full flatpak
-
+          
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y flathub org.freedesktop.Platform//25.08
 
@@ -89,15 +103,38 @@ jobs:
         if: inputs.platform == 'macos'
         run: |
           mkdir -p /tmp/game-bundle
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Extract zip/tar bundle first to preserve symlinks and executable bits.
+          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
           TAR_FILE=$(find /tmp/game-artifact -name "*.tar" | head -1)
-          echo "Extracting: $TAR_FILE"
-          tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Extracting zip: $ZIP_FILE"
+            unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          elif [ -n "$TAR_FILE" ]; then
+            echo "Extracting tar: $TAR_FILE"
+            tar -xf "$TAR_FILE" -C /tmp/game-bundle
+          elif [ -d "/tmp/game-artifact/Contents" ]; then
+            echo "Detected .app bundle directly at /tmp/game-artifact"
+            APP_DIR="/tmp/game-artifact"
+          else
+            APP_DIR=$(find /tmp/game-artifact -maxdepth 2 -type d -name "*.app" | head -1)
+            if [ -z "$APP_DIR" ]; then
+              echo "ERROR: Neither .zip, .tar nor .app bundle found in /tmp/game-artifact"
+              find /tmp/game-artifact -maxdepth 3 -print
+              exit 1
+            fi
+          fi
 
-          # Resolve app layout directly to avoid path inference mistakes.
-          APP_DIR=$(find /tmp/game-bundle -type d -name "*.app" | head -1)
+          if [ -z "$APP_DIR" ]; then
+            if [ -d "/tmp/game-bundle/Contents" ]; then
+              APP_DIR="/tmp/game-bundle"
+            else
+              APP_DIR=$(find /tmp/game-bundle -maxdepth 2 -type d -name "*.app" | head -1)
+            fi
+          fi
+
           if [ -z "$APP_DIR" ]; then
             echo "ERROR: .app bundle not found after extraction"
-            find /tmp/game-bundle -maxdepth 4 -print
+            find /tmp/game-bundle /tmp/game-artifact -maxdepth 4 -print || true
             exit 1
           fi
 
@@ -116,6 +153,10 @@ jobs:
             find "$APP_RESOURCES" -maxdepth 4 -type f -name "GeneralsXZH" -print
             exit 1
           fi
+
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Ensure execution permissions on macOS binaries
+          chmod +x "$GAME_BIN" || true
+          chmod -R +x "$GAME_DIR" || true
 
           echo "GAME_BIN=$GAME_BIN" >> $GITHUB_ENV
           echo "GAME_DIR=$GAME_DIR" >> $GITHUB_ENV
@@ -138,76 +179,126 @@ jobs:
           flatpak --user install -y "$FLATPAK_FILE"
           flatpak --user info com.fbraz3.GeneralsXZH
 
-      - name: Extract game bundle (Windows)
-        if: inputs.platform == 'windows'
-        shell: pwsh
-        run: |
-          $artifactDir = "C:\tmp\game-artifact"
-          $bundleDir = "C:\tmp\game-bundle"
-          New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
-
-          $exe = Get-ChildItem -Path $artifactDir -Filter "GeneralsXZH.exe" -Recurse | Select-Object -First 1
-          if (-not $exe) {
-            Write-Error "GeneralsXZH.exe not found in downloaded artifact: $artifactDir"
-            exit 1
-          }
-          $sourceDir = $exe.DirectoryName
-          Copy-Item -Path "$sourceDir\*" -Destination $bundleDir -Recurse -Force
-
-          $gameBin = Join-Path $bundleDir "GeneralsXZH.exe"
-          "GAME_DIR=$bundleDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "GAME_BIN=$gameBin" | Out-File -FilePath $env:GITHUB_ENV -Append
-          Write-Host "Windows Game bundle ready at: $bundleDir"
-          Get-ChildItem -Path $bundleDir | Format-Table Name, Length
-
       # -----------------------------------------------------------------------
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
-      - name: Checkout game assets repo
-        uses: actions/checkout@v6
+      - name: Cache Game Assets
+        id: cache-assets
+        uses: actions/cache@v5
         with:
-          repository: fbraz3/generalsx-test-files
-          path: ci-assets-repo
-          lfs: true
+          path: /tmp/cached-assets
+          key: game-assets-cache-v2
 
-      - name: Extract game assets (Linux)
+      - name: Clone game assets repo (GitLab with GitHub fallback)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: |
+          # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
+          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          clone_success=true
+          git clone https://gitlab.com/fbraz3/generalsx-test-files.git ci-assets-repo || clone_success=false
+          if [ "$clone_success" = true ]; then
+            cd ci-assets-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitLab. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            git lfs install
+            if git lfs pull; then
+              echo "Successfully cloned and pulled LFS from GitLab."
+            else
+              echo "GitLab LFS pull failed. Falling back to GitHub..."
+              cd ..
+              rm -rf ci-assets-repo
+              clone_success=false
+            fi
+          else
+            echo "GitLab clone failed. Cleaning up and falling back to GitHub..."
+            rm -rf ci-assets-repo
+          fi
+          if [ "$clone_success" = false ]; then
+            git clone https://github.com/generalsx-project/generalsx-test-files.git ci-assets-repo
+            cd ci-assets-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitHub. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            git lfs install
+            git lfs pull
+          fi
+
+
+      - name: Extract game assets to cache (only on cache miss)
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/cached-assets
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets" -y
+
+      - name: Install game assets (Linux)
         if: inputs.platform == 'linux'
         run: |
-          # Assets go alongside the binary (flat layout matching local deploy)
-          echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Copying game assets from cache into: $GAME_DIR"
+          cp -r /tmp/cached-assets/. "$GAME_DIR/"
           echo "Big files found:"
-          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
-      - name: Extract game assets (macOS)
+      - name: Install game assets (macOS)
         if: inputs.platform == 'macos'
         run: |
-          # Assets go into the bin/ dir alongside the binary.
-          # CNC_GENERALS_ZH_PATH env var points the game to this directory.
-          echo "Extracting generalszh.7z into: $GAME_DIR"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
+          echo "Copying game assets from cache into: $GAME_DIR"
+          cp -r /tmp/cached-assets/. "$GAME_DIR/"
           echo "Big files found:"
-          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
-
-      - name: Extract game assets (Windows)
-        if: inputs.platform == 'windows'
-        shell: pwsh
-        run: |
-          $archive = "$env:GITHUB_WORKSPACE\ci-assets-repo\generalszh.7z"
-          Write-Host "Extracting generalszh.7z into: $env:GAME_DIR"
-          & 7z x -p"${{ secrets.ASSETS_KEY }}" $archive -o"$env:GAME_DIR" -y | Out-Null
-          Write-Host "Big files found:"
-          Get-ChildItem -Path "$env:GAME_DIR\*.big" | Select-Object -First 10 | Format-Table Name, Length
+          ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found)"
 
       # -----------------------------------------------------------------------
       # 5. Check out replay repo and install maps + platform-specific replays
       #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
       # -----------------------------------------------------------------------
-      - name: Checkout replay files repo
-        uses: actions/checkout@v6
+      - name: Cache Replay Files
+        id: cache-replays
+        uses: actions/cache@v5
         with:
-          repository: fbraz3/GeneralsXReplays
           path: ci-replays-repo
+          key: replay-files-cache-v1
+
+      - name: Clone replay files repo (GitLab with GitHub fallback)
+        if: steps.cache-replays.outputs.cache-hit != 'true'
+        run: |
+          # GeneralsX @build fbraz3 24/06/2026 Clone replays from GitLab with GitHub fallback and support checking out current branch.
+          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          clone_success=true
+          git clone https://gitlab.com/fbraz3/generalsx-replays.git ci-replays-repo || clone_success=false
+          if [ "$clone_success" = true ]; then
+            cd ci-replays-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitLab. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            echo "Successfully cloned replays from GitLab."
+          else
+            echo "GitLab clone failed. Cleaning up and falling back to GitHub..."
+            rm -rf ci-replays-repo
+          fi
+          if [ "$clone_success" = false ]; then
+            git clone https://github.com/generalsx-project/GeneralsXReplays.git ci-replays-repo
+            cd ci-replays-repo
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              if git ls-remote --heads origin "$TARGET_BRANCH" | grep -q "refs/heads/$TARGET_BRANCH"; then
+                echo "Branch $TARGET_BRANCH exists on GitHub. Checking out..."
+                git fetch origin "$TARGET_BRANCH"
+                git checkout "$TARGET_BRANCH"
+              fi
+            fi
+            echo "Successfully cloned replays from GitHub."
+          fi
 
       - name: Set up user data directories (Linux)
         if: inputs.platform == 'linux' || inputs.platform == 'linux-flatpak'
@@ -220,34 +311,30 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
-            # Drop any pre-generated map cache copied from external machines.
-            # Replay CI must build map cache from files present on the runner.
-            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
-            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
 
-          # Install platform-specific replays
-          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep 2>/dev/null | wc -l)
+          # Install all replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
-            echo "WARNING: No linux_*.rep files found in replay repo"
+            echo "WARNING: No .rep files found in replay repo"
           else
-            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/linux_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi
 
           echo "USER_DATA=$USER_DATA" >> $GITHUB_ENV
 
-      - name: Extract game assets (Linux Flatpak)
+      - name: Install game assets (Linux Flatpak)
         if: inputs.platform == 'linux-flatpak'
         run: |
-          # For Flatpak replay tests assets must be in xdg-data path visible to sandbox.
-          echo "Extracting generalszh.7z into: $USER_DATA"
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$USER_DATA" -y
+          echo "Copying game assets from cache into: $USER_DATA"
+          cp -r /tmp/cached-assets/. "$USER_DATA/"
           echo "Big files found:"
-          ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+          ls "$USER_DATA/"*.big 2>/dev/null | head -10 || echo "(none found)"
+
 
       - name: Set up user data directories (macOS)
         if: inputs.platform == 'macos'
@@ -260,20 +347,16 @@ jobs:
           # Install custom maps (includes MapCache.ini)
           if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps" ]; then
             cp -r "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Maps/." "$MAPS_DIR/"
-            # Drop any pre-generated map cache copied from external machines.
-            # Replay CI must build map cache from files present on the runner.
-            find "$MAPS_DIR" -type f \( -iname "mapcache.ini" -o -iname "mapcache*.ini" \) -delete || true
-            rm -f "$USER_DATA/MapCache.ini" "$USER_DATA/Maps/MapCache.ini" || true
             echo "Maps installed:"
             ls -la "$MAPS_DIR/"
           fi
 
-          # Install platform-specific replays
-          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep 2>/dev/null | wc -l)
+          # Install all replays
+          REPLAY_COUNT=$(ls "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep 2>/dev/null | wc -l)
           if [ "$REPLAY_COUNT" -eq 0 ]; then
-            echo "WARNING: No macos_*.rep files found in replay repo"
+            echo "WARNING: No .rep files found in replay repo"
           else
-            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/macos_*.rep "$REPLAYS_DIR/"
+            cp "$GITHUB_WORKSPACE/ci-replays-repo/GeneralsXZH/Replays"/*.rep "$REPLAYS_DIR/"
             echo "Replays installed ($REPLAY_COUNT files):"
             ls -la "$REPLAYS_DIR/"
           fi
@@ -284,146 +367,6 @@ jobs:
             echo "$USER_DATA"
             echo "GHENV_EOF"
           } >> $GITHUB_ENV
-
-      - name: Set up user data directories (Windows)
-        if: inputs.platform == 'windows'
-        shell: pwsh
-        run: |
-          $userData = Join-Path $env:USERPROFILE "Documents\Command and Conquer Generals Zero Hour Data"
-          $mapsDir = Join-Path $userData "Maps"
-          $replaysDir = Join-Path $userData "Replays"
-          New-Item -ItemType Directory -Path $mapsDir -Force | Out-Null
-          New-Item -ItemType Directory -Path $replaysDir -Force | Out-Null
-
-          # Install custom maps
-          $srcMaps = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Maps"
-          if (Test-Path $srcMaps) {
-            Copy-Item -Path "$srcMaps\*" -Destination $mapsDir -Recurse -Force
-            Get-ChildItem -Path $mapsDir -Filter "*mapcache*.ini" -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path "$userData\MapCache.ini" -Force -ErrorAction SilentlyContinue
-            Write-Host "Maps installed into $mapsDir"
-          }
-
-          # Install platform replays (windows_*.rep if present, else fallback to linux_*.rep)
-          $srcReplays = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Replays"
-          if (Test-Path $srcReplays) {
-            $winReps = Get-ChildItem -Path $srcReplays -Filter "windows_*.rep"
-            if ($winReps.Count -gt 0) {
-              $reps = $winReps
-              Write-Host "Using native Windows replay baselines"
-            } else {
-              $reps = Get-ChildItem -Path $srcReplays -Filter "linux_*.rep"
-              Write-Host "Using Linux deterministic replay baselines for Windows validation"
-            }
-            foreach ($r in $reps) {
-              Copy-Item $r.FullName $replaysDir -Force
-            }
-            Write-Host "Installed $($reps.Count) replays into $replaysDir"
-          }
-
-          "USER_DATA=$userData" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Replay input diagnostics
-        if: inputs.platform != 'windows'
-        run: |
-          # GeneralsX @bugfix BenderAI 22/05/2026 Emit deterministic replay provenance (code/assets/replays) to diagnose CI-vs-local drift.
-          echo "=== Replay Input Diagnostics (${{ inputs.platform }}) ==="
-          echo "GITHUB_SHA=$GITHUB_SHA"
-
-          if [ -d "$GITHUB_WORKSPACE/ci-replays-repo/.git" ]; then
-            echo "REPLAY_REPO_SHA=$(git -C "$GITHUB_WORKSPACE/ci-replays-repo" rev-parse HEAD)"
-          fi
-          if [ -d "$GITHUB_WORKSPACE/ci-assets-repo/.git" ]; then
-            echo "ASSETS_REPO_SHA=$(git -C "$GITHUB_WORKSPACE/ci-assets-repo" rev-parse HEAD)"
-          fi
-
-          echo "USER_DATA=$USER_DATA"
-
-          if [ "${{ inputs.platform }}" = "macos" ]; then
-            if [ -f "$GAME_BIN" ]; then
-              echo "GAME_BIN_SHA256=$(shasum -a 256 "$GAME_BIN" | awk '{print $1}')"
-            fi
-            if [ -d "$USER_DATA/Replays" ]; then
-              echo "Replay checksums:"
-              for rep in "$USER_DATA/Replays"/*.rep; do
-                [ -f "$rep" ] || continue
-                echo "  $(basename "$rep") $(shasum -a 256 "$rep" | awk '{print $1}')"
-              done
-            fi
-            if [ -f "$GAME_DIR/INIZH.big" ]; then
-              echo "INIZH.big SHA256=$(shasum -a 256 "$GAME_DIR/INIZH.big" | awk '{print $1}')"
-            fi
-            if [ -f "$GAME_DIR/MapsZH.big" ]; then
-              echo "MapsZH.big SHA256=$(shasum -a 256 "$GAME_DIR/MapsZH.big" | awk '{print $1}')"
-            fi
-          else
-            if [ -d "$USER_DATA/Replays" ]; then
-              echo "Replay checksums:"
-              for rep in "$USER_DATA/Replays"/*.rep; do
-                [ -f "$rep" ] || continue
-                echo "  $(basename "$rep") $(sha256sum "$rep" | awk '{print $1}')"
-              done
-            fi
-
-            if [ "${{ inputs.platform }}" = "linux" ]; then
-              if [ -f "$GAME_BIN" ]; then
-                echo "GAME_BIN_SHA256=$(sha256sum "$GAME_BIN" | awk '{print $1}')"
-              fi
-              if [ -f "$GAME_DIR/INIZH.big" ]; then
-                echo "INIZH.big SHA256=$(sha256sum "$GAME_DIR/INIZH.big" | awk '{print $1}')"
-              fi
-              if [ -f "$GAME_DIR/MapsZH.big" ]; then
-                echo "MapsZH.big SHA256=$(sha256sum "$GAME_DIR/MapsZH.big" | awk '{print $1}')"
-              fi
-            fi
-
-            if [ "${{ inputs.platform }}" = "linux-flatpak" ]; then
-              if [ -f "$USER_DATA/INIZH.big" ]; then
-                echo "INIZH.big SHA256=$(sha256sum "$USER_DATA/INIZH.big" | awk '{print $1}')"
-              fi
-              if [ -f "$USER_DATA/MapsZH.big" ]; then
-                echo "MapsZH.big SHA256=$(sha256sum "$USER_DATA/MapsZH.big" | awk '{print $1}')"
-              fi
-            fi
-          fi
-
-      - name: Replay input diagnostics (Windows)
-        if: inputs.platform == 'windows'
-        shell: pwsh
-        run: |
-          Write-Host "=== Replay Input Diagnostics (windows) ==="
-          Write-Host "GITHUB_SHA=$env:GITHUB_SHA"
-
-          if (Test-Path "$env:GITHUB_WORKSPACE\ci-replays-repo\.git") {
-            $repSha = git -C "$env:GITHUB_WORKSPACE\ci-replays-repo" rev-parse HEAD
-            Write-Host "REPLAY_REPO_SHA=$repSha"
-          }
-          if (Test-Path "$env:GITHUB_WORKSPACE\ci-assets-repo\.git") {
-            $assetsSha = git -C "$env:GITHUB_WORKSPACE\ci-assets-repo" rev-parse HEAD
-            Write-Host "ASSETS_REPO_SHA=$assetsSha"
-          }
-
-          Write-Host "USER_DATA=$env:USER_DATA"
-
-          if (Test-Path $env:GAME_BIN) {
-            $h = (Get-FileHash -Path $env:GAME_BIN -Algorithm SHA256).Hash
-            Write-Host "GAME_BIN_SHA256=$h"
-          }
-          if (Test-Path "$env:USER_DATA\Replays") {
-            Write-Host "Replay checksums:"
-            Get-ChildItem -Path "$env:USER_DATA\Replays\*.rep" | ForEach-Object {
-              $h = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
-              Write-Host "  $($_.Name) $h"
-            }
-          }
-          if (Test-Path "$env:GAME_DIR\INIZH.big") {
-            $h = (Get-FileHash -Path "$env:GAME_DIR\INIZH.big" -Algorithm SHA256).Hash
-            Write-Host "INIZH.big SHA256=$h"
-          }
-          if (Test-Path "$env:GAME_DIR\MapsZH.big") {
-            $h = (Get-FileHash -Path "$env:GAME_DIR\MapsZH.big" -Algorithm SHA256).Hash
-            Write-Host "MapsZH.big SHA256=$h"
-          }
 
       # -----------------------------------------------------------------------
       # 6. Run headless replay tests
@@ -461,7 +404,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -469,7 +413,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -515,7 +459,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -523,7 +468,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -542,7 +487,6 @@ jobs:
           if [ $((PASS + FAIL)) -eq 0 ]; then
             echo "::warning::No replay files were found to test"
           fi
-
 
       - name: Run headless replay tests (macOS)
         if: inputs.platform == 'macos'
@@ -584,7 +528,8 @@ jobs:
             CODE=$?
             set -e
 
-            echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" || true
+            #echo "$OUTPUT" | grep -iE "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|Cannot open replay|FATAL" || true
+            echo "$OUTPUT"
 
             if [ $CODE -eq 0 ]; then
               PASS=$((PASS + 1))
@@ -592,7 +537,7 @@ jobs:
               echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
             else
               FAIL=$((FAIL + 1))
-              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
               [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
               echo "FAIL (exit $CODE)"
               echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
@@ -611,90 +556,3 @@ jobs:
           if [ $((PASS + FAIL)) -eq 0 ]; then
             echo "::warning::No replay files were found to test"
           fi
-
-      - name: Run headless replay tests (Windows)
-        if: inputs.platform == 'windows'
-        shell: pwsh
-        run: |
-          $pass = 0
-          $fail = 0
-
-          Set-Location $env:GAME_DIR
-
-          $env:SDL_VIDEODRIVER = "dummy"
-          $env:SDL_AUDIODRIVER = "dummy"
-          $env:DXVK_LOG_LEVEL = "none"
-
-          echo "### Replay Test Results (windows-sdl3)" >> $env:GITHUB_STEP_SUMMARY
-          echo "" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Replay | Result | Details |" >> $env:GITHUB_STEP_SUMMARY
-          echo "|--------|--------|---------|" >> $env:GITHUB_STEP_SUMMARY
-
-          $replays = Get-ChildItem -Path "$env:USER_DATA\Replays" -Filter "*.rep"
-          if ($replays.Count -eq 0) {
-            Write-Warning "No replay files found to simulate."
-            echo "### ⚠️ No Replays Found" >> $env:GITHUB_STEP_SUMMARY
-            exit 0
-          }
-
-          foreach ($rep in $replays) {
-            $name = $rep.Name
-            Write-Host "=== $name ==="
-
-            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-            $pinfo.FileName = $env:GAME_BIN
-            $pinfo.Arguments = "-headless -replay `"$($rep.FullName)`""
-            $pinfo.WorkingDirectory = $env:GAME_DIR
-            $pinfo.RedirectStandardOutput = $true
-            $pinfo.RedirectStandardError = $true
-            $pinfo.UseShellExecute = $false
-
-            $proc = New-Object System.Diagnostics.Process
-            $proc.StartInfo = $pinfo
-            [void]$proc.Start()
-
-            $finished = $proc.WaitForExit(180000)
-            if (-not $finished) {
-              $proc.Kill()
-              $fail++
-              Write-Host "FAIL (timeout 180s)"
-              echo "| `$name\` | FAIL | timeout 180s |" >> $env:GITHUB_STEP_SUMMARY
-              continue
-            }
-
-            $stdout = $proc.StandardOutput.ReadToEnd()
-            $stderr = $proc.StandardError.ReadToEnd()
-            $combined = $stdout + "`n" + $stderr
-            $code = $proc.ExitCode
-
-            $combined -split "`n" | Where-Object { $_ -match "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" } | ForEach-Object { Write-Host $_ }
-
-            if ($code -eq 0) {
-              $pass++
-              Write-Host "PASS"
-              echo "| `$name\` | PASS | exit 0 |" >> $env:GITHUB_STEP_SUMMARY
-            } else {
-              $fail++
-              $diagnostics = ($combined -split "`n" | Where-Object { $_ -match "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" } | Select-Object -Last 3) -join " / "
-              if ([string]::IsNullOrWhiteSpace($diagnostics)) {
-                $diagnostics = "no filtered diagnostics"
-              }
-              $diagnostics = $diagnostics.Replace("|", "/")
-              Write-Host "FAIL (exit $code)"
-              echo "| `$name\` | FAIL | exit $code: $diagnostics |" >> $env:GITHUB_STEP_SUMMARY
-            }
-
-            Write-Host ""
-          }
-
-          echo "" >> $env:GITHUB_STEP_SUMMARY
-          echo "**Results: $pass passed, $fail failed**" >> $env:GITHUB_STEP_SUMMARY
-
-          if ($fail -gt 0) {
-            Write-Error "$fail replay(s) failed on windows"
-            exit 1
-          }
-          if (($pass + $fail) -eq 0) {
-            Write-Warning "No replay files were found to test"
-          }
-

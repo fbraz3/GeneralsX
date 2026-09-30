@@ -13,8 +13,8 @@ Perform a full upstream sync from the `thesuperhackers` remote into this reposit
 
 `TheSuperHackers` and `GeneralsX` have different goals and this must drive every merge decision:
 
-- `TheSuperHackers` focuses on bug fixes, stability, optimizations, and merging the `Generals` and `GeneralsMD` codebases while preserving compatibility with the original Windows binaries.
-- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + OpenAL + FFmpeg, without prioritizing original binary compatibility.
+- `TheSuperHackers` focuses on bug fixes, stability, optimizations, and merging the `Generals` and `GeneralsMD` codebases while preserving compatibility with original Windows binaries and the legacy GameSpy online stack.
+- `GeneralsX` focuses on making the game truly cross-platform with a modern stack based on SDL3 + DXVK + MiniAudio + FFmpeg, replacing the discontinued GameSpy online service with Next-Gen Multiplayer Protocol (NGMP / GeneralsOnline) via WebSocket, REST, and GameNetworkingSockets (ICE/STUN/TURN).
 
 The repository is significantly behind upstream `TheSuperHackers`. The purpose of this sync is to import useful upstream improvements without regressing or dismantling the already functional cross-platform architecture in `GeneralsX`.
 
@@ -34,35 +34,48 @@ The repository is significantly behind upstream `TheSuperHackers`. The purpose o
   - Split the plan into sections if necessary to cover different subsystems or types of conflicts (for example: build system conflicts, platform abstraction conflicts, gameplay code conflicts, etc.).
 8. Load the plan into working memory and execute it step by step, documenting the outcome of each major decision and conflict resolution in detail.
 9. Ensure no unresolved merge markers remain anywhere in the tree before validation (`<<<<<<<`, `=======`, `>>>>>>>`).
-10. Ensure the repository remains buildable and configurable after conflict resolution.
-11. Validate runtime smoke for both products on validated platforms: `GeneralsXZH` and `GeneralsX` should at minimum enter and exit the main loop cleanly.
-12. Remove generated runtime/build artifacts from the working tree before commit (for example local shader/DXVK caches).
-13. Commit the final merge result.
-14. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
+10. Audit for duplicate files: Run a check across `Core/` and `Generals/`/`GeneralsMD/` to ensure files moved to `Core/` were not left duplicated in the game-specific directories. Remove orphaned duplicates using `git rm`.
+11. Ensure the repository remains buildable and configurable after conflict resolution.
+12. Validate runtime smoke for both products on validated platforms: `GeneralsXZH` and `GeneralsX` should at minimum enter and exit the main loop cleanly.
+13. Remove generated runtime/build artifacts from the working tree before commit (for example local shader/DXVK caches).
+14. Commit the final merge result.
+15. Push the branch `thesuperhackers-sync-MM-DD-YYYY` to origin.
 
 ## Critical Merge Instructions
 
 Expect many conflicts because the projects intentionally diverged. Every conflict must be analyzed individually and in detail.
 
 - Expect many files moved from `Generals/` and `GeneralsMD/` into a unified `Core/` directory. 
+- **CRITICAL - Prevent Duplicate Files from Core Unification:**
+  - Upstream actively unifies files from `Generals/` and `GeneralsMD/` into `Core/` (e.g., `ThingTemplate`, `W3DDisplay`, map triggers/terrain logic).
+  - When git generates modify/delete (`UD` or `DU`) conflicts for files moved to `Core/`, NEVER leave duplicate files behind in `Generals/` or `GeneralsMD/`.
+  - Always ensure all `GeneralsX` cross-platform improvements (SDL3 windowing, DXVK rendering, 64-bit integer casts, `WWMath` determinism) are ported into the unified `Core/` version.
+  - Perform an explicit double-check (e.g., comparing file basenames between `Core/` and `Generals/`/`GeneralsMD/`) and remove obsolete duplicate files with `git rm`.
 - **IMPORTANT:** never ever assume that all conflicts in those areas should be resolved by keeping the `TheSuperHackers` version or the `GeneralsX` version, analyze each conflict carefully and find the real resolution.
 - Do not use blanket conflict strategies for large areas of the tree.
 - Do not sacrifice the cross-platform architecture of `GeneralsX` just to make the merge easy.
 - Do not blindly keep either side. Reconcile changes so that useful `TheSuperHackers` bug fixes, stability work, and optimizations are preserved whenever they do not break the `GeneralsX` platform strategy.
-- Preserve the functional cross-platform stack already established in `GeneralsX`: SDL3 for platform/windowing/input, DXVK for graphics, OpenAL for audio, and FFmpeg where applicable.
+- Preserve the functional cross-platform stack already established in `GeneralsX`: SDL3 for platform/windowing/input, DXVK for graphics, MiniAudio for audio, and FFmpeg where applicable.
 - Preserve platform isolation. Do not allow platform-specific code to leak into gameplay logic.
 - Keep legacy compatibility paths only where they are still intentionally maintained by this repository, but do not let original-binary compatibility override the `GeneralsX` cross-platform objective.
 - Treat INI parser changes as high risk on macOS: upstream numeric parsing optimizations may require platform-specific compatibility handling for Apple deployment targets.
+- **Never replace our CI/CD infrastructure with upstream versions.** Our `.github/workflows/`, `.github/ISSUE_TEMPLATE/`, `.github/copilot-instructions.md` and all CI configuration must be kept intact. Reject any upstream additions or modifications to these paths.
+- **NGMP (GeneralsOnline) Preservation:**
+  - Upstream has zero knowledge of NGMP and actively maintains or refactors legacy GameSpy/Peer networking. Any conflict touching files under `GeneralsMD/Code/GameEngine/Source/GameNetwork/GeneralsOnline/`, `Core/GameEngine/Source/GameNetwork/GeneralsOnline/`, `cmake/ngmp.cmake`, or code blocks guarded by `#if defined(SAGE_USE_NGMP)` MUST preserve the `GeneralsX` NGMP implementation.
+  - In shared multiplayer UI screens (`WOL*.cpp`, `MainMenu.cpp`), upstream changes that restore legacy `TheGameSpyInfo` calls or obsolete GameSpy queues must be reconciled so that `NGMP_OnlineServicesManager`, `OnlineServices_LobbyInterface`, `TheNGMPGame`, and thread-safe UI event dispatching (`NGMPEvent`) remain fully functional.
+  - Loading screen ticking (`GameSpyLoadScreen.cpp`, `MapTransferLoadScreen.cpp`) via `NGMP_OnlineServicesManager::update()` and transport ticking in `NextGenTransport.cpp` must be retained to prevent GameNetworkingSockets (GNS/ICE) thread starvation and connection timeouts.
+  - GameSpy online compatibility is explicitly deprecated and must NOT override or compromise NGMP. Singleplayer, Skirmish vs AI, and LAN multiplayer must remain functional. Review `.github/instructions/ngmp.instructions.md` and `tmp/ngmp_context.md` for architectural context and constraints before resolving networking conflicts.
 - Review conflicts with extra care in these areas:
   - build system and presets
-  - SDL3, DXVK, OpenAL, FFmpeg, and platform abstraction layers
+  - SDL3, DXVK, MiniAudio, FFmpeg, and platform abstraction layers
+  - NGMP (GeneralsOnline) subsystem, GameNetworkingSockets (GNS/ICE) transport, and shared WOL menus
   - INI parsing and file load order logic
   - shared engine code under `Core/`
   - `Generals/` and `GeneralsMD/` code that may have been unified or refactored upstream
   - launch paths, renderer setup, audio wiring, and asset/runtime integration
 - If a conflict involves a removal or downgrade of an existing cross-platform capability, treat that as a high-risk decision and justify it explicitly before accepting it.
+- **Cross-Platform Determinism:** Upstream code is not written with cross-platform determinism in mind. You MUST actively watch out for non-deterministic code (like native `libm` math functions, NaN casting, FMA usage, or FPU state leaks) introduced by the sync and fix it, applying our `WWMath` wrappers and `ScopedFPUGuard` as dictated by `AGENTS.md`. Do not revert our deterministic fixes.
 - Prefer root-cause conflict resolution over temporary hacks, disabled code paths, or quick stubs.
-
 ## Validation Requirements
 
 It is imperative that configure and build workflows still work after the merge. At minimum, validate the relevant project tasks and report the outcome clearly.
@@ -97,10 +110,12 @@ The final response must include a checklist covering at least:
 
 - configure on all supported platforms
 - build on all supported platforms
+- double-check that no duplicate files remain between `Core/` and `Generals/` or `GeneralsMD/`
 - game launch
 - main menu
 - skirmish gameplay
 - campaign flow
+- NGMP online multiplayer (login, lobby roster, staging room sync, and P2P ICE match start)
 - audio playback
 - video playback
 - renderer stability

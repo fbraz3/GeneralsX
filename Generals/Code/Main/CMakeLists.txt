@@ -1,26 +1,23 @@
 
 add_executable(g_generals WIN32)
 
-# GeneralsX @feature GitHub Copilot 20/05/2026 Keep executable naming consistent across Linux/macOS/Windows.
-set_target_properties(g_generals PROPERTIES OUTPUT_NAME "GeneralsX")
-
+# Use a binary name that doesn't conflict with original game.
+# GeneralsX @build BenderAI 15/02/2026 Linux branding update
+# GeneralsX @build fbraz3 19/08/2026 Standardize executable name across all platforms
+set_target_properties(g_generals PROPERTIES OUTPUT_NAME GeneralsX)
 
 # GeneralsX @build BenderAI 10/03/2026 Windows-specific libraries
 if(WIN32)
     target_link_libraries(g_generals PRIVATE
+        binkloader
         comctl32
         dinput8
         dxguid
         imm32
+        milesloader
         vfw32
         winmm
     )
-    if(TARGET binkstub)
-        target_link_libraries(g_generals PRIVATE binkstub)
-    endif()
-    if(TARGET milesstub)
-        target_link_libraries(g_generals PRIVATE milesstub)
-    endif()
 endif()
 
 

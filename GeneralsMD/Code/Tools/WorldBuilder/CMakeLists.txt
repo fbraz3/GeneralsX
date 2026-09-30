@@ -208,16 +208,14 @@ target_include_directories(z_worldbuilder PRIVATE
 )
 
 target_precompile_headers(z_worldbuilder PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    [["always.h"]]
+    [["Precompiled/BasePrecomp.h"]] # Must be first
+    [["WWLib/always.h"]]
     [["Common/STLTypedefs.h"]]
     [["StdAfx.h"]]
-    [["WWCommon.h"]]
+    [["WWLib/WWCommon.h"]]
 )
 
 target_link_libraries(z_worldbuilder PRIVATE
-    core_debug
-    core_profile_legacy
     d3d8lib
     imm32
     vfw32

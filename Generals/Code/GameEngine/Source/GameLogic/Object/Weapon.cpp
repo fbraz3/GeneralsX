@@ -74,6 +74,7 @@
 #include "GameLogic/Module/AssistedTargetingUpdate.h"
 #include "GameLogic/Module/ProjectileStreamUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
+#include "GameLogic/Module/SpawnBehavior.h"
 #include "GameLogic/TerrainLogic.h"
 
 #define RATIONALIZE_ATTACK_RANGE
@@ -383,8 +384,8 @@ void WeaponTemplate::reset()
 
 	// No matter what we have now, we want to convert it to frames from msec.
 	// ShotDelay used to use parseDurationUnsignedInt, and we are expanding on that.
-	self->m_minDelayBetweenShots = ceilf(ConvertDurationFromMsecsToFrames((Real)self->m_minDelayBetweenShots));
-	self->m_maxDelayBetweenShots = ceilf(ConvertDurationFromMsecsToFrames((Real)self->m_maxDelayBetweenShots));
+	self->m_minDelayBetweenShots = WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)self->m_minDelayBetweenShots));
+	self->m_maxDelayBetweenShots = WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)self->m_maxDelayBetweenShots));
 
 }
 
@@ -405,6 +406,15 @@ void WeaponTemplate::postProcessLoad()
 	{
 		m_projectileTmpl = TheThingFactory->findTemplate(m_projectileName);
 		DEBUG_ASSERTCRASH(m_projectileTmpl, ("projectile %s not found!",m_projectileName.str()));
+
+#ifdef DEBUG_LOGGING
+		if (m_projectileTmpl && m_primaryDamage > 0.0)
+		{
+			const Real projectileRadius = m_projectileTmpl->getTemplateGeometryInfo().getMajorRadius();
+			if (m_primaryDamageRadius < projectileRadius)
+				DEBUG_LOG(("Weapon template %s has a PrimaryDamageRadius (%f) smaller than its projectile object's GeometryMajorRadius (%f)! This may lead to inconsistent damage application.", getName().str(), m_primaryDamageRadius, projectileRadius));
+		}
+#endif
 	}
 
 	for (Int i = LEVEL_FIRST; i <= LEVEL_LAST; ++i)
@@ -581,6 +591,27 @@ Real WeaponTemplate::estimateWeaponTemplateDamage(
 		}
 	}
 
+#if !RETAIL_COMPATIBLE_CRC
+	// hmm.. must be shooting a firebase or such, if there is noone home to take the bullet, return 0!
+	if ( victimObj->isKindOf( KINDOF_STRUCTURE) && damageType == DAMAGE_SNIPER )
+	{
+#if PRESERVE_SNIPING_EMPTY_STINGER_SITES
+		if (victimObj->getContain())
+		{
+			if (victimObj->getContain()->getContainCount() == 0)
+				return 0.0f;
+		}
+#else
+		// TheSuperHackers @bugfix Stubbjax 22/06/2026 Only allow targeting Stinger Sites when they contain Soldiers.
+		const Bool hasOccupants = victimObj->getContain() && victimObj->getContain()->getContainCount() > 0;
+		const Bool hasSlaves = victimObj->getSpawnBehaviorInterface() && victimObj->getSpawnBehaviorInterface()->getSlaveCount() > 0;
+
+		if (!hasOccupants && !hasSlaves)
+			return 0.0f;
+#endif
+	}
+#endif
+
 // this stays, even if ALLOW_SURRENDER is not defed, since flashbangs still use 'em
 	if ( damageType == DAMAGE_SURRENDER || m_allowAttackGarrisonedBldgs )
 	{
@@ -654,7 +685,7 @@ Bool WeaponTemplate::shouldProjectileCollideWith(
 	// horrible special case for airplanes sitting on airfields: the projectile might
 	// "collide" with the airfield's (invisible) collision geometry when a resting plane
 	// is targeted. we don't want this. special case it:
-	if (thingWeCollidedWith->isKindOf(KINDOF_AIRFIELD))
+	if (thingWeCollidedWith->isKindOf(KINDOF_FS_AIRFIELD))
 	{
 		//
 		// ok, so if we are an airfield, and our intended victim has a reserved space
@@ -825,7 +856,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		Real attackRangeSqr = sqr(getAttackRange(bonus));
 		if (distSqr > attackRangeSqr)
 		{
-			//DEBUG_ASSERTCRASH(distSqr < 5*5 || distSqr < attackRangeSqr*1.2f, ("*** victim is out of range (%f vs %f) of this weapon -- why did we attempt to fire?",sqrtf(distSqr),sqrtf(attackRangeSqr)));
+			//DEBUG_ASSERTCRASH(distSqr < 5*5 || distSqr < attackRangeSqr*1.2f, ("*** victim is out of range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::SqrtfOrigin(distSqr),WWMath::SqrtfOrigin(attackRangeSqr)));
 
 			//-extraLogging
 			#if defined(RTS_DEBUG)
@@ -847,7 +878,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		if (distSqr < minAttackRangeSqr-0.5f && !isProjectileDetonation)
 #endif
 		{
-			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?",sqrtf(distSqr),sqrtf(minAttackRangeSqr)));
+			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::SqrtfOrigin(distSqr),WWMath::SqrtfOrigin(minAttackRangeSqr)));
 
 			//-extraLogging
 			#if defined(RTS_DEBUG)
@@ -870,10 +901,10 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		}
 		else
 		{
-			targetPos.set( victimPos );
+			targetPos.set( *victimPos );
 		}
 		Real reAngle = getWeaponRecoilAmount();
-		Real reDir = reAngle != 0.0f ? (atan2(victimPos->y - sourcePos->y, victimPos->x - sourcePos->x)) : 0.0f;
+		Real reDir = reAngle != 0.0f ? (WWMath::Atan2Origin(victimPos->y - sourcePos->y, victimPos->x - sourcePos->x)) : 0.0f;
 		VeterancyLevel v = sourceObj->getVeterancyLevel();
 		const FXList* fx = isProjectileDetonation ? getProjectileDetonateFX(v) : getFireFX(v);
 
@@ -884,9 +915,9 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 
 		// TheSuperHackers @todo: Remove hardcoded KINDOF_MINE check and apply PlayFXWhenStealthed = Yes to the mine weapons instead.
 
-		if (!sourceObj->isLogicallyVisible()									// if user watching cannot see us
-			&& !sourceObj->isKindOf(KINDOF_MINE)								// and not a mine (which always do the FX, even if hidden)...
-			&& !isPlayFXWhenStealthed()													// and not a weapon marked to playwhenstealthed
+		if (!sourceObj->isLogicallyVisible() &&									// if user watching cannot see us
+			!sourceObj->isKindOf(KINDOF_MINE) &&								// and not a mine (which always do the FX, even if hidden)...
+			!isPlayFXWhenStealthed()													// and not a weapon marked to playwhenstealthed
 			)
 		{
 			handled = TRUE;		// then let's just pretend like we did the fx by returning true
@@ -930,7 +961,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		v.y = victimPos->y - sourcePos->y;
 		v.z = victimPos->z - sourcePos->z;
 		// don't round the result; we WANT a fractional-frame-delay in this case.
-		Real delayInFrames = (v.length() / getWeaponSpeed());
+		Real delayInFrames = WWMath::Div_FixNaN(v.length(), getWeaponSpeed());
 
 		if( firingWeapon->isLaser() )
 		{
@@ -1817,9 +1848,9 @@ void Weapon::rebuildScatterTargets()
 //-------------------------------------------------------------------------------------------------
 void Weapon::reloadWithBonus(const Object *sourceObj, const WeaponBonus& bonus, Bool loadInstantly)
 {
-	if (m_template->getClipSize() > 0
-			&& m_ammoInClip == m_template->getClipSize()
-			&& !sourceObj->isReloadTimeShared())
+	if (m_template->getClipSize() > 0 &&
+			m_ammoInClip == m_template->getClipSize() &&
+			!sourceObj->isReloadTimeShared())
 		return;	// don't restart our reload delay.
 
 	m_ammoInClip = m_template->getClipSize();
@@ -1920,7 +1951,7 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 		if (source->isAboveTerrain())
 		{
 			// Don't do a 180 degree turn.
-			Real angle = atan2(-dir.y, -dir.x);
+			Real angle = WWMath::Atan2Origin(-dir.y, -dir.x);
 			Real relAngle = source->getOrientation()- angle;
 			if (relAngle>2*PI) relAngle -= 2*PI;
 			if (relAngle<-2*PI) relAngle += 2*PI;
@@ -1933,7 +1964,7 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 
 		if (angleOffset != 0.0f)
 		{
-			Real angle = atan2(dir.y, dir.x);
+			Real angle = WWMath::Atan2Origin(dir.y, dir.x);
 			dir.x = (Real)Cos(angle + angleOffset);
 			dir.y = (Real)Sin(angle + angleOffset);
 		}
@@ -1980,7 +2011,7 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 
 		if (angleOffset != 0.0f)
 		{
-			Real angle = atan2(dir.y, dir.x);
+			Real angle = WWMath::Atan2Origin(dir.y, dir.x);
 			dir.x = (Real)Cos(angle + angleOffset);
 			dir.y = (Real)Sin(angle + angleOffset);
 		}

@@ -36,8 +36,8 @@
 #include "part_ldr.h"
 #include "part_emt.h"
 #include "w3derr.h"
-#include "chunkio.h"
-#include "win.h"		// for lstrcpy, can this be improved?
+#include "WWLib/chunkio.h"
+#include "WWLib/win.h"		// for lstrcpy, can this be improved?
 #include "assetmgr.h"
 #include "texture.h"
 
@@ -267,8 +267,9 @@ ParticleEmitterDefClass::Set_Creation_Volume (Vector3Randomizer *randomizer)
 void
 ParticleEmitterDefClass::Set_User_String (const char *pstring)
 {
-	SAFE_FREE (m_pUserString);
-	m_pUserString = ::_strdup (pstring);
+	char* copy = ::_strdup(pstring);
+	SAFE_FREE(m_pUserString);
+	m_pUserString = copy;
 }
 
 
@@ -279,8 +280,9 @@ ParticleEmitterDefClass::Set_User_String (const char *pstring)
 void
 ParticleEmitterDefClass::Set_Name (const char *pname)
 {
-	SAFE_FREE (m_pName);
-	m_pName = ::_strdup (pname);
+	char* copy = ::_strdup(pname);
+	SAFE_FREE(m_pName);
+	m_pName = copy;
 }
 
 

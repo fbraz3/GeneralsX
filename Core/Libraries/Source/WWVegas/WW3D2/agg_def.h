@@ -36,10 +36,10 @@
 
 #include "proto.h"
 #include "rendobj.h"
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 #include "w3derr.h"
-#include "Vector.h"
-#include "bittype.h"
+#include "WWLib/Vector.h"
+#include "WWLib/bittype.h"
 
 #ifdef _UNIX
 #include "osdep.h"
@@ -103,7 +103,12 @@ class AggregateDefClass
 		virtual WW3DErrorType	Load_W3D (ChunkLoadClass &chunk_load);
 		virtual WW3DErrorType	Save_W3D (ChunkSaveClass &chunk_save);
 		const char *				Get_Name () const					{ return m_pName; }
-		void							Set_Name (const char *pname)			{ SAFE_FREE (m_pName); m_pName = ::_strdup (pname); }
+		void Set_Name (const char* pname)
+		{
+			char* name = ::_strdup(pname);
+			SAFE_FREE(m_pName);
+			m_pName = name;
+		}
 		RenderObjClass *			Create ();
 		AggregateDefClass *		Clone () const						{ return W3DNEW AggregateDefClass (*this); }
 

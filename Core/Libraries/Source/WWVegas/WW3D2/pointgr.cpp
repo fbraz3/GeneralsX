@@ -73,13 +73,13 @@
 #include "pointgr.h"
 #include "vertmaterial.h"
 #include "ww3d.h"
-#include "aabox.h"
+#include "WWMath/aabox.h"
 #include "statistics.h"
-#include "simplevec.h"
+#include "WWLib/simplevec.h"
 #include "texture.h"
-#include "Vector.h"
-#include "vp.h"
-#include "matrix4.h"
+#include "WWLib/Vector.h"
+#include "WWMath/vp.h"
+#include "WWMath/matrix4.h"
 #include "dx8wrapper.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
@@ -927,7 +927,12 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 	DX8Wrapper::Set_Texture(0,Texture);
 
 	// Enable sorting if the primitives are translucent and alpha testing is not enabled.
-	const bool sort = (Shader.Get_Dst_Blend_Func() != ShaderClass::DSTBLEND_ZERO) && (Shader.Get_Alpha_Test() == ShaderClass::ALPHATEST_DISABLE) && (WW3D::Is_Sorting_Enabled());
+	// TheSuperHackers @bugfix stephanmeesters 30/06/2026 However, do not apply sorting to ground-aligned particles.
+	// This improves performance and resolves rendering artifacts caused by clipping between ground-aligned particles and billboard particles.
+	const bool sort = Billboard &&
+	                  Shader.Get_Dst_Blend_Func() != ShaderClass::DSTBLEND_ZERO &&
+	                  Shader.Get_Alpha_Test() == ShaderClass::ALPHATEST_DISABLE &&
+	                  WW3D::Is_Sorting_Enabled();
 
 	IndexBufferClass *indexbuffer;
 	int	verticesperprimitive;/// lorenzen fixed
@@ -1101,6 +1106,8 @@ void PointGroupClass::Update_Arrays(
 
 		case TRIS_SIZE_NOORIENT:
 			{
+				WWASSERT(point_size);
+
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					vertex_loc[vert + 0] = point_loc[i] +
@@ -1116,6 +1123,8 @@ void PointGroupClass::Update_Arrays(
 
 		case TRIS_NOSIZE_ORIENT:
 			{
+				WWASSERT(point_orientation);
+
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					vertex_loc[vert + 0] = point_loc[i] +
@@ -1131,6 +1140,8 @@ void PointGroupClass::Update_Arrays(
 
 		case TRIS_SIZE_ORIENT:
 			{
+				WWASSERT(point_size && point_orientation);
+
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					vertex_loc[vert + 0] = point_loc[i] +
@@ -1166,6 +1177,8 @@ void PointGroupClass::Update_Arrays(
 
 		case QUADS_SIZE_NOORIENT:
 			{
+				WWASSERT(point_size);
+
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					vertex_loc[vert + 0] = point_loc[i] +
@@ -1183,6 +1196,8 @@ void PointGroupClass::Update_Arrays(
 
 		case QUADS_NOSIZE_ORIENT:
 			{
+				WWASSERT(point_orientation);
+
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					vertex_loc[vert + 0] = point_loc[i] +
@@ -1200,6 +1215,8 @@ void PointGroupClass::Update_Arrays(
 
 		case QUADS_SIZE_ORIENT:
 			{
+				WWASSERT(point_size && point_orientation);
+
 				Matrix4x4 view;
 				Vector4 result;
 				if (!Billboard) {
@@ -1307,6 +1324,8 @@ void PointGroupClass::Update_Arrays(
 		case SCREEN_SIZE_NOORIENT:
 		case SCREEN_SIZE_ORIENT:
 			{
+				WWASSERT(point_size);
+
 				// Offsets need to be scaled to the current screen resolution
 
    			// First find x and y scale factors (sizes in pixels need to be
@@ -1639,11 +1658,12 @@ void PointGroupClass::_Shutdown()
  *   12/03/2002	Mark Lorenzen		Created.                                  *
  *																		                                    *
  *========================================================================*/
+#define DEFAULT_VOLUME_PARTICLE_DEPTH ( 1 )
 #define MAX_VOLUME_PARTICLE_DEPTH ( 16 )
 void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int depth )
 {
 
-	if ( depth <= 1 ) //oops,wrong number
+	if ( depth <= DEFAULT_VOLUME_PARTICLE_DEPTH) //oops,wrong number
 	{
 		Render( rinfo );
 		return;
@@ -1784,7 +1804,8 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 			// 3 times per particle when we can do it once
 			float recipDepth = 0.1f / (float)depth;
 
-			float shiftInc = ( t *  *current_size * recipDepth );
+			const float pointSize = current_size ? *current_size : DefaultPointSize;
+			float shiftInc = t * pointSize * recipDepth;
 
 			Vector3 volumeLayerShift;
 			Vector3 cameraPosition = rinfo.Camera.Get_Position();
@@ -1836,6 +1857,8 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 		DX8Wrapper::Set_Texture(0,Texture);
 
 		// Enable sorting if the primitives are translucent and alpha testing is not enabled.
+		// TheSuperHackers @info Volumetric particles, both billboarded and ground-aligned, must have sorting enabled to
+		// ensure accurate alpha-blending because these particles have stacked layers that don't face the camera straight on.
 		const bool sort = (Shader.Get_Dst_Blend_Func() != ShaderClass::DSTBLEND_ZERO) && (Shader.Get_Alpha_Test() == ShaderClass::ALPHATEST_DISABLE) && (WW3D::Is_Sorting_Enabled());
 
 		IndexBufferClass *indexbuffer;
@@ -1851,9 +1874,6 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 			verticesperprimitive = 3;
 			indexbuffer = sort ? static_cast <IndexBufferClass*> (SortingTris) : static_cast <IndexBufferClass*> (Tris);
 		}
-
-
-		float nudge = 0;
 
 		current = 0;
 		while (current<vnum)

@@ -196,8 +196,8 @@ void dumpBattlePlanBonuses(const BattlePlanBonusesData *b, AsciiString name, con
 		kindofMaskAsAsciiString(b->m_invalidKindOf).str()));
 }
 #else
-#define DUMPBATTLEPLANBONUSES(x,y,z) {}
-#define CRCDUMPBATTLEPLANBONUSES(x,y,z) {}
+#define DUMPBATTLEPLANBONUSES(x,y,z)
+#define CRCDUMPBATTLEPLANBONUSES(x,y,z)
 #endif // DEBUG_CRC
 
 // ------------------------------------------------------------------------------------------------
@@ -409,6 +409,9 @@ void Player::init(const PlayerTemplate* pt)
 #if defined(RTS_DEBUG)
 	m_DEMO_ignorePrereqs = FALSE;
 	m_DEMO_freeBuild = FALSE;
+#endif
+
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	m_DEMO_instantBuild = FALSE;
 #endif
 
@@ -678,7 +681,7 @@ void Player::update()
 		}
 	}
 
-#if !(RETAIL_COMPATIBLE_CRC || PRESERVE_TUNNEL_HEAL_STACKING)
+#if !PRESERVE_TUNNEL_HEAL_STACKING && !RETAIL_COMPATIBLE_CRC
 	// TheSuperHackers @bugfix Stubbjax 26/09/2025 The Tunnel System now heals
 	// all units once per frame instead of once per frame per Tunnel Network.
 	TunnelTracker* tunnelSystem = getTunnelSystem();
@@ -1014,9 +1017,9 @@ void Player::becomingTeamMember(Object *obj, Bool yes)
 	}
 
 
-	if (obj->isKindOf(KINDOF_DOZER)
-			&& obj->getAIUpdateInterface()
-			&& obj->getAIUpdateInterface()->isIdle())
+	if (obj->isKindOf(KINDOF_DOZER) &&
+			obj->getAIUpdateInterface() &&
+			obj->getAIUpdateInterface()->isIdle())
 	{
 		// Need to remove it from the pick a peasant button
 		if (yes)
@@ -1161,11 +1164,11 @@ static void doFindCommandCenter(Object* obj, void* userData)
 {
 	PlayerObjectFindInfo* info = (PlayerObjectFindInfo*)userData;
 
-	if (info->obj == nullptr
-			&& obj->isKindOf(KINDOF_COMMANDCENTER)
-			&& obj->getTemplate()->getDefaultOwningSide() == info->player->getSide()
-			&& !obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION)
-			&& !obj->testStatus(OBJECT_STATUS_SOLD))
+	if (info->obj == nullptr &&
+			obj->isKindOf(KINDOF_COMMANDCENTER) &&
+			obj->getTemplate()->getDefaultOwningSide() == info->player->getSide() &&
+			!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) &&
+			!obj->testStatus(OBJECT_STATUS_SOLD))
 	{
 		info->obj = obj;
 	}
@@ -1184,9 +1187,9 @@ static void doFindSpecialPowerSourceObject( Object *obj, void *userData )
 		//We already found the best case scenario, so no need to iterate any more.
 		return;
 	}
-	if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION )
-			&& !obj->testStatus( OBJECT_STATUS_SOLD )
-			&& !obj->isEffectivelyDead() )
+	if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) &&
+			!obj->testStatus( OBJECT_STATUS_SOLD ) &&
+			!obj->isEffectivelyDead() )
 	{
 		if( info->spType == SPECIAL_INVALID && obj->hasAnySpecialPower() )
 		{
@@ -1246,9 +1249,9 @@ static void doCountSpecialPowersReady( Object *obj, void *userData )
 {
 	PlayerObjectFindInfo* info = (PlayerObjectFindInfo*)userData;
 
-	if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION )
-			&& !obj->testStatus( OBJECT_STATUS_SOLD )
-			&& !obj->isEffectivelyDead() )
+	if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) &&
+			!obj->testStatus( OBJECT_STATUS_SOLD ) &&
+			!obj->isEffectivelyDead() )
 	{
 		if( obj->hasSpecialPower( info->spType ) )
 		{
@@ -1299,9 +1302,9 @@ static void doFindMostReadyWeaponForThing( Object *obj, void *userData )
 
 	if( info->thing && info->thing->isEquivalentTo( obj->getTemplate() ) )
 	{
-		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION )
-				&& !obj->testStatus( OBJECT_STATUS_SOLD )
-				&& !obj->isEffectivelyDead() )
+		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) &&
+				!obj->testStatus( OBJECT_STATUS_SOLD ) &&
+				!obj->isEffectivelyDead() )
 		{
 			if( obj->hasAnyWeapon() )
 			{
@@ -1331,9 +1334,9 @@ static void doFindMostReadySpecialPowerForThing( Object *obj, void *userData )
 
 	if( info->thing && info->thing->isEquivalentTo( obj->getTemplate() ) )
 	{
-		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION )
-				&& !obj->testStatus( OBJECT_STATUS_SOLD )
-				&& !obj->isEffectivelyDead() )
+		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) &&
+				!obj->testStatus( OBJECT_STATUS_SOLD ) &&
+				!obj->isEffectivelyDead() )
 		{
 			// search the modules for the one with the matching template
 			for( BehaviorModule** m = obj->getBehaviorModules(); *m; ++m )
@@ -1367,9 +1370,9 @@ static void doFindExistingObjectWithThingTemplate( Object *obj, void *userData )
 
 	if( info->thing && info->thing->isEquivalentTo( obj->getTemplate() ) )
 	{
-		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION )
-				&& !obj->testStatus( OBJECT_STATUS_SOLD )
-				&& !obj->isEffectivelyDead() )
+		if( !obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) &&
+				!obj->testStatus( OBJECT_STATUS_SOLD ) &&
+				!obj->isEffectivelyDead() )
 		{
 			//We found one.
 			info->obj = obj;
@@ -1672,7 +1675,7 @@ void Player::healAllObjects()
 }
 
 //=============================================================================
-void Player::iterateObjects( ObjectIterateFunc func, void *userData )
+void Player::iterateObjects( ObjectIterateFunc func, void *userData ) const
 {
 	for (PlayerTeamList::const_iterator it = m_playerTeamPrototypes.begin();
 			 it != m_playerTeamPrototypes.end(); ++it)
@@ -2056,9 +2059,9 @@ void Player::transferAssetsFromThat(Player *that)
 	{
 		const UpgradeTemplate* upgradeTemplate = upgrade->getTemplate();
 
-		if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION
-			&& upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER
-			&& (hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
+		if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION &&
+			upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER &&
+			(hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
 		{
 			upgradesToCancel.push_back(upgradeTemplate);
 		}
@@ -2368,7 +2371,7 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 	Int bounty = REAL_TO_INT_CEIL(costToBuild * m_cashBountyPercent);
 #else
 	// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
-	Int bounty = ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
+	Int bounty = WWMath::Ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
 #endif
 
 	if( bounty )
@@ -2382,7 +2385,7 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 		moneyString.format( TheGameText->fetch( "GUI:AddCash" ), bounty );
 		Coord3D pos;
 		pos.zero();
-		pos.add( killer->getPosition() );
+		pos.add( *killer->getPosition() );
 		pos.z += 10.0f; //add a little z to make it show up above the unit.
 		TheInGameUI->addFloatingText( moneyString, &pos, GameMakeColor( 255, 255, 0, 255 ) );
 	}
@@ -2979,8 +2982,8 @@ void Player::removeUpgrade( const UpgradeTemplate *upgradeTemplate )
 		if( upgrade->getStatus() == UPGRADE_STATUS_COMPLETE )
 			onUpgradeRemoved();
 
+		deleteInstance(upgrade);
 	}
-
 }
 
 
@@ -2988,11 +2991,11 @@ void Player::removeUpgrade( const UpgradeTemplate *upgradeTemplate )
 Bool Player::okToPlayRadarEdgeSound()
 {
 	return (
-		! TheVictoryConditions->hasSinglePlayerBeenDefeated( this )
-		&& ! m_isPlayerDead
-		&& ! TheInGameUI->isClientQuiet()
-		&& TheGameLogic->isInGameLogicUpdate()
-		&& TheGameLogic->getFrame() > 0 );
+		! TheVictoryConditions->hasSinglePlayerBeenDefeated( this ) &&
+		! m_isPlayerDead &&
+		! TheInGameUI->isClientQuiet() &&
+		TheGameLogic->isInGameLogicUpdate() &&
+		TheGameLogic->getFrame() > 0 );
 
 }
 
@@ -3047,8 +3050,8 @@ void Player::disableRadar()
 	Bool hadRadar = hasRadar();
 	m_radarDisabled = TRUE;
 
-	if( hadRadar
-		&& !hasRadar() && okToPlayRadarEdgeSound() )
+	if( hadRadar &&
+		!hasRadar() && okToPlayRadarEdgeSound() )
 	{
 		// This player just lost radar, so play the "You lost Radar!" sound
 		AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_radarOfflineSound;
@@ -3542,7 +3545,7 @@ void Player::processSelectTeamGameMessage(Int hotkeyNum) {
 
 	m_currentSelection->clearSquad();
 
-	VecObjectPtr objectList = m_squads[hotkeyNum]->getLiveObjects();
+	const VecObjectPtr& objectList = m_squads[hotkeyNum]->getLiveObjects();
 	Int numObjs = objectList.size();
 
 	for (Int i = 0; i < numObjs; ++i) {
@@ -3567,7 +3570,7 @@ void Player::processAddTeamGameMessage(Int hotkeyNum) {
 		m_currentSelection = newInstance( Squad );
 	}
 
-	VecObjectPtr objectList = m_squads[hotkeyNum]->getLiveObjects();
+	const VecObjectPtr& objectList = m_squads[hotkeyNum]->getLiveObjects();
 	Int numObjs = objectList.size();
 
 	for (Int i = 0; i < numObjs; ++i) {

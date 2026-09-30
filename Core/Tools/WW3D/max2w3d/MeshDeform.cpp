@@ -64,7 +64,7 @@ Class_ID _MeshDeformClassID(0x51981f5b, 0x1db2bf3);
 class MeshDeformClassDesc : public ClassDesc
 {
 	public:
-	int 				IsPublic (void)			{ return 1; }
+	int 				IsPublic ()			{ return 1; }
 	void *			Create (BOOL loading)	{ return new MeshDeformClass (); }
 	const TCHAR *	ClassName ()				{ return _T("WWDeform"); }
 	SClass_ID		SuperClassID ()			{ return OSM_CLASS_ID; }
@@ -80,9 +80,9 @@ class MeshDeformClassDesc : public ClassDesc
 ///////////////////////////////////////////////////////////////////////////
 #if 0 // (gth) MeshDeform is obsolete! making sure nobody uses it...
 static MeshDeformClassDesc _MeshDeformCD;
-ClassDesc * Get_Mesh_Deform_Desc (void) { return &_MeshDeformCD; }
+ClassDesc * Get_Mesh_Deform_Desc () { return &_MeshDeformCD; }
 #else
-ClassDesc * Get_Mesh_Deform_Desc (void) { return nullptr; }
+ClassDesc * Get_Mesh_Deform_Desc () { return nullptr; }
 #endif
 
 
@@ -92,7 +92,7 @@ ClassDesc * Get_Mesh_Deform_Desc (void) { return nullptr; }
 //
 ///////////////////////////////////////////////////////////////////////////
 ChannelMask
-MeshDeformClass::ChannelsUsed (void)
+MeshDeformClass::ChannelsUsed ()
 {
 	return GEOM_CHANNEL | SELECT_CHANNEL | SUBSEL_TYPE_CHANNEL | VERTCOLOR_CHANNEL;
 }
@@ -104,7 +104,7 @@ MeshDeformClass::ChannelsUsed (void)
 //
 ///////////////////////////////////////////////////////////////////////////
 ChannelMask
-MeshDeformClass::ChannelsChanged (void)
+MeshDeformClass::ChannelsChanged ()
 {
 	return GEOM_CHANNEL | SELECT_CHANNEL | SUBSEL_TYPE_CHANNEL | VERTCOLOR_CHANNEL;
 }
@@ -161,7 +161,7 @@ MeshDeformClass::ModifyObject
 //
 ///////////////////////////////////////////////////////////////////////////
 Class_ID
-MeshDeformClass::InputType (void)
+MeshDeformClass::InputType ()
 {
 	return triObjectClassID;
 }
@@ -191,7 +191,7 @@ MeshDeformClass::NotifyRefChanged
 //
 ///////////////////////////////////////////////////////////////////////////
 CreateMouseCallBack *
-MeshDeformClass::GetCreateMouseCallBack (void)
+MeshDeformClass::GetCreateMouseCallBack ()
 {
 	return nullptr;
 }
@@ -234,11 +234,11 @@ MeshDeformClass::BeginEditParams
 	//
 	// Register the desired sub-object selection types.
 	//
-	const TCHAR * ptype[] = { "Vertices" };
 #if defined W3D_MAX4		//defined as in the project (.dsp)
  	max_interface->SetSubObjectLevel(1);
 #else
 	//---This call is obsolete from max4.
+	const TCHAR * ptype[] = { "Vertices" };
 	max_interface->RegisterSubObjectTypes( ptype, 1);
 #endif
 
@@ -380,7 +380,7 @@ MeshDeformClass::HitTest
 	// Perform the hit test
 	//
 	SubObjHitList hitlist;
-	MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context->localData);
+	//MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context->localData);
 	Mesh &mesh = tri->mesh;//mod_data->Peek_Mesh ();
 	int result = mesh.SubObjectHitTest (graphics_wnd,
 													 graphics_wnd->getMaterial (),
@@ -466,7 +466,6 @@ MeshDeformClass::GetSubObjectTMs
 	ModContext *mc
 )
 {
-	int test = 0;
 }
 
 
@@ -486,7 +485,6 @@ MeshDeformClass::GetSubObjectCenters
 {
 	// Peek at the vertex selection array for this hit record
 	MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context->localData);
-	const Point3 *vertex_array = mod_data->Peek_Orig_Vertex_Array ();
 	Mesh *mesh = mod_data->Peek_Mesh ();
 
 	BitArray sel_array = mesh->vertSel;
@@ -571,8 +569,6 @@ MeshDeformClass::Move
 			MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context_list[index]->localData);
 			if (mod_data != nullptr) {
 				Mesh *mesh = mod_data->Peek_Mesh ();
-				const Point3 *vertex_array = mod_data->Peek_Orig_Vertex_Array ();
-				Point3 *opstart_array = mod_data->Peek_Vertex_OPStart_Array ();
 
 				// Loop through all the selected verts
 				for (int vert = 0; vert < mesh->numVerts; vert ++) {
@@ -586,9 +582,6 @@ MeshDeformClass::Move
 						// Convert back to obj-space
 						vert_ws = tm_axis * vert_as;
 						mesh->verts[vert] = Inverse (parent_tm) * vert_ws;
-
-						// Record the delta
-						//delta_array[vert] = mesh->verts[vert] - vertex_array[vert];
 					}
 				}
 
@@ -643,7 +636,6 @@ MeshDeformClass::Scale
 			MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context_list[index]->localData);
 			if (mod_data != nullptr) {
 				Mesh *mesh = mod_data->Peek_Mesh ();
-				const Point3 *vertex_array = mod_data->Peek_Orig_Vertex_Array ();
 				Point3 *opstart_array = mod_data->Peek_Vertex_OPStart_Array ();
 
 				// Loop through all the selected verts
@@ -658,9 +650,6 @@ MeshDeformClass::Scale
 						// Convert back to obj-space
 						vert_ws = tm_axis * vert_as;
 						mesh->verts[vert] = Inverse (parent_tm) * vert_ws;
-
-						// Record the delta
-						//delta_array[vert] = mesh->verts[vert] - vertex_array[vert];
 					}
 				}
 
@@ -719,8 +708,6 @@ MeshDeformClass::Rotate
 			MeshDeformModData *mod_data = static_cast <MeshDeformModData *> (mod_context_list[index]->localData);
 			if (mod_data != nullptr) {
 				Mesh *mesh = mod_data->Peek_Mesh ();
-				const Point3 *vertex_array = mod_data->Peek_Orig_Vertex_Array ();
-				Point3 *opstart_array = mod_data->Peek_Vertex_OPStart_Array ();
 
 				// Loop through all the selected verts
 				for (int vert = 0; vert < mesh->numVerts; vert ++) {
@@ -734,9 +721,6 @@ MeshDeformClass::Rotate
 						// Convert back to obj-space
 						vert_ws = tm_axis * vert_as;
 						mesh->verts[vert] = Inverse (parent_tm) * vert_ws;
-
-						// Record the delta
-						//delta_array[vert] = mesh->verts[vert] - vertex_array[vert];
 					}
 				}
 
@@ -1123,7 +1107,7 @@ MeshDeformClass::Set_Max_Deform_Sets (int max)
 //
 ///////////////////////////////////////////////////////////////////////////
 void
-MeshDeformClass::Update_Set_Count (void)
+MeshDeformClass::Update_Set_Count ()
 {
 	m_MaxSets = 1;
 	if (m_MaxInterface != nullptr) {
@@ -1213,7 +1197,7 @@ MeshDeformClass::Set_Current_Set
 //
 ///////////////////////////////////////////////////////////////////////////
 void
-MeshDeformClass::Update_Current_Set (void)
+MeshDeformClass::Update_Current_Set ()
 {
 	if (m_MaxInterface != nullptr) {
 

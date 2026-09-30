@@ -77,6 +77,8 @@ public:
 	virtual Bool isPassengerAllowedToFire( ObjectID id = INVALID_ID ) const override;	///< Hey, can I shoot out of this container?
 	virtual Bool isSpecificRiderFreeToExit(Object* obj) override;
 	virtual void exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor) override;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Redirects exit queries to the loaded portable.
+	virtual ExitInterface* getContainExitInterface() override;
 
 
 	virtual void onDie( const DamageInfo *damageInfo ) override;  ///< the die callback
@@ -97,6 +99,8 @@ private:
 
 
 	virtual Bool isValidContainerFor(const Object* obj, Bool checkCapacity) const override;
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Redirects containment checks to the loaded portable.
+	virtual Bool isContained( const Object *obj ) const override;
 	virtual void addToContain( Object *obj ) override;				///< add 'obj' to contain list
 	virtual void addToContainList( Object *obj ) override;		///< The part of AddToContain that inheritors can override (Can't do whole thing because of all the private stuff involved)
 	virtual void removeFromContain( Object *obj, Bool exposeStealthUnits = FALSE ) override;	///< remove 'obj' from contain list

@@ -45,7 +45,7 @@ Bin::~Bin ( )
 
 
 
-void Bin::Clear ( void )
+void Bin::Clear ()
 {
 	int count = num_buckets;
 	sh_item = nullptr;
@@ -54,7 +54,7 @@ void Bin::Clear ( void )
 		List *head = &bucket[count];
 		BinItem *item;
 
-		while ( ( item = (BinItem *) head->Next ()))
+		while ( ( item = (BinItem *) head->Next ()) != nullptr )
 		{
 			Remove ( item );
 		}
@@ -66,7 +66,7 @@ void*				Bin::Get					( OLECHAR *text1, OLECHAR *text2 )
 {
 	BinItem *item;
 
-	if ( ( item = GetBinItem ( text1, text2 )) )
+	if ( ( item = GetBinItem ( text1, text2 )) != nullptr )
 	{
 		return item->Item();
 	}
@@ -74,11 +74,11 @@ void*				Bin::Get					( OLECHAR *text1, OLECHAR *text2 )
 	return nullptr;
 }
 
-void*				Bin::GetNext			( void )
+void*				Bin::GetNext			()
 {
 	BinItem *item;
 
-	if ( ( item = GetNextBinItem ( )) )
+	if ( ( item = GetNextBinItem ( )) != nullptr )
 	{
 		return item->Item();
 	}
@@ -128,7 +128,7 @@ BinItem*		Bin::GetBinItem		( OLECHAR *text1, OLECHAR *text2)
 	return GetNextBinItem ();
 }
 
-BinItem*		Bin::GetNextBinItem ( void )
+BinItem*		Bin::GetNextBinItem ()
 {
 	if ( sh_item )
 	{
@@ -156,7 +156,7 @@ BinItem*		Bin::GetBinItem	( void *item )
 	for ( i=0; i< num_buckets; i++)
 	{
 
-		if ( ( bitem = (BinItem *) bucket[i].Find ( item )))
+		if ( ( bitem = (BinItem *) bucket[i].Find ( item )) != nullptr )
 		{
 			break;
 		}
@@ -171,7 +171,7 @@ void				Bin::Remove			( void *item )
 {
 	BinItem *bitem;
 
-	if ( ( bitem = GetBinItem ( item ) ))
+	if ( ( bitem = GetBinItem ( item ) ) != nullptr )
 	{
 		Remove ( bitem );
 	}
@@ -182,7 +182,7 @@ void				Bin::Remove			( OLECHAR *text1, OLECHAR *text2 )
 {
 	BinItem *bitem;
 
-	if ( ( bitem = GetBinItem ( text1, text2 ) ))
+	if ( ( bitem = GetBinItem ( text1, text2 ) ) != nullptr )
 	{
 		Remove ( bitem );
 	}
@@ -203,7 +203,7 @@ BinItem::BinItem ( void *data, int new_hash, OLECHAR *new_text1, OLECHAR *new_te
 	SetItem ( data );
 	hash = new_hash;
 
-	if ( (text1 = new_text1) )
+	if ( (text1 = new_text1) != nullptr )
 	{
 		text1size = wcslen ( text1 );
 	}
@@ -212,7 +212,7 @@ BinItem::BinItem ( void *data, int new_hash, OLECHAR *new_text1, OLECHAR *new_te
 		text1size = 0;
 	}
 
-	if ( (text2 = new_text2) )
+	if ( (text2 = new_text2) != nullptr )
 	{
 		text2size = wcslen ( text2 );
 	}
@@ -277,7 +277,7 @@ BinID::~BinID ( )
 
 
 
-void BinID::Clear ( void )
+void BinID::Clear ()
 {
 	int count = num_buckets;
 
@@ -286,7 +286,7 @@ void BinID::Clear ( void )
 		List *head = &bucket[count];
 		BinIDItem *item;
 
-		while ( ( item = (BinIDItem *) head->Next ()))
+		while ( ( item = (BinIDItem *) head->Next ()) != nullptr )
 		{
 			Remove ( item );
 		}
@@ -298,7 +298,7 @@ void*				BinID::Get					( int id)
 {
 	BinIDItem *item;
 
-	if ( ( item = GetBinIDItem ( id  )) )
+	if ( ( item = GetBinIDItem ( id  )) != nullptr )
 	{
 		return item->Item();
 	}
@@ -349,7 +349,7 @@ BinIDItem*		BinID::GetBinIDItem	( void *item )
 	for ( i=0; i< num_buckets; i++)
 	{
 
-		if ( ( bitem = (BinIDItem *) bucket[i].Find ( item )))
+		if ( ( bitem = (BinIDItem *) bucket[i].Find ( item )) != nullptr )
 		{
 			break;
 		}
@@ -364,7 +364,7 @@ void				BinID::Remove			( void *item )
 {
 	BinIDItem *bitem;
 
-	if ( ( bitem = GetBinIDItem ( item ) ))
+	if ( ( bitem = GetBinIDItem ( item ) ) != nullptr )
 	{
 		Remove ( bitem );
 	}
@@ -375,7 +375,7 @@ void				BinID::Remove			( int id  )
 {
 	BinIDItem *bitem;
 
-	if ( ( bitem = GetBinIDItem ( id ) ))
+	if ( ( bitem = GetBinIDItem ( id ) ) != nullptr )
 	{
 		Remove ( bitem );
 	}

@@ -12,6 +12,11 @@ on:
         type: string
         default: "macos-vulkan"
         description: "CMake preset for macOS"
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
   workflow_dispatch:
     inputs:
       preset:
@@ -46,7 +51,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Cache brew packages
         id: cache-brew
@@ -62,8 +69,25 @@ jobs:
         with:
           vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
 
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-${{ runner.os }}-arm64-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
+          restore-keys: |
+            vcpkg-bincache-${{ runner.os }}-arm64-
+
+      - name: Configure vcpkg cache directory
+        run: |
+          cacheDir="${{ github.workspace }}/vcpkg-bincache"
+          mkdir -p "$cacheDir"
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> "$GITHUB_ENV"
+          echo "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> "$GITHUB_ENV"
+
       - name: Install Dependencies
         run: |
+          export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
           echo "Installing macOS build dependencies..."
           
           # Update Homebrew to ensure fresh formulas
@@ -74,7 +98,7 @@ jobs:
           xcode-select -p || (echo "❌ Xcode command-line tools not installed"; exit 1)
           
           # Build tools
-          brew install cmake ninja meson pkg-config
+          brew install cmake ninja meson pkg-config ccache
 
           # Autotools (required by vcpkg when building packages like gperf from source)
           brew install autoconf autoconf-archive automake libtool
@@ -89,6 +113,12 @@ jobs:
           
           # Freetype + Fontconfig (required by font rendering)
           brew install freetype fontconfig
+
+          # Protobuf, Abseil & OpenSSL (required by GameNetworkingSockets / NGMP P2P transport)
+          brew install protobuf abseil openssl@3
+          OPENSSL_PREFIX="$(brew --prefix openssl@3 2>/dev/null || echo '/opt/homebrew/opt/openssl@3')"
+          echo "OPENSSL_ROOT_DIR=$OPENSSL_PREFIX" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=$OPENSSL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
           
           # NOTE: GLM is intentionally NOT installed via Homebrew.
           # It is fetched via CMake FetchContent in cmake/glm.cmake (tag 1.0.3).
@@ -121,7 +151,15 @@ jobs:
 
           echo "Build tools installed"
 
+      - name: Cache Vulkan SDK
+        id: cache-vulkan
+        uses: actions/cache@v5
+        with:
+          path: ~/VulkanSDK
+          key: vulkan-sdk-macos-1.4.341.1
+
       - name: Install Vulkan SDK
+        if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
           echo "Installing Vulkan SDK (required for DXVK + MoltenVK)..."
           
@@ -263,24 +301,35 @@ jobs:
               fi
             fi
           fi
+
+      - name: Set Vulkan SDK Environment Variable
+        run: |
+          VULKAN_SDK=""
           
-          # Set environment variables for downstream steps
+          # 1. Try LunarG installer location
+          if [ -d "$HOME/VulkanSDK/1.4.341.1/macOS" ]; then
+            VULKAN_SDK="$HOME/VulkanSDK/1.4.341.1/macOS"
+          fi
+          
+          # 2. Try generic search in ~/VulkanSDK
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
-            # Last resort: search for any installed SDK, prefer macOS subdir
             for candidate in $(find $HOME/VulkanSDK -maxdepth 2 -type d -name "macOS" 2>/dev/null); do
               VULKAN_SDK="$candidate"
               break
             done
           fi
-
-          # Normalize: if VULKAN_SDK points to version root (has macOS subdir), use macOS subdir
-          if [ -d "$VULKAN_SDK/macOS" ] && [ -f "$VULKAN_SDK/macOS/lib/libvulkan.dylib" ]; then
-            VULKAN_SDK="$VULKAN_SDK/macOS"
-            echo "Normalized VULKAN_SDK to platform subdirectory"
+          
+          # 3. Try Homebrew fallback path
+          if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
+            VULKAN_SDK="$(brew --prefix vulkan-sdk 2>/dev/null)/macOS"
+            if [ ! -d "$VULKAN_SDK" ]; then
+              VULKAN_SDK="/usr/local/Caskroom/vulkan-sdk/latest/VulkanSDK"
+            fi
           fi
           
+          # 4. Fallback default
           if [ -z "$VULKAN_SDK" ] || [ ! -d "$VULKAN_SDK" ]; then
-            echo "⚠️ Vulkan SDK not found in standard locations; using default path (system Vulkan may be used)"
+            echo "⚠️ Vulkan SDK not found in standard locations; using default path"
             VULKAN_SDK="$HOME/VulkanSDK"
           fi
           
@@ -293,16 +342,33 @@ jobs:
           else
             echo "⚠️ MoltenVK not found at $VULKAN_SDK/lib/libMoltenVK.dylib"
             echo "Checking for alternate locations..."
-            find "$(dirname $VULKAN_SDK)" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
+            find "$(dirname $VULKAN_SDK 2>/dev/null || echo $HOME)" -name "libMoltenVK*" 2>/dev/null | head -5 || echo "(none found)"
           fi
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/Library/Caches/ccache
+          key: ccache-macos-${{ matrix.game.id }}-${{ inputs.preset }}-${{ github.sha }}
+          restore-keys: |
+            ccache-macos-${{ matrix.game.id }}-${{ inputs.preset }}-
 
       - name: Configure CMake (macOS)
         env:
           VULKAN_SDK: ${{ env.VULKAN_SDK }}
+          OPENSSL_ROOT_DIR: ${{ env.OPENSSL_ROOT_DIR }}
           VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
           VCPKG_DEFAULT_TRIPLET: arm64-osx
           CC: clang
           CXX: clang++
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          NGMP_DEFAULT_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_HOST: ${{ secrets.NGMP_DEFAULT_HOST }}
+          NGMP_SERVER_PORT: ${{ secrets.NGMP_SERVER_PORT }}
+          NGMP_USE_SSL: ${{ secrets.NGMP_USE_SSL }}
+          NGMP_WEB_PORTAL_URL: ${{ secrets.NGMP_WEB_PORTAL_URL }}
+          NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           mkdir -p logs
           echo "VULKAN_SDK=$VULKAN_SDK"
@@ -338,6 +404,13 @@ jobs:
             echo "❌ CMake configuration failed after ${MAX_ATTEMPTS} attempts"
             exit 1
           fi
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-{0}-arm64-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Build ${{ matrix.game.value }}
         run: |
@@ -446,7 +519,7 @@ jobs:
             ./scripts/build/macos/bundle-macos-generals.sh 2>&1 | tee logs/bundle_${{ matrix.game.log_suffix }}_macos.log
           fi
           BUNDLE_STATUS=${PIPESTATUS[0]}
-          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
+          OUTPUT_ZIP="macos-arm64-${{ matrix.game.output }}.zip"
           if [ $BUNDLE_STATUS -eq 0 ]; then
             echo "✅ Bundle completed successfully"
             if [ -f "${OUTPUT_ZIP}" ]; then
@@ -465,27 +538,22 @@ jobs:
       - name: Prepare .app Artifact
         if: success()
         run: |
-          OUTPUT_ZIP="${{ matrix.game.output }}-macos-arm64.zip"
+          OUTPUT_ZIP="macos-arm64-${{ matrix.game.output }}.zip"
           APP_NAME="${{ matrix.game.output }}.app"
           ARTIFACT_DIR="/tmp/macos-artifact-${{ matrix.game.id }}"
           rm -rf "${ARTIFACT_DIR}"
           mkdir -p "${ARTIFACT_DIR}"
 
-          unzip -q "${OUTPUT_ZIP}" -d "${ARTIFACT_DIR}"
-
-          if [ ! -d "${ARTIFACT_DIR}/${APP_NAME}" ]; then
-            echo "❌ App bundle not found after extracting ${OUTPUT_ZIP}: ${ARTIFACT_DIR}/${APP_NAME}"
-            find "${ARTIFACT_DIR}" -maxdepth 2 -print
+          # GeneralsX @bugfix Meeseeks 14/09/2026 Verify zip contains .app bundle directly at root and stage for artifact upload.
+          if ! unzip -l "${OUTPUT_ZIP}" | grep -q "${APP_NAME}/"; then
+            echo "❌ App bundle not found in ${OUTPUT_ZIP}"
+            unzip -l "${OUTPUT_ZIP}"
             exit 1
           fi
 
-          echo "✅ Prepared app bundle artifact: ${ARTIFACT_DIR}/${APP_NAME}"
-          du -sh "${ARTIFACT_DIR}/${APP_NAME}"
-
-          # GeneralsX @build fbraz3 27/03/2026 Archive .app as tar (no compression) to preserve symlinks and executable bits.
-          BUNDLE_TAR="${ARTIFACT_DIR}/${APP_NAME%.app}.tar"
-          tar -C "${ARTIFACT_DIR}" -cf "${BUNDLE_TAR}" "${APP_NAME}"
-          echo "✅ Archive ready: ${BUNDLE_TAR}"
+          cp "${OUTPUT_ZIP}" "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          echo "✅ Archive ready: ${ARTIFACT_DIR}/${OUTPUT_ZIP}"
+          du -sh "${ARTIFACT_DIR}/${OUTPUT_ZIP}"
 
       - name: Upload Build Logs
         if: always()
@@ -499,7 +567,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: macos-${{ matrix.game.id }}-app
-          path: /tmp/macos-artifact-${{ matrix.game.id }}/*.tar
+          name: macos-arm64-${{ matrix.game.output }}.zip
+          path: /tmp/macos-artifact-${{ matrix.game.id }}/macos-arm64-${{ matrix.game.output }}.zip
+          archive: false
           retention-days: 7
-          if-no-files-found: warn
+          if-no-files-found: error

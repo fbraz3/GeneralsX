@@ -38,13 +38,13 @@
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 #include <stdlib.h>
 #include "parametertypes.h"
-#include "Vector.h"
-#include "wwstring.h"
-#include "bittype.h"
-#include "obbox.h"
+#include "WWLib/Vector.h"
+#include "WWLib/wwstring.h"
+#include "WWLib/bittype.h"
+#include "WWMath/obbox.h"
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -208,16 +208,11 @@ ParameterClass::Get_Name () const
 //	Set_Name
 //////////////////////////////////////////////////////////////////////////////////
 inline void
-ParameterClass::Set_Name (const char *new_name)
+ParameterClass::Set_Name (const char* new_name)
 {
-	if (m_Name != nullptr) {
-		::free ((void *)m_Name);
-		m_Name = nullptr;
-	}
-
-	if (new_name != nullptr) {
-		m_Name = ::strdup (new_name);
-	}
+	char* name = new_name ? ::strdup(new_name) : nullptr;
+	::free((void*)m_Name);
+	m_Name = name;
 }
 
 

@@ -65,6 +65,12 @@
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
+#include "GameNetwork/RankPointValue.h"
+
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
+
 #include "GameNetwork/GameSpyOverlay.h"
 
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
@@ -123,9 +129,11 @@ static AsciiString obfuscate( AsciiString in )
 		if (!*c2)
 			c2 = xorWord;
 		if (*c != *c2)
-			*c = *c++ ^ *c2++;
-		else
-			c++, c2++;
+		{
+			*c = *c ^ *c2;
+		}
+		c++;
+		c2++;
 	}
 	AsciiString out = buf;
 	delete[] buf;
@@ -806,11 +814,48 @@ static void checkLogin()
 //-------------------------------------------------------------------------------------------------
 void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 {
+#if defined(SAGE_USE_NGMP)
+	// Pump the NGMP event queue each frame so worker-thread events (e.g. EVENT_AUTH_SUCCESS)
+	// are delivered while we are in the shell menu. The normal GameEngine::update() path that
+	// pumps NGMP only runs during gameplay (inside VERIFY_CRC), not during shell menus.
+	auto events = NGMP_OnlineServicesManager::getInstance().pollEvents();
+
+	if (NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+	{
+		if (!buttonPushed)
+		{
+			// GeneralsX @feature fbraz3 12/08/2026 Populate GameSpyInfo with NGMP identity so player slots and chat work
+			std::string username = NGMP_OnlineServicesManager::getInstance().getUsername();
+			int64_t userId = NGMP_OnlineServicesManager::getInstance().getUserId();
+			AsciiString aName(username.c_str());
+			TheGameSpyInfo->setLocalName(aName);
+			TheGameSpyInfo->setLocalProfileID(static_cast<Int>(userId));
+
+			buttonPushed = true;
+			loginAttemptTime = 0;
+			nextScreen = "Menus/WOLWelcomeMenu.wnd";
+			TheShell->pop();
+		}
+		return;
+	}
+
+	// Process any other NGMP events
+	for (const auto& ev : events) {
+		if (ev.type == NGMPEvent::EVENT_AUTH_FAILURE) {
+			loginAttemptTime = 0;
+			EnableLoginControls(TRUE);
+			GSMessageBoxOk(TheGameText->fetch("GUI:ConnectionErrorTitle"), TheGameText->fetch("GUI:ConnectionError"));
+			fprintf(stderr, "[NGMP] Showing connection error to user: %s\n", ev.payload.c_str());
+			fflush(stderr);
+		}
+	}
+#endif
 
 	// We'll only be successful if we've requested to
 	if(isShuttingDown && TheShell->isAnimFinished() && TheTransitionHandler->isFinished())
 		shutdownComplete(layout);
 
+#if !defined(SAGE_USE_NGMP)
 	if (TheShell->isAnimFinished() && !buttonPushed && TheGameSpyPeerMessageQueue)
 	{
 		PingResponse pingResp;
@@ -878,7 +923,9 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 
 		checkLogin();
 	}
+#endif
 
+#if !defined(SAGE_USE_NGMP)
 	if (TheGameSpyInfo && !buttonPushed && loginAttemptTime && (loginAttemptTime + loginTimeoutInMS < timeGetTime()))
 	{
 		// timed out a login attempt, so say so
@@ -898,6 +945,9 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		TearDownGameSpy();
 		SetUpGameSpy( motd.str(), config.str() );
 	}
+#else
+	loginAttemptTime = 0;
+#endif
 
 }
 
@@ -1213,7 +1263,9 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				if ( controlID == buttonBackID )
 				{
 					buttonPushed = true;
+#ifndef SAGE_USE_NGMP
 					TearDownGameSpy();
+#endif
 					TheShell->pop();
 				}
 #ifdef ALLOW_NON_PROFILED_LOGIN
@@ -1346,6 +1398,13 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 
 						if ( !email.isEmpty() && !login.isEmpty() && !password.isEmpty() )
 						{
+#if defined(SAGE_USE_NGMP)
+							// GeneralsX @feature GeneralsOnline
+							// Login is handled via browser gamecode flow launched from MainMenu.
+							// This WOL login form is not used in NGMP builds.
+							(void)login; (void)password; (void)email;
+							loginAttemptTime = 0;
+#else
 							loginAttemptTime = timeGetTime();
 							BuddyRequest req;
 							req.buddyRequestType = BuddyRequest::BUDDYREQUEST_LOGIN;
@@ -1361,6 +1420,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 							DEBUG_LOG(("before login: TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
 
 							TheGameSpyBuddyMessageQueue->addRequest( req );
+#endif
 							if(checkBoxRememberPassword && GadgetCheckBoxIsChecked(checkBoxRememberPassword))
 							{
 								(*loginPref)["lastName"] = login;

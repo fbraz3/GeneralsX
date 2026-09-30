@@ -50,8 +50,7 @@
 //#define _CAMPEA_DEMO
 
 // ----------------------------------------------------------------------------------------------
-#include "Lib/BaseType.h"
-#include "WWCommon.h"
+#include "WWLib/WWCommon.h"
 #include "Common/GameDefines.h"
 #include "systimer.h"
 

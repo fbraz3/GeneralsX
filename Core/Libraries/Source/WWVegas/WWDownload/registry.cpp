@@ -22,9 +22,8 @@
 
 #include "Registry.h"
 #include <string>
-
 #ifdef _WIN32
-#include "win.h"
+#include "WWLib/win.h"
 #else
 #include "registryini.h"
 #ifndef HKEY_LOCAL_MACHINE

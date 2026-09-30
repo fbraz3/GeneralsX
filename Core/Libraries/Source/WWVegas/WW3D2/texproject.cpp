@@ -88,7 +88,7 @@
 
 
 // DEBUG DEBUG
-#include "MPU.h"
+#include "WWLib/MPU.h"
 
 #define DEBUG_SHADOW_RENDERING					0
 //#define DEFAULT_TEXTURE_SIZE						64
@@ -931,9 +931,8 @@ bool TexProjectClass::Compute_Perspective_Projection
 	** Calculate the axis-aligned bounding box of the model in the camera's coordinate system.
 	*/
 	AABoxClass box = obj_box;
-	Matrix3D obj_to_world = tm;
 	Matrix3D obj_to_texture;
-	Matrix3D::Multiply(texture_tm_inv,obj_to_world,&obj_to_texture);
+	Matrix3D::Multiply(texture_tm_inv,tm,&obj_to_texture);
 	box.Transform(obj_to_texture);
 
 	/*
@@ -1060,9 +1059,8 @@ bool TexProjectClass::Compute_Ortho_Projection
 	** Calculate the axis-aligned bounding box of the model in the camera's coordinate system.
 	*/
 	AABoxClass box = obj_box;
-	Matrix3D obj_to_world = tm;
 	Matrix3D obj_to_texture;
-	Matrix3D::Multiply(texture_tm_inv,obj_to_world,&obj_to_texture);
+	Matrix3D::Multiply(texture_tm_inv,tm,&obj_to_texture);
 	box.Transform(obj_to_texture);
 
 	/*

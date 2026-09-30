@@ -154,6 +154,13 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 			infoInPath = tokenizer.nextToken(&token, "\\/");
 		}
 
+		// GeneralsX @bugfix felipebraz 16/09/2026 Skip dummy/wildcard archive entries (e.g. Data\* in PatchZH.big)
+		if (token.isEmpty() || token.find('*') != nullptr || token.find('?') != nullptr)
+		{
+			it++;
+			continue;
+		}
+
 		ArchivedFileLocationMap::iterator fileIt;
 		if (overwrite)
 		{

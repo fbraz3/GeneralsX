@@ -33,8 +33,8 @@
 #pragma once
 
 #include "resource.h"
-#include "rendobj.h"
-#include "Vector3i.h"
+#include "WW3D2/rendobj.h"
+#include "WWMath/Vector3i.h"
 
 // Forward declarations
 class VertexMaterialClass;
@@ -53,7 +53,7 @@ class ScreenCursorClass : public RenderObjClass
 		////////////////////////////////////////////////////////////////////////
 		ScreenCursorClass ();
 		ScreenCursorClass (const ScreenCursorClass &src);
-		virtual ~ScreenCursorClass ();
+		virtual ~ScreenCursorClass () override;
 
 		////////////////////////////////////////////////////////////////////////
 		//	Public operators
@@ -69,15 +69,15 @@ class ScreenCursorClass : public RenderObjClass
 		////////////////////////////////////////////////////////////////////////
 		//	Base class overrides
 		////////////////////////////////////////////////////////////////////////
-		RenderObjClass *		Clone () const								{ return new ScreenCursorClass (*this); }
-		virtual int				Class_ID() const								{ return CLASSID_LAST + 103L; }
-		virtual void			Render (RenderInfoClass &rinfo);
-		virtual void			On_Frame_Update ();
-		virtual void			Get_Obj_Space_Bounding_Sphere(SphereClass & sphere) const;
-		virtual void			Get_Obj_Space_Bounding_Box(AABoxClass & box) const;
+		RenderObjClass *		Clone () const override								{ return new ScreenCursorClass (*this); }
+		virtual int				Class_ID() const override								{ return CLASSID_LAST + 103L; }
+		virtual void			Render (RenderInfoClass &rinfo) override;
+		virtual void			On_Frame_Update () override;
+		virtual void			Get_Obj_Space_Bounding_Sphere(SphereClass & sphere) const override;
+		virtual void			Get_Obj_Space_Bounding_Box(AABoxClass & box) const override;
 
-		virtual void			Notify_Added(SceneClass * scene);
-		virtual void			Notify_Removed(SceneClass * scene);
+		virtual void			Notify_Added(SceneClass * scene) override;
+		virtual void			Notify_Removed(SceneClass * scene) override;
 
 	protected:
 
@@ -93,8 +93,8 @@ class ScreenCursorClass : public RenderObjClass
 		////////////////////////////////////////////////////////////////////////
 		HWND						m_hWnd;
 		Vector2					m_ScreenPos;
-		TextureClass *			m_pTexture;
-		VertexMaterialClass *m_pVertMaterial;
+		RefCountPtr<TextureClass>			m_pTexture;
+		RefCountPtr<VertexMaterialClass> m_pVertMaterial;
 
 		Vector3					m_Verticies[4];
 		Vector3					m_Normals[4];

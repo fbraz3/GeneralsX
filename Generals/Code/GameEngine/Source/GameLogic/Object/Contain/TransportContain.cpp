@@ -362,8 +362,19 @@ UpdateSleepTime TransportContain::update()
 {
 	const TransportContainModuleData *moduleData = getTransportContainModuleData();
 
-	if( m_payloadCreated == FALSE )
+	if (m_payloadCreated == FALSE)
+	{
+#if RETAIL_COMPATIBLE_CRC
 		createPayload();
+#else
+		// TheSuperHackers @bugfix Caball009 25/05/2026 Don't create payload
+		// for destroyed object to avoid leaving the payload in an invalid state.
+		if (!getObject()->isDestroyed())
+		{
+			createPayload();
+		}
+#endif
+	}
 
 	if( moduleData && moduleData->m_healthRegen )
 	{
@@ -457,11 +468,15 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 		return FALSE;
 
 #if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 02/03/2026 If our parent container is held, then we
-	// are not free to exit.
-	DEBUG_ASSERTCRASH(specificObject->getContainedBy(), ("rider must be contained"));
-	if (specificObject->getContainedBy()->isDisabledByType(DISABLED_HELD))
-		return FALSE;
+	// TheSuperHackers @bugfix Stubbjax/bobtista 01/08/2026 If our container is itself contained,
+	// then we are not free to exit.
+	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Except for special Overlord-style containers (e.g. Battle Bunker).
+	if (me->isContained())
+	{
+		const ContainModuleInterface* outerContain = me->getContainedBy()->getContain();
+		if (outerContain == nullptr || !outerContain->isSpecialOverlordStyleContainer())
+			return FALSE;
+	}
 #endif
 
   // I can always kick people out if I am in the air, I know what I'm doing
@@ -473,7 +488,7 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 		return FALSE;
 
 	const Locomotor *hisLocomotor = specificObject->getAIUpdateInterface()->getCurLocomotor();
-	if( hisLocomotor == FALSE )
+	if( hisLocomotor == nullptr )
    	return FALSE;
 
   // He can't get to this spot naturally, so I can't force him there.  (amphib transport)
@@ -511,7 +526,13 @@ void TransportContain::onCapture( Player *oldOwner, Player *newOwner )
 		else
 		{
 			//Use standard
+#if RETAIL_COMPATIBLE_CRC
 			orderAllPassengersToExit( CMD_FROM_AI );
+#else
+			// TheSuperHackers @bugfix Stubbjax 20/11/2025 Only eject passengers if the new owner is not allied with the old owner.
+			if (oldOwner->getRelationship(newOwner->getDefaultTeam()) != ALLIES)
+				orderAllPassengersToExit(CMD_FROM_AI);
+#endif
 		}
 	}
 }

@@ -22,7 +22,7 @@
 //
 
 #include "ColorBar.h"
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 
 // Forward delcarations
 class EmitterInstanceListClass;
@@ -38,7 +38,7 @@ class EmitterRotationPropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterRotationPropPageClass();
-	~EmitterRotationPropPageClass();
+	~EmitterRotationPropPageClass() override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterRotationPropPageClass)

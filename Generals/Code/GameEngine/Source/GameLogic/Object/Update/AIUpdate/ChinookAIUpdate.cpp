@@ -159,7 +159,7 @@ public:
 		Region3D terrainExtent;
 		TheTerrainLogic->getExtent( &terrainExtent );
 		const Real FUDGE = 1.2f;
-		Real HUGE_DIST = FUDGE * sqrt(sqr(terrainExtent.hi.x - terrainExtent.lo.x) + sqr(terrainExtent.hi.y - terrainExtent.lo.y));
+		Real HUGE_DIST = FUDGE * WWMath::SqrtOrigin(sqr(terrainExtent.hi.x - terrainExtent.lo.x) + sqr(terrainExtent.hi.y - terrainExtent.lo.y));
 
 		exitCoord.x += dir->x * HUGE_DIST;
 		exitCoord.y += dir->y * HUGE_DIST;
@@ -176,7 +176,7 @@ public:
 
 		Region3D mapRegion;
 		TheTerrainLogic->getExtentIncludingBorder( &mapRegion );
-		if (!mapRegion.isInRegionNoZ( owner->getPosition() ))
+		if (!mapRegion.isInRegionNoZ( *owner->getPosition() ))
 		{
 			TheGameLogic->destroyObject(owner);
 			return STATE_SUCCESS;
@@ -900,7 +900,7 @@ ChinookAIUpdate::~ChinookAIUpdate()
 static ParkingPlaceBehaviorInterface* getPP(ObjectID id)
 {
 	Object* airfield = TheGameLogic->findObjectByID( id );
-	if (airfield == nullptr || airfield->isEffectivelyDead() || !airfield->isKindOf(KINDOF_AIRFIELD))
+	if (airfield == nullptr || airfield->isEffectivelyDead() || !airfield->isKindOf(KINDOF_FS_AIRFIELD))
 		return nullptr;
 
 	ParkingPlaceBehaviorInterface* pp = nullptr;
@@ -994,8 +994,8 @@ ObjectID ChinookAIUpdate::getBuildingToNotPathAround() const
 AIFreeToExitType ChinookAIUpdate::getAiFreeToExit(const Object* exiter) const
 {
 #if RETAIL_COMPATIBLE_CRC
-	 if (m_flightStatus == CHINOOK_LANDED
-				|| (m_flightStatus == CHINOOK_DOING_COMBAT_DROP && exiter->isKindOf(KINDOF_CAN_RAPPEL)))
+	 if (m_flightStatus == CHINOOK_LANDED ||
+				(m_flightStatus == CHINOOK_DOING_COMBAT_DROP && exiter->isKindOf(KINDOF_CAN_RAPPEL)))
 #else
 	if (m_flightStatus == CHINOOK_LANDED)
 #endif
@@ -1189,6 +1189,19 @@ void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 			// just pass it thru.
 		}
 		break;
+#if !RETAIL_COMPATIBLE_CRC
+		case AICMD_ENTER:
+		{
+			// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter ourselves (we can be in the same group).
+			if (parms->m_obj && parms->m_obj->getID() == getObject()->getID())
+				return;
+
+			// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter something we cannot (we can be in the same group).
+			if (!TheActionManager->canEnterObject(getObject(), parms->m_obj, parms->m_cmdSource, DONT_CHECK_CAPACITY))
+				return;
+		}
+		break;
+#endif
 
 		case AICMD_MOVE_TO_POSITION_AND_EVACUATE:
 		case AICMD_MOVE_TO_POSITION_AND_EVACUATE_AND_EXIT:

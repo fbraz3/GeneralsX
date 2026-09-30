@@ -167,6 +167,8 @@ public:
 	virtual void scrollBy( const Coord2D *delta ) override;  ///< Shift the view by the given delta
 
 	virtual void forceRedraw() override;
+	virtual void onHeightMapChanged() override { m_lastScreenToTerrainValid = false; }
+	virtual void onBridgeChanged() override { m_lastScreenToTerrainValid = false; }
 
 	virtual Bool isDoingScriptedCamera() override;
 	virtual void stopDoingScriptedCamera() override;
@@ -219,8 +221,8 @@ public:
 	virtual void setFieldOfView( Real angle ) override;							///< Set the horizontal field of view angle
 
   virtual WorldToScreenReturn worldToScreenTriReturn( const Coord3D *w, ICoord2D *s ) override;	///< Transform world coordinate "w" into screen coordinate "s"
-	virtual void screenToTerrain( const ICoord2D *screen, Coord3D *world ) override;  ///< transform screen coord to a point on the 3D terrain
-	virtual void screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z ) override;  ///< transform screen point to world point at the specified world Z value
+	virtual Bool screenToTerrain( const ICoord2D *screen, Coord3D *world ) override;
+	virtual PlaneClass::IntersectionResType screenToWorldAtZ( const ICoord2D *screen, Coord3D *world, Real z ) override;
 
 	CameraClass *get3DCamera() const { return m_3DCamera; }
 
@@ -278,8 +280,10 @@ private:
 	Bool		m_freezeTimeForCameraMovement;
 	Int			m_timeMultiplier;												///< Time speedup multiplier.
 
-	Bool		m_cameraHasMovedSinceRequest;					///< If true, throw out all saved locations
-	VecPosRequests	m_locationRequests;		///< These are cached. New requests are added here
+	// TheSuperHackers @performance Cache only the latest screen-to-terrain result.
+	Bool		m_lastScreenToTerrainValid;
+	ICoord2D	m_lastScreenToTerrainScreen;
+	Coord3D		m_lastScreenToTerrainWorld;
 
 	Coord3D m_previousLookAtPosition;
 	Coord2D m_scrollAmount;													///< scroll speed
@@ -327,6 +331,7 @@ private:
 	void pitchCameraOneFrame();							///< Do one frame of a pitch camera movement.
 	void getAxisAlignedViewRegion(Region3D &axisAlignedRegion);	///< Find 3D Region enclosing all possible drawables.
 	void calcDeltaScroll(Coord2D &screenDelta);
+	bool getDesiredTerrainDrawSize(ICoord2D &dimensions) const;
 	void updateTerrain();
 
 	// (gth) C&C3 animation controlled camera feature

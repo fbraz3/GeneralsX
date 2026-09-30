@@ -204,7 +204,7 @@ private:
 	Vector3							m_decayRate;			///< step amount to make tint turn off slow or fast
 	Vector3							m_peakColor;			///< um, the peak color, what color we are headed toward during attack
 	Vector3							m_currentColor;		///< um, the current color, how we are colored, now
-	Real								m_sustainCounter;
+	double							m_sustainCounter;
 	Byte								m_envState;				///< a randomly switchable SUSTAIN state, release is compliment
 	Bool								m_affect;         ///< set TRUE if this has any effect (has a non 0,0,0 color).
 };
@@ -317,7 +317,6 @@ public:
 	TintEnvelope *getColorTintEnvelope() { return m_colorTintEnvelope; }
 	void setColorTintEnvelope( TintEnvelope &source ) { if (m_colorTintEnvelope) *m_colorTintEnvelope = source; }
 
-
   void imitateStealthLook( Drawable& otherDraw );
 
 	void setTerrainDecal(TerrainDecalType type);	///<decal that is to appear under the drawable
@@ -388,9 +387,6 @@ public:
 	void setFullyObscuredByShroud(Bool fullyObscured);
 	Bool getFullyObscuredByShroud() {return m_drawableFullyObscuredByShroud;}
 
-  // Put on ice until later... M Lorenzen
-  //	inline UnsignedByte getFullyObscuredByShroudWithCheatSpy() {return (UnsignedByte)m_drawableFullyObscuredByShroud | 128;}//8 looks like a zero in most fonts
-
 	Bool getDrawsInMirror() const { return BitIsSet(m_status, DRAWABLE_STATUS_DRAWS_IN_MIRROR) || isKindOf(KINDOF_CAN_CAST_REFLECTIONS); }
 
 	void colorFlash( const RGBColor *color, UnsignedInt decayFrames = DEF_DECAY_FRAMES, UnsignedInt attackFrames = 0, UnsignedInt sustainAtPeak = 0 );  ///< flash a drawable in the color specified for a short time
@@ -416,7 +412,7 @@ public:
 	const Matrix3D *getTransformMatrix() const;	///< return the world transform
 
 	void draw();													///< render the drawable to the given view
-	void updateDrawable();														///< update the drawable
+	void updateDrawable(Real timeScale);														///< update the drawable
 
 	void drawIconUI();													///< draw "icon"(s) needed on drawable (health bars, veterency, etc)
 
@@ -580,7 +576,7 @@ public:
   // Stuff for overriding ambient sound
   const AudioEventInfo * getBaseSoundAmbientInfo() const; //< Possible starting point if only some parameters are customized
   void enableAmbientSoundFromScript( Bool enable );
-  const AudioEventRTS * getAmbientSound() const { return m_ambientSound == nullptr ? nullptr : &m_ambientSound->m_event; }
+  const AudioEventRTS * getAmbientSound() const { return m_ambientSound == nullptr ? nullptr : m_ambientSound.Peek(); }
   void setCustomSoundAmbientOff(); //< Kill the ambient sound
   void setCustomSoundAmbientInfo( DynamicAudioEventInfo * customAmbientInfo ); //< Set ambient sound.
   void clearCustomSoundAmbient() { clearCustomSoundAmbient( true ); } //< Return to using defaults
@@ -691,7 +687,7 @@ private:
 		FADING_OUT
 	};
 	FadingMode		m_fadeMode;
-	UnsignedInt		m_timeElapsedFade;			///< for how many frames have i been fading
+	Real			m_timeElapsedFade;			///< for how many logic frames - incl. fractional ones - have i been fading
 	UnsignedInt		m_timeToFade;						///< how slowly am I fading
 
 	UnsignedInt		m_shroudClearFrame;						///< Last frame the local player saw this drawable "OBJECTSHROUD_CLEAR"
@@ -700,7 +696,7 @@ private:
 
 	PhysicsXformInfo* m_physicsXform;
 
-	DynamicAudioEventRTS*	m_ambientSound;		///< sound module for ambient sound (lazily allocated)
+	RefCountPtr<DynamicAudioEventRTS> m_ambientSound;		///< sound module for ambient sound (lazily allocated)
 
 	Module** m_modules[NUM_DRAWABLE_MODULE_TYPES];
 

@@ -60,7 +60,7 @@ template <typename text>int IsFormatTypeChar ( text ch )
 
 
 
-OLEString::OLEString ( void )
+OLEString::OLEString ()
 {
 	ole = nullptr;
 	sb = nullptr;
@@ -123,7 +123,7 @@ void OLEString::Set ( const char *new_sb )
 	}
 }
 
-void OLEString::StripSpaces ( void )
+void OLEString::StripSpaces ()
 {
 	if ( locked )
 	{
@@ -141,7 +141,7 @@ void OLEString::StripSpaces ( void )
 }
 
 
-void OLEString::FormatMetaString ( void )
+void OLEString::FormatMetaString ()
 {
 	char *str, *ptr;
 	char ch, last = -1;
@@ -158,7 +158,7 @@ void OLEString::FormatMetaString ( void )
 	str = string;
 	ptr = sb;
 
-	while ( (ch = *ptr++) )
+	while ( (ch = *ptr++) != 0 )
 	{
 		if ( ch == ' '  )
 		{
@@ -218,7 +218,7 @@ template <typename text> void StripSpaces ( text *string )
 
 	str = ptr = string;
 
-	while ( (ch = *ptr++) )
+	while ( (ch = *ptr++) != 0 )
 	{
 		if ( ch == ' '  )
 		{
@@ -262,7 +262,7 @@ template <typename text> void StripSpacesFromMetaString ( text *string )
 
 	str = ptr = string;
 
-	while ( (ch = *ptr++) )
+	while ( (ch = *ptr++) != 0 )
 	{
 		if ( ch == ' '  )
 		{
@@ -318,11 +318,11 @@ template <typename text> void ConvertMetaChars ( text *string )
 
 	ptr = string;
 
-	while ( (ch = *string++) )
+	while ( (ch = *string++) != text(0) )
 	{
 		if ( ch == '\\' )
 		{
-			if ( ch = *string )
+			if ( (ch = *string) != text(0) )
 			{
 				switch  ( ch )
 				{

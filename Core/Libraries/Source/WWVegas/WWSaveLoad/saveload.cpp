@@ -39,17 +39,17 @@
 #include "saveloadsubsystem.h"
 #include "persist.h"
 #include "persistfactory.h"
-#include "chunkio.h"
-#include "wwdebug.h"
+#include "WWLib/chunkio.h"
+#include "WWDebug/wwdebug.h"
 #include "saveloadstatus.h"
-#include "wwhack.h"
-#include "wwprofile.h"
+#include "WWDebug/wwhack.h"
+#include "WWDebug/wwprofile.h"
 
 #pragma warning(disable:4201) // warning C4201: nonstandard extension used : nameless struct/union
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include "systimer.h"
+#include "WWLib/systimer.h"
 
 
 SaveLoadSubSystemClass *		SaveLoadSystemClass::SubSystemListHead = nullptr;
@@ -214,7 +214,7 @@ void SaveLoadSystemClass::Register_Pointer (void *old_pointer, void *new_pointer
 	PointerRemapper.Register_Pointer(old_pointer,new_pointer);
 }
 
-#ifdef WWDEBUG
+#ifdef DEBUG_LOGGING
 
 void SaveLoadSystemClass::Request_Pointer_Remap (void **pointer_to_convert,const char * file,int line)
 {

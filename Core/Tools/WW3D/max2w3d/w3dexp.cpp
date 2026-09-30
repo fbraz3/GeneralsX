@@ -117,11 +117,11 @@ public:
 
 		if
 		(
-			obj
+			obj &&
 //			&& !Is_Proxy (*node)
-			&& !Is_Origin(node)
-			&& !node->IsHidden()
-			&& Is_Geometry(node)
+			!Is_Origin(node) &&
+			!node->IsHidden() &&
+			Is_Geometry(node)
 		)
 		{
 			return TRUE;
@@ -369,7 +369,6 @@ void W3dExportClass::DoOriginBasedExport(char *rootname,ChunkSaveClass &csave)
 	/*
 	** Find the base object's origin.
 	*/
-	bool				is_base_object = false;
 	INodeListClass	*origin_list = get_origin_list();
 	unsigned int	i, count = origin_list->Num_Nodes();
 	INode				*base_origin = nullptr;
@@ -645,7 +644,6 @@ bool W3dExportClass::Export_Damage_Animations(char *name, ChunkSaveClass &csave,
    /*
 	** For every damage region we find, export an animation.
 	*/
-	bool			done = false;
 	int			current_region = 0;
 	int			num_damage_bones = 0;	// number of bones assigned to a damage region
 	for (current_region = 0; current_region < MAX_DAMAGE_REGIONS; current_region++)
@@ -756,7 +754,8 @@ bool W3dExportClass::Export_Geometry(char * name,ChunkSaveClass & csave,Progress
 	char	materialColorFilename[_MAX_FNAME + 1];
 	memset(materialColors,0,sizeof(materialColors));
 	for (i=0; i<TEAM_COLOR_PALETTE_SIZE; i++)
-	{	//preset the first 16 colors to predefined set of house colors
+	{
+		//preset the first 16 colors to predefined set of house colors
 		materialColors[i]=houseColorScale[i] << 16;
 	}
 
@@ -936,7 +935,7 @@ bool W3dExportClass::Export_HLod( char *name, const char *htree_name, ChunkSaveC
  * HISTORY:                                                                                    *
  *   10/16/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-HierarchySaveClass * W3dExportClass::get_hierarchy_tree(void)
+HierarchySaveClass * W3dExportClass::get_hierarchy_tree()
 {
 	/*
 	** If the hierarchy tree pointer has been initialized, just return it
@@ -981,7 +980,7 @@ HierarchySaveClass * W3dExportClass::get_hierarchy_tree(void)
  * HISTORY:                                                                                    *
  *   10/17/2000 gth : Created.                                                                 *
  *=============================================================================================*/
-INodeListClass * W3dExportClass::get_damage_root_list(void)
+INodeListClass * W3dExportClass::get_damage_root_list()
 {
 	if (DamageRootList != nullptr) return DamageRootList;
 
@@ -1006,7 +1005,7 @@ INodeListClass * W3dExportClass::get_damage_root_list(void)
  * HISTORY:                                                                                    *
  *   9/13/1999  AJA : Created.                                                                 *
  *=============================================================================================*/
-INodeListClass * W3dExportClass::get_origin_list(void)
+INodeListClass * W3dExportClass::get_origin_list()
 {
 	if (OriginList != nullptr) return OriginList;
 
@@ -1153,7 +1152,7 @@ bool W3dExportClass::get_export_options(BOOL suppress_prompts)
  * HISTORY:                                                                                    *
  *   10/16/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void W3dExportClass::Start_Progress_Bar(void)
+void W3dExportClass::Start_Progress_Bar()
 {
 	MaxInterface->ProgressStart(
 		"Processing Triangle Mesh",
@@ -1174,7 +1173,7 @@ void W3dExportClass::Start_Progress_Bar(void)
  * HISTORY:                                                                                    *
  *   10/16/1997 GH  : Created.                                                                 *
  *=============================================================================================*/
-void W3dExportClass::End_Progress_Bar(void)
+void W3dExportClass::End_Progress_Bar()
 {
 	MaxInterface->ProgressUpdate( 100);
 	MaxInterface->ProgressEnd();
@@ -1214,7 +1213,6 @@ static bool check_lod_extensions (INodeListClass &list, INode *origin)
 	if (origin->IsRootNode()) return true;
 
 	char	*extension = strrchr(origin->GetName(), '.');
-	int	ext_len = strlen(extension);
 	for (unsigned i = 0; i < list.Num_Nodes(); i++)
 	{
 		char *this_ext = strrchr(list[i]->GetName(), '.');

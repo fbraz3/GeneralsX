@@ -27,6 +27,7 @@ public:
 	FrameRateLimit();
 
 	Real wait(UnsignedInt maxFps);
+	void reset(); ///< Move the timing anchor to now, discarding any time elapsed since the last call to wait.
 
 private:
 	Int64 m_freq;
@@ -63,11 +64,8 @@ class LogicTimeScaleFpsPreset
 public:
 	enum CPP_11(: UnsignedInt)
 	{
-#if RTS_DEBUG
+		// GeneralsX @tweak felipebraz 17/09/2026 Allow lowering simulation tick rate down to 5 Hz in all builds (#281)
 		MinFpsValue = 5,
-#else
-		MinFpsValue = LOGICFRAMES_PER_SECOND,
-#endif
 		StepFpsValue = 5,
 	};
 

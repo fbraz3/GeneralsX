@@ -152,6 +152,15 @@ void OverlordContain::exitObjectViaDoor(Object* exitObj, ExitDoorType exitDoor)
 	TransportContain::exitObjectViaDoor(exitObj, exitDoor);
 }
 
+// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Without this, exit/evacuate silently no-ops.
+ExitInterface* OverlordContain::getContainExitInterface()
+{
+	if( getRedirectedContain() == nullptr )
+		return OpenContain::getContainExitInterface();
+
+	return getRedirectedContain()->getContainExitInterface();
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void OverlordContain::onBodyDamageStateChange( const DamageInfo* damageInfo,
@@ -396,6 +405,15 @@ Bool OverlordContain::isValidContainerFor(const Object* obj, Bool checkCapacity)
 		return TransportContain::isValidContainerFor( obj, checkCapacity );
 
 	return getRedirectedContain()->isValidContainerFor( obj, checkCapacity );
+}
+
+// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Without this, privateExit's isContained() guard blocks all exits.
+Bool OverlordContain::isContained( const Object *obj ) const
+{
+	if( getRedirectedContain() == nullptr )
+		return OpenContain::isContained( obj );
+
+	return getRedirectedContain()->isContained( obj );
 }
 
 //-------------------------------------------------------------------------------------------------

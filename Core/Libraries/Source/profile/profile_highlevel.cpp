@@ -32,7 +32,7 @@
 #include <new>
 // GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
-#include <WWCommon.h>
+#include <WWLib/WWCommon.h>
 
 // our own fast critical section
 static ProfileFastCS cs;

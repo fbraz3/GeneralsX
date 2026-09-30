@@ -21,44 +21,44 @@
 
 #include "StdAfx.h"
 #include "resource.h"
-#include "wwmath.h"
-#include "ww3d.h"
-#include "scene.h"
-#include "rendobj.h"
-#include "camera.h"
-#include "intersec.h"
+#include "WWMath/wwmath.h"
+#include "WW3D2/ww3d.h"
+#include "WW3D2/scene.h"
+#include "WW3D2/rendobj.h"
+#include "WW3D2/camera.h"
+#include "WW3D2/intersec.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/Module/W3DTreeDraw.h"
-#include "agg_def.h"
-#include "part_ldr.h"
-#include "hanim.h"
-#include "dx8wrapper.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
-#include "dx8renderer.h"
-#include "dx8fvf.h"
-#include "vertmaterial.h"
-#include "font3d.h"
-#include "render2d.h"
-#include "rddesc.h"
-#include "textdraw.h"
-#include "rect.h"
-#include "mesh.h"
-#include "meshmdl.h"
-#include "line3d.h"
-#include "dynamesh.h"
-#include "sphereobj.h"
-#include "ringobj.h"
-#include "surfaceclass.h"
-#include "vector2i.h"
-#include "bmp2d.h"
-#include "decalsys.h"
-#include "shattersystem.h"
-#include "light.h"
-#include "texproject.h"
+#include "WW3D2/agg_def.h"
+#include "WW3D2/part_ldr.h"
+#include "WW3D2/hanim.h"
+#include "WW3D2/dx8wrapper.h"
+#include "WW3D2/dx8indexbuffer.h"
+#include "WW3D2/dx8vertexbuffer.h"
+#include "WW3D2/dx8renderer.h"
+#include "WW3D2/dx8fvf.h"
+#include "WW3D2/vertmaterial.h"
+#include "WW3D2/font3d.h"
+#include "WW3D2/render2d.h"
+#include "WW3D2/rddesc.h"
+#include "WW3D2/textdraw.h"
+#include "WWMath/rect.h"
+#include "WW3D2/mesh.h"
+#include "WW3D2/meshmdl.h"
+#include "WW3D2/line3d.h"
+#include "WW3D2/dynamesh.h"
+#include "WW3D2/sphereobj.h"
+#include "WW3D2/ringobj.h"
+#include "WW3D2/surfaceclass.h"
+#include "WWMath/vector2i.h"
+#include "WW3D2/bmp2d.h"
+#include "WW3D2/decalsys.h"
+#include "WW3D2/shattersystem.h"
+#include "WW3D2/light.h"
+#include "WW3D2/texproject.h"
 #include "MapSettings.h"
-#include "predlod.h"
+#include "WW3D2/predlod.h"
 #include "SelectMacrotexture.h"
 #include "WorldBuilderView.h"
 #include "WHeightMapEdit.h"
@@ -175,11 +175,11 @@ public:
 																				Bool (*callback)( Drawable *draw, void *userData ),
 																				void *userData ) override {return 0;};
   virtual WorldToScreenReturn worldToScreenTriReturn( const Coord3D *w, ICoord2D *s ) override { return WTS_INVALID; };	///< Transform world coordinate "w" into screen coordinate "s"
-	virtual void screenToTerrain( const ICoord2D *screen, Coord3D *world ) override {};  ///< transform screen coord to a point on the 3D terrain
-	virtual void screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z ) override {};  ///< transform screen point to world point at the specified world Z value
-	virtual void getScreenCornerWorldPointsAtZ( Coord3D *topLeft, Coord3D *topRight,
+	virtual Bool screenToTerrain( const ICoord2D *screen, Coord3D *world ) override { return false; }
+	virtual PlaneClass::IntersectionResType screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z ) override { return PlaneClass::NO_INTERSECTION; }
+	virtual PlaneClass::IntersectionResType getScreenCornerWorldPointsAtZ( Coord3D *topLeft, Coord3D *topRight,
 																							Coord3D *bottomRight, Coord3D *bottomLeft,
-																							Real z ) override {};
+																							Real z, ViewportClass viewPort = ViewportClass() ) override { return PlaneClass::NO_INTERSECTION; }
 
 	virtual void drawView() override {};															///< Render the world visible in this view.
 	virtual void updateView() override {};															///< Render the world visible in this view.
@@ -721,7 +721,8 @@ void WbView3d::setupCamera()
 
 	// build new camera transform
 	camtransform.Make_Identity();
-	if (factor < 0) { //WST 11/11/02. Fix camera flipping over when near the ground too early
+	if (factor < 0) {
+		//WST 11/11/02. Fix camera flipping over when near the ground too early
 		targetPos = sourcePos + (sourcePos-targetPos);
 	}
 	camtransform.Look_At( sourcePos, targetPos, 0 );
@@ -883,7 +884,8 @@ void WbView3d::setLighting(const GlobalData::TerrainLighting *tl, Int whichLight
 		Matrix3D mtx;
 		mtx.Set(Vector3(1,0,0), Vector3(0,1,0), Vector3(ol->lightPos.x, ol->lightPos.y, ol->lightPos.z), Vector3(0,0,0));
 		m_globalLight[whichLight]->Set_Transform(mtx);
-		if( m_scene && whichLight == 0) {	//only let the first light contribute to ambient
+		if( m_scene && whichLight == 0) {
+			//only let the first light contribute to ambient
 			m_scene->Set_Ambient_Light( Vector3(ol->ambient.red, ol->ambient.green, ol->ambient.blue) );
 			m_baseBuildScene->Set_Ambient_Light( Vector3(ol->ambient.red, ol->ambient.green, ol->ambient.blue) );
 		}
@@ -998,7 +1000,7 @@ void WbView3d::updateScorches()
 			Scorches type = (Scorches) pMapObj->getProperties()->getInt(TheKey_scorchType);
 
 			Vector3 loc(pos->x, pos->y, pos->z);
-			TheTerrainRenderObject->addScorch(loc, radius, type);
+			TheTerrainRenderObject->addStaticScorch(loc, radius, type);
 		}
 	}
 }
@@ -1481,7 +1483,8 @@ void WbView3d::invalObjectInView(MapObject *pMapObjIn)
 					shadowInfo.allowUpdates=FALSE;	//shadow image will never update
 					shadowInfo.allowWorldAlign=TRUE;	//shadow image will wrap around world objects
 					if (tTemplate && tTemplate->getShadowType() != SHADOW_NONE && !(pMapObj->getFlags() & FLAG_DONT_RENDER))
-					{	//add correct type of shadow
+					{
+						//add correct type of shadow
 						strlcpy(shadowInfo.m_ShadowName, tTemplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo.m_ShadowName));
 						DEBUG_ASSERTCRASH(shadowInfo.m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
 						shadowInfo.m_type=(ShadowType)tTemplate->getShadowType();
@@ -1714,7 +1717,7 @@ Bool WbView3d::viewToDocCoords(CPoint curPt, Coord3D *newPt, Bool constrain)
 	float logY = (Real)curPt.y / (Real)client.Height();
 	Vector3 intersection(0,0,0);
 	// determine the ray corresponding to the camera and distance to projection plane
-	Matrix3D camera_matrix = m_camera->Get_Transform();
+	const Matrix3D& camera_matrix = m_camera->Get_Transform();
 
 	Vector3 camera_location  = m_camera->Get_Position();
 
@@ -1842,7 +1845,7 @@ Bool WbView3d::viewToDocCoordZ(CPoint curPt, Coord3D *newPt, Real theZ)
 	float logY = (Real)curPt.y / (Real)client.Height();
 	Vector3 intersection(0,0,0);
 	// determine the ray corresponding to the camera and distance to projection plane
-	Matrix3D camera_matrix = m_camera->Get_Transform();
+	const Matrix3D& camera_matrix = m_camera->Get_Transform();
 
 	Vector3 camera_location  = m_camera->Get_Position();
 
@@ -1897,7 +1900,7 @@ void WbView3d::updateHysteresis()
 	float logY = (Real)curPt.y / (Real)client.Height();
 	Vector3 intersection(0,0,0);
 	// determine the ray corresponding to the camera and distance to projection plane
-	Matrix3D camera_matrix = m_camera->Get_Transform();
+	const Matrix3D& camera_matrix = m_camera->Get_Transform();
 
 	Vector3 camera_location  = m_camera->Get_Position();
 
@@ -2446,7 +2449,8 @@ void WbView3d::drawLabels(HDC hdc)
 			}
 
 			if (m_doLightFeedback && pMapObj->isSelected())
-			{	//find out position of selected object in order to use it for light feedback tracking.
+			{
+				//find out position of selected object in order to use it for light feedback tracking.
 				selectedPos=*pMapObj->getLocation();
 				selectedPos.z = m_heightMapRenderObj->getHeightMapHeight(selectedPos.x, selectedPos.y, nullptr);
 				RenderObjClass *selRobj=pMapObj->getRenderObj();
@@ -2572,7 +2576,8 @@ void WbView3d::drawLabels(HDC hdc)
 	}
 
 	if (hdc && m_doLightFeedback)
-	{	//Draw Lines to indicate the direction of each light source
+	{
+		//Draw Lines to indicate the direction of each light source
 //		Int LightColors[MAX_GLOBAL_LIGHTS]={RGB(255,0,0),RGB(0,255,0),RGB(0,0,255)};
 
 		for (Int lIndex=0; lIndex<MAX_GLOBAL_LIGHTS; lIndex++)
@@ -2638,7 +2643,8 @@ void WbView3d::drawLabels(HDC hdc)
 	}
 	else
 	{	if (!m_doLightFeedback)
-		{	//not in light feedback mode.  Make sure the temporary feedback models are gone
+		{
+			//not in light feedback mode.  Make sure the temporary feedback models are gone
 
 			for (Int lIndex=0; lIndex<MAX_GLOBAL_LIGHTS; lIndex++)
 			{
@@ -2961,7 +2967,8 @@ void WbView3d::OnViewShowSoftWater()
 {
 	TheWritableGlobalData->m_showSoftWaterEdge = !TheGlobalData->m_showSoftWaterEdge;
 	if (TheGlobalData->m_showSoftWaterEdge)
-	{	//we just turned it on, so recompute shoreline tiles since they may not exist.
+	{
+		//we just turned it on, so recompute shoreline tiles since they may not exist.
 		TheTerrainRenderObject->updateShorelineTiles(0,0,WbDoc()->GetHeightMap()->getXExtent()-1,WbDoc()->GetHeightMap()->getYExtent()-1,
 			WbDoc()->GetHeightMap());
 	}

@@ -6,6 +6,7 @@
 !.github
 !.devin
 !.gitmodules
+!.coderabbit.yaml
 
 *.user
 *.ncb
@@ -76,9 +77,6 @@ Generals/logs/
 # vcpkg artifacts (generated dependencies)
 /vcpkg_installed/
 
-# External reference repositories (large, don't commit)
-# references/
-
 # Release bundles
 GeneralsX-macos-*.zip
 GeneralsXZH-macos-*.zip
@@ -93,3 +91,6 @@ flatpak/*.flatpak
 #tmp and log files on root folder
 logs_*.zip
 *.log
+/cmake/ngmp_env.cmake
+references/GameClient/
+references/GameServer/

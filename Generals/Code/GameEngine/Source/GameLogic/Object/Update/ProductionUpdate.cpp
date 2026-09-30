@@ -323,19 +323,11 @@ Bool ProductionUpdate::queueUpgrade( const UpgradeTemplate *upgrade )
 //-------------------------------------------------------------------------------------------------
 /** Cancel an upgrade being produced here */
 //-------------------------------------------------------------------------------------------------
-void ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
+Bool ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
 {
-
 	// sanity
 	if( upgrade == nullptr )
-		return;
-
-	// get the player
-	Player *player = getObject()->getControllingPlayer();
-
-	// sanity, you can't cancel it if the player isn't actually building one
-	if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER && player->hasUpgradeInProduction( upgrade ) == FALSE )
-		return;
+		return FALSE;
 
 	//
 	// find the production entry for this upgrade in the queue here, there can only be one
@@ -344,34 +336,15 @@ void ProductionUpdate::cancelUpgrade( const UpgradeTemplate *upgrade )
 	ProductionEntry *production;
 	for( production = m_productionQueue; production; production = production->m_next )
 	{
-
 		if( production->m_type == PRODUCTION_UPGRADE &&
 				production->m_upgradeToResearch == upgrade )
-			break;
+		{
+			return cancelUpgrade( production );
+		}
 
 	}
 
-	// sanity, entry not found
-	if( production == nullptr )
-		return;
-
-	// refund money back to the player
-	Money *money = player->getMoney();
-	money->deposit( production->m_upgradeToResearch->calcCostToBuild( player ), TRUE, FALSE );
-
-	// remove this production from the queue
-	removeFromProductionQueue( production );
-
-	// delete production instance
-	deleteInstance(production);
-
-	//
-	// remove the IN_PRODUCTION status of this upgrade from the player, object upgrades don't
-	// have any other IN_PRODUCTION status other than their existence in the build queue
-	//
-	if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER )
-		player->removeUpgrade( upgrade );
-
+	return FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -458,34 +431,21 @@ Bool ProductionUpdate::queueCreateUnit( const ThingTemplate *unitType, Productio
 //-------------------------------------------------------------------------------------------------
 /** Cancel the construction of the unit with the matching production ID */
 //-------------------------------------------------------------------------------------------------
-void ProductionUpdate::cancelUnitCreate( ProductionID productionID )
+Bool ProductionUpdate::cancelUnitCreate( ProductionID productionID )
 {
 
 	// search for the production entry in our queue
 	ProductionEntry *production;
 	for( production = m_productionQueue; production; production = production->m_next )
 	{
-
 		// are we at the one we want get rid of it
 		if( production->m_productionID == productionID )
 		{
-
-			// give the player the cost of the object back
-			Player *player = getObject()->getControllingPlayer();
-			Money *money = player->getMoney();
-			money->deposit( production->m_objectToProduce->calcCostToBuild( player ), TRUE, FALSE );
-
-			// remove from queue list
-			removeFromProductionQueue( production );
-
-			// delete the production entry
-			deleteInstance(production);
-
-			return;
-
+			return cancelUnitCreate( production );
 		}
-
 	}
+
+	return FALSE;
 
 }
 
@@ -507,7 +467,7 @@ void ProductionUpdate::cancelAllUnitsOfType( const ThingTemplate *unitType)
 			ProductionEntry *temp = production->m_next;
 
 			// cancel the production
-			cancelUnitCreate( production->getProductionID() );
+			cancelUnitCreate( production );
 
 			// advance
 			production = temp;
@@ -659,7 +619,7 @@ UpdateSleepTime ProductionUpdate::update()
 	// if we've become OBJECT_STATUS_SOLD, halt all production ... leave things in the
 	// queue because if the sell process completes we get money back for them, for now we
 	// will be just frozen in time
-	// Actually, there will be nothing in the queue since everything gets cancel/refunded
+	// Actually, there will usually be nothing in the queue since everything gets cancel/refunded
 	// at the start of sell, but we still don't want to do anything here.
 	//
 	if( us->getStatusBits().test( OBJECT_STATUS_SOLD ) )
@@ -693,10 +653,8 @@ UpdateSleepTime ProductionUpdate::update()
 		// Don't cancel dozers in the queue.  jba.
 		if (!production->getProductionObject()->isKindOf(KINDOF_DOZER))
 		{
-
-			cancelUnitCreate(production->getProductionID());
-			return UPDATE_SLEEP_NONE;
-
+			if( cancelUnitCreate(production) )
+				return UPDATE_SLEEP_NONE;
 		}
 
 	}
@@ -1085,6 +1043,66 @@ void ProductionUpdate::removeFromProductionQueue( ProductionEntry *production )
 }
 
 //-------------------------------------------------------------------------------------------------
+Bool ProductionUpdate::cancelUpgrade( ProductionEntry *production )
+{
+	DEBUG_ASSERTCRASH(production->getProductionType() == PRODUCTION_UPGRADE,
+		("ProductionUpdate::cancelUpgrade - called with wrong production type"));
+
+	Player *player = getObject()->getControllingPlayer();
+	const UpgradeTemplate *upgrade = production->getProductionUpgrade();
+
+	// sanity, you can't cancel it if the player isn't actually building one
+	if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER && player->hasUpgradeInProduction( upgrade ) == FALSE )
+		return FALSE;
+
+	// refund money back to the player
+	Money *money = player->getMoney();
+	money->deposit( production->m_upgradeToResearch->calcCostToBuild( player ), TRUE, FALSE );
+
+	// remove this production from the queue
+	removeFromProductionQueue( production );
+
+	// delete production instance
+	deleteInstance(production);
+
+	//
+	// remove the IN_PRODUCTION status of this upgrade from the player, object upgrades don't
+	// have any other IN_PRODUCTION status other than their existence in the build queue
+	//
+	if( upgrade->getUpgradeType() == UPGRADE_TYPE_PLAYER )
+		player->removeUpgrade( upgrade );
+
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool ProductionUpdate::cancelUnitCreate( ProductionEntry *production )
+{
+	DEBUG_ASSERTCRASH(production->getProductionType() == PRODUCTION_UNIT,
+		("ProductionUpdate::cancelUnitCreate - called with wrong production type"));
+
+	Player *player = getObject()->getControllingPlayer();
+
+#if !RETAIL_COMPATIBLE_CRC
+	// TheSuperHackers @bugfix arcticdolphin 07/09/2026 No cancel once the batch has started producing.
+	if( production->getProductionQuantityRemaining() < production->getProductionQuantity() )
+		return FALSE;
+#endif
+
+	// give the player the cost of the object back
+	Money *money = player->getMoney();
+	money->deposit( production->m_objectToProduce->calcCostToBuild( player ), TRUE, FALSE );
+
+	// remove from queue list
+	removeFromProductionQueue( production );
+
+	// delete the production entry
+	deleteInstance(production);
+
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Is the upgrade already in the production queue.  Note that you can only have one
 	* production entry for any given upgrade in the queue */
 //-------------------------------------------------------------------------------------------------
@@ -1132,27 +1150,46 @@ void ProductionUpdate::onDie( const DamageInfo *damageInfo )
 // ------------------------------------------------------------------------------------------------
 void ProductionUpdate::cancelAndRefundAllProduction()
 {
-  // Empirically, in release the code can loop forever.  So we limit to 100 passes. jba. [8/31/2003]
-  const Int productionLimit = 100;// With luck, we never queue up 100 units. [8/31/2003]
-  Int i;
-  for (i=0; i<productionLimit; i++)
-  {
-    // iterate through our production queue
-    if( m_productionQueue )
-    {
-      if( m_productionQueue->getProductionType() == PRODUCTION_UNIT )
-        cancelUnitCreate( m_productionQueue->getProductionID() );
-      else if( m_productionQueue->getProductionType() == PRODUCTION_UPGRADE )
-        cancelUpgrade( m_productionQueue->getProductionUpgrade() );
-      else
-      {
-        // unknown production type
-        DEBUG_CRASH(( "ProductionUpdate::cancelAndRefundAllProduction - Unknown production type '%d'",
-                      m_productionQueue->getProductionType() ));
-        return;
-      }
-    }
-  }
+	// Empirically, in release the code can loop forever.  So we limit to 100 passes. jba. [8/31/2003]
+	const Int productionLimit = 100;// With luck, we never queue up 100 units. [8/31/2003]
+	Int i;
+	for(i = 0; i < productionLimit && m_productionQueue; ++i)
+	{
+		ProductionEntry *production = m_productionQueue;
+
+		if( production->getProductionType() == PRODUCTION_UNIT )
+		{
+			if( !cancelUnitCreate( production ) )
+			{
+#if RETAIL_COMPATIBLE_CRC
+				DEBUG_CRASH(("This code path cannot be reached"));
+#endif
+				// Unable to cancel for a refund... delete anyway.
+				removeFromProductionQueue( production );
+				deleteInstance( production );
+			}
+		}
+		else if( production->getProductionType() == PRODUCTION_UPGRADE )
+		{
+			if( !cancelUpgrade( production ) )
+			{
+#if RETAIL_COMPATIBLE_CRC
+				// Cannot cancel the head production... this loop is stuck now and can quit.
+				return;
+#else
+				// Unable to cancel for a refund... delete anyway.
+				removeFromProductionQueue( production );
+				deleteInstance( production );
+#endif
+			}
+		}
+		else
+		{
+			// unknown production type
+			DEBUG_CRASH(( "ProductionUpdate::cancelAndRefundAllProduction - Unknown production type '%d'", production->getProductionType() ));
+			return;
+		}
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

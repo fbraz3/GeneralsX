@@ -15,7 +15,7 @@
 **Root Cause**: Session 72 changed `macos-vulkan` preset from `inherits: "default-vcpkg"` to `inherits: "default"`
 to fix a `$env{VCPKG_ROOT}` resolution failure. But this removed the vcpkg CMake toolchain entirely. All
 packages in `vcpkg.json` (gli, glm, zlib, freetype, fontconfig) stopped being provided.
-Locally, `VCPKG_ROOT=/Users/felipebraz/vcpkg` was set in the shell — hid the problem for weeks.
+Locally, `VCPKG_ROOT=$HOME/vcpkg` was set in the shell — hid the problem for weeks.
 
 **Correct Approach (✅ RIGHT)**:
 1. Keep `inherits: "default-vcpkg"` in the preset — it sets `CMAKE_TOOLCHAIN_FILE`
@@ -827,7 +827,7 @@ This is the same category as LESSON-50 (`long` in TGA structs) and LESSON-45 (`v
 
 **Applies To**: `SDL3Mouse::translateEvent()` — all three event types (motion, button, wheel). For wheel events use `event.wheel.mouse_x/mouse_y`, not a separate `SDL_GetMouseState()` call.
 
-**Reference**: `references/fighter19-dxvk-port/GeneralsMD/Code/GameEngineDevice/Source/SDL3Device/GameClient/SDL3Mouse.cpp` → `scaleMouseCoordinates()`
+**Reference**: `references/old-refs/fighter19-dxvk-port/GeneralsMD/Code/GameEngineDevice/Source/SDL3Device/GameClient/SDL3Mouse.cpp` → `scaleMouseCoordinates()`
 
 ---
 

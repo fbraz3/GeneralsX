@@ -36,8 +36,8 @@
 
 
 #include "aabtreecull.h"
-#include "chunkio.h"
-#include "iostruct.h"
+#include "WWLib/chunkio.h"
+#include "WWLib/iostruct.h"
 #include "sphere.h"
 #include "colmath.h"
 #include "colmathinlines.h"
@@ -1412,7 +1412,7 @@ void AABTreeNodeClass::Select_Splitting_Plane_Brute_Force
 	/*
 	** Notify user that we couldn't split this node
 	*/
-#ifdef WWDEBUG
+#ifdef DEBUG_LOGGING
 	if (sc->Cost == FLT_MAX) {
 		WWDEBUG_SAY(("Unable to split node!  objcount = %d. (%.2f,%.2f,%.2f)",objcount,Box.Center.X, Box.Center.Y, Box.Center.Z));
 	}

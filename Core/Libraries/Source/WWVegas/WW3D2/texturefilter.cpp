@@ -213,7 +213,8 @@ void TextureFilterClass::_Init_Filters(TextureFilterMode texture_filter, Anisotr
 	case TEXTURE_FILTER_ANISOTROPIC:
 
 		FilterSupported = (dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) &&
-			(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC);
+			(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC) &&
+			dx8caps.MaxAnisotropy > 1;
 
 		if (FilterSupported) {
 			_MinTextureFilters[0][FILTER_TYPE_BEST]=D3DTEXF_ANISOTROPIC;
@@ -223,8 +224,12 @@ void TextureFilterClass::_Init_Filters(TextureFilterMode texture_filter, Anisotr
 			_Set_Max_Anisotropy(anisotropy_level);
 		}
 		else {
-			_MinTextureFilters[0][FILTER_TYPE_BEST]=D3DTEXF_POINT;
-			_MagTextureFilters[0][FILTER_TYPE_BEST]=D3DTEXF_POINT;
+			// GeneralsX @bugfix Copilot 24/08/2026 Fall back to linear filtering when anisotropy is unavailable.
+			const BOOL linearFilterSupported =
+				(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR) &&
+				(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR);
+			_MinTextureFilters[0][FILTER_TYPE_BEST]=linearFilterSupported ? D3DTEXF_LINEAR : D3DTEXF_POINT;
+			_MagTextureFilters[0][FILTER_TYPE_BEST]=linearFilterSupported ? D3DTEXF_LINEAR : D3DTEXF_POINT;
 		}
 
 		if (dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR) {
@@ -295,10 +300,23 @@ void TextureFilterClass::Set_Mip_Mapping(FilterType mipmap)
 //! Set anisotropic filter level
 /*!
 */
-void TextureFilterClass::_Set_Max_Anisotropy(AnisotropicFilterMode mode)
+// GeneralsX @bugfix Copilot 24/08/2026 Clamp anisotropy to the active renderer capability.
+int TextureFilterClass::_Set_Max_Anisotropy(int level)
 {
+	const D3DCAPS8& dx8caps=DX8Wrapper::Get_Current_Caps()->Get_DX8_Caps();
+	const bool anisotropySupported =
+		(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) &&
+		(dx8caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC) &&
+		dx8caps.MaxAnisotropy > 1;
+	unsigned anisotropy=anisotropySupported ? (unsigned)level : 1;
+
+	if (anisotropy < 1) anisotropy=1;
+	if (anisotropySupported && anisotropy > dx8caps.MaxAnisotropy) anisotropy=dx8caps.MaxAnisotropy;
+
 	for (int stage = 0; stage < MAX_TEXTURE_STAGES; ++stage)
-		DX8Wrapper::Set_DX8_Texture_Stage_State(stage, D3DTSS_MAXANISOTROPY, mode);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(stage, D3DTSS_MAXANISOTROPY, anisotropy);
+
+	return (int)anisotropy;
 }
 
 //**********************************************************************************************

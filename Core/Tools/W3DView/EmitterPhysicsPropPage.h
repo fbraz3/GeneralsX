@@ -22,7 +22,7 @@
 //
 
 #include "resource.h"
-#include "vector3.h"
+#include "WWMath/vector3.h"
 
 // Forward delcarations
 class EmitterInstanceListClass;
@@ -38,7 +38,7 @@ class EmitterPhysicsPropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterPhysicsPropPageClass (EmitterInstanceListClass *pemitter_list = nullptr);
-	~EmitterPhysicsPropPageClass ();
+	~EmitterPhysicsPropPageClass () override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterPhysicsPropPageClass)

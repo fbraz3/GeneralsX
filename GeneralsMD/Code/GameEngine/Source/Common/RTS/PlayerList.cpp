@@ -58,8 +58,9 @@
 #include "GameLogic/Object.h"
 #endif
 #include "GameLogic/SidesList.h"
+#include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkDefs.h"
-
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 /*extern*/ PlayerList *ThePlayerList = nullptr;
@@ -69,9 +70,10 @@ PlayerList::PlayerList() :
 	m_local(nullptr),
 	m_playerCount(0)
 {
-	// we only allocate a few of these, so don't bother pooling 'em
 	for (Int i = 0; i < MAX_PLAYER_COUNT; i++)
+	{
 		m_players[ i ] = NEW Player( i );
+	}
 	init();
 }
 
@@ -241,6 +243,11 @@ void PlayerList::newGame()
 		p->setDefaultTeam();
 	}
 
+	// GeneralsX @bugfix felipebraz 05/07/2026 Pre-compute the network slot to player mapping
+	if (TheGameInfo)
+	{
+		assignSlotIndices(*TheGameInfo);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -251,6 +258,9 @@ void PlayerList::init()
 
 	for (int i = 1; i < MAX_PLAYER_COUNT; i++)
 		m_players[i]->init(nullptr);
+
+	std::fill(m_slotIndices, m_slotIndices + ARRAY_SIZE(m_slotIndices), -1);
+	std::fill(m_slotToPlayerIndices, m_slotToPlayerIndices + ARRAY_SIZE(m_slotToPlayerIndices), -1);
 
 	// call setLocalPlayer so that becomingLocalPlayer() gets called appropriately
 	setLocalPlayer(m_players[0]);
@@ -398,7 +408,6 @@ Player *PlayerList::getEachPlayerFromMask( PlayerMaskType& maskToAdjust )
 	return nullptr; // mask not found
 }
 
-
 //-------------------------------------------------------------------------------------------------
 PlayerMaskType PlayerList::getPlayersWithRelationship( Int srcPlayerIndex, UnsignedInt allowedRelationships )
 {
@@ -494,6 +503,79 @@ void PlayerList::xfer( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void PlayerList::loadPostProcess()
 {
-
+    std::fill(m_slotIndices, m_slotIndices + ARRAY_SIZE(m_slotIndices), 255);
 }
 
+//-----------------------------------------------------------------------------
+void PlayerList::setSlotIndex(Int playerIndex, Int slotIndex)
+{
+	if (playerIndex >= 0 && playerIndex < ARRAY_SIZE(m_slotIndices))
+	{
+		const Int oldSlotIndex = m_slotIndices[playerIndex];
+		if (oldSlotIndex >= 0 && oldSlotIndex < ARRAY_SIZE(m_slotToPlayerIndices))
+		{
+			m_slotToPlayerIndices[oldSlotIndex] = -1;
+		}
+
+		m_slotIndices[playerIndex] = slotIndex;
+
+		if (slotIndex >= 0 && slotIndex < ARRAY_SIZE(m_slotToPlayerIndices))
+		{
+			m_slotToPlayerIndices[slotIndex] = playerIndex;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+Int PlayerList::getSlotIndex(Int playerIndex) const
+{
+	if (playerIndex >= 0 && playerIndex < ARRAY_SIZE(m_slotIndices))
+	{
+		return m_slotIndices[playerIndex];
+	}
+
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+Int PlayerList::getPlayerIndexFromSlotIndex(Int slotIndex) const
+{
+	if (slotIndex >= 0 && slotIndex < ARRAY_SIZE(m_slotToPlayerIndices))
+	{
+		return m_slotToPlayerIndices[slotIndex];
+	}
+
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+Player *PlayerList::getPlayerFromSlotIndex(Int slotIndex) const
+{
+	const Int playerIndex = getPlayerIndexFromSlotIndex(slotIndex);
+	if (playerIndex >= 0 && playerIndex < m_playerCount)
+	{
+		return m_players[playerIndex];
+	}
+
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void PlayerList::assignSlotIndices(const GameInfo& gameInfo)
+{
+	AsciiString playerName;
+
+	for (Int i = 0; i < MAX_SLOTS; ++i)
+	{
+		const GameSlot* slot = gameInfo.getConstSlot(i);
+		if (!slot || !slot->isOccupied())
+			continue;
+
+		playerName.format("player%d", i);
+
+		if (Player* player = findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(playerName)))
+		{
+			setSlotIndex(player->getPlayerIndex(), i);
+		}
+	}
+}

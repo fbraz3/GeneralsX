@@ -35,16 +35,16 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "part_emt.h"
-#include "wwdebug.h"
+#include "WWDebug/wwdebug.h"
 #include "ww3d.h"
 #include "assetmgr.h"
 #include "part_ldr.h"
 #include "w3derr.h"
 #include "scene.h"
 #include "texture.h"
-#include "wwprofile.h"
+#include "WWDebug/wwprofile.h"
 #include <limits.h>
-#include <gcd_lcm.h>
+#include <WWLib/gcd_lcm.h>
 
 
 // Global variable which is only used to communicate the worldspace emitter
@@ -550,7 +550,8 @@ void ParticleEmitterClass::Create_New_Particles(const Quaternion & curr_quat, co
 	// Since the particles are written into a wraparound buffer, we can take the time modulo a time
 	// constant which represents the time it takes to fill up the entire buffer with new particles.
 	// We will do this so we don't run into performance problems with very large frame times.
-	if (frametime > 100 * EmitRate) {	// If the loop will run over 100 times
+	if (frametime > 100 * EmitRate) {
+		// If the loop will run over 100 times
 		unsigned int buf_size = Buffer->Get_Buffer_Size();
 		unsigned int gcd = Greatest_Common_Divisor(buf_size, BurstSize);
 		unsigned int bursts = buf_size / gcd;
@@ -606,14 +607,16 @@ void ParticleEmitterClass::Create_New_Particles(const Quaternion & curr_quat, co
 			OneTimeBurst = false;
 		}
 
-		if ( ParticlesLeft > 0 ) {			// if we are counting,
+		if ( ParticlesLeft > 0 ) {
+			// if we are counting,
 			if (burst_size > (unsigned int)ParticlesLeft) {
 				burst_size = (unsigned int)ParticlesLeft;
 				ParticlesLeft = 0;
 			} else {
 				ParticlesLeft -= burst_size;
 			}
-			if ( ParticlesLeft <= 0 ) {	// count and if done
+			if ( ParticlesLeft <= 0 ) {
+				// count and if done
 				IsComplete = true;			// stop
 			}
 		}
@@ -819,16 +822,11 @@ ParticleEmitterClass::Save (ChunkSaveClass &chunk_save) const
 
 
 void
-ParticleEmitterClass::Set_Name (const char *pname)
+ParticleEmitterClass::Set_Name (const char* pname)
 {
-	// Free the old name if necessary
-	if (NameString != nullptr) {
-		::free (NameString);
-		NameString = nullptr;
-	}
-
-	// Copy the provided name
-	NameString = ::_strdup (pname);
+	char* name = ::_strdup(pname);
+	::free(NameString);
+	NameString = name;
 }
 
 

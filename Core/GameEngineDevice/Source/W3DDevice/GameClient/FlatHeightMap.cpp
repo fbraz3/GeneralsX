@@ -49,13 +49,13 @@
 #include "W3DDevice/GameClient/FlatHeightMap.h"
 
 #include <stdlib.h>
-#include <assetmgr.h>
-#include <texture.h>
-#include <tri.h>
-#include <colmath.h>
-#include <coltest.h>
-#include <rinfo.h>
-#include <camera.h>
+#include <WW3D2/assetmgr.h>
+#include <WW3D2/texture.h>
+#include <WWMath/tri.h>
+#include <WWMath/colmath.h>
+#include <WW3D2/coltest.h>
+#include <WW3D2/rinfo.h>
+#include <WW3D2/camera.h>
 #include <d3dx8core.h>
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -76,7 +76,6 @@
 #include "W3DDevice/GameClient/W3DRoadBuffer.h"
 #include "W3DDevice/GameClient/W3DBridgeBuffer.h"
 #include "W3DDevice/GameClient/W3DWaypointBuffer.h"
-#include "W3DDevice/GameClient/W3DCustomEdging.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
@@ -469,7 +468,6 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		W3DShaderManager::updateCloud();
 	}
 
-	Matrix3D tm(Transform);
 	// If there are trees, tell them to draw at the transparent time to draw.
 	if (m_treeBuffer) {
 		m_treeBuffer->setIsTerrain();
@@ -495,8 +493,7 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	ShaderClass::Invalidate();
 
-	//	tm.Scale(ObjSpaceExtent);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
+	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 
 
 	DX8Wrapper::Set_Material(m_vertexMaterialClass);
@@ -510,12 +507,14 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
  	}
  	else
  	if (TheGlobalData->m_useLightMap)
- 	{	//lightmap only
+ 	{
+ 		//lightmap only
  		st=W3DShaderManager::ST_FLAT_TERRAIN_BASE_NOISE2;
  	}
  	else
  	if (doCloud)
- 	{	//cloudmap only
+ 	{
+ 		//cloudmap only
  		st=W3DShaderManager::ST_FLAT_TERRAIN_BASE_NOISE1;
  	}
 
@@ -606,16 +605,12 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	}
 #endif
 
-#ifdef DO_SCORCH
 	DX8Wrapper::Set_Texture(0,nullptr);
 	DX8Wrapper::Set_Texture(1,nullptr);
 	m_stageTwoTexture->restore();
 
-	ShaderClass::Invalidate();
-	if (!ShaderClass::Is_Backface_Culling_Inverted()) {
-		drawScorches();
-	}
-#endif
+	drawScorches();
+
 	DX8Wrapper::Set_Texture(0,nullptr);
 	DX8Wrapper::Set_Texture(1,nullptr);
 	m_stageTwoTexture->restore();

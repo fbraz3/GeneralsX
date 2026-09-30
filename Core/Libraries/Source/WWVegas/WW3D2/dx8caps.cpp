@@ -37,13 +37,15 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "always.h"
+#include "WWLib/always.h"
 #include "dx8caps.h"
 #include "dx8wrapper.h"
 #include "formconv.h"
 #pragma warning (disable : 4201)		// nonstandard extension - nameless struct
-#include <windows.h>
+#include "WWLib/win.h"
+#ifdef _WIN32
 #include <mmsystem.h>
+#endif
 
 static StringClass CapsWorkString;
 
@@ -895,7 +897,8 @@ void DX8Caps::Check_Driver_Version_Status()
 				DriverVersionStatus=DRIVER_STATUS_BAD;
 				break;
 			default:
-				if (DriverBuildVersion<2000) {	// All under 20.xx versions are too old!
+				if (DriverBuildVersion<2000) {
+					// All under 20.xx versions are too old!
 					DriverVersionStatus=DRIVER_STATUS_BAD;
 				}
 				else {

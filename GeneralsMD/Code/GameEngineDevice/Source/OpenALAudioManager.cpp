@@ -430,17 +430,19 @@ Bool OpenALAudioManager::isCurrentlyPlaying(AudioHandle handle)
 /**
  * Music playback - next track
  */
-void OpenALAudioManager::nextMusicTrack(void)
+AsciiString OpenALAudioManager::nextMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::nextMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
  * Music playback - previous track
  */
-void OpenALAudioManager::prevMusicTrack(void)
+AsciiString OpenALAudioManager::prevMusicTrack(void)
 {
 	fprintf(stderr, "DEBUG: OpenALAudioManager::prevMusicTrack() - stub\n");
+	return AsciiString::TheEmptyString;
 }
 
 /**
@@ -458,14 +460,6 @@ Bool OpenALAudioManager::hasMusicTrackCompleted(const AsciiString &trackName, In
 {
 	// TODO: Phase 2 - Track music completion count
 	return false;
-}
-
-/**
- * Get current music track name
- */
-AsciiString OpenALAudioManager::getMusicTrackName(void) const
-{
-	return m_currentMusicTrack;
 }
 
 // GeneralsX @build BenderAI 13/02/2026 - Implement remaining pure virtual methods (Phase 2 stubs)

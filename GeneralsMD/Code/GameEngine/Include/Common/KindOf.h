@@ -30,7 +30,6 @@
 #pragma once
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
-#include "Lib/BaseType.h"
 #include "Common/BitFlags.h"
 #include "Common/BitFlagsIO.h"
 
@@ -41,7 +40,7 @@
 enum KindOfType CPP_11(: Int)
 {
 	KINDOF_INVALID = -1,
-	
+
 	KINDOF_OBSTACLE,								///< an obstacle to land-based pathfinders
 	KINDOF_SELECTABLE,							///< Actually means MOUSE-INTERACTABLE (doesn't mean you can select it!)
 	KINDOF_IMMOBILE,								///< fixed in location
@@ -80,6 +79,9 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_STEALTH_GARRISON,				/** enemy teams can't tell that unit is in building.. and if they
 																		garrison that building, they stealth unit will eject. */
 	KINDOF_CASH_GENERATOR,					///< used to check if the unit generates cash... checked by cash hackers and whatever else comes up
+#if RTS_GENERALS
+	KINDOF_AIRFIELD,								///< unit has a runway that planes can takeoff/land on
+#endif
 	KINDOF_DRAWABLE_ONLY,						///< template is used only to create drawables (not Objects)
 	KINDOF_MP_COUNT_FOR_VICTORY,		///< If a player loses all his buildings that have this kindof in a multiplayer game, he loses.
 	KINDOF_REBUILD_HOLE,						///< a GLA rebuild hole
@@ -139,6 +141,7 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_HERO,										///< Any of the single-instance infantry, JarmenKell, BlackLotus, ColonelBurton
 	KINDOF_IGNORES_SELECT_ALL,			///< Too late to figure out intelligently if something should respond to a Select All command
 	KINDOF_DONT_AUTO_CRUSH_INFANTRY,					///< These units don't try to crush the infantry if ai.
+	// TheSuperHackers @info Added in Zero Hour:
 	KINDOF_CLIFF_JUMPER,						///< Can't climb cliffs, but can jump off of them.
 	KINDOF_FS_SUPPLY_DROPZONE,						///< A supply dropzone.
 	KINDOF_FS_SUPERWEAPON,					///< A superweapon structure like a nuke silo, particle uplink cannon, scudstorm.
@@ -168,11 +171,15 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_CONSERVATIVE_BUILDING,		///< Conservative structures aren't considered part of your base for sneak attack boundary calculations...
 	KINDOF_IGNORE_DOCKING_BONES,		///< Structure will not look up docking bones. Patch 1.03 hack.
 
+	// TheSuperHackers @info New kinds for Mods
+
+	KINDOF_NO_ATTACK_WARNING,				///< does not trigger the under attack radar/EVA warning when taking damage
+
 	KINDOF_COUNT,										// total number of kindofs
 	KINDOF_FIRST = 0,
 };
 
-typedef BitFlags<KINDOF_COUNT>	KindOfMaskType;
+typedef BitFlags<KINDOF_COUNT, struct KindOfMaskTypeTag>	KindOfMaskType;
 
 #define MAKE_KINDOF_MASK(k) KindOfMaskType(KindOfMaskType::kInit, (k))
 

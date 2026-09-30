@@ -33,6 +33,7 @@
 #define DEFINE_OBJECT_STATUS_NAMES
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+#include "Common/FramePacer.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
 #include "Common/Player.h"
@@ -312,7 +313,7 @@ Bool StealthUpdate::allowedToStealth( Object *stealthOwner ) const
 
 	if( flags & STEALTH_NOT_WHILE_TAKING_DAMAGE && self->getBodyModule()->getLastDamageTimestamp() >= now - 1 )
 	{
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_STRUCTURE_STEALTH_DURING_REPAIR
+#if PRESERVE_STRUCTURE_STEALTH_DURING_REPAIR
 		//Only if it's not healing damage.
 		if( self->getBodyModule()->getLastDamageInfo()->in.m_damageType != DAMAGE_HEALING )
 #endif
@@ -846,7 +847,7 @@ void setWakeupIfInRange( Object *obj, void *userData)
 	Coord3D srcpos = *obj->getPosition();
 	Coord3D dstpos = *victim->getPosition();
 
-	srcpos.sub(&dstpos);
+	srcpos.sub(dstpos);
 	if (srcpos.length() > vision)
 		return;
 
@@ -1001,7 +1002,7 @@ void StealthUpdate::changeVisualDisguise()
 			draw->setPosition( self->getPosition() );
 			draw->setOrientation( self->getOrientation() );
 			draw->setModelConditionFlags( flags );
-			draw->updateDrawable();
+			draw->updateDrawable(TheFramePacer->getActualLogicTimeScaleOverFpsRatio());
 			self->getPhysics()->resetDynamicPhysics();
 			if( selected )
 			{
@@ -1059,7 +1060,7 @@ void StealthUpdate::changeVisualDisguise()
 			draw->setPosition( self->getPosition() );
 			draw->setOrientation( self->getOrientation() );
 			draw->setModelConditionFlags( flags );
-			draw->updateDrawable();
+			draw->updateDrawable(TheFramePacer->getActualLogicTimeScaleOverFpsRatio());
 			self->getPhysics()->resetDynamicPhysics();
 			if (TheGlobalData->m_timeOfDay == TIME_OF_DAY_NIGHT)
 				draw->setIndicatorColor( self->getNightIndicatorColor() );

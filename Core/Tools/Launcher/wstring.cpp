@@ -138,7 +138,7 @@ bit8 Wstring::cat(const char *s)
 
   // Allocate memory for the new string.
 
-  if(!(str = new char[(len * sizeof(char))]))
+  if((str = new char[(len * sizeof(char))]) == nullptr)
   {
     str = oldStr;
     return(FALSE);
@@ -171,7 +171,7 @@ bit8 Wstring::cat(uint32 size, const char *s)
     len += strlen(oldStr);
 
   // Allocate memory for the new string.
-  if(!(str = new char[(len * sizeof(char))]))
+  if((str = new char[(len * sizeof(char))]) == nullptr)
   {
     str = oldStr;
     return(FALSE);
@@ -249,7 +249,7 @@ char Wstring::remove(sint32 pos,sint32 count)
   if (count<=0)
     return(FALSE);
 
-  if(!(s = new char[len-count+1]))
+  if((s = new char[len-count+1]) == nullptr)
   {
     //ErrorMessage(SET_EM, "Insufficient memory to modify Wstring.");
     return(FALSE);
@@ -297,13 +297,13 @@ bit8 Wstring::removeChar(char c)
   return(removed);
 }
 
-void Wstring::removeSpaces(void)
+void Wstring::removeSpaces()
 {
   removeChar(' ');
   removeChar('\t');
 }
 
-void Wstring::clear(void)
+void Wstring::clear()
 {
  delete[](str);
  str=nullptr;
@@ -328,7 +328,7 @@ void Wstring::cellCopy(char *dest, uint32 len)
   dest[len] = 0;
 }
 
-const char *Wstring::get(void) const
+const char *Wstring::get() const
 {
   if(!str)
     return "";
@@ -342,7 +342,7 @@ char Wstring::get(uint32 index) const
  return(0);
 }
 
-uint32 Wstring::length(void) const
+uint32 Wstring::length() const
 {
   if(str == nullptr)
     return(0);
@@ -392,7 +392,7 @@ bit8 Wstring::insert(char k, uint32 pos)
   if(pos > len)
     pos = len;
 
-  if(!(s = (char *)new char[(len + 2)]))
+  if((s = (char *)new char[(len + 2)]) == nullptr)
   {
     //ErrorMessage(SET_EM, "Insufficient memory to modify Wstring.");
     return(FALSE);
@@ -458,7 +458,7 @@ bit8 Wstring::set(const char *s)
 
  len = (uint32)strlen(s) + 1;
 
- if(!(str = new char[len]))
+ if((str = new char[len]) == nullptr)
  {
    //ErrorMessage(SET_EM, "Insufficient memory to set Wstring.");
    return(FALSE);
@@ -487,7 +487,7 @@ char Wstring::set(uint32 size, const char *string)
  clear();
  len = size + 1;
 
- if(!(str = new char[len]))
+ if((str = new char[len]) == nullptr)
  {
    //ErrorMessage(SET_EM, "Insufficient memory to set Wstring.");
    return(FALSE);
@@ -503,7 +503,7 @@ char Wstring::set(uint32 size, const char *string)
 
 // This function converts all alphabetical characters in the string to lower
 // case.
-void Wstring::toLower(void)
+void Wstring::toLower()
 {
   uint32 i;
 
@@ -517,7 +517,7 @@ void Wstring::toLower(void)
 
 // This function converts all alphabetical characters in the string to upper
 // case.
-void Wstring::toUpper(void)
+void Wstring::toUpper()
 {
   uint32 i;
 

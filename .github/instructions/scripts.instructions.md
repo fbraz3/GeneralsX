@@ -4,11 +4,11 @@ applyTo: 'scripts/**'
 
 # Scripts Organization Instructions
 
-Organize `scripts/` by function so files stay easy to find and maintain.
+The `scripts/` folder is organized by function into distinct categories to improve maintainability and discoverability.
 
 ## Structure Overview
 
-Put each script in the right subdirectory:
+All scripts should be placed in the appropriate subdirectory based on their function:
 
 ```
 scripts/
@@ -23,22 +23,33 @@ scripts/
 
 ### 1. Determine Script Category
 
-- **`build/`**: build, deploy, run, package.
-  - `build/linux/`: Linux docker workflow.
-  - `build/macos/`: macOS native workflow.
-  - `build/windows/`: future Windows toolchain.
-- **`env/`**: environment setup.
-  - `env/docker/`: Docker images and setup.
-  - `env/cache/`: ccache/sccache setup.
-- **`tooling/`**: analysis, maintenance, refactoring.
-  - `tooling/clang-tidy/`, `tooling/cpp/maintenance/`.
-- **`qa/`**: tests and validation.
-  - `qa/smoke/`.
-- **`legacy/`**: deprecated scripts and compatibility shims.
+- **`build/`** - Build configuration, compilation, deployment, or running the game
+  - `build/linux/` - Linux docker-based build workflow
+  - `build/macos/` - macOS native build workflow
+  - `build/windows/` - Windows modern toolchain (pending)
+  - **Examples**: `docker-build-linux-zh.sh`, `build-macos-zh.sh`, `deploy-*.sh`, `run-*.sh`
+
+- **`env/`** - Environment setup and configuration
+  - `env/docker/` - Docker image management and setup
+  - `env/cache/` - Compiler cache setup (ccache, sccache)
+  - **Examples**: `docker-build-images.sh`, `setup_ccache.sh`, `docker-install.sh`
+
+- **`tooling/`** - Code analysis, maintenance, and refactoring utilities
+  - `tooling/clang-tidy/` - Custom clang-tidy plugin and runner
+  - `tooling/cpp/maintenance/` - C++ code refactoring and fixes
+  - **Examples**: `fix_*.py`, `run-clang-tidy.py`, `*_refactor_*.py`, `monitor-*.py`
+
+- **`qa/`** - Quality assurance, testing, and validation
+  - `qa/smoke/` - Smoke tests and basic validation
+  - **Examples**: `docker-smoke-test-zh.sh`, `run-bundled-game.sh`
+
+- **`legacy/`** - Deprecated or old scripts
+  - `legacy/compat/` - Backward-compatibility shims and old implementations
+  - **Examples**: `docker-build.sh` (legacy), `apply-patch-13-manual.sh`, deprecated wrappers
 
 ### 2. Naming Conventions
 
-Use names that show scope and function:
+Scripts should follow consistent naming to indicate their scope and function:
 
 | Pattern | Meaning | Example |
 |---------|---------|---------|
@@ -116,7 +127,7 @@ if __name__ == "__main__":
 
 ### 5. Create Backward-Compatibility Wrapper (if moving)
 
-When moving a script, create wrapper at old path so existing references keep working:
+When moving a script to a new location, **always create a wrapper at the old path** to maintain compatibility during transition:
 
 **Old path**: `scripts/old_script.sh`
 ```bash
@@ -127,16 +138,30 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec "$SCRIPT_DIR/new/location/old_script.sh" "$@"
 ```
 
-This keeps old references working and gives a clean deprecation path.
+This allows:
+- Existing references and tasks to keep working
+- Gradual migration of documentation and task definitions
+- Clear deprecation path to users
 
 ### 6. Update Documentation
 
 When adding or moving scripts:
 
-1. Update `scripts/README.md`.
-2. Update `.vscode/tasks.json` if user-facing.
-3. Update this file when category or naming changes.
-4. Add header comment to script itself.
+1. **Update `scripts/README.md`**
+   - Add script description in the appropriate category
+   - Include any specific requirements or environment variables
+
+2. **Update `.vscode/tasks.json`** (if user-facing)
+   - Create VS Code task for easy access
+   - Reference new script path in `command` field
+
+3. **Update `.github/instructions/scripts.instructions.md`** (this file)
+   - Document new category if applicable
+   - Add naming convention pattern if new pattern introduced
+
+4. **Add header comment** to the script itself
+   - Describe purpose, usage, and environment variables
+   - Follow standards above
 
 ## Organization Rules
 
@@ -163,25 +188,33 @@ When adding or moving scripts:
 ## Current Script Inventory
 
 ### Fully Organized (March 2026)
-- **build/linux/** - 7 scripts.
-- **build/macos/** - 4 scripts.
-- **env/docker/** - 2 scripts.
-- **env/cache/** - 4 scripts.
-- **tooling/clang-tidy/** - 1 runner + plugin.
-- **tooling/cpp/maintenance/** - 13 utilities.
-- **qa/smoke/** - 2 scripts.
-- **legacy/compat/** - 4 deprecated scripts.
-- **Deprecated wrappers** - `cpp/`, `clang-tidy-plugin/`, `run-clang-tidy.py`.
+- **build/linux/** - 7 scripts (configure, build, deploy, run, bundle, smoke test)
+- **build/macos/** - 4 scripts (build, deploy, run, bundle)
+- **env/docker/** - 2 scripts (image building, installation)
+- **env/cache/** - 4 scripts (ccache, sccache setup/test)
+- **tooling/clang-tidy/** - 1 runner (run.py) + plugin source
+- **tooling/cpp/maintenance/** - 13 utilities (fixes, refactoring, monitoring)
+- **qa/smoke/** - 2 scripts (smoke test, bundled validation)
+- **legacy/compat/** - 4 deprecated scripts
+- **Deprecated (wrappers)** - `cpp/`, `clang-tidy-plugin/`, `run-clang-tidy.py`
 
 ### Pending (Future)
-- **build/windows/** - modern Windows toolchain.
+- **build/windows/** - Modern Windows toolchain (VS2022 + SDL3 + DXVK + MiniAudio)
 
 ## When to Create a New Subdirectory
 
-Create one only if you have 3+ related scripts, category is general-purpose, and team has agreed.
+**Only** create a new subdirectory if:
+
+1. You have **3+ related scripts** that don't fit any existing category
+2. The new category is **general-purpose** (not one-off)
+3. You've **discussed with team** to avoid duplicating existing organization
+
+**Example**: If adding `build/windows/`, that makes sense (parallel to build/linux and build/macos).
+
+**Counter-example**: Single new script for a one-time task → maybe `legacy/compat/` instead.
 
 ## For More Information
 
 - **Main Overview**: [scripts/README.md](../../scripts/README.md)
 - **Build System**: [CMakePresets.json](../../CMakePresets.json)
-- **General Conventions**: [.github/instructions/generalsx.instructions.md](.github/instructions/generalsx.instructions.md)
+- **General Conventions**: [AGENTS.md](../../AGENTS.md)

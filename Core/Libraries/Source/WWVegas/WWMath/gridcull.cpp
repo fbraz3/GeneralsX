@@ -55,8 +55,8 @@
 
 
 #include "gridcull.h"
-#include "chunkio.h"
-#include "iostruct.h"
+#include "WWLib/chunkio.h"
+#include "WWLib/iostruct.h"
 #include "colmath.h"
 #include "colmathinlines.h"
 
@@ -919,7 +919,7 @@ void GridCullSystemClass::unlink_object_from_list(CullableClass ** head,Cullable
 	/*
 	** check to see that the object is actually in this list
 	*/
-#ifdef WWDEBUG
+#ifdef DEBUG_CRASHING
 	CullableClass * tmp = *head;
 	bool found = false;
 	while (tmp && !found) {

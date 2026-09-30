@@ -54,6 +54,8 @@ constexpr const Int MAX_GLOBAL_LIGHTS = 3;
 constexpr const Int SIMULATE_REPLAYS_SEQUENTIAL = -1;
 
 //-------------------------------------------------------------------------------------------------
+// Command-line parsing state is stored here instead of in CommandLine because
+// the parsing result belongs to the GlobalData instance created during startup.
 class CommandLineData
 {
 	friend class CommandLine;
@@ -66,6 +68,7 @@ class CommandLineData
 
 	Bool m_hasParsedCommandLineForStartup;
 	Bool m_hasParsedCommandLineForEngineInit;
+	BoolVector m_parsedArguments;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -115,6 +118,8 @@ public:
 	Bool m_useFpsLimit;
 	Bool m_dumpAssetUsage;
 	Int m_framesPerSecondLimit;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	Int m_skirmishTickRate;
 	Int	m_chipSetType;	///<See W3DShaderManager::ChipsetType for options
 
 	// TheSuperHackers @feature helmutbuhler 11/04/2025
@@ -135,17 +140,19 @@ public:
 	Bool m_trilinearTerrainTex;
 	Bool m_multiPassTerrain;
 	Bool m_adjustCliffTextures;
-	Bool m_stretchTerrain;
-	Bool m_useHalfHeightMap;
+	Bool m_stretchTerrain; // TheSuperHackers @info Legacy, unused
+	Bool m_useHalfHeightMap; // TheSuperHackers @info Legacy, unused
 	Bool m_drawEntireTerrain;
 	_TerrainLOD m_terrainLOD;
 	Bool m_enableDynamicLOD;
 	Bool m_enableStaticLOD;
 	Int m_terrainLODTargetTimeMS;
 	Bool m_useAlternateMouse;
+	Bool m_useRightMouseScrollWithAlternateMouse; // TheSuperHackers @feature User option for RMB scroll in Alternate Mouse mode.
 	Bool m_clientRetaliationModeEnabled;
 	Bool m_doubleClickAttackMove;
 	Bool m_rightMouseAlwaysScrolls;
+	Int m_jpegQuality; // TheSuperHackers @feature Quality for JPEG screenshots.
 	Bool m_useWaterPlane;
 	Bool m_useCloudPlane;
 	Bool m_useShadowVolumes;
@@ -193,6 +200,8 @@ public:
 #endif
 	Real m_maxCameraHeight;
 	Real m_minCameraHeight;
+
+	Real m_terrainDrawDistanceScale;
 
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;
@@ -327,7 +336,6 @@ public:
 
 	UnsignedInt m_defaultIP;			///< preferred IP address for LAN
 	UnsignedInt m_firewallBehavior;	///< Last detected firewall behavior
-	Bool m_firewallSendDelay;			///< Use send delay for firewall connection negotiations
 	UnsignedInt m_firewallPortOverride;	///< User-specified port to be used
 	Short m_firewallPortAllocationDelta; ///< the port allocation delta last detected.
 
@@ -354,6 +362,8 @@ public:
 	Bool m_buildMapCache;
 	AsciiString m_initialFile;				///< If this is specified, load a specific map from the command-line
 	AsciiString m_pendingFile;				///< If this is specified, use this map at the next game start
+	AsciiString m_loadSaveGame;				///< If this is specified, load a save game file from the command-line
+	AsciiString m_loadReplayGame;			///< If this is specified, play a replay file from the command-line
 
 	std::vector<AsciiString> m_simulateReplays; ///< If not empty, simulate this list of replays and exit.
 	Int m_simulateReplayJobs; ///< Maximum number of processes to use for simulation, or SIMULATE_REPLAYS_SEQUENTIAL for sequential simulation
@@ -368,8 +378,6 @@ public:
 	Bool m_shellMapOn;								///< User can set the shell map not to load
 	Bool m_playIntro;									///< Flag to say if we're to play the intro or not
 	Bool m_playSizzle;								///< Flag to say whether we play the sizzle movie after the logo movie.
-	Bool m_afterIntro;								///< we need to tell the game our intro is done
-	Bool m_allowExitOutOfMovies;			///< flag to allow exit out of movies only after the Intro has played
 
 	Bool m_loadScreenRender;						///< flag to disallow rendering of almost everything during a loadscreen
 
@@ -429,6 +437,9 @@ public:
 	// TheSuperHackers @feature L3-M 21/08/2025 toggle the money per minute display, false shows only the original current money
 	Bool m_showMoneyPerMinute;
 	Bool m_allowMoneyPerMinuteForPlayer;
+
+	// TheSuperHackers @feature bobtista 28/06/2026 user-configurable speed multiplier for game window transitions
+	Real m_gameWindowTransitionSpeedMultiplier;
 
 	Real m_shakeSubtleIntensity;			///< Intensity for shaking a camera with SHAKE_SUBTLE
 	Real m_shakeNormalIntensity;			///< Intensity for shaking a camera with SHAKE_NORMAL

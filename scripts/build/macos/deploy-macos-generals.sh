@@ -62,6 +62,11 @@ ln -sf libSDL3_image.0.4.0.dylib "${RUNTIME_DIR}/libSDL3_image.dylib" 2>/dev/nul
 echo "  Copying GameSpy library..."
 cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 
+echo "  Copying GameNetworkingSockets library..."
+if [[ -f "${BUILD_DIR}/bin/libGameNetworkingSockets.dylib" ]]; then
+    cp -v "${BUILD_DIR}/bin/libGameNetworkingSockets.dylib" "${RUNTIME_DIR}/"
+fi
+
 echo "  Copying DXVK libraries (d3d9 + d3d8)..."
 if [[ ! -f "${DXVK_D3D9_LIB}" || ! -f "${DXVK_D3D8_LIB}" ]]; then
     echo "ERROR: Required DXVK dylibs were not found in expected locations:"
@@ -106,6 +111,24 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found; DXVK will use defaults."
 fi
 
+echo "  Deploying Fontconfig config & fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RUNTIME_DIR}/fonts/"
+fi
+
+FONTCONFIG_ETC_DIR="${BUILD_DIR}/vcpkg_installed/arm64-osx/etc/fonts"
+if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
+    mkdir -p "${RUNTIME_DIR}/fontconfig"
+    cp -v "${FONTCONFIG_ETC_DIR}/fonts.conf" "${RUNTIME_DIR}/fontconfig/fonts.conf"
+    rm -rf "${RUNTIME_DIR}/fontconfig/conf.d"
+    if [[ -d "${FONTCONFIG_ETC_DIR}/conf.d" ]]; then
+        cp -R "${FONTCONFIG_ETC_DIR}/conf.d" "${RUNTIME_DIR}/fontconfig/conf.d"
+    fi
+fi
+
 echo "  Writing run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'WRAPPER'
 #!/bin/bash
@@ -123,7 +146,8 @@ if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
     export VK_DRIVER_FILES="${SCRIPT_DIR}/MoltenVK_icd.json"
 fi
 
-exec "${SCRIPT_DIR}/GeneralsX" "$@"
+"${SCRIPT_DIR}/GeneralsX" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"
 

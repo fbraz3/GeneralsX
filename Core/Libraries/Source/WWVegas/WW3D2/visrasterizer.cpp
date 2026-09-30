@@ -38,8 +38,8 @@
 
 #include "visrasterizer.h"
 #include "camera.h"
-#include "plane.h"
-#include "vp.h"
+#include "WWMath/plane.h"
+#include "WWMath/vp.h"
 
 
 /**

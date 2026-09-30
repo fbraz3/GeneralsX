@@ -39,23 +39,23 @@
 
 
 #include "dazzle.h"
-#include "simplevec.h"
-#include "vector2.h"
+#include "WWLib/simplevec.h"
+#include "WWMath/vector2.h"
 #include "camera.h"
 #include "ww3d.h"
-#include "wwstring.h"
-#include "wwdebug.h"
+#include "WWLib/wwstring.h"
+#include "WWDebug/wwdebug.h"
 #include "assetmgr.h"
-#include "Vector3i.h"
-#include "quat.h"
-#include "INI.h"
-#include "Point.h"
+#include "WWMath/Vector3i.h"
+#include "WWMath/quat.h"
+#include "WWLib/INI.h"
+#include "WWLib/Point.h"
 #include "rinfo.h"
 #include "vertmaterial.h"
-#include "chunkio.h"
-#include "WWFILE.h"
-#include "inisup.h"
-#include "persistfactory.h"
+#include "WWLib/chunkio.h"
+#include "WWLib/WWFILE.h"
+#include "WWLib/inisup.h"
+#include "WWSaveLoad/persistfactory.h"
 #include "ww3dids.h"
 #include "dx8wrapper.h"
 #include "dx8vertexbuffer.h"
@@ -63,7 +63,7 @@
 #include "sortingrenderer.h"
 #include "texture.h"
 #include "scene.h"
-#include "wwprofile.h"
+#include "WWDebug/wwprofile.h"
 #include <limits.h>
 
 
@@ -1180,8 +1180,6 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 		DX8Wrapper::Set_Index_Buffer(ib_access,dazzle_vertex_count);
 		DX8Wrapper::Set_Shader(default_halo_shader);
 		DX8Wrapper::Set_Texture(0,types[type]->Get_Halo_Texture());
-		SphereClass sphere(Get_Position(),0.1f);
-
 		DX8Wrapper::Draw_Triangles(0,halo_poly_count,0,vertex_count);
 	}
 
@@ -1189,7 +1187,6 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 		DX8Wrapper::Set_Index_Buffer(ib_access,0);
 		DX8Wrapper::Set_Shader(default_dazzle_shader);
 		DX8Wrapper::Set_Texture(0,types[type]->Get_Dazzle_Texture());
-		SphereClass sphere(Vector3(0.0f,0.0f,0.0f),0.0f);
 		DX8Wrapper::Draw_Triangles(0,dazzle_poly_count,0,vertex_count);
 	}
 
@@ -1197,7 +1194,6 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 		DX8Wrapper::Set_Index_Buffer(ib_access,dazzle_vertex_count+halo_vertex_count);
 		DX8Wrapper::Set_Shader(default_dazzle_shader);
 		DX8Wrapper::Set_Texture(0,lensflare->Get_Texture());
-		SphereClass sphere(Vector3(0.0f,0.0f,0.0f),0.0f);
 		DX8Wrapper::Draw_Triangles(0,lensflare_poly_count,0,vertex_count);
 	}
 
@@ -1416,7 +1412,7 @@ void DazzlePersistFactoryClass::Save(ChunkSaveClass & csave,PersistClass * obj)	
 	DazzleRenderObjClass * robj = (DazzleRenderObjClass *)obj;
 	unsigned int dazzle_type = robj->Get_Dazzle_Type();
 	const char * dazzle_type_name = DazzleRenderObjClass::Get_Type_Name(dazzle_type);
-	Matrix3D tm = robj->Get_Transform();
+	const Matrix3D& tm = robj->Get_Transform();
 
 	csave.Begin_Chunk(DAZZLEFACTORY_CHUNKID_VARIABLES);
 	WRITE_MICRO_CHUNK(csave,DAZZLEFACTORY_VARIABLE_OBJPOINTER,robj);

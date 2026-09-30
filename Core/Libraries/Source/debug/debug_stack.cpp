@@ -30,7 +30,7 @@
 #include "debug.h"
 #include "debug_stack.h"
 #include <windows.h>
-#include "stringex.h"
+#include "Utility/stringex.h"
 #include <imagehlp.h>
 
 #ifdef StackWalk

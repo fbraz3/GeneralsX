@@ -201,14 +201,31 @@ void MissileLauncherBuildingUpdate::switchToState(DoorStateType dst)
 //-------------------------------------------------------------------------------------------------
 Bool MissileLauncherBuildingUpdate::initiateIntentToDoSpecialPower( const SpecialPowerTemplate *specialPowerTemplate, const Object *targetObj, const Coord3D *targetPos, const Waypoint *way, UnsignedInt commandOptions )
 {
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Mauller 29/06/2025 prevent a game crash when told to launch before ready to do so
-	if (!m_specialPowerModule) {
-		Object* us = getObject();
-		us->getSpecialPowerModule(specialPowerTemplate)->setReadyFrame(0xFFFFFFFF);
+	const MissileLauncherBuildingUpdateModuleData* data = getMissileLauncherBuildingUpdateModuleData();
+	if (data->m_specialPowerTemplate != specialPowerTemplate)
+		return FALSE;
+
+	// GeneralsX @bugfix Copilot 06/09/2026 Abort launch requests made before the special-power module is ready.
+	// Upstream reference: Mauller, PR #1218
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/1218
+	Object* us = getObject();
+	if (us->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION)) {
+		SpecialPowerModuleInterface* specialPowerModule = m_specialPowerModule
+			? const_cast<SpecialPowerModuleInterface*>(m_specialPowerModule)
+			: us->getSpecialPowerModule(data->m_specialPowerTemplate);
+		DEBUG_ASSERTCRASH(specialPowerModule, ("Missing special power"));
+		if (specialPowerModule)
+			specialPowerModule->setReadyFrame(0xFFFFFFFF);
 		return FALSE;
 	}
-#endif
+
+	if (!m_specialPowerModule) {
+		// The cached pointer is intentionally not serialized. Restore it if a loaded, completed
+		// launcher receives a scripted command before its first update.
+		m_specialPowerModule = us->getSpecialPowerModule(data->m_specialPowerTemplate);
+		if (!m_specialPowerModule)
+			return FALSE;
+	}
 
 	if( m_specialPowerModule->getSpecialPowerTemplate() != specialPowerTemplate )
 	{

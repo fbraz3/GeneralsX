@@ -22,13 +22,13 @@
 #include "StdAfx.h"
 #include "W3DView.h"
 #include "OpacityVectorDialog.h"
-#include "wwmath.h"
-#include "vector3.h"
-#include "sphereobj.h"
-#include "ringobj.h"
+#include "WWMath/wwmath.h"
+#include "WWMath/vector3.h"
+#include "WW3D2/sphereobj.h"
+#include "WW3D2/ringobj.h"
 #include "ColorBar.h"
-#include "euler.h"
-#include "matrix3.h"
+#include "WWMath/euler.h"
+#include "WWMath/matrix3.h"
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW
@@ -106,10 +106,6 @@ OpacityVectorDialogClass::OnInitDialog ()
 	//
 	m_SliderY.SetRange (0, 179);
 	m_SliderZ.SetRange (0, 179);
-
-	float log_test = ::log (8.0F);
-	float log_test2 = ::_logb (log_test);
-	float log_test3 = ::exp (log_test);
 
 	//
 	//	Convert the normalized vector to Euler angles...

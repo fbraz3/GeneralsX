@@ -28,15 +28,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Lib/BaseType.h"
-#include "camera.h"
-#include "simplevec.h"
-#include "dx8wrapper.h"
+#include "WW3D2/camera.h"
+#include "WWLib/simplevec.h"
+#include "WW3D2/dx8wrapper.h"
 #include "Common/MapObject.h"
 #include "Common/PerfTimer.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DPoly.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
-#include "assetmgr.h"
+#include "WW3D2/assetmgr.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "WW3D2/textureloader.h"
 #include "Common/GlobalData.h"
@@ -120,13 +120,17 @@ void W3DShroud::init(WorldHeightMap *pMap, Real worldCellSizeX, Real worldCellSi
 	//Precompute a bounding box for entire shroud layer
 	if (pMap)
 	{
-		m_numCellsX = REAL_TO_INT_CEIL((Real)(pMap->getXExtent() - 1 - pMap->getBorderSize()*2)*MAP_XY_FACTOR/m_cellWidth);
-		m_numCellsY = REAL_TO_INT_CEIL((Real)(pMap->getYExtent() - 1 - pMap->getBorderSize()*2)*MAP_XY_FACTOR/m_cellHeight);
+		m_numCellsX = REAL_TO_INT_CEIL((Real)(pMap->getXExtent() - 1 - pMap->getBorderSizeInline()*2)*MAP_XY_FACTOR/m_cellWidth);
+		m_numCellsY = REAL_TO_INT_CEIL((Real)(pMap->getYExtent() - 1 - pMap->getBorderSizeInline()*2)*MAP_XY_FACTOR/m_cellHeight);
 
 		//Maximum visible cells will depend on maximum drawable terrain size plus 1 for partial cells (since
 		//shroud cells are larger than terrain cells).
 		dstTextureWidth=m_numMaxVisibleCellsX=REAL_TO_INT_FLOOR((Real)(pMap->getDrawWidth()-1)*MAP_XY_FACTOR/m_cellWidth)+1;
 		dstTextureHeight=m_numMaxVisibleCellsY=REAL_TO_INT_FLOOR((Real)(pMap->getDrawHeight()-1)*MAP_XY_FACTOR/m_cellHeight)+1;
+
+		dstTextureWidth = m_numCellsX;
+		dstTextureHeight = m_numCellsY;
+
 		dstTextureWidth += 2;	//enlarge by 2 pixels so we can have a border color all the way around.
 		unsigned int depth = 1;
 		dstTextureHeight += 2;	//enlarge by 2 pixels so we can have border color all the way around.
@@ -241,7 +245,8 @@ Bool W3DShroud::ReAcquireResources()
 		DEBUG_ASSERTCRASH( m_pDstTexture != nullptr, ("Failed ReAcquire of shroud texture"));
 
 		if (!m_pDstTexture)
-		{	//could not create a valid texture
+		{
+			//could not create a valid texture
 			m_dstTextureWidth = 0;
 			m_dstTextureHeight = 0;
 			return FALSE;
@@ -262,7 +267,7 @@ W3DShroudLevel W3DShroud::getShroudLevel(Int x, Int y)
 	if (!m_pSrcTexture || !m_srcTextureData || x < 0 || y < 0)
 		return 0;
 
-	if (x < m_numCellsX && y < m_numCellsY)
+	if (x >= 0 && y >= 0 && x < m_numCellsX && y < m_numCellsY)
 	{
 		UnsignedShort pixel=*(UnsignedShort *)((Byte *)m_srcTextureData + x*2 + y*m_srcTexturePitch);
 
@@ -320,7 +325,8 @@ void W3DShroud::setShroudLevel(Int x, Int y, W3DShroudLevel level, Bool textureO
 //			UnsignedInt greenpixel = (UnsignedInt)((Real)level*((Real)((SHROUD_COLOR&0xff00)>>8)/255.0f));
 //			UnsignedInt redpixel = (UnsignedInt)((Real)level*((Real)((SHROUD_COLOR&0xff0000)>>16)/255.0f));
 			if (level == 255)
-			{	//unshrouded pixels should be fully lit
+			{
+				//unshrouded pixels should be fully lit
 				redpixel = 255;
 				greenpixel = 255;
 				bluepixel = 255;
@@ -381,7 +387,8 @@ void W3DShroud::fillShroudData(W3DShroudLevel level)
 //		UnsignedInt redpixel = (UnsignedInt)((Real)level*((Real)((SHROUD_COLOR&0xff0000)>>16)/255.0f));
 
 		if (level == 255)
-		{	//unshrouded pixels should be fully lit
+		{
+			//unshrouded pixels should be fully lit
 			redpixel = 255;
 			greenpixel = 255;
 			bluepixel = 255;
@@ -438,7 +445,8 @@ void W3DShroud::fillBorderShroudData(W3DShroudLevel level, SurfaceClass* pDestSu
 		UnsignedInt redpixel = (UnsignedInt)((Real)level*((Real)((TheGlobalData->m_shroudColor.getAsInt()&0xff0000)>>16)/255.0f));
 
 		if (level == 255)
-		{	//unshrouded pixels should be fully lit
+		{
+			//unshrouded pixels should be fully lit
 			redpixel = 255;
 			greenpixel = 255;
 			bluepixel = 255;
@@ -616,14 +624,23 @@ void W3DShroud::render(CameraClass *cam)
 
 
 	WorldHeightMap *hm=TheTerrainRenderObject->getMap();
-	Int visStartX=REAL_TO_INT_FLOOR((Real)(hm->getDrawOrgX()-hm->getBorderSize())*MAP_XY_FACTOR/m_cellWidth);	//start of rendered heightmap rectangle
+	Int visStartX=REAL_TO_INT_FLOOR((Real)(hm->getDrawOrgX()-hm->getBorderSizeInline())*MAP_XY_FACTOR/m_cellWidth);	//start of rendered heightmap rectangle
 	if (visStartX < 0)
 		visStartX = 0;	//no shroud is applied in border area so it always starts at > 0
-	Int visStartY=REAL_TO_INT_FLOOR((Real)(hm->getDrawOrgY()-hm->getBorderSize())*MAP_XY_FACTOR/m_cellHeight);
+	Int visStartY=REAL_TO_INT_FLOOR((Real)(hm->getDrawOrgY()-hm->getBorderSizeInline())*MAP_XY_FACTOR/m_cellHeight);
 	if (visStartY < 0)
 		visStartY = 0;	//no shroud is applied in border area so it always starts at > 0
+
+	// Do it all [3/11/2003]
+	visStartX = 0;
+	visStartY = 0;
+
 	Int visEndX=visStartX+REAL_TO_INT_FLOOR((Real)(hm->getDrawWidth()-1)*MAP_XY_FACTOR/m_cellWidth)+1;	//size of rendered heightmap rectangle
 	Int visEndY=visStartY+REAL_TO_INT_FLOOR((Real)(hm->getDrawHeight()-1)*MAP_XY_FACTOR/m_cellHeight)+1;
+
+	// Do it all [3/11/2003]
+	visEndX = m_numCellsX;
+	visEndY = m_numCellsY;
 
 	if (visEndX > m_numCellsX)
 	{
@@ -691,7 +708,8 @@ void W3DShroud::render(CameraClass *cam)
 #endif
 
 	if (m_clearDstTexture)
-	{	//we need to clear unused parts of the destination texture to a known
+	{
+		//we need to clear unused parts of the destination texture to a known
 		//color in order to keep map border in the state we want.
 		m_clearDstTexture=FALSE;
 
@@ -736,7 +754,8 @@ void W3DShroud::interpolateFogLevels(RECT *rect)
 	{
 		for (Int i=0; i<m_numCellsX; i++,startLevel++,finalLevel++)
 			if (*startLevel != *finalLevel)
-			{	//fog needs fading.
+			{
+				//fog needs fading.
 				if (*startLevel == *finalLevel)
 					continue;
 				else

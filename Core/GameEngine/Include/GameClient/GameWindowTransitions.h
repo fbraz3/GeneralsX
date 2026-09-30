@@ -647,7 +647,7 @@ private:
 	typedef std::list<TransitionWindow *> TransitionWindowList;
 	TransitionWindowList m_transitionWindowList;
 	Int m_directionMultiplier;
-	Int m_currentFrame; ///< maintain how long we've spent on this transition;
+	Real m_currentFrame; ///< maintain how long we've spent on this transition (in 30fps-equivalent frames);
 	AsciiString m_name;
 };
 
@@ -672,6 +672,8 @@ public:
 	void reverse( AsciiString groupName );// reverse the animations for the current group.
 	void remove( AsciiString groupName, Bool skipPending = FALSE );// remove the animation from the current or pending groups.
 	TransitionGroup *getNewGroup( AsciiString name );
+	// GeneralsX @feature fbraz3 18/09/2026 Check if transition group exists
+	Bool hasGroup( AsciiString groupName ) { return findGroup(groupName) != nullptr; }
 private:
 	TransitionGroup *findGroup( AsciiString groupName );
 	typedef std::list<TransitionGroup *> TransitionGroupList;

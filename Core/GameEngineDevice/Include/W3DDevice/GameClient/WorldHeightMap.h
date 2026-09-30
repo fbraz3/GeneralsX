@@ -102,7 +102,6 @@ class WorldHeightMap : public RefCountClass,
 {
 	friend class TerrainTextureClass;
 	friend class AlphaTerrainTextureClass;
-	friend class W3DCustomEdging;
 	friend class AlphaEdgeTextureClass;
 
 #define NO_EVAL_TILING_MODES
@@ -123,8 +122,6 @@ public:
 	enum {
 		NORMAL_DRAW_WIDTH = 1 + 4*VERTEX_BUFFER_TILE_LENGTH,
 		NORMAL_DRAW_HEIGHT = 1 + 4*VERTEX_BUFFER_TILE_LENGTH,
-		STRETCH_DRAW_WIDTH = 1 + 2*VERTEX_BUFFER_TILE_LENGTH,
-		STRETCH_DRAW_HEIGHT = 1 + 2*VERTEX_BUFFER_TILE_LENGTH,
 		LOW_ANGLE_DRAW_WIDTH = 1 + (NORMAL_DRAW_WIDTH-1) * 2,
 		LOW_ANGLE_DRAW_HEIGHT = 1 + (NORMAL_DRAW_HEIGHT-1) * 2,
 	};
@@ -244,8 +241,10 @@ public:  // height map info.
 	UnsignedByte *getDataPtr() {return m_data;}
 
 
-	Int getXExtent() {return m_width;}	///<number of vertices in x
-	Int getYExtent() {return m_height;}	///<number of vertices in y
+	Int getXExtent() const {return m_width;}	///<number of vertices in x
+	Int getYExtent() const {return m_height;}	///<number of vertices in y
+
+	Region2D getDrawRegion2D();
 
 	Int getDrawOrgX() {return m_drawOriginX;}
 	Int getDrawOrgY() {return m_drawOriginY;}
@@ -330,8 +329,12 @@ public:  // modify height value
 		if ((ndx>=0) && (ndx<m_dataSize) && m_data) m_data[ndx]=height;
 	};
 public: // Read tile utilities. jba [7/9/2003]
-	static Bool readTiles(InputStream *pStrm, TileData **tiles, Int numRows);
-	static Int countTiles(InputStream *pStrm, Bool *halfTile=nullptr);
+	// GeneralsX @feature mrkinglollipop 11/07/2026 Adds expectedTileCount/pIsLegacyGrid so the caller's
+	// INI-declared tile count can disambiguate legacy 64px-grid TGAs from native
+	// TILE_PIXEL_EXTENT (256px)-grid TGAs; isLegacyGrid must be forwarded from
+	// countTiles' result into readTiles so both use the same interpretation of the file.
+	static Bool readTiles(InputStream *pStrm, TileData **tiles, Int numRows, Bool isLegacyGrid=false);
+	static Int countTiles(InputStream *pStrm, Bool *halfTile=nullptr, Int expectedTileCount=0, Bool *pIsLegacyGrid=nullptr);
 
 protected:
 	void setCliffState(Int xIndex, Int yIndex, Bool state);

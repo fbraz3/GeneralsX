@@ -21,7 +21,7 @@
 // EmitterLineGroupPropPage.h : header file
 //
 
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 
 // Forward declarations
 
@@ -39,7 +39,7 @@ class EmitterLineGroupPropPageClass : public CPropertyPage
 // Construction
 public:
 	EmitterLineGroupPropPageClass();
-	~EmitterLineGroupPropPageClass();
+	~EmitterLineGroupPropPageClass() override;
 
 // Dialog Data
 	//{{AFX_DATA(EmitterLineGroupPropPageClass)

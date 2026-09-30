@@ -45,6 +45,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/CriticalSection.h"
+#include "WWLib/utf8.h"
 
 
 // -----------------------------------------------------
@@ -52,6 +53,18 @@
 /*static*/ const UnicodeString UnicodeString::TheEmptyString;
 
 #ifndef _WIN32
+// GeneralsX @bugfix fbraz 03/06/2026 Use POSIX locale for vswprintf to allow non-ASCII
+// wide chars (e.g. Cyrillic) in format strings. macOS needs <xlocale.h>, Linux glibc
+// exposes uselocale/newlocale via <locale.h> under _GNU_SOURCE.
+#if defined(__APPLE__)
+  #include <xlocale.h>
+#else
+  #ifndef _GNU_SOURCE
+    #define _GNU_SOURCE
+  #endif
+#endif
+#include <locale.h>
+
 static Bool isWidePrintfDigit(WideChar ch)
 {
 	return ch >= L'0' && ch <= L'9';
@@ -238,9 +251,6 @@ void UnicodeString::ensureUniqueBufferOfSize(int numCharsNeeded, Bool preserveDa
 	UnicodeStringData* newData = (UnicodeStringData*)TheDynamicMemoryAllocator->allocateBytesDoNotZero(actualBytes, "STR_UnicodeString::ensureUniqueBufferOfSize");
 	newData->m_refCount = 1;
 	newData->m_numCharsAllocated = (actualBytes - sizeof(UnicodeStringData))/sizeof(WideChar);
-#if defined(RTS_DEBUG)
-	newData->m_debugptr = newData->peek();	// just makes it easier to read in the debugger
-#endif
 
 	if (m_data && preserveData)
 		wcscpy(newData->peek(), m_data->peek());
@@ -357,11 +367,35 @@ WideChar* UnicodeString::getBufferForRead(Int len)
 void UnicodeString::translate(const AsciiString& stringSrc)
 {
 	validate();
-	/// @todo srj put in a real translation here; this will only work for 7-bit ascii
-	clear();
-	Int len = stringSrc.getLength();
-	for (Int i = 0; i < len; i++)
-		concat((WideChar)stringSrc.getCharAt(i));
+	// GeneralsX @feature bobtista 28/08/2026 Import UTF-8-to-wide conversion from upstream PR #2528.
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2528
+	// implementation. Data that is not valid UTF-8 (e.g. legacy CP1252) falls back to a 1:1 byte cast
+	// to preserve the original characters instead of producing replacement characters.
+	const char* src = stringSrc.str();
+	const size_t srcLen = strlen(src);
+	const size_t dstLen = Utf8_To_Wide_Len(src, srcLen);
+	if (dstLen != UTF8_INVALID)
+	{
+		if (dstLen == 0)
+		{
+			clear();
+		}
+		else
+		{
+			ensureUniqueBufferOfSize((Int)dstLen + 1, false, nullptr, nullptr);
+			Utf8_To_Wide(peek(), dstLen + 1, src, srcLen);
+		}
+	}
+	else
+	{
+		ensureUniqueBufferOfSize((Int)srcLen + 1, false, nullptr, nullptr);
+		WideChar* buf = peek();
+		for (size_t i = 0; i < srcLen; ++i)
+		{
+			buf[i] = (WideChar)(unsigned char)src[i];
+		}
+		buf[srcLen] = 0;
+	}
 	validate();
 }
 
@@ -538,7 +572,17 @@ void UnicodeString::format_va(const WideChar* format, va_list args)
 		effectiveFormat = normalizedFormat;
 	}
 #endif
+	// GeneralsX @bugfix fbraz 03/06/2026 vswprintf rejects non-ASCII wide chars in the C locale
+	// (returns -1 for any format string containing e.g. Cyrillic). Use a UTF-8 locale for
+	// the duration of the call so Cyrillic format strings pass through correctly.
+#ifndef _WIN32
+	static locale_t s_utf8_locale = newlocale(LC_CTYPE_MASK, "UTF-8", (locale_t)0);
+	locale_t old_locale = uselocale(s_utf8_locale);
+#endif
 	const int result = vswprintf(buf, sizeof(buf)/sizeof(WideChar), effectiveFormat, args);
+#ifndef _WIN32
+	uselocale(old_locale);
+#endif
 	if (result >= 0)
 	{
 		set(buf);

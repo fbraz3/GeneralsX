@@ -88,12 +88,8 @@ Int NetCommandMsg::getSortNumber() const {
  * Constructor with no argument, sets everything to default values.
  */
 NetGameCommandMsg::NetGameCommandMsg() {
-	m_argSize = 0;
-	m_numArgs = 0;
 	m_type = (GameMessage::Type)0;
 	m_commandType = NETCOMMANDTYPE_GAMECOMMAND;
-	m_argList = nullptr;
-	m_argTail = nullptr;
 }
 
 /**
@@ -102,11 +98,15 @@ NetGameCommandMsg::NetGameCommandMsg() {
  */
 NetGameCommandMsg::NetGameCommandMsg(GameMessage *msg) {
 	m_commandType = NETCOMMANDTYPE_GAMECOMMAND;
-
 	m_type = msg->getType();
-	Int count = msg->getArgumentCount();
-	for (Int i = 0; i < count; ++i) {
-		addArgument(msg->getArgumentDataType(i), *(msg->getArgument(i)));
+
+	const size_t argsCount = msg->getArgumentCount();
+	m_argList.reserve(argsCount);
+
+	for (size_t i = 0; i < argsCount; ++i) {
+		GameMessageArgumentDataType argType = msg->getArgumentDataType(i);
+		const GameMessageArgumentType* arg = msg->getArgument(i);
+		addArgument(argType, *arg);
 	}
 }
 
@@ -114,11 +114,8 @@ NetGameCommandMsg::NetGameCommandMsg(GameMessage *msg) {
  * Destructor
  */
 NetGameCommandMsg::~NetGameCommandMsg() {
-	GameMessageArgument *arg = m_argList;
-	while (arg != nullptr) {
-		m_argList = m_argList->m_next;
-		deleteInstance(arg);
-		arg = m_argList;
+	for (size_t i = 0; i < m_argList.size(); ++i) {
+		deleteInstance(m_argList[i]);
 	}
 }
 
@@ -127,21 +124,10 @@ NetGameCommandMsg::~NetGameCommandMsg() {
  */
 void NetGameCommandMsg::addArgument(const GameMessageArgumentDataType type, GameMessageArgumentType arg)
 {
-	if (m_argTail == nullptr) {
-		m_argList = newInstance(GameMessageArgument);
-		m_argTail = m_argList;
-		m_argList->m_data = arg;
-		m_argList->m_type = type;
-		m_argList->m_next = nullptr;
-		return;
-	}
-
 	GameMessageArgument *newArg = newInstance(GameMessageArgument);
 	newArg->m_data = arg;
 	newArg->m_type = type;
-	newArg->m_next = nullptr;
-	m_argTail->m_next = newArg;
-	m_argTail = newArg;
+	m_argList.push_back(newArg);
 }
 
 // here's where we figure out which slot corresponds to which player
@@ -167,13 +153,10 @@ GameMessage *NetGameCommandMsg::constructGameMessage() const
 {
 	GameMessage *retval = newInstance(GameMessage)(m_type);
 
-	AsciiString name;
-	name.format("player%d", getPlayerID());
-	retval->friend_setPlayerIndex( ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey(name))->getPlayerIndex());
+	retval->friend_setPlayerIndex(ThePlayerList->getPlayerFromSlotIndex(getPlayerID())->getPlayerIndex());
 
-	GameMessageArgument *arg = m_argList;
-	while (arg != nullptr) {
-
+	for (size_t i = 0; i < m_argList.size(); ++i) {
+		const GameMessageArgument* arg = m_argList[i];
 		switch (arg->m_type) {
 
 		case ARGUMENTDATATYPE_INTEGER:
@@ -211,8 +194,6 @@ GameMessage *NetGameCommandMsg::constructGameMessage() const
 			break;
 
 		}
-
-		arg = arg->m_next;
 	}
 	return retval;
 }
@@ -222,10 +203,6 @@ GameMessage *NetGameCommandMsg::constructGameMessage() const
  */
 void NetGameCommandMsg::setGameMessageType(GameMessage::Type type) {
 	m_type = type;
-}
-
-GameMessage::Type NetGameCommandMsg::getGameMessageType() const {
-	return m_type;
 }
 
 NetCommandMsg::Select NetGameCommandMsg::getSmallNetPacketSelect() const {
@@ -941,11 +918,12 @@ UnsignedByte * NetWrapperCommandMsg::getData() {
 	return m_data;
 }
 
-void NetWrapperCommandMsg::setData(NetCommandDataChunk &dataChunk)
+void NetWrapperCommandMsg::setData(UnsignedByte *data, UnsignedInt dataLength)
 {
 	delete[] m_data;
-	m_dataLength = dataChunk.size();
-	m_data = dataChunk.release();
+	m_data = NEW UnsignedByte[dataLength];	// pool[]ify
+	memcpy(m_data, data, dataLength);
+	m_dataLength = dataLength;
 }
 
 UnsignedInt NetWrapperCommandMsg::getDataLength() const {
@@ -1039,11 +1017,11 @@ UnsignedByte * NetFileCommandMsg::getFileData() {
 	return m_data;
 }
 
-void NetFileCommandMsg::setFileData(NetCommandDataChunk &dataChunk)
+void NetFileCommandMsg::setFileData(UnsignedByte *data, UnsignedInt dataLength)
 {
-	delete[] m_data;
-	m_dataLength = dataChunk.size();
-	m_data = dataChunk.release();
+	m_dataLength = dataLength;
+	m_data = NEW UnsignedByte[dataLength];	// pool[]ify
+	memcpy(m_data, data, dataLength);
 }
 
 NetCommandMsg::Select NetFileCommandMsg::getSmallNetPacketSelect() const {

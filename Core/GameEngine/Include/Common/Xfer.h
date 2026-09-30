@@ -149,6 +149,7 @@ public:
 	virtual void xferShort( Short *shortData );
 	virtual void xferUnsignedShort( UnsignedShort *unsignedShortData );
 	virtual void xferReal( Real *realData );
+	virtual void xferDouble( double *doubleData );
 	virtual void xferMarkerLabel( AsciiString asciiStringData ); // This is purely for readability purposes - it is explicitly discarded on load.
 	virtual void xferAsciiString( AsciiString *asciiStringData );
 	virtual void xferUnicodeString( UnicodeString *unicodeStringData );
@@ -177,6 +178,11 @@ public:
 	virtual void xferUser( void *data, Int dataSize );
 	virtual void xferMatrix3D( Matrix3D* mtx );
 	virtual void xferMapName( AsciiString *mapNameData );
+
+#if DEEP_CRC_TO_MEMORY
+	virtual void xferLogString(const AsciiString& str) {}
+#endif
+
 
 protected:
 

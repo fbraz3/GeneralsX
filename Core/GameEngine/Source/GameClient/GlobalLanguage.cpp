@@ -52,6 +52,8 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"
 
+#include <stdio.h>
+
 #include "Common/AddonCompat.h"
 #include "Common/INI.h"
 #include "Common/Registry.h"
@@ -148,12 +150,33 @@ GlobalLanguage::~GlobalLanguage()
 
 void GlobalLanguage::init()
 {
+	// GeneralsX @bugfix GitHubCopilot 27/05/2026 Implement Language.ini fallback chain so stock values fill missing override keys.
 	{
+		AsciiString registryLanguage = GetRegistryLanguage();
 		AsciiString fname;
-		fname.format("Data\\%s\\Language", GetRegistryLanguage().str());
+		fname.format("Data\\%s\\Language", registryLanguage.str());
 
 		INI ini;
 		ini.loadFileDirectory( fname, INI_LOAD_OVERWRITE, nullptr );
+
+		// GeneralsX @bugfix fbraz 04/06/2026 Only fall back to stock English if the primary language
+		// did not set UnicodeFontName. This protects two scenarios:
+		// 1) russifier mod overrides UnicodeFontName=Arial (no Cyrillic on macOS), so we need a stock
+		//    English Language.ini to fill the field with Arial Unicode MS.
+		// 2) official localizations (brazilian, etc.) provide their own UnicodeFontName and must not
+		//    be overwritten by English.
+		// Also skip the fallback entirely when Data\English\Language.ini is not present in the deploy,
+		// otherwise INI::loadFileDirectory throws INI_CANT_OPEN_FILE on zero files read.
+		if (m_unicodeFontName.isEmpty() && registryLanguage.compare("English") != 0)
+		{
+			AsciiString stockFname("Data\\English\\Language");
+			AsciiString stockFnameWithExt = stockFname;
+			stockFnameWithExt.concat(".ini");
+			if (TheFileSystem->doesFileExist(stockFnameWithExt.str()))
+			{
+				ini.loadFileDirectory( stockFname, INI_LOAD_MULTIFILE, nullptr );
+			}
+		}
 	}
 
 	StringList::iterator it = m_localFonts.begin();
@@ -163,10 +186,6 @@ void GlobalLanguage::init()
 		if(AddFontResource(font.str()) == 0)
 		{
 			DEBUG_CRASH(("GlobalLanguage::init Failed to add font %s", font.str()));
-		}
-		else
-		{
-			//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 		}
 		++it;
 	}

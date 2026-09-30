@@ -39,7 +39,7 @@
 #include "hmdldef.h"
 #include <assert.h>
 #include "w3d_file.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "snapPts.h"
 
 

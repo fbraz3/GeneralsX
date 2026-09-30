@@ -50,7 +50,7 @@
 #include "line3d.h"
 #include "vertmaterial.h"
 #include "shader.h"
-#include "wwdebug.h"
+#include "WWDebug/wwdebug.h"
 #include "ww3d.h"
 #include "rinfo.h"
 #include "dx8wrapper.h"

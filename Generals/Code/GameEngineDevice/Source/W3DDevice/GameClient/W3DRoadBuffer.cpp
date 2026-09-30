@@ -48,8 +48,8 @@
 
 #include "W3DDevice/GameClient/W3DRoadBuffer.h"
 
-#include <assetmgr.h>
-#include <texture.h>
+#include <WW3D2/assetmgr.h>
+#include <WW3D2/texture.h>
 #include "Common/GlobalData.h"
 #include "Common/RandomValue.h"
 //#include "Common/GameFileSystem.h"
@@ -651,7 +651,8 @@ void W3DRoadBuffer::loadFloat4PtSection(RoadSegment *pRoad, Vector2 loc,
 				}
 			}
 
-			if (true) { // !nextColumn.lightGradient) {
+			if (true) {
+				// !nextColumn.lightGradient) {
 				nextColumn.collapsed = true;
 				nextColumn.vtx[0].Z = maxHeight;
 				nextColumn.vtx[1] = nextColumn.vtx[vCount-1];

@@ -418,7 +418,8 @@ void ScriptDialog::patchScriptParametersForGC(Script *pScript)
 				warning = EditParameter::getWarningText(pParm, FALSE);
 				if (!warning.isEmpty()) {
 					if (pParm->getParameterType() == Parameter::OBJECT_TYPE)
-					{	//see if removing the GC prefix fixes this warning:
+					{
+						//see if removing the GC prefix fixes this warning:
 						AsciiString uiString = pParm->getString();
 						if (uiString.isEmpty())
 							uiString = "???";
@@ -427,7 +428,8 @@ void ScriptDialog::patchScriptParametersForGC(Script *pScript)
 							pParm->friend_setString(swapString);
 							warning = EditParameter::getWarningText(pParm, FALSE);
 							if (!warning.isEmpty())
-							{	//Removing GC prefix didn't help, so restore original
+							{
+								//Removing GC prefix didn't help, so restore original
 								pParm->friend_setString(uiString);
 							}
 							else
@@ -450,7 +452,8 @@ void ScriptDialog::patchScriptParametersForGC(Script *pScript)
 			warning = EditParameter::getWarningText(pParm, TRUE);
 			if (!warning.isEmpty()) {
 				if (pParm->getParameterType() == Parameter::OBJECT_TYPE)
-				{	//see if removing the GC prefix fixes this warning:
+				{
+					//see if removing the GC prefix fixes this warning:
 					AsciiString uiString = pParm->getString();
 					if (uiString.isEmpty())
 						uiString = "???";
@@ -459,7 +462,8 @@ void ScriptDialog::patchScriptParametersForGC(Script *pScript)
 						pParm->friend_setString(swapString);
 						warning = EditParameter::getWarningText(pParm, FALSE);
 						if (!warning.isEmpty())
-						{	//Removing GC prefix didn't help, so restore original
+						{
+							//Removing GC prefix didn't help, so restore original
 							pParm->friend_setString(uiString);
 						}
 						else
@@ -485,7 +489,8 @@ void ScriptDialog::checkParametersForGC()
 		for (pScr = pSL->getScript(); pScr; pScr=pScr->getNext()) {
 			updateScriptWarning(pScr);
 			if (pScr->hasWarnings())
-			{	//check if this is using invalid GC parameters
+			{
+				//check if this is using invalid GC parameters
 				patchScriptParametersForGC(pScr);
 			}
 		}
@@ -1156,7 +1161,7 @@ void ScriptDialog::markWaypoint(MapObject *pObj)
 void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, Bool doWaypoints, Bool doTriggers)
 {
 	if (pParm->getParameterType() == Parameter::WAYPOINT && doWaypoints) {
-		AsciiString waypointName  = pParm->getString();
+		const AsciiString &waypointName  = pParm->getString();
 		MapObject *pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 			if (pObj->isWaypoint() && pObj->getWaypointName()==waypointName) {
@@ -1165,7 +1170,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::WAYPOINT_PATH && doWaypoints) {
-		AsciiString waypointPathLabel = pParm->getString();
+		const AsciiString &waypointPathLabel = pParm->getString();
 		MapObject *pObj;
 		for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
 			if (pObj->isWaypoint() ) {
@@ -1183,7 +1188,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::TEAM) {
-		AsciiString teamName  = pParm->getString();
+		const AsciiString &teamName  = pParm->getString();
 		TeamsInfo * pInfo = m_sides.findTeamInfo(teamName);
 		if (pInfo) {
 			pInfo->getDict()->setBool(TheKey_exportWithScript, true);
@@ -1200,7 +1205,7 @@ void ScriptDialog::scanParmForWaypointsAndTeams(Parameter *pParm, Bool doUnits, 
 		}
 	}
 	if (pParm->getParameterType() == Parameter::UNIT) {
-		AsciiString unitName  = pParm->getString();
+		const AsciiString &unitName  = pParm->getString();
 		if (doUnits) {
 			MapObject *pObj;
 			for (pObj = MapObject::getFirstMapObject(); pObj; pObj = pObj->getNext()) {
@@ -1584,6 +1589,9 @@ void ScriptDialog::OnLoad()
 					msg += m_readPlayerNames[i].str();
 					msg += ", discarding scripts for this player.";
 					::AfxMessageBox(msg);
+
+					deleteInstance(scripts[i]);
+					scripts[i] = nullptr;
 					continue;
 				}
 			}
@@ -1591,8 +1599,8 @@ void ScriptDialog::OnLoad()
 				curSide = 0;
 				::AfxMessageBox("Imported scripts came from more players than exist in this map.  Additional scripts moved to Neutral player.");
 			}
-			ScriptList *pSL = m_sides.getSideInfo(curSide)->getScriptList();
 
+			ScriptList *pSL = m_sides.getSideInfo(curSide)->getScriptList();
 			if (pSL) {
 				Script *pScr;
 				Script *pNextScr;
@@ -1616,8 +1624,10 @@ void ScriptDialog::OnLoad()
 															copied into the current scripts. */
 				scripts[i] = nullptr;
 				//reloadPlayer(curSide, pSL);
+			} else {
+				deleteInstance(scripts[i]);
+				scripts[i] = nullptr;
 			}
-
 		}
 
 		for (i = 0; i < m_sides.getNumSides(); i++) {

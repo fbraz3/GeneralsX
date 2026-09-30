@@ -34,28 +34,28 @@
 #include "AnimationPropPage.h"
 #include "HierarchyPropPage.h"
 #include "resource.h"
-#include "distlod.h"
+#include "WW3D2/distlod.h"
 #include "AnimationSpeed.h"
 #include "AmbientLightDialog.h"
 #include "SceneLightDialog.h"
 #include "BackgroundColorDialog.h"
 #include "SaveSettingsDialog.h"
 #include "EditLODDialog.h"
-#include "w3derr.h"
+#include "WW3D2/w3derr.h"
 #include "BackgroundObjectDialog.h"
 #include "BackgroundBMPDialog.h"
 #include "Toolbar.h"
 #include "EmitterPropertySheet.h"
-#include "part_ldr.h"
-#include "agg_def.h"
+#include "WW3D2/part_ldr.h"
+#include "WW3D2/agg_def.h"
 #include "BoneMgrDialog.h"
 #include "Utils.h"
-#include "light.h"
+#include "WW3D2/light.h"
 #include "AggregateNameDialog.h"
 #include "LODDefs.h"
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 #include "RestrictedFileDialog.h"
-#include "hlod.h"
+#include "WW3D2/hlod.h"
 #include "ViewerScene.h"
 #include "EmitterInstanceList.h"
 #include "mmsystem.h"
@@ -69,16 +69,16 @@
 #include "AddToLineupDialog.h"
 #include "CameraDistanceDialog.h"
 #include "SoundEditDialog.h"
-#include "WWAudio.h"
-#include "soundrobj.h"
-#include "rddesc.h"
+#include "WWAudio/WWAudio.h"
+#include "WW3D2/soundrobj.h"
+#include "WW3D2/rddesc.h"
 #include "ScaleDialog.h"
 #include "GammaDialog.h"
 #include "AnimatedSoundOptionsDialog.h"
 
 
 //#undef STRICT
-#include "ww3d.h"
+#include "WW3D2/ww3d.h"
 
 
 #ifdef RTS_DEBUG
@@ -726,7 +726,6 @@ CMainFrame::ShowObjectProperties ()
 {
 	// Get a pointer to the 'graphic' pane's window
     CDataTreeView *pCDataTreeView = (CDataTreeView *)m_wndSplitter.GetPane (0, 0);
-    BOOL bReturn = (pCDataTreeView != nullptr);
 
     // Were we successful in getting the view's pointer?
     ASSERT (pCDataTreeView);
@@ -797,7 +796,6 @@ CMainFrame::OnUpdateObjectProperties (CCmdUI* pCmdUI)
 {
 	// Get a pointer to the 'graphic' pane's window
     CDataTreeView *pCDataTreeView = (CDataTreeView *)m_wndSplitter.GetPane (0, 0);
-    BOOL bReturn = (pCDataTreeView != nullptr);
 
     // Were we successful in view's getting the pointer?
     ASSERT (pCDataTreeView);
@@ -3125,7 +3123,7 @@ CMainFrame::Update_Emitters_List ()
 {
 	::EnableMenuItem (::GetSubMenu (::GetMenu (m_hWnd), 3), 3, MF_BYPOSITION | MF_ENABLED);
 	HMENU hsub_menu = Get_Emitters_List_Menu ();
-	int index = 0;
+	//int index = 0;
 	while (::RemoveMenu (hsub_menu, 0, MF_BYPOSITION)) {
 		//index ++;
 	}
@@ -3202,7 +3200,7 @@ CMainFrame::OnUpdateAdvancedAnim(CCmdUI* pCmdUI)
 {
 	// Enable the menu item if the selected hierarchy has at least one
 	// animation we can apply.
-	RenderObjClass *prender_obj = ::GetCurrentDocument()->GetDisplayedObject();
+	//RenderObjClass *prender_obj = ::GetCurrentDocument()->GetDisplayedObject();
 }
 
 

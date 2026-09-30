@@ -22,7 +22,7 @@
 #include "StdAfx.h"
 #include "W3DView.h"
 #include "EmitterColorPropPage.h"
-#include "part_emt.h"
+#include "WW3D2/part_emt.h"
 #include "Utils.h"
 #include "OpacitySettingsDialog.h"
 #include "ColorUtils.h"
@@ -610,9 +610,7 @@ EmitterColorPropPageClass::OnCommand
 
 void EmitterColorPropPageClass::OnDeltaposRedRandomSpin(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 	// TODO: Add your control notification handler code here
-	int test = 0;
 
 	*pResult = 0;
 }

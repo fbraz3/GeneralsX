@@ -21,6 +21,9 @@
 // LZH wrapper taken from Nox, originally from Jeff Brown
 //////////////////////////////////////////////////////////////////////////////
 
+#include <math.h>
+#include <string.h>
+
 #include "Compression.h"
 #include "LZHCompress/NoxCompress.h"
 
@@ -34,7 +37,7 @@
 
 
 // TheSuperHackers @todo Recover debug logging in this file?
-#define DEBUG_LOG(x) {}
+#define DEBUG_LOG(x)
 
 const char *CompressionManager::getCompressionNameByType( CompressionType compType )
 {

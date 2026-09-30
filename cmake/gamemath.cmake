@@ -20,7 +20,7 @@
 # Enable deterministic math only for non-VC6 builds (VC6 uses native x87 asm)
 # Note: Currently defaults to OFF until GameMath is available as a proper library/submodule
 if(NOT IS_VS6_BUILD)
-    option(SAGE_USE_DETERMINISTIC_MATH "Use fdlibm-based deterministic math for cross-platform replay validation" OFF)
+    option(SAGE_USE_DETERMINISTIC_MATH "Use fdlibm-based deterministic math for cross-platform replay validation" ON)
 else()
     # VC6 uses native x87 inline asm; deterministic mode not applicable
     set(SAGE_USE_DETERMINISTIC_MATH OFF)
@@ -31,34 +31,24 @@ if(SAGE_USE_DETERMINISTIC_MATH)
 
     include(FetchContent)
 
-    # FetchContent declaration for GameMath library
-    # Source: TheSuperHackers fork with deterministic math support
-    # Can be overridden via cmake -DSAGE_GAMEMATH_GIT_REPO=<url> -DSAGE_GAMEMATH_GIT_TAG=<tag>
-    if(NOT SAGE_GAMEMATH_GIT_REPO)
-        set(SAGE_GAMEMATH_GIT_REPO "https://github.com/TheSuperHackers/GeneralsGameCode.git")
-    endif()
-    
-    if(NOT SAGE_GAMEMATH_GIT_TAG)
-        set(SAGE_GAMEMATH_GIT_TAG "main")
-    endif()
+    # FORCE is required to guarantee cross-platform bit-exact determinism.
+    # Intrinsics would use platform-specific SIMD, breaking CRC parity between architectures.
+    set(GM_ENABLE_INTRINSICS OFF CACHE BOOL "Disable intrinsics for cross-arch determinism" FORCE)
+    set(GM_ENABLE_TESTS OFF CACHE BOOL "Disable GameMath tests" FORCE)
+    set(gamemath_SHARED_LIBS OFF CACHE BOOL "Force GameMath as static lib" FORCE)
 
     FetchContent_Declare(
         gamemath
-        GIT_REPOSITORY ${SAGE_GAMEMATH_GIT_REPO}
-        GIT_TAG ${SAGE_GAMEMATH_GIT_TAG}
-        SOURCE_SUBDIR "Core/GameMath"  # Adjust if GameMath moves
+        GIT_REPOSITORY https://github.com/TheSuperHackers/GameMath.git
+        GIT_TAG        59f7ccd494f7e7c916a784ac26ef266f9f09d78d
     )
-
-    # Minimal GameMath configuration
-    set(GAMEMATH_ENABLE_TESTS OFF CACHE BOOL "Disable GameMath tests" FORCE)
-    set(GAMEMATH_ENABLE_EXAMPLES OFF CACHE BOOL "Disable GameMath examples" FORCE)
 
     # Make GameMath available (FetchContent_MakeAvailable is idempotent)
     FetchContent_MakeAvailable(gamemath)
 
-    # Add USE_DETERMINISTIC_MATH to all compile definitions for this project
-    # This enables conditional compilation in wwmath.h and trig wrappers
-    add_compile_definitions(USE_DETERMINISTIC_MATH)
+    # Ensure GameMath includes are available to ALL targets
+    # to prevent one-definition-rule violations and ensure USE_DETERMINISTIC_MATH activates consistently.
+    include_directories(${gamemath_SOURCE_DIR}/include)
 
     message(STATUS "GameMath deterministic math enabled (fdlibm backend)")
     message(STATUS "  Math operations will be bit-exact across platforms")

@@ -39,6 +39,7 @@ public:
 	~FramePacer();
 
 	void update(); ///< Signal that the app/render update is done and wait for the fps limit if applicable.
+	void reset(); ///< Move the frame timing anchor to now and predict the next update time from the target frame rate. Call after a long blocking operation so its duration does not leak into the next frame delta.
 
 	void setFramesPerSecondLimit( Int fps ); ///< Set the update fps limit.
 	Int  getFramesPerSecondLimit() const; ///< Get the update fps limit.
@@ -66,6 +67,8 @@ public:
 	Real getLogicTimeStepSeconds(LogicTimeQueryFlags flags = 0) const; ///< Get the logic time step in seconds
 	Real getLogicTimeStepMilliseconds(LogicTimeQueryFlags flags = 0) const; ///< Get the logic time step in milliseconds
 
+	Real getLogicFramePhase() const; ///< Get how far the current render step reaches into the current logic frame, in [0,1]. Used to interpolate render updates between logic updates.
+
 protected:
 
 	FrameRateLimit m_frameRateLimit;
@@ -74,6 +77,7 @@ protected:
 	Int m_logicTimeScaleFPS; ///< Maximum frames per second for logic time scale
 
 	Real m_updateTime; ///< Last update delta time in seconds
+	Real m_logicFramePhase; ///< How far the current render step reaches into the current logic frame, ranging 0 to 1.
 
 	Bool m_enableFpsLimit;
 	Bool m_enableLogicTimeScale;

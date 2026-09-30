@@ -32,11 +32,6 @@ set(WWLIB_SRC
     #crcstraw.h
     cstraw.cpp
     cstraw.h
-    DbgHelpGuard.cpp
-    DbgHelpGuard.h
-    DbgHelpLoader.cpp
-    DbgHelpLoader.h
-    DbgHelpLoader_minidump.h
     Except.cpp
     Except.h
     FastAllocator.cpp
@@ -75,6 +70,7 @@ set(WWLIB_SRC
     #md5.h
     mempool.h
     mmsys.h
+    mpsc_intrusive_queue.h
     multilist.cpp
     multilist.h
     mutex.cpp
@@ -111,14 +107,11 @@ set(WWLIB_SRC
     SLNODE.h
     stimer.cpp
     stimer.h
-    STLUtils.h
     straw.cpp
     STRAW.h
-    stringex.h
     strtok_r.cpp
     strtok_r.h
     #swap.h
-    SystemAllocator.h
     systimer.cpp
     systimer.h
     TARGA.cpp
@@ -133,6 +126,8 @@ set(WWLIB_SRC
     trim.cpp
     trim.h
     uarray.h
+    utf8.cpp
+    utf8.h
     vector.cpp
     Vector.h
     visualc.h
@@ -165,6 +160,8 @@ if(WIN32)
         MPU.h
         rcfile.cpp
         rcfile.h
+        registry.cpp
+        registry.h
         verchk.cpp
         verchk.h
         WWCOMUtil.cpp
@@ -177,18 +174,14 @@ set_target_properties(core_wwlib PROPERTIES OUTPUT_NAME wwlib)
 
 target_sources(core_wwlib PRIVATE ${WWLIB_SRC})
 
-target_include_directories(core_wwlib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 target_precompile_headers(core_wwlib PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-    always.h
-    STLUtils.h
-    win.h
-    WWCommon.h
-    wwstring.h
-    [["PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
+    [["Precompiled/BasePrecomp.h"]] # Must be first
+    [["WWLib/always.h"]]
+    [["Utility/STLUtils.h"]]
+    [["WWLib/win.h"]]
+    [["WWLib/WWCommon.h"]]
+    [["WWLib/wwstring.h"]]
+    [["WWLib/PchCompat.h"]] # TheSuperHackers @build 08/02/2026 Platform-safe windows.h wrapper
 )
 
 target_link_libraries(core_wwlib PRIVATE

@@ -71,12 +71,12 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(RingPropertySheetClass)
 	protected:
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~RingPropertySheetClass();
+	virtual ~RingPropertySheetClass() override;
 
 	// Generated message map functions
 protected:
@@ -109,7 +109,7 @@ private:
 	RingGeneralPropPageClass	m_GeneralPage;
 	RingColorPropPageClass		m_ColorPage;
 	RingSizePropPageClass		m_ScalePage;
-	RingRenderObjClass *			m_RenderObj;
+	RefCountPtr<RingRenderObjClass>			m_RenderObj;
 	CString							m_LastSavedName;
 };
 

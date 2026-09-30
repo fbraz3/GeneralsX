@@ -58,8 +58,8 @@
 #include "MPU.h"
 //#include "commando\nat.h"
 #include "thread.h"
-#include "wwdebug.h"
-#include "wwmemlog.h"
+#include "WWDebug/wwdebug.h"
+#include "WWDebug/wwmemlog.h"
 
 #include	<conio.h>
 #include	<imagehlp.h>
@@ -177,7 +177,7 @@ int __cdecl _purecall()
 	*/
 	WWDEBUG_SAY(("Pure Virtual Function call. Oh No!"));
 	WWDEBUG_BREAK
-#endif	//_DEBUG_ASSERT
+#endif
 
 	return(return_code);
 }
