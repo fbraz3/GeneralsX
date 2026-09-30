@@ -13,7 +13,7 @@ on:
       platform:
         required: true
         type: string
-        description: "Target platform: linux, linux-flatpak or macos"
+        description: "Target platform: linux, linux-flatpak, macos or windows"
       game-artifact:
         required: true
         type: string
@@ -26,7 +26,7 @@ on:
 jobs:
   replay-test-zh:
     name: ZH Replay Tests (${{ inputs.platform }})
-    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || inputs.platform == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
     timeout-minutes: 45
 
     steps:
@@ -38,7 +38,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.game-artifact }}
-          path: /tmp/game-artifact
+          path: ${{ runner.os == 'Windows' && 'C:/tmp/game-artifact' || '/tmp/game-artifact' }}
 
       # -----------------------------------------------------------------------
       # 2. Platform-specific system dependencies
@@ -138,6 +138,28 @@ jobs:
           flatpak --user install -y "$FLATPAK_FILE"
           flatpak --user info com.fbraz3.GeneralsXZH
 
+      - name: Extract game bundle (Windows)
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $artifactDir = "C:\tmp\game-artifact"
+          $bundleDir = "C:\tmp\game-bundle"
+          New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
+
+          $exe = Get-ChildItem -Path $artifactDir -Filter "GeneralsXZH.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "GeneralsXZH.exe not found in downloaded artifact: $artifactDir"
+            exit 1
+          }
+          $sourceDir = $exe.DirectoryName
+          Copy-Item -Path "$sourceDir\*" -Destination $bundleDir -Recurse -Force
+
+          $gameBin = Join-Path $bundleDir "GeneralsXZH.exe"
+          "GAME_DIR=$bundleDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "GAME_BIN=$gameBin" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Windows Game bundle ready at: $bundleDir"
+          Get-ChildItem -Path $bundleDir | Format-Table Name, Length
+
       # -----------------------------------------------------------------------
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
@@ -166,6 +188,16 @@ jobs:
           7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"$GAME_DIR" -y
           echo "Big files found:"
           ls "$GAME_DIR/"*.big 2>/dev/null | head -10 || echo "(none found - verify archive contents)"
+
+      - name: Extract game assets (Windows)
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $archive = "$env:GITHUB_WORKSPACE\ci-assets-repo\generalszh.7z"
+          Write-Host "Extracting generalszh.7z into: $env:GAME_DIR"
+          & 7z x -p"${{ secrets.ASSETS_KEY }}" $archive -o"$env:GAME_DIR" -y | Out-Null
+          Write-Host "Big files found:"
+          Get-ChildItem -Path "$env:GAME_DIR\*.big" | Select-Object -First 10 | Format-Table Name, Length
 
       # -----------------------------------------------------------------------
       # 5. Check out replay repo and install maps + platform-specific replays
@@ -253,7 +285,46 @@ jobs:
             echo "GHENV_EOF"
           } >> $GITHUB_ENV
 
+      - name: Set up user data directories (Windows)
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $userData = Join-Path $env:USERPROFILE "Documents\Command and Conquer Generals Zero Hour Data"
+          $mapsDir = Join-Path $userData "Maps"
+          $replaysDir = Join-Path $userData "Replays"
+          New-Item -ItemType Directory -Path $mapsDir -Force | Out-Null
+          New-Item -ItemType Directory -Path $replaysDir -Force | Out-Null
+
+          # Install custom maps
+          $srcMaps = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Maps"
+          if (Test-Path $srcMaps) {
+            Copy-Item -Path "$srcMaps\*" -Destination $mapsDir -Recurse -Force
+            Get-ChildItem -Path $mapsDir -Filter "*mapcache*.ini" -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$userData\MapCache.ini" -Force -ErrorAction SilentlyContinue
+            Write-Host "Maps installed into $mapsDir"
+          }
+
+          # Install platform replays (windows_*.rep if present, else fallback to linux_*.rep)
+          $srcReplays = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Replays"
+          if (Test-Path $srcReplays) {
+            $winReps = Get-ChildItem -Path $srcReplays -Filter "windows_*.rep"
+            if ($winReps.Count -gt 0) {
+              $reps = $winReps
+              Write-Host "Using native Windows replay baselines"
+            } else {
+              $reps = Get-ChildItem -Path $srcReplays -Filter "linux_*.rep"
+              Write-Host "Using Linux deterministic replay baselines for Windows validation"
+            }
+            foreach ($r in $reps) {
+              Copy-Item $r.FullName $replaysDir -Force
+            }
+            Write-Host "Installed $($reps.Count) replays into $replaysDir"
+          }
+
+          "USER_DATA=$userData" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Replay input diagnostics
+        if: inputs.platform != 'windows'
         run: |
           # GeneralsX @bugfix BenderAI 22/05/2026 Emit deterministic replay provenance (code/assets/replays) to diagnose CI-vs-local drift.
           echo "=== Replay Input Diagnostics (${{ inputs.platform }}) ==="
@@ -315,6 +386,44 @@ jobs:
               fi
             fi
           fi
+
+      - name: Replay input diagnostics (Windows)
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          Write-Host "=== Replay Input Diagnostics (windows) ==="
+          Write-Host "GITHUB_SHA=$env:GITHUB_SHA"
+
+          if (Test-Path "$env:GITHUB_WORKSPACE\ci-replays-repo\.git") {
+            $repSha = git -C "$env:GITHUB_WORKSPACE\ci-replays-repo" rev-parse HEAD
+            Write-Host "REPLAY_REPO_SHA=$repSha"
+          }
+          if (Test-Path "$env:GITHUB_WORKSPACE\ci-assets-repo\.git") {
+            $assetsSha = git -C "$env:GITHUB_WORKSPACE\ci-assets-repo" rev-parse HEAD
+            Write-Host "ASSETS_REPO_SHA=$assetsSha"
+          }
+
+          Write-Host "USER_DATA=$env:USER_DATA"
+
+          if (Test-Path $env:GAME_BIN) {
+            $h = (Get-FileHash -Path $env:GAME_BIN -Algorithm SHA256).Hash
+            Write-Host "GAME_BIN_SHA256=$h"
+          }
+          if (Test-Path "$env:USER_DATA\Replays") {
+            Write-Host "Replay checksums:"
+            Get-ChildItem -Path "$env:USER_DATA\Replays\*.rep" | ForEach-Object {
+              $h = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
+              Write-Host "  $($_.Name) $h"
+            }
+          }
+          if (Test-Path "$env:GAME_DIR\INIZH.big") {
+            $h = (Get-FileHash -Path "$env:GAME_DIR\INIZH.big" -Algorithm SHA256).Hash
+            Write-Host "INIZH.big SHA256=$h"
+          }
+          if (Test-Path "$env:GAME_DIR\MapsZH.big") {
+            $h = (Get-FileHash -Path "$env:GAME_DIR\MapsZH.big" -Algorithm SHA256).Hash
+            Write-Host "MapsZH.big SHA256=$h"
+          }
 
       # -----------------------------------------------------------------------
       # 6. Run headless replay tests
@@ -502,3 +611,90 @@ jobs:
           if [ $((PASS + FAIL)) -eq 0 ]; then
             echo "::warning::No replay files were found to test"
           fi
+
+      - name: Run headless replay tests (Windows)
+        if: inputs.platform == 'windows'
+        shell: pwsh
+        run: |
+          $pass = 0
+          $fail = 0
+
+          Set-Location $env:GAME_DIR
+
+          $env:SDL_VIDEODRIVER = "dummy"
+          $env:SDL_AUDIODRIVER = "dummy"
+          $env:DXVK_LOG_LEVEL = "none"
+
+          echo "### Replay Test Results (windows-sdl3)" >> $env:GITHUB_STEP_SUMMARY
+          echo "" >> $env:GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $env:GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $env:GITHUB_STEP_SUMMARY
+
+          $replays = Get-ChildItem -Path "$env:USER_DATA\Replays" -Filter "*.rep"
+          if ($replays.Count -eq 0) {
+            Write-Warning "No replay files found to simulate."
+            echo "### ⚠️ No Replays Found" >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+
+          foreach ($rep in $replays) {
+            $name = $rep.Name
+            Write-Host "=== $name ==="
+
+            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+            $pinfo.FileName = $env:GAME_BIN
+            $pinfo.Arguments = "-headless -replay `"$($rep.FullName)`""
+            $pinfo.WorkingDirectory = $env:GAME_DIR
+            $pinfo.RedirectStandardOutput = $true
+            $pinfo.RedirectStandardError = $true
+            $pinfo.UseShellExecute = $false
+
+            $proc = New-Object System.Diagnostics.Process
+            $proc.StartInfo = $pinfo
+            [void]$proc.Start()
+
+            $finished = $proc.WaitForExit(180000)
+            if (-not $finished) {
+              $proc.Kill()
+              $fail++
+              Write-Host "FAIL (timeout 180s)"
+              echo "| `$name\` | FAIL | timeout 180s |" >> $env:GITHUB_STEP_SUMMARY
+              continue
+            }
+
+            $stdout = $proc.StandardOutput.ReadToEnd()
+            $stderr = $proc.StandardError.ReadToEnd()
+            $combined = $stdout + "`n" + $stderr
+            $code = $proc.ExitCode
+
+            $combined -split "`n" | Where-Object { $_ -match "\[GeneralsX\]|Simulating|Elapsed|CRC|MISMATCH|returned with code|FATAL" } | ForEach-Object { Write-Host $_ }
+
+            if ($code -eq 0) {
+              $pass++
+              Write-Host "PASS"
+              echo "| `$name\` | PASS | exit 0 |" >> $env:GITHUB_STEP_SUMMARY
+            } else {
+              $fail++
+              $diagnostics = ($combined -split "`n" | Where-Object { $_ -match "Error|CRC|MISMATCH|Exiting|FATAL|returned with code" } | Select-Object -Last 3) -join " / "
+              if ([string]::IsNullOrWhiteSpace($diagnostics)) {
+                $diagnostics = "no filtered diagnostics"
+              }
+              $diagnostics = $diagnostics.Replace("|", "/")
+              Write-Host "FAIL (exit $code)"
+              echo "| `$name\` | FAIL | exit $code: $diagnostics |" >> $env:GITHUB_STEP_SUMMARY
+            }
+
+            Write-Host ""
+          }
+
+          echo "" >> $env:GITHUB_STEP_SUMMARY
+          echo "**Results: $pass passed, $fail failed**" >> $env:GITHUB_STEP_SUMMARY
+
+          if ($fail -gt 0) {
+            Write-Error "$fail replay(s) failed on windows"
+            exit 1
+          }
+          if (($pass + $fail) -eq 0) {
+            Write-Warning "No replay files were found to test"
+          }
+
