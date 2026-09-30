@@ -282,11 +282,6 @@ IMPORTS void __stdcall AIL_set_sample_volume_pan(HSAMPLE sample, float volume, f
 IMPORTS void __stdcall AIL_set_stream_volume_pan(HSTREAM stream, float volume, float pan);
 IMPORTS void __stdcall AIL_stream_volume_pan(HSTREAM stream, float *volume, float *pan);
 IMPORTS unsigned long __stdcall AIL_get_timer_highest_delay(void);
-int MSS_auto_cleanup(void);
-
-#if !defined BUILD_STUBS
-#define AIL_startup() (MSS_auto_cleanup(), AIL_startup())
-#endif
 
 #ifdef __cplusplus
 } // extern "C"
