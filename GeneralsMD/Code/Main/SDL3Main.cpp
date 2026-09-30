@@ -81,8 +81,11 @@ static CriticalSection critSec5;
 // GLOBAL COMMAND LINE ARGUMENTS
 // TheSuperHackers @build felipebraz 13/02/2026
 // Store argc/argv from main() for use by CommandLine.cpp parseCommandLine()
+// On Windows CRT, __argc and __argv are already provided by stdlib.h macros (*__p___argc())
+#if !defined(_WIN32)
 int __argc = 0;          ///< global argument count
 char** __argv = nullptr; ///< global argument vector
+#endif
 
 // GLOBAL WINDOW HANDLE
 // TheSuperHackers @build felipebraz 13/02/2026
@@ -253,10 +256,12 @@ int main(int argc, char* argv[])
 {
 	int exitcode = 1;
 
+#if !defined(_WIN32)
 	// TheSuperHackers @build felipebraz 13/02/2026
 	// Store command line arguments in globals for CommandLine.cpp parser
 	__argc = argc;
 	__argv = argv;
+#endif
 
 #if defined(_WIN32)
 	ApplicationHInstance = GetModuleHandle(nullptr);

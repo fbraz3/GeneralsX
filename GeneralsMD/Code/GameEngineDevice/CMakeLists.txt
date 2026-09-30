@@ -195,6 +195,11 @@ if(SAGE_USE_SDL3)
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
+    if(WIN32)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Source/Win32Device/Common/Win32OSDisplay.cpp
+        )
+    endif()
 else()
     # Legacy Win32-specific files (DirectX 8, Miles Sound, Win32 API)
     list(APPEND GAMEENGINEDEVICE_SRC

@@ -1,0 +1,283 @@
+name: Build Windows (SDL3)
+
+# GeneralsX @build fbraz3 29/09/2026 Build and package Windows 64-bit binaries with modern SDL3 backend and run headless replay tests.
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        type: string
+        default: "windows64-deploy"
+        description: "CMake preset for Windows (SDL3)"
+    secrets:
+      ASSETS_KEY:
+        required: false
+        description: "Password for encrypted game assets in test-files repo"
+  workflow_dispatch:
+    inputs:
+      preset:
+        type: choice
+        description: "CMake preset for Windows (SDL3)"
+        options:
+          - windows64-deploy
+        default: windows64-deploy
+
+jobs:
+  build-windows:
+    name: ${{ matrix.game.id }}@${{ inputs.preset || 'windows64-deploy' }}
+    runs-on: windows-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            target: z_generals
+            build_script: ./scripts/build/windows/build-windows-zh.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-zh.ps1
+            bundle_dir: build/bundles/windows-generalsxzh-windows64-deploy
+            log_suffix: zh
+          - id: generalsx
+            target: g_generals
+            build_script: ./scripts/build/windows/build-windows-generals.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-generals.ps1
+            bundle_dir: build/bundles/windows-generalsx-windows64-deploy
+            log_suffix: generals
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup MSYS2 MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-zlib
+
+      - name: Configure CMake (${{ inputs.preset || 'windows64-deploy' }})
+        shell: pwsh
+        run: |
+          ./scripts/build/windows/configure-windows64.ps1
+
+      - name: Build ${{ matrix.game.target }}
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.build_script }}"
+
+      - name: Generate Windows Bundle
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.deploy_script }}"
+
+      - name: Verify Bundle Output and Packaged DLLs
+        shell: pwsh
+        run: |
+          $bundle = "${{ matrix.game.bundle_dir }}"
+          if (-not (Test-Path $bundle)) {
+            Write-Error "Bundle directory not found: $bundle"
+            exit 1
+          }
+          Write-Host "Bundle contents for ${{ matrix.game.id }}:"
+          Get-ChildItem -Path $bundle -Force | Format-Table Name, Length, LastWriteTime
+
+          # Verify primary DLLs are present
+          $requiredDlls = @("SDL3.dll", "OpenAL32.dll", "d3d8.dll", "libgcc_s_seh-1.dll", "libstdc++-6.dll")
+          foreach ($dll in $requiredDlls) {
+            $dllPath = Join-Path $bundle $dll
+            if (-not (Test-Path $dllPath)) {
+              Write-Error "Missing critical packaged DLL in bundle: $dll"
+              exit 1
+            }
+          }
+          Write-Host "All required DLLs successfully verified in bundle."
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logs-windows-${{ matrix.game.id }}-${{ inputs.preset || 'windows64-deploy' }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Windows Bundle
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-bundle-${{ matrix.game.id }}-${{ inputs.preset || 'windows64-deploy' }}
+          path: ${{ matrix.game.bundle_dir }}
+          retention-days: 7
+          if-no-files-found: error
+
+  replay-test-windows:
+    name: ZH Replay Tests (windows-sdl3)
+    needs: [build-windows]
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Download ZH Game Bundle
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-bundle-generalsxzh-${{ inputs.preset || 'windows64-deploy' }}
+          path: C:\tmp\game-bundle
+
+      - name: Verify Game Bundle
+        shell: pwsh
+        run: |
+          $gameDir = "C:\tmp\game-bundle"
+          $gameBin = Join-Path $gameDir "GeneralsXZH.exe"
+          if (-not (Test-Path $gameBin)) {
+            Write-Error "GeneralsXZH.exe not found in $gameDir"
+            exit 1
+          }
+          "GAME_DIR=$gameDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "GAME_BIN=$gameBin" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Get-ChildItem -Path $gameDir | Format-Table Name, Length
+
+      - name: Check Assets Key
+        id: check_key
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.ASSETS_KEY }}")) {
+            Write-Host "ASSETS_KEY secret is not configured; skipping replay execution."
+            "has_key=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "### ⏭️ Windows Replay Tests Skipped" >> $env:GITHUB_STEP_SUMMARY
+            echo "ASSETS_KEY secret not available in this workflow context." >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            "has_key=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
+      - name: Checkout Game Assets
+        if: steps.check_key.outputs.has_key == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: fbraz3/generalsx-test-files
+          path: ci-assets-repo
+          lfs: true
+
+      - name: Extract Game Assets
+        if: steps.check_key.outputs.has_key == 'true'
+        shell: pwsh
+        run: |
+          $archive = "$env:GITHUB_WORKSPACE\ci-assets-repo\generalszh.7z"
+          if (-not (Test-Path $archive)) {
+            Write-Error "generalszh.7z not found in assets repository"
+            exit 1
+          }
+          & 7z x -p"${{ secrets.ASSETS_KEY }}" $archive -o"$env:GAME_DIR" -y | Out-Null
+          Write-Host "Assets extracted successfully into $env:GAME_DIR"
+          Get-ChildItem -Path "$env:GAME_DIR\*.big" | Format-Table Name, Length
+
+      - name: Checkout Replays Repo
+        if: steps.check_key.outputs.has_key == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: fbraz3/GeneralsXReplays
+          path: ci-replays-repo
+
+      - name: Set up User Data and Replays
+        if: steps.check_key.outputs.has_key == 'true'
+        shell: pwsh
+        run: |
+          $userData = Join-Path $env:USERPROFILE "Documents\Command and Conquer Generals Zero Hour Data"
+          $mapsDir = Join-Path $userData "Maps"
+          $replaysDir = Join-Path $userData "Replays"
+          New-Item -ItemType Directory -Path $mapsDir -Force | Out-Null
+          New-Item -ItemType Directory -Path $replaysDir -Force | Out-Null
+
+          # Copy maps
+          $srcMaps = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Maps"
+          if (Test-Path $srcMaps) {
+            Copy-Item -Path "$srcMaps\*" -Destination $mapsDir -Recurse -Force
+            Get-ChildItem -Path $mapsDir -Filter "*mapcache*.ini" -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue
+          }
+
+          # Copy replays (windows or linux baseline replays)
+          $srcReplays = "$env:GITHUB_WORKSPACE\ci-replays-repo\GeneralsXZH\Replays"
+          if (Test-Path $srcReplays) {
+            $reps = Get-ChildItem -Path $srcReplays -Filter "*.rep"
+            foreach ($r in $reps) {
+              Copy-Item $r.FullName $replaysDir -Force
+            }
+            Write-Host "Installed $($reps.Count) replay files into $replaysDir"
+          }
+
+          "USER_DATA=$userData" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run Headless Replay Tests
+        if: steps.check_key.outputs.has_key == 'true'
+        shell: pwsh
+        run: |
+          Set-Location $env:GAME_DIR
+
+          $replays = Get-ChildItem -Path "$env:USER_DATA\Replays" -Filter "*.rep"
+          if ($replays.Count -eq 0) {
+            Write-Warning "No replay files found to simulate."
+            echo "### ⚠️ No Replays Found" >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+
+          $pass = 0
+          $fail = 0
+
+          echo "### Windows (SDL3) Replay Test Results" >> $env:GITHUB_STEP_SUMMARY
+          echo "" >> $env:GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $env:GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $env:GITHUB_STEP_SUMMARY
+
+          foreach ($rep in $replays) {
+            Write-Host "Simulating replay: $($rep.Name)..."
+            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+            $pinfo.FileName = $env:GAME_BIN
+            $pinfo.Arguments = "-headless -replay `"$($rep.FullName)`""
+            $pinfo.WorkingDirectory = $env:GAME_DIR
+            $pinfo.RedirectStandardOutput = $true
+            $pinfo.RedirectStandardError = $true
+            $pinfo.UseShellExecute = $false
+
+            $proc = New-Object System.Diagnostics.Process
+            $proc.StartInfo = $pinfo
+            [void]$proc.Start()
+
+            $finished = $proc.WaitForExit(180000)
+            if (-not $finished) {
+              $proc.Kill()
+              $fail++
+              echo "| `$($rep.Name)` | ❌ FAIL | Timed out after 180s |" >> $env:GITHUB_STEP_SUMMARY
+              continue
+            }
+
+            $stdout = $proc.StandardOutput.ReadToEnd()
+            $stderr = $proc.StandardError.ReadToEnd()
+            $exitCode = $proc.ExitCode
+
+            if ($exitCode -eq 0) {
+              $pass++
+              Write-Host "PASS: $($rep.Name)"
+              echo "| `$($rep.Name)` | ✅ PASS | exit 0 |" >> $env:GITHUB_STEP_SUMMARY
+            } else {
+              $fail++
+              Write-Host "FAIL ($exitCode): $($rep.Name)"
+              echo "| `$($rep.Name)` | ❌ FAIL | exit $exitCode |" >> $env:GITHUB_STEP_SUMMARY
+            }
+          }
+
+          echo "" >> $env:GITHUB_STEP_SUMMARY
+          echo "**Results: $pass passed, $fail failed**" >> $env:GITHUB_STEP_SUMMARY
+
+          if ($fail -gt 0) {
+            Write-Error "$fail replay test(s) failed."
+            exit 1
+          }

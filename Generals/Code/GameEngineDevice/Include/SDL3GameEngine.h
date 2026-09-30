@@ -103,10 +103,10 @@ public:
 	// SDL3 specific
 	virtual SDL_Window* getSDLWindow(void) const { return m_SDLWindow; }
 #if defined(_WIN32)
-	virtual void *getOSDisplay(void) override;
-	virtual void *getOSInstance(void) override;
+	virtual void *getOSDisplay(void);
+	virtual void *getOSInstance(void);
 #else
-	virtual void *getOSDisplay(void) override { return (void*)m_SDLWindow; }
+	virtual void *getOSDisplay(void) { return (void*)m_SDLWindow; }
 #endif
 
 protected:

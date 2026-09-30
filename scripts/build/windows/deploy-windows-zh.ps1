@@ -23,17 +23,47 @@ if (-not (Test-Path $exeSrc)) {
 New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
 Copy-Item $exeSrc (Join-Path $bundleDir "GeneralsXZH.exe") -Force
 
+# GeneralsX @build fbraz3 29/09/2026 Package DXVK, OpenAL, SDL3, and MinGW runtime DLLs for self-contained bundle.
 $runtimeCandidates = @(
     (Join-Path $buildDir "d3d8.dll"),
     (Join-Path $buildDir "dxgi.dll"),
     (Join-Path $buildDir "d3d11.dll"),
+    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/d3d8.dll"),
+    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/dxgi.dll"),
+    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/d3d11.dll"),
     (Join-Path $buildDir "_deps/openal_soft-build/OpenAL32.dll"),
-    (Join-Path $buildDir "libgamespy_import.dll")
+    (Join-Path $buildDir "libgamespy_import.dll"),
+    (Join-Path $buildDir "vcpkg_installed/x64-mingw-dynamic/bin/libzlib1.dll")
 )
 
 foreach ($dll in $runtimeCandidates) {
     if (Test-Path $dll) {
         Copy-Item $dll $bundleDir -Force
+    }
+}
+
+# Copy SDL3 and SDL3_image runtime DLLs
+$sdlDlls = Get-ChildItem -Path (Join-Path $buildDir "_deps") -Filter "SDL3*.dll" -Recurse -File -ErrorAction SilentlyContinue
+foreach ($sdlDll in $sdlDlls) {
+    Copy-Item $sdlDll.FullName $bundleDir -Force
+}
+
+# Copy MinGW and system runtime DLLs required on clean target environments
+$mingwBin = if (Test-Path "C:\msys64\mingw64\bin") {
+    "C:\msys64\mingw64\bin"
+} elseif (Get-Command x86_64-w64-mingw32-g++.exe -ErrorAction SilentlyContinue) {
+    Split-Path (Get-Command x86_64-w64-mingw32-g++.exe).Source
+} else {
+    $null
+}
+
+if ($mingwBin) {
+    $mingwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll", "libpng16-16.dll", "zlib1.dll")
+    foreach ($d in $mingwDlls) {
+        $p = Join-Path $mingwBin $d
+        if (Test-Path $p) {
+            Copy-Item $p $bundleDir -Force
+        }
     }
 }
 

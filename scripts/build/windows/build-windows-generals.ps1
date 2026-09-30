@@ -10,6 +10,11 @@ Set-Location $projectRoot
 
 # GeneralsX @bugfix GitHub Copilot 20/05/2026 Ensure MinGW/MSYS2 toolchain binaries are available in PATH for task execution.
 $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:PATH
+$vcpkgRoot = Join-Path $projectRoot "vcpkg"
+$env:VCPKG_ROOT = $vcpkgRoot
+$env:VCPKG_DEFAULT_TRIPLET = "x64-mingw-dynamic"
+$env:VCPKG_DEFAULT_HOST_TRIPLET = "x64-mingw-dynamic"
+$env:VCPKG_TARGET_TRIPLET = "x64-mingw-dynamic"
 
 New-Item -ItemType Directory -Path logs -Force | Out-Null
 $logFile = "logs/build_windows64_generals.log"

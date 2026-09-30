@@ -279,6 +279,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				cursor->m_frameCount = frame_index;
 				const int clamped_rate = (cursor->m_frameRate > 0) ? cursor->m_frameRate : 4;
 				const Uint32 frame_duration_ms = (Uint32)((clamped_rate * 1000) / 60);
+				SDL_CursorFrameInfo frame_infos[MAX_2D_CURSOR_ANIM_FRAMES];
 				SDL_Surface *first_surface = cursor->m_frameSurfaces[0];
 
 				for (int i = 0; i < frame_index; ++i)

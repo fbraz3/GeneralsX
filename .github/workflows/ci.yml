@@ -90,10 +90,10 @@ jobs:
     secrets: inherit
 
   build-windows:
-    name: Build Windows
+    name: Build Windows (SDL3)
     needs: detect-changes
     if: needs.detect-changes.outputs.zh-should-build == 'true' || needs.detect-changes.outputs.base-should-build == 'true' || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/build-windows.yml
+    uses: ./.github/workflows/build-windows-sdl3.yml
     with:
       preset: windows64-deploy
     secrets: inherit
