@@ -198,19 +198,29 @@ set(GAMEENGINEDEVICE_SRC
 if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
-        Include/MilesAudioDevice/MilesAudioManager.h
-        Include/VideoDevice/Bink/BinkVideoPlayer.h
         Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
-        Source/MilesAudioDevice/MilesAudioManager.cpp
-        Source/VideoDevice/Bink/BinkVideoPlayer.cpp
         Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
         Source/Win32Device/Common/Win32LocalFileSystem.cpp
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
+    # GeneralsX @build fbraz3 01/10/2026 Isolate legacy Miles audio manager when OpenAL or MiniAudio is enabled
+    if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/MilesAudioDevice/MilesAudioManager.h
+            Source/MilesAudioDevice/MilesAudioManager.cpp
+        )
+    endif()
+    # GeneralsX @build fbraz3 01/10/2026 Isolate legacy Bink video player when SDL3 backend is enabled
+    if(NOT SAGE_USE_SDL3)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/VideoDevice/Bink/BinkVideoPlayer.h
+            Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+        )
+    endif()
     # GeneralsX @build fbraz3 29/09/2026 Isolate legacy Win32 input devices when SDL3 backend is enabled
     if(NOT SAGE_USE_SDL3)
         list(APPEND GAMEENGINEDEVICE_SRC
