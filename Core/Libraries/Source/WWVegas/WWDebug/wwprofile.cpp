@@ -95,7 +95,8 @@ WWINLINE double WWProfile_Get_Inv_Processor_Ticks_Per_Second()
  * HISTORY:                                                                                    *
  *   9/24/2000  gth : Created.                                                                 *
  *=============================================================================================*/
-static inline void WWProfile_Get_Ticks(_int64 * ticks)
+// GeneralsX @bugfix fbraz3 01/10/2026 Use __int64 for cross-platform and MinGW GCC compatibility.
+static inline void WWProfile_Get_Ticks(__int64 * ticks)
 {
 #ifdef _UNIX
        *ticks = TIMEGETTIME();
