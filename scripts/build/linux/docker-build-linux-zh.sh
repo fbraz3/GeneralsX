@@ -49,8 +49,8 @@ docker run --rm \
     --user "${HOST_UID}:${HOST_GID}" \
     -e HOME=/tmp/generalsx-home \
     -e XDG_CACHE_HOME=/tmp/generalsx-cache \
-    -v "$PROJECT_ROOT:/work:Z" \
-    -v "$VCPKG_DIR:/opt/vcpkg:Z" \
+    -v "$PROJECT_ROOT:/work:z" \
+    -v "$VCPKG_DIR:/opt/vcpkg:z" \
     -w /work \
     "$DOCKER_IMAGE" \
     bash -c "
