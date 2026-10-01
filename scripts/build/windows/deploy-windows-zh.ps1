@@ -82,6 +82,9 @@ if ($mingwBin) {
             Copy-Item $p $bundleDir -Force
         }
     }
+    # GeneralsX @build fbraz3 01/10/2026 Copy FFmpeg runtime DLLs for OpenAL audio decoding
+    Get-ChildItem -Path $mingwBin -Filter "av*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "sw*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
 }
 
 Write-Host "Deploy complete: $bundleDir"
