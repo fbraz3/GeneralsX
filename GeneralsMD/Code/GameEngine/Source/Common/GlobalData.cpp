@@ -425,6 +425,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "CameraAdjustSpeed",					INI::parseReal,				nullptr,			offsetof( GlobalData, m_cameraAdjustSpeed ) },
 	{ "EnforceMaxCameraHeight",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_enforceMaxCameraHeight ) },
 	{ "KeyboardScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardScrollFactor ) },
+	// GeneralsX @feature Gabriel Petry 30/09/2026 Load configurable mouse scrolling speed.
+	{ "MouseScrollSpeedFactor",		INI::parseReal,				nullptr,			offsetof( GlobalData, m_mouseScrollFactor ) },
 	{ "KeyboardDefaultScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardDefaultScrollFactor ) },
 	{ "KeyboardCameraRotateSpeed", INI::parseReal, nullptr, offsetof( GlobalData, m_keyboardCameraRotateSpeed ) },
 	{ "MovementPenaltyDamageState",	INI::parseIndexList,	TheBodyDamageTypeNames,	 offsetof( GlobalData, m_movementPenaltyDamageState ) },
@@ -1042,6 +1044,8 @@ GlobalData::GlobalData()
 	m_loadScreenRender = FALSE;
 
 	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
+	// GeneralsX @bugfix Gabriel Petry 30/09/2026 Preserve retail mouse-wheel zoom speed by default.
+	m_mouseScrollFactor = 1.0f;
 	m_drawScrollAnchor = FALSE;
 	m_moveScrollAnchor = FALSE;
 	m_scrollAmountCutoff = 10.0f;
