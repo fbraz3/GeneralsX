@@ -45,6 +45,42 @@ Int Win32LANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, Unsigned
 	return 0;
 }
 
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Windows fallback for real local adapter matching (excluding loopback).
+Bool Win32LANInterface::isRealLocalInterfaceAddress(UnsignedInt ip)
+{
+	if (ip == 0 || (ip >> 24) == 127)
+	{
+		return FALSE;
+	}
+#ifdef _WIN32
+	UnsignedInt addrs[16];
+	Int count = getLocalHostAddresses(addrs, ARRAY_SIZE(addrs));
+	for (Int i = 0; i < count; ++i)
+	{
+		if (addrs[i] == ip)
+		{
+			return TRUE;
+		}
+	}
+#endif
+	return FALSE;
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Windows fallback test for local host IPv4 address.
+Bool Win32LANInterface::isLocalHostAddress(UnsignedInt ip)
+{
+	if (ip == 0)
+	{
+		return FALSE;
+	}
+	// 127.0.0.0/8 loopback range
+	if ((ip >> 24) == 127)
+	{
+		return TRUE;
+	}
+	return isRealLocalInterfaceAddress(ip);
+}
+
 Int LANInterfaceDevice::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 {
 	return Win32LANInterface::getLocalHostAddresses(outAddrs, maxAddrs);
@@ -53,4 +89,14 @@ Int LANInterfaceDevice::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddr
 Int LANInterfaceDevice::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs)
 {
 	return Win32LANInterface::getSubnetBroadcastAddresses(localIP, outAddrs, maxAddrs);
+}
+
+Bool LANInterfaceDevice::isLocalHostAddress(UnsignedInt ip)
+{
+	return Win32LANInterface::isLocalHostAddress(ip);
+}
+
+Bool LANInterfaceDevice::isRealLocalInterfaceAddress(UnsignedInt ip)
+{
+	return Win32LANInterface::isRealLocalInterfaceAddress(ip);
 }
