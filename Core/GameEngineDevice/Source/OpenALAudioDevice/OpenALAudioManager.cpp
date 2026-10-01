@@ -70,11 +70,6 @@
 
 #include <AL/alext.h>
 
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-}
-
 #ifdef _INTERNAL
 //#pragma optimize("", off)
 //#pragma MESSAGE("************************************** WARNING, optimization disabled for debugging purposes")
