@@ -32,6 +32,9 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#if !defined(_MSC_VER) || (_MSC_VER >= 1914)
+#include <filesystem>
+#endif
 
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -56,9 +59,6 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #define HAVE_NGMP_PREFS 1
-#endif
-#if !defined(_MSC_VER) || (_MSC_VER >= 1914)
-#include <filesystem>
 #endif
 
 

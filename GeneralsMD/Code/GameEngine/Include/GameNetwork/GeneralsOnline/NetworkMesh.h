@@ -1,9 +1,6 @@
 // GeneralsX @feature GeneralsOnline NetworkMesh header
 #pragma once
 
-#ifdef _WIN32
-#include <ws2ipdef.h>
-#endif
 #include <mutex>
 #include <map>
 #include <vector>
