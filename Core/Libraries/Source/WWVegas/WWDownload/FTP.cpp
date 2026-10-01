@@ -40,6 +40,7 @@
 #include <direct.h>
 #if defined(__MINGW32__)
 // GeneralsX @bugfix GitHub Copilot 19/05/2026 Restore legacy helpers/macros expected by WWDownload for MinGW x64 builds.
+// GeneralsX @bugfix fbraz 30/09/2026 Omit duplicate strlcpy/strlcat conflicting with Utility/stringex.h
 #include <string.h>
 #include <sys/stat.h>
 #ifndef ARRAY_SIZE
@@ -54,31 +55,6 @@ typedef int socklen_t;
 #ifndef _S_IREAD
 #define _S_IREAD S_IRUSR
 #endif
-static inline size_t strlcpy(char *dst, const char *src, size_t dstsize)
-{
-	const size_t srclen = strlen(src);
-	if (dstsize != 0) {
-		const size_t copylen = (srclen >= dstsize) ? (dstsize - 1) : srclen;
-		memcpy(dst, src, copylen);
-		dst[copylen] = '\0';
-	}
-	return srclen;
-}
-static inline size_t strlcat(char *dst, const char *src, size_t dstsize)
-{
-	const size_t dstlen = strnlen(dst, dstsize);
-	const size_t srclen = strlen(src);
-	if (dstlen == dstsize) {
-		return dstsize + srclen;
-	}
-	if (srclen < (dstsize - dstlen)) {
-		memcpy(dst + dstlen, src, srclen + 1);
-	} else {
-		memcpy(dst + dstlen, src, dstsize - dstlen - 1);
-		dst[dstsize - 1] = '\0';
-	}
-	return dstlen + srclen;
-}
 #endif
 #else
 #include "windows_compat.h"  // Includes socket_compat.h (Winsock → POSIX BSD sockets)
