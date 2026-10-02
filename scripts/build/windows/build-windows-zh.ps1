@@ -33,6 +33,11 @@ $env:VCPKG_TARGET_TRIPLET = "x64-mingw-dynamic"
 New-Item -ItemType Directory -Path logs -Force | Out-Null
 $logFile = "logs/build_windows64_zh.log"
 
+if (Get-Command ccache.exe -ErrorAction SilentlyContinue) {
+    Write-Host "ccache statistics before build:"
+    & ccache.exe -s
+}
+
 Write-Host "Building target z_generals..."
 # GeneralsX @bugfix GitHub Copilot 21/05/2026 Prevent PowerShell from treating CMake stderr warnings as terminating errors.
 $previousErrorActionPreference = $ErrorActionPreference
@@ -40,6 +45,11 @@ $ErrorActionPreference = 'Continue'
 cmake --build --preset windows64-deploy --target z_generals -j4 2>&1 | Tee-Object -FilePath $logFile
 $cmakeExitCode = $LASTEXITCODE
 $ErrorActionPreference = $previousErrorActionPreference
+
+if (Get-Command ccache.exe -ErrorAction SilentlyContinue) {
+    Write-Host "ccache statistics after build:"
+    & ccache.exe -s
+}
 
 if ($cmakeExitCode -ne 0) {
     Write-Error "Build failed. Check $logFile"

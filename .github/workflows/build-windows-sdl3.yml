@@ -120,8 +120,20 @@ jobs:
           $ccacheDir = Join-Path $HOME ".ccache"
           New-Item -ItemType Directory -Force -Path $ccacheDir | Out-Null
           "CCACHE_DIR=$ccacheDir" >> $env:GITHUB_ENV
+          "CCACHE_BASEDIR=${{ github.workspace }}" >> $env:GITHUB_ENV
+          "CCACHE_SLOPPINESS=time_macros,include_file_mtime,locale" >> $env:GITHUB_ENV
+          "CCACHE_COMPILERCHECK=content" >> $env:GITHUB_ENV
+          "CCACHE_MAXSIZE=2G" >> $env:GITHUB_ENV
           "CMAKE_C_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
           "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
+
+      - name: Cache CMake FetchContent
+        uses: actions/cache@v5
+        with:
+          path: build/windows64-deploy/_deps
+          key: fetchcontent-windows64-${{ hashFiles('cmake/**', 'CMakeLists.txt') }}
+          restore-keys: |
+            fetchcontent-windows64-
 
       - name: Configure CMake (${{ inputs.preset || 'windows64-deploy' }})
         shell: pwsh
@@ -171,7 +183,22 @@ jobs:
               exit 1
             }
           }
-          Write-Host "All required DLLs successfully verified in bundle."
+
+          # Verify every DLL in bundle is strictly 64-bit AMD64 (IMAGE_FILE_MACHINE_AMD64 = 0x8664)
+          Get-ChildItem -Path $bundle -Filter "*.dll" -File | ForEach-Object {
+            $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+            if ($bytes.Length -gt 0x40) {
+              $peOffset = [BitConverter]::ToInt32($bytes, 0x3C)
+              if ($bytes.Length -gt ($peOffset + 6)) {
+                $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+                if ($machine -ne 0x8664) {
+                  Write-Error ("Bundle DLL {0} has non-x64 machine type: 0x{1:X4} (expected 0x8664)" -f $_.Name, $machine)
+                  exit 1
+                }
+              }
+            }
+          }
+          Write-Host "All required DLLs and 64-bit architectures successfully verified in bundle."
 
       - name: Upload Build Logs
         if: always()

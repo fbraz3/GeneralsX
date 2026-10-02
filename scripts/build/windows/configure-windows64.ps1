@@ -116,19 +116,21 @@ if (-not (Test-Path $vcpkgExe)) {
 }
 
 Write-Host "vcpkg.exe ready at: $vcpkgExe"
-Write-Host "Installing packages with lock file (triplet: $vcpkgTriplet, host-triplet: $vcpkgHostTriplet)..."
-# GeneralsX @bugfix GitHub Copilot 25/05/2026 Prevent stderr warnings from native tools becoming blocking PowerShell error records while preserving real non-zero exit handling.
-$previousErrorActionPreference = $ErrorActionPreference
-$ErrorActionPreference = 'Continue'
-& $vcpkgExe install --vcpkg-root $vcpkgRoot --triplet $vcpkgTriplet --host-triplet $vcpkgHostTriplet --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
-$vcpkgExitCode = $LASTEXITCODE
-$ErrorActionPreference = $previousErrorActionPreference
-if ($vcpkgExitCode -ne 0) {
-    Write-Error "vcpkg install failed. Check logs/vcpkg_install.log"
-    exit $vcpkgExitCode
-}
 
+# GeneralsX @performance fbraz3 01/10/2026 Run explicit vcpkg install only for cache-warming (-InstallDependenciesOnly); CMake's vcpkg.cmake manifest mode handles build configure automatically.
 if ($InstallDependenciesOnly) {
+    Write-Host "Installing packages with lock file (triplet: $vcpkgTriplet, host-triplet: $vcpkgHostTriplet)..."
+    # GeneralsX @bugfix GitHub Copilot 25/05/2026 Prevent stderr warnings from native tools becoming blocking PowerShell error records while preserving real non-zero exit handling.
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    & $vcpkgExe install --vcpkg-root $vcpkgRoot --triplet $vcpkgTriplet --host-triplet $vcpkgHostTriplet --recurse 2>&1 | Tee-Object -FilePath "logs/vcpkg_install.log"
+    $vcpkgExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousErrorActionPreference
+    if ($vcpkgExitCode -ne 0) {
+        Write-Error "vcpkg install failed. Check logs/vcpkg_install.log"
+        exit $vcpkgExitCode
+    }
+
     Write-Host "vcpkg dependencies installed successfully (-InstallDependenciesOnly). Exiting."
     exit 0
 }

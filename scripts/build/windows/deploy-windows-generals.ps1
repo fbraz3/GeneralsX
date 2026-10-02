@@ -43,6 +43,30 @@ Copy-Item $exeSrc.FullName (Join-Path $bundleDir "GeneralsX.exe") -Force
 
 # GeneralsX @build fbraz3 29/09/2026 Package DXVK, OpenAL, SDL3, and MinGW runtime DLLs for self-contained bundle.
 # GeneralsX @build fbraz3 01/10/2026 Package DXVK, OpenAL, SDL3, vcpkg, SagePatch, and transitive MinGW runtime DLLs for self-contained bundle.
+# GeneralsX @bugfix fbraz3 01/10/2026 Validate 64-bit PE architecture (0x8664) to prevent STATUS_INVALID_IMAGE_FORMAT (0xC000007B).
+
+function Test-IsPe64($filePath) {
+    if (-not (Test-Path $filePath)) { return $false }
+    try {
+        $fs = [System.IO.File]::OpenRead($filePath)
+        $br = [System.IO.BinaryReader]::new($fs)
+    } catch { return $false }
+
+    try {
+        if ($fs.Length -lt 0x40) { return $false }
+        if ($br.ReadUInt16() -ne 0x5A4D) { return $false } # 'MZ'
+        $fs.Position = 0x3C
+        $peOffset = $br.ReadInt32()
+        if ($peOffset -lt 0 -or $peOffset -ge ($fs.Length - 6)) { return $false }
+        $fs.Position = $peOffset
+        if ($br.ReadUInt32() -ne 0x00004550) { return $false } # 'PE\0\0'
+        $machine = $br.ReadUInt16()
+        return ($machine -eq 0x8664) # IMAGE_FILE_MACHINE_AMD64 (0x8664)
+    } finally {
+        $br.Close()
+        $fs.Close()
+    }
+}
 
 # Copy build-tree dependencies (DXVK, OpenAL Soft, SDL3, SagePatch, GameSpy)
 $buildDllSearchDirs = @(
@@ -53,7 +77,9 @@ $buildDllSearchDirs = @(
 
 foreach ($dir in $buildDllSearchDirs) {
     if (Test-Path $dir) {
-        Get-ChildItem -Path $dir -Filter "*.dll" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        Get-ChildItem -Path $dir -Filter "*.dll" -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            (Test-IsPe64 $_.FullName)
+        } | ForEach-Object {
             Copy-Item $_.FullName $bundleDir -Force
         }
     }
@@ -63,7 +89,9 @@ foreach ($dir in $buildDllSearchDirs) {
 @((Join-Path $projectRoot "vcpkg_installed"), (Join-Path $buildDir "vcpkg_installed")) | ForEach-Object {
     if (Test-Path $_) {
         Get-ChildItem -Path $_ -Filter "*.dll" -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
-            $_.FullName -notlike "*\debug\*" -and $_.FullName -notlike "*/debug/*"
+            ($_.FullName -like "*\bin\*" -or $_.FullName -like "*/bin/*") -and
+            $_.FullName -notlike "*\debug\*" -and $_.FullName -notlike "*/debug/*" -and
+            (Test-IsPe64 $_.FullName)
         } | ForEach-Object {
             Copy-Item $_.FullName $bundleDir -Force
         }
@@ -94,17 +122,17 @@ if ($mingwBin) {
     )
     foreach ($d in $coreMinGwDlls) {
         $p = Join-Path $mingwBin $d
-        if (Test-Path $p) {
+        if ((Test-Path $p) -and (Test-IsPe64 $p)) {
             Copy-Item $p $bundleDir -Force
         }
     }
 
     # Audio/Video decoding libraries required by OpenAL/Engine
-    Get-ChildItem -Path $mingwBin -Filter "avcodec*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
-    Get-ChildItem -Path $mingwBin -Filter "avformat*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
-    Get-ChildItem -Path $mingwBin -Filter "avutil*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
-    Get-ChildItem -Path $mingwBin -Filter "swresample*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
-    Get-ChildItem -Path $mingwBin -Filter "swscale*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "avcodec*.dll" -File -ErrorAction SilentlyContinue | Where-Object { Test-IsPe64 $_.FullName } | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "avformat*.dll" -File -ErrorAction SilentlyContinue | Where-Object { Test-IsPe64 $_.FullName } | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "avutil*.dll" -File -ErrorAction SilentlyContinue | Where-Object { Test-IsPe64 $_.FullName } | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "swresample*.dll" -File -ErrorAction SilentlyContinue | Where-Object { Test-IsPe64 $_.FullName } | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "swscale*.dll" -File -ErrorAction SilentlyContinue | Where-Object { Test-IsPe64 $_.FullName } | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
 }
 
 # Recursive PE dependency resolver: ensure all transitive DLLs (e.g. liblzma, libiconv, libdav1d, libsoxr)
@@ -256,10 +284,12 @@ while ($pass -lt $maxPasses) {
                         break
                     }
                 }
-                if ($found) {
+                if ($found -and (Test-IsPe64 $found)) {
                     Copy-Item $found $targetPath -Force
-                    Write-Host "Resolved dependency $imp (required by $($bin.Name)) from $found"
+                    Write-Host "Resolved 64-bit dependency $imp (required by $($bin.Name)) from $found"
                     $newCopies++
+                } elseif ($found) {
+                    Write-Warning "Skipping non-64-bit candidate for $imp from $found"
                 }
             }
         }
@@ -267,6 +297,14 @@ while ($pass -lt $maxPasses) {
 
     if ($newCopies -eq 0) {
         break
+    }
+}
+
+# Final sanity check: strip any non-x64 binary that might have sneaked into the bundle
+Get-ChildItem -Path $bundleDir -Filter "*.dll" -File | ForEach-Object {
+    if (-not (Test-IsPe64 $_.FullName)) {
+        Write-Warning "Removing incompatible non-x64 DLL from bundle: $($_.Name)"
+        Remove-Item $_.FullName -Force
     }
 }
 

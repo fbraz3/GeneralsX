@@ -18,12 +18,13 @@ if(SAGE_USE_CCACHE)
         message(STATUS "ccache enabled: ${CCACHE_PROGRAM}")
         
         # GeneralsX @build BenderAI 25/02/2026
+        # GeneralsX @build fbraz3 01/10/2026 Extend CCACHE_SLOPPINESS to Windows/MinGW to maximize compiler cache hits across builds.
         # Use CCACHE_SLOPPINESS env var so we don't mutate the global ccache config
         # as a side-effect of CMake configure.  The env var is inherited by compiler
         # invocations launched through CMAKE_<LANG>_COMPILER_LAUNCHER.
-        if(APPLE)
-            set(ENV{CCACHE_SLOPPINESS} "time_macros,locale")
-            message(STATUS "ccache: CCACHE_SLOPPINESS=time_macros,locale set for this build")
+        if(APPLE OR WIN32 OR MINGW)
+            set(ENV{CCACHE_SLOPPINESS} "time_macros,include_file_mtime,locale")
+            message(STATUS "ccache: CCACHE_SLOPPINESS=time_macros,include_file_mtime,locale set for this build")
         endif()
     else()
         # GeneralsX @build GitHub Copilot 22/05/2026 Allow sccache fallback on Windows where ccache is often unavailable.
