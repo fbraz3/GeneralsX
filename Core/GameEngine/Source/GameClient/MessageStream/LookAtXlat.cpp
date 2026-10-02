@@ -420,7 +420,8 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			m_lastMouseMoveTimeMsec = timeGetTime();
 
 			const Real spin = msg->getArgument( 1 )->real;
-			const Real zoom = -spin * View::ZoomHeightPerSecond;
+			// GeneralsX @feature Gabriel Petry 28/09/2026 Apply the configurable mouse scroll speed factor.
+			const Real zoom = -spin * View::ZoomHeightPerSecond * TheGlobalData->m_mouseScrollFactor;
 			TheTacticalView->userZoom(zoom);
 
 			break;
