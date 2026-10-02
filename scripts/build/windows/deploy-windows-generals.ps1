@@ -42,31 +42,34 @@ New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
 Copy-Item $exeSrc.FullName (Join-Path $bundleDir "GeneralsX.exe") -Force
 
 # GeneralsX @build fbraz3 29/09/2026 Package DXVK, OpenAL, SDL3, and MinGW runtime DLLs for self-contained bundle.
-$runtimeCandidates = @(
-    (Join-Path $buildDir "d3d8.dll"),
-    (Join-Path $buildDir "dxgi.dll"),
-    (Join-Path $buildDir "d3d11.dll"),
-    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/d3d8.dll"),
-    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/dxgi.dll"),
-    (Join-Path $buildDir "_deps/dxvk_windows-src/x64/d3d11.dll"),
-    (Join-Path $buildDir "_deps/openal_soft-build/OpenAL32.dll"),
-    (Join-Path $buildDir "libgamespy_import.dll"),
-    (Join-Path $buildDir "vcpkg_installed/x64-mingw-dynamic/bin/libzlib1.dll")
+# GeneralsX @build fbraz3 01/10/2026 Package DXVK, OpenAL, SDL3, vcpkg, SagePatch, and transitive MinGW runtime DLLs for self-contained bundle.
+
+# Copy build-tree dependencies (DXVK, OpenAL Soft, SDL3, SagePatch, GameSpy)
+$buildDllSearchDirs = @(
+    $buildDir,
+    (Join-Path $buildDir "Patches/SagePatch"),
+    (Join-Path $buildDir "_deps")
 )
 
-foreach ($dll in $runtimeCandidates) {
-    if (Test-Path $dll) {
-        Copy-Item $dll $bundleDir -Force
+foreach ($dir in $buildDllSearchDirs) {
+    if (Test-Path $dir) {
+        Get-ChildItem -Path $dir -Filter "*.dll" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName $bundleDir -Force
+        }
     }
 }
 
-# Copy SDL3 and SDL3_image runtime DLLs
-$sdlDlls = Get-ChildItem -Path (Join-Path $buildDir "_deps") -Filter "SDL3*.dll" -Recurse -File -ErrorAction SilentlyContinue
-foreach ($sdlDll in $sdlDlls) {
-    Copy-Item $sdlDll.FullName $bundleDir -Force
+# Copy vcpkg dynamic runtime DLLs (libcurl, GameNetworkingSockets, protobuf, zlib, etc.)
+@((Join-Path $projectRoot "vcpkg_installed"), (Join-Path $buildDir "vcpkg_installed")) | ForEach-Object {
+    if (Test-Path $_) {
+        Get-ChildItem -Path $_ -Filter "*.dll" -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            $_.FullName -notlike "*\debug\*" -and $_.FullName -notlike "*/debug/*"
+        } | ForEach-Object {
+            Copy-Item $_.FullName $bundleDir -Force
+        }
+    }
 }
 
-# Copy MinGW and system runtime DLLs required on clean target environments
 $mingwBin = if ($env:MINGW_PREFIX -and (Test-Path (Join-Path $env:MINGW_PREFIX "bin"))) {
     Join-Path $env:MINGW_PREFIX "bin"
 } elseif ($msysDir -and (Test-Path "$msysDir\mingw64\bin")) {
@@ -80,16 +83,191 @@ $mingwBin = if ($env:MINGW_PREFIX -and (Test-Path (Join-Path $env:MINGW_PREFIX "
 }
 
 if ($mingwBin) {
-    $mingwDlls = @("libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll", "libpng16-16.dll", "zlib1.dll")
-    foreach ($d in $mingwDlls) {
+    # Core MinGW compiler runtime and multimedia libraries
+    $coreMinGwDlls = @(
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll",
+        "libwinpthread-1.dll",
+        "libpng16-16.dll",
+        "zlib1.dll",
+        "libcurl-4.dll"
+    )
+    foreach ($d in $coreMinGwDlls) {
         $p = Join-Path $mingwBin $d
         if (Test-Path $p) {
             Copy-Item $p $bundleDir -Force
         }
     }
-    # GeneralsX @build fbraz3 01/10/2026 Copy FFmpeg runtime DLLs for OpenAL audio decoding
-    Get-ChildItem -Path $mingwBin -Filter "av*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
-    Get-ChildItem -Path $mingwBin -Filter "sw*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+
+    # Audio/Video decoding libraries required by OpenAL/Engine
+    Get-ChildItem -Path $mingwBin -Filter "avcodec*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "avformat*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "avutil*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "swresample*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+    Get-ChildItem -Path $mingwBin -Filter "swscale*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName $bundleDir -Force }
+}
+
+# Recursive PE dependency resolver: ensure all transitive DLLs (e.g. liblzma, libiconv, libdav1d, libsoxr)
+# are discovered and copied into the bundle so target systems don't experience STATUS_DLL_NOT_FOUND (0xC0000135).
+function Get-PeImports($filePath) {
+    try {
+        $fs = [System.IO.File]::OpenRead($filePath)
+        $br = [System.IO.BinaryReader]::new($fs)
+    } catch { return @() }
+
+    try {
+        if ($fs.Length -lt 0x40) { return @() }
+        if ($br.ReadUInt16() -ne 0x5A4D) { return @() }
+        $fs.Position = 0x3C
+        $peOffset = $br.ReadInt32()
+        if ($peOffset -lt 0 -or $peOffset -ge ($fs.Length - 4)) { return @() }
+        $fs.Position = $peOffset
+        if ($br.ReadUInt32() -ne 0x00004550) { return @() }
+
+        $machine = $br.ReadUInt16()
+        $numSections = $br.ReadUInt16()
+        $fs.Position += 12
+        $sizeOfOptHeader = $br.ReadUInt16()
+        $characteristics = $br.ReadUInt16()
+        $optHeaderStart = $fs.Position
+        $magic = $br.ReadUInt16()
+
+        $importRva = 0
+        $importSize = 0
+        if ($magic -eq 0x20B) {
+            $fs.Position = $optHeaderStart + 120
+            $importRva = $br.ReadUInt32()
+            $importSize = $br.ReadUInt32()
+        } elseif ($magic -eq 0x10B) {
+            $fs.Position = $optHeaderStart + 104
+            $importRva = $br.ReadUInt32()
+            $importSize = $br.ReadUInt32()
+        }
+        if ($importRva -eq 0) { return @() }
+
+        $fs.Position = $optHeaderStart + $sizeOfOptHeader
+        $sections = @()
+        for ($s = 0; $s -lt $numSections; $s++) {
+            $nameBytes = $br.ReadBytes(8)
+            $vSize = $br.ReadUInt32()
+            $vAddr = $br.ReadUInt32()
+            $rawSize = $br.ReadUInt32()
+            $rawPtr = $br.ReadUInt32()
+            $fs.Position += 16
+            $sections += [PSCustomObject]@{ VAddr = $vAddr; VSize = $vSize; RawPtr = $rawPtr; RawSize = $rawSize }
+        }
+
+        function RvaToOffset($rva, $secList) {
+            foreach ($sec in $secList) {
+                if ($rva -ge $sec.VAddr -and $rva -lt ($sec.VAddr + $sec.VSize)) {
+                    return $sec.RawPtr + ($rva - $sec.VAddr)
+                }
+            }
+            return 0
+        }
+
+        $importOffset = RvaToOffset $importRva $sections
+        if ($importOffset -eq 0) { return @() }
+
+        $dlls = [System.Collections.Generic.List[string]]::new()
+        $descOffset = $importOffset
+        while ($true) {
+            $fs.Position = $descOffset
+            $origFirstThunk = $br.ReadUInt32()
+            $timeDate = $br.ReadUInt32()
+            $forwarder = $br.ReadUInt32()
+            $nameRva = $br.ReadUInt32()
+            $firstThunk = $br.ReadUInt32()
+            if ($nameRva -eq 0) { break }
+
+            $nameOffset = RvaToOffset $nameRva $sections
+            if ($nameOffset -ne 0) {
+                $curPos = $fs.Position
+                $fs.Position = $nameOffset
+                $chars = [System.Collections.Generic.List[char]]::new()
+                while ($true) {
+                    $b = $br.ReadByte()
+                    if ($b -eq 0) { break }
+                    $chars.Add([char]$b)
+                }
+                $dlls.Add([string]::new($chars.ToArray()))
+                $fs.Position = $curPos
+            }
+            $descOffset += 20
+        }
+        return $dlls
+    } finally {
+        $br.Close()
+        $fs.Close()
+    }
+}
+
+$sysDlls = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+@("kernel32.dll", "user32.dll", "gdi32.dll", "winmm.dll", "advapi32.dll", "shell32.dll", "ole32.dll",
+  "oleaut32.dll", "ws2_32.dll", "msvcrt.dll", "ntdll.dll", "version.dll", "shlwapi.dll", "imm32.dll",
+  "setupapi.dll", "dinput8.dll", "comctl32.dll", "wsock32.dll", "iphlpapi.dll", "bcrypt.dll",
+  "crypt32.dll", "secur32.dll", "dnsapi.dll", "rpcrt4.dll", "userenv.dll", "wldap32.dll", "uxtheme.dll",
+  "dwmapi.dll", "d3d9.dll", "opengl32.dll", "glu32.dll", "cfgmgr32.dll", "hid.dll", "avrt.dll",
+  "avicap32.dll", "avifil32.dll", "msvfw32.dll", "comdlg32.dll", "msimg32.dll", "bcryptprimitives.dll",
+  "gdiplus.dll", "ncrypt.dll", "dwrite.dll", "usp10.dll") | ForEach-Object { [void]$sysDlls.Add($_) }
+
+function Is-SystemDll($name) {
+    if ($sysDlls.Contains($name)) { return $true }
+    if ($name -match '^(api-ms-win-|ext-ms-win-)') { return $true }
+    return $false
+}
+
+$searchDirs = [System.Collections.Generic.List[string]]::new()
+if ($mingwBin -and (Test-Path $mingwBin)) { $searchDirs.Add($mingwBin) }
+@($buildDir, (Join-Path $projectRoot "vcpkg_installed"), (Join-Path $buildDir "vcpkg_installed")) | ForEach-Object {
+    if (Test-Path $_) {
+        $searchDirs.Add($_)
+    }
+}
+
+$scannedFiles = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$maxPasses = 10
+$pass = 0
+
+while ($pass -lt $maxPasses) {
+    $pass++
+    $binaries = Get-ChildItem -Path $bundleDir | Where-Object { $_.Extension -match 'exe|dll' }
+    $newCopies = 0
+
+    foreach ($bin in $binaries) {
+        if ($scannedFiles.Contains($bin.Name)) { continue }
+        [void]$scannedFiles.Add($bin.Name)
+
+        $imports = Get-PeImports $bin.FullName
+        foreach ($imp in $imports) {
+            if (Is-SystemDll $imp) { continue }
+            $targetPath = Join-Path $bundleDir $imp
+            if (-not (Test-Path $targetPath)) {
+                $found = $null
+                foreach ($sp in $searchDirs) {
+                    $candidate = Join-Path $sp $imp
+                    if (Test-Path $candidate) {
+                        $found = $candidate
+                        break
+                    }
+                    $subCandidate = Get-ChildItem -Path $sp -Filter $imp -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                    if ($subCandidate) {
+                        $found = $subCandidate.FullName
+                        break
+                    }
+                }
+                if ($found) {
+                    Copy-Item $found $targetPath -Force
+                    Write-Host "Resolved dependency $imp (required by $($bin.Name)) from $found"
+                    $newCopies++
+                }
+            }
+        }
+    }
+
+    if ($newCopies -eq 0) {
+        break
+    }
 }
 
 Write-Host "Deploy complete: $bundleDir"

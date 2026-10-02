@@ -149,8 +149,21 @@ jobs:
           Write-Host "Bundle contents for ${{ matrix.game.id }}:"
           Get-ChildItem -Path $bundle -Force | Format-Table Name, Length, LastWriteTime
 
-          # Verify primary DLLs are present
-          $requiredDlls = @("SDL3.dll", "OpenAL32.dll", "d3d8.dll", "libgcc_s_seh-1.dll", "libstdc++-6.dll")
+          # Verify primary and dependency DLLs are present
+          $requiredDlls = @(
+            "SDL3.dll",
+            "OpenAL32.dll",
+            "d3d8.dll",
+            "libgcc_s_seh-1.dll",
+            "libstdc++-6.dll",
+            "libwinpthread-1.dll",
+            "zlib1.dll",
+            "libcurl-4.dll",
+            "GameNetworkingSockets.dll",
+            "libprotobuf.dll",
+            "libgamespy.dll",
+            "libsage_patch.dll"
+          )
           foreach ($dll in $requiredDlls) {
             $dllPath = Join-Path $bundle $dll
             if (-not (Test-Path $dllPath)) {
