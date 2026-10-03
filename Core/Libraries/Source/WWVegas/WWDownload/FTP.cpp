@@ -31,12 +31,31 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
+#include <time.h>
 #include <stdlib.h>
 #ifdef _WIN32
 #include <process.h>
 #include <io.h>
 #include "winsock.h"
 #include <direct.h>
+#if defined(__MINGW32__)
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 Restore legacy helpers/macros expected by WWDownload for MinGW x64 builds.
+// GeneralsX @bugfix fbraz 30/09/2026 Omit duplicate strlcpy/strlcat conflicting with Utility/stringex.h
+#include <string.h>
+#include <sys/stat.h>
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+#ifndef socklen_t
+typedef int socklen_t;
+#endif
+#ifndef _S_IWRITE
+#define _S_IWRITE S_IWUSR
+#endif
+#ifndef _S_IREAD
+#define _S_IREAD S_IRUSR
+#endif
+#endif
 #else
 #include "windows_compat.h"  // Includes socket_compat.h (Winsock → POSIX BSD sockets)
 #include <unistd.h>

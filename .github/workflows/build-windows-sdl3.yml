@@ -1,0 +1,221 @@
+name: Build Windows (SDL3)
+
+# GeneralsX @build fbraz3 29/09/2026 Build and package Windows 64-bit binaries with modern SDL3 backend.
+
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        type: string
+        default: "windows64-deploy"
+        description: "CMake preset for Windows (SDL3)"
+  workflow_dispatch:
+    inputs:
+      preset:
+        type: choice
+        description: "CMake preset for Windows (SDL3)"
+        options:
+          - windows64-deploy
+        default: windows64-deploy
+
+jobs:
+  build-windows:
+    name: ${{ matrix.game.id }}@${{ inputs.preset || 'windows64-deploy' }}
+    runs-on: windows-2022
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        game:
+          - id: generalsxzh
+            target: z_generals
+            build_script: ./scripts/build/windows/build-windows-zh.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-zh.ps1
+            bundle_dir: build/bundles/windows-generalsxzh-windows64-deploy
+            log_suffix: zh
+          - id: generalsx
+            target: g_generals
+            build_script: ./scripts/build/windows/build-windows-generals.ps1
+            deploy_script: ./scripts/build/windows/deploy-windows-generals.ps1
+            bundle_dir: build/bundles/windows-generalsx-windows64-deploy
+            log_suffix: generals
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup MSYS2 MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          update: false
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-ccache
+            mingw-w64-x86_64-ffmpeg
+
+      - name: Export MinGW Environment
+        shell: msys2 {0}
+        run: |
+          MINGW_WIN_PATH=$(cygpath -m "$MINGW_PREFIX")
+          echo "MINGW_PREFIX=${MINGW_WIN_PATH}" >> "$GITHUB_ENV"
+          echo "MSYSTEM_PREFIX=${MINGW_WIN_PATH}" >> "$GITHUB_ENV"
+          echo "$(cygpath -w "${MINGW_PREFIX}/bin")" >> "$GITHUB_PATH"
+          echo "$(cygpath -w "/usr/bin")" >> "$GITHUB_PATH"
+
+      - name: Restore vcpkg binary cache
+        id: vcpkg_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-v2-${{ runner.os }}-x64-windows-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
+          restore-keys: |
+            vcpkg-bincache-v2-${{ runner.os }}-x64-windows-
+
+      - name: Configure vcpkg cache directory
+        shell: pwsh
+        run: |
+          $cacheDir = "${{ github.workspace }}/vcpkg-bincache"
+          New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
+          "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
+          "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
+
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          ./scripts/build/windows/configure-windows64.ps1 -InstallDependenciesOnly
+
+      - name: Save vcpkg binary cache
+        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v2-{0}-x64-windows-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
+
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: ccache-windows-sdl3-${{ matrix.game.id }}-${{ github.sha }}
+          restore-keys: |
+            ccache-windows-sdl3-${{ matrix.game.id }}-
+            ccache-windows-sdl3-
+
+      - name: Configure ccache environment
+        shell: pwsh
+        run: |
+          $ccacheDir = Join-Path $HOME ".ccache"
+          New-Item -ItemType Directory -Force -Path $ccacheDir | Out-Null
+          "CCACHE_DIR=$ccacheDir" >> $env:GITHUB_ENV
+          "CCACHE_BASEDIR=${{ github.workspace }}" >> $env:GITHUB_ENV
+          "CCACHE_SLOPPINESS=time_macros,include_file_mtime,locale" >> $env:GITHUB_ENV
+          "CCACHE_COMPILERCHECK=content" >> $env:GITHUB_ENV
+          "CCACHE_MAXSIZE=2G" >> $env:GITHUB_ENV
+          "CMAKE_C_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
+          "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
+
+      - name: Cache CMake FetchContent
+        uses: actions/cache@v5
+        with:
+          path: build/windows64-deploy/_deps
+          key: fetchcontent-windows64-${{ hashFiles('cmake/**', 'CMakeLists.txt') }}
+          restore-keys: |
+            fetchcontent-windows64-
+
+      - name: Configure CMake (${{ inputs.preset || 'windows64-deploy' }})
+        shell: pwsh
+        run: |
+          ./scripts/build/windows/configure-windows64.ps1
+
+      - name: Build ${{ matrix.game.target }}
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.build_script }}"
+
+      - name: Generate Windows Bundle
+        shell: pwsh
+        run: |
+          & "${{ matrix.game.deploy_script }}"
+
+      - name: Verify Bundle Output and Packaged DLLs
+        shell: pwsh
+        run: |
+          $bundle = "${{ matrix.game.bundle_dir }}"
+          if (-not (Test-Path $bundle)) {
+            Write-Error "Bundle directory not found: $bundle"
+            exit 1
+          }
+          Write-Host "Bundle contents for ${{ matrix.game.id }}:"
+          Get-ChildItem -Path $bundle -Force | Format-Table Name, Length, LastWriteTime
+
+          # Verify primary and dependency DLLs are present
+          $requiredDlls = @(
+            "SDL3.dll",
+            "OpenAL32.dll",
+            "d3d8.dll",
+            "libgcc_s_seh-1.dll",
+            "libstdc++-6.dll",
+            "libwinpthread-1.dll",
+            "zlib1.dll",
+            "libcurl-4.dll",
+            "libssl-3-x64.dll",
+            "libcrypto-3-x64.dll",
+            "GameNetworkingSockets.dll",
+            "libprotobuf.dll",
+            "libgamespy.dll",
+            "libsage_patch.dll"
+          )
+          foreach ($dll in $requiredDlls) {
+            $dllPath = Join-Path $bundle $dll
+            if (-not (Test-Path $dllPath)) {
+              Write-Error "Missing critical packaged DLL in bundle: $dll"
+              exit 1
+            }
+          }
+
+          # Verify every DLL in bundle is strictly 64-bit AMD64 (IMAGE_FILE_MACHINE_AMD64 = 0x8664)
+          Get-ChildItem -Path $bundle -Filter "*.dll" -File | ForEach-Object {
+            $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+            if ($bytes.Length -gt 0x40) {
+              $peOffset = [BitConverter]::ToInt32($bytes, 0x3C)
+              if ($bytes.Length -gt ($peOffset + 6)) {
+                $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+                if ($machine -ne 0x8664) {
+                  Write-Error ("Bundle DLL {0} has non-x64 machine type: 0x{1:X4} (expected 0x8664)" -f $_.Name, $machine)
+                  exit 1
+                }
+              }
+            }
+          }
+          Write-Host "All required DLLs and 64-bit architectures successfully verified in bundle."
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logs-windows-${{ matrix.game.id }}-${{ inputs.preset || 'windows64-deploy' }}
+          path: logs/
+          retention-days: 7
+
+      - name: Upload Windows Bundle
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-bundle-${{ matrix.game.id }}-${{ inputs.preset || 'windows64-deploy' }}
+          path: ${{ matrix.game.bundle_dir }}
+          retention-days: 7
+          if-no-files-found: error
+

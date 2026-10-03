@@ -107,7 +107,7 @@ private:
 	static void Save_Registry_Values(HKEY key, char *path, INIClass *ini);
 
 
-	int	Key;
+	HKEY	Key;
 	bool	IsValid;
 
 	//

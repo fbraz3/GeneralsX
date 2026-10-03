@@ -169,22 +169,8 @@ set(GAMEENGINEDEVICE_SRC
 
 )
 
-# GeneralsX @build BenderAI 10/03/2026 - Separate Windows and Linux platform-specific files
-if(WIN32)
-    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
-    list(APPEND GAMEENGINEDEVICE_SRC
-#       Source/Win32Device/Common/Win32BIGFile.cpp
-#       Source/Win32Device/Common/Win32BIGFileSystem.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp
-#       Source/Win32Device/Common/Win32LocalFile.cpp
-#       Source/Win32Device/Common/Win32LocalFileSystem.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-#       Source/Win32Device/GameClient/Win32DIMouse.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
-    )
-else()
-    # Linux-specific files (SDL3, DXVK)
+# GeneralsX @build fbraz3 29/09/2026 Compile SDL3 backend files when SAGE_USE_SDL3 is enabled across all platforms
+if(SAGE_USE_SDL3)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Include/SDL3GameEngine.h
@@ -193,10 +179,26 @@ else()
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Include/SDL3Device/GameClient/SDL3Keyboard.h
     )
+    if(WIN32)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
+        )
+    endif()
+else()
+    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+endif()
 
-    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources now in Core/GameEngineDevice
-    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
-    # are provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+if(WIN32)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Reuse shared Bink stub implementation in Win64/MinGW builds when legacy Bink player is not built.
+        ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/VideoDevice/BinkVideoPlayerStub.cpp
+    )
 endif()
 
 add_library(g_gameenginedevice STATIC)
@@ -238,8 +240,10 @@ endif()
 # GeneralsX @feature BenderAI 10/03/2026 - OpenAL audio backend (ported from GeneralsMD/Zero Hour)
 # GeneralsX @refactor fbraz3 31/03/2026 Headers/sources now in Core/GameEngineDevice; include dirs via corei_gameenginedevice_private/public
 if(SAGE_USE_OPENAL)
-    include(${CMAKE_SOURCE_DIR}/cmake/openal.cmake)
-    find_package(OpenAL REQUIRED)
+    # GeneralsX @build GitHub Copilot 19/05/2026 Prefer FetchContent OpenAL target when available.
+    if(NOT TARGET OpenAL::OpenAL)
+        find_package(OpenAL REQUIRED)
+    endif()
     target_link_libraries(g_gameenginedevice PUBLIC OpenAL::OpenAL)
 endif()
 
@@ -253,11 +257,13 @@ endif()
 
 # GeneralsX @feature BenderAI 10/03/2026 - FFmpeg audio/video decoding
 if(RTS_BUILD_OPTION_FFMPEG)
-    if(NOT TARGET PkgConfig::FFMPEG)
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @build GitHub Copilot 19/05/2026 Use find_package(FFmpeg) results directly for Windows64 MinGW.
+    find_package(FFmpeg QUIET)
+    if(FFMPEG_FOUND)
+        target_link_libraries(g_gameenginedevice PUBLIC ${FFMPEG_LIBRARIES})
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg was not found for g_gameenginedevice.")
     endif()
-    target_link_libraries(g_gameenginedevice PUBLIC PkgConfig::FFMPEG)
 endif()
 
 # CURL::libcurl is now propagated transitively via corei_gameengine_public (Core/GameEngine/CMakeLists.txt).

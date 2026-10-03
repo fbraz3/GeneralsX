@@ -25,6 +25,10 @@
 #include "WWMath/vector3.h"
 #include <deque>
 
+#ifndef USING_STLPORT
+#include <unordered_map>
+#endif
+
 #define SET_SMUDGE_PARAMETERS(smudge,pos,offset,size,opacity) (smudge->m_pos=pos;smudge->m_offset=offset;smudge->m_size=size;smudge->m_opacity=opacity;)
 
 struct Smudge
@@ -79,7 +83,12 @@ struct SmudgeSet
 	UnsignedInt getUsedSmudgeCount() const { return m_usedSmudgeList.size(); }	///<active smudges that need rendering.
 
 private:
+	// GeneralsX @bugfix GitHub Copilot 22/05/2026 Use std::unordered_map on modern toolchains where std::hash_map is unavailable.
+	#ifdef USING_STLPORT
 	typedef std::hash_map<Smudge::Identifier, Smudge *> SmudgeIdToPtrMap;
+	#else
+	typedef std::unordered_map<Smudge::Identifier, Smudge *> SmudgeIdToPtrMap;
+	#endif
 
 	SmudgeDeque m_usedSmudgeList;	///<list of smudges in this set.
 	SmudgeIdToPtrMap m_usedSmudgeMap;

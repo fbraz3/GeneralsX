@@ -55,7 +55,8 @@
 #include "W3DDevice/GameClient/W3DMouse.h"
 
 // GeneralsX @build BenderAI 10/03/2026 - Phase 1.5 SDL3 input devices
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 input across Linux, macOS, and Windows
+#if defined(SAGE_USE_SDL3)
 #include <cstdlib>
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -131,19 +132,20 @@ protected:
 };
 
 // GeneralsX @build BenderAI 10/03/2026 - Phase 1.5 SDL3 input factory wiring
+// GeneralsX @feature fbraz3 29/09/2026 Use SDL3 input when SAGE_USE_SDL3 is enabled
 inline Keyboard *W3DGameClient::createKeyboard( void ) {
-#ifndef _WIN32
-	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
+#if defined(SAGE_USE_SDL3)
+	return NEW SDL3Keyboard();
 #else
-	return NEW DirectInputKeyboard;  // Windows: DirectInput keyboard
+	return NEW DirectInputKeyboard;  // Legacy Windows: DirectInput keyboard
 #endif
 }
 
 inline Mouse *W3DGameClient::createMouse()
 {
 // GeneralsX @bugfix BenderAI 14/03/2026 SDL3 mouse creation must fail fast instead of returning nullptr.
-#ifndef _WIN32
-	// Linux: SDL3 mouse requires the pre-initialized SDL3GameEngine window.
+// GeneralsX @feature fbraz3 29/09/2026 Use SDL3 mouse when SAGE_USE_SDL3 is enabled
+#if defined(SAGE_USE_SDL3)
 	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
 	if (sdlEngine && sdlEngine->getSDLWindow()) {
 		return NEW SDL3Mouse(sdlEngine->getSDLWindow());
@@ -151,7 +153,7 @@ inline Mouse *W3DGameClient::createMouse()
 	fprintf(stderr, "FATAL: W3DGameClient::createMouse() requires SDL3GameEngine with an initialized SDL window\n");
 	std::abort();
 #else
-	// Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
+	// Legacy Windows: W3DMouse (wraps Win32Mouse with 3D cursor)
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;

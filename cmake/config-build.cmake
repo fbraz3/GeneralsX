@@ -10,9 +10,11 @@ option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON)
+option(RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT "Isolate legacy Win32 input/engine files from modern Windows64 path" OFF)
 
-# Linux/SDL3 and OpenAL options (Phase 1 Linux port)
-option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
+# GeneralsX @feature fbraz3 29/09/2026 Enable SDL3 windowing/input option for Windows as well as Linux/macOS
+# Linux/macOS/Windows SDL3 and OpenAL options
+option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS/Windows)" OFF)
 option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
 option(SAGE_USE_MINIAUDIO "Use MiniAudio for audio backend (Linux/macOS)" OFF)
 
@@ -46,7 +48,8 @@ add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address s
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 add_feature_info(DeepCRC RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch")
-add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
+add_feature_info(IsolateLegacyWinInput RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT "Isolating legacy Win32 input/engine files from modern path")
+add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux/macOS/Windows)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")

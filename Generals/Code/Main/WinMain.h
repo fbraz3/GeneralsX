@@ -32,8 +32,12 @@
 
 #pragma once
 
+// GeneralsX @bugfix GitHub Copilot 25/05/2026 Remove the direct windef include so macOS builds use the windows shim only.
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <windows.h>
+#if defined(_WIN32)
+#include <mmsystem.h>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Win32Device/GameClient/Win32Mouse.h"

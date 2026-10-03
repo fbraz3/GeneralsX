@@ -8,8 +8,12 @@ if(MINGW)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(IS_MINGW32 TRUE)
         message(STATUS "MinGW-w64 32-bit (i686) detected")
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        # GeneralsX @build GitHub Copilot 18/05/2026 Allow the modern Windows64 MinGW path to configure without the legacy 32-bit restriction.
+        set(IS_MINGW64 TRUE)
+        message(STATUS "MinGW-w64 64-bit (x86_64) detected")
     else()
-        message(FATAL_ERROR "MinGW-w64 64-bit (x86_64) detected, but this project only supports 32-bit builds. Use the i686-w64-mingw32 toolchain.")
+        message(FATAL_ERROR "Unsupported MinGW-w64 pointer size: ${CMAKE_SIZEOF_VOID_P}")
     endif()
     
     # Windows subsystem
@@ -25,13 +29,12 @@ if(MINGW)
     )
     
     # MSVC compatibility macros for MinGW
-    # Note: MinGW already defines _cdecl and _stdcall correctly, so we only add __forceinline
+    # Note: MinGW already defines _cdecl, _stdcall, and 64-bit integer keywords.
+    # Keep only __forceinline compatibility to avoid type-macro collisions in profile/debug headers.
     # The escaped syntax below expands to: -D__forceinline="inline __attribute__((always_inline))"
     # Escaping rules: \( \) = literal parentheses, \ (backslash-space) = space in definition
     add_compile_definitions(
         __forceinline=inline\ __attribute__\(\(always_inline\)\)
-        __int64=long\ long
-        _int64=long\ long
     )
     
     # Enable math constants in MinGW's <math.h>
@@ -53,7 +56,8 @@ if(MINGW)
         )
     endif()
     
-    # Required Windows libraries for DX8 + COM
+    # Required Windows system libraries shared broadly by MinGW targets.
+    # GeneralsX @bugfix GitHub Copilot 19/05/2026 Keep d3d8/openal out of global link_libraries to avoid leaking them into third-party builds (for example SDL3).
     link_libraries(
         uuid        # COM GUIDs
         ole32       # COM runtime
@@ -63,29 +67,28 @@ if(MINGW)
         comctl32    # Common controls
         winmm       # Multimedia (timeGetTime, etc.)
         vfw32       # Video for Windows (AVIFile functions)
-        d3d8        # Direct3D 8
         dinput8     # DirectInput 8
         dsound      # DirectSound
         imm32       # Input Method Manager (IME)
     )
+
+    # FFmpeg linking (Phase 5) - when available, link the static FFmpeg libraries
+    if(FFMPEG_FOUND)
+        list(APPEND MINGW_LINK_LIBS ${FFMPEG_LIBRARIES})
+    endif()
+    
+    # Link all configured libraries (including FFmpeg if available)
+    if(MINGW_LINK_LIBS)
+        link_libraries(${MINGW_LINK_LIBS})
+    endif()
     
     # Note: MinGW-w64 does not provide comsuppw (COM support utilities library).
     # COM support utilities (_com_util::ConvertStringToBSTR, ConvertBSTRToString)
     # are provided by Dependencies/Utility/Utility/comsupp_compat.h as header-only
     # implementations. No library linking required.
     
-    # MinGW-w64 compatibility: Create d3dx8 as an alias to d3dx8d
-    # MinGW-w64 only provides libd3dx8d.a (debug library), not libd3dx8.a
-    # The min-dx8-sdk (dx8.cmake) handles this correctly via d3d8lib interface target,
-    # but for compatibility with direct library references in main executables,
-    # we create an alias so that linking to d3dx8 automatically uses d3dx8d
-    if(NOT TARGET d3dx8)
-        add_library(d3dx8 INTERFACE IMPORTED GLOBAL)
-        set_target_properties(d3dx8 PROPERTIES
-            INTERFACE_LINK_LIBRARIES "d3dx8d"
-        )
-        message(STATUS "Created d3dx8 -> d3dx8d alias for MinGW-w64")
-    endif()
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Do not alias d3dx8 to d3dx8d on MinGW.
+    # We provide d3dx8 via CompatLib, and this alias prevents that target from being created.
     
     message(STATUS "MinGW-w64 configuration complete")
 endif()

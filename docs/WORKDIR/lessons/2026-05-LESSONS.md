@@ -1,5 +1,12 @@
 # 2026-05 Lessons
 
+## 2026-05-22 - Upstream logic pacing tweaks must stay CRC-gated during syncs
+
+- Symptom: Replay suite started failing right after upstream sync with `REPLAY_CRC_MISMATCH` on existing baseline files, while map resolution and process startup remained healthy.
+- Root cause: Upstream `GameEngine::canUpdateRegularGameLogic()` pacing changes were merged without a `RETAIL_COMPATIBLE_CRC` guard, changing logic update cadence semantics in replay-sensitive paths.
+- Fix applied: Restored pre-sync pacing semantics in retail-compatible mode and kept the newer upstream pacing behavior only for non-retail CRC mode (`Generals` and `GeneralsMD` GameEngine paths).
+- Prevention: During upstream sync, treat frame-pacing and logic-step scheduling code as replay-critical and require explicit CRC-compatibility gating when behavior changes are introduced.
+
 ## 2026-05-17 - Linux headless replay must accept GNU-style flags and skip SDL3 bootstrap
 
 - Symptom: Running replay simulation with `--headless --replay <file.rep>` still initialized SDL3 video/Vulkan/window and then failed in normal startup paths (including GameData loading), behaving like non-headless execution.

@@ -127,6 +127,8 @@ static inline uint64_t _rdtsc()
 #error "No implementation for _ReturnAddress"
 #endif
 
+// GeneralsX @bugfix fbraz 30/09/2026 Do not redefine __debugbreak() on Windows; <intrin.h> provides it on MSVC and MinGW, avoiding conflict with SDL3/SDL_assert.h
+#if !defined(_WIN32)
 #if defined(__has_builtin)
     #if  __has_builtin(__builtin_debugtrap)
     #define __debugbreak() __builtin_debugtrap()
@@ -138,6 +140,7 @@ static inline uint64_t _rdtsc()
 #elif !defined(_MSC_VER)
 #error "No implementation for __debugbreak"
 #endif
+#endif // !defined(_WIN32)
 
 #ifndef cpuid
 #if (defined _M_IX86 || defined _M_X64 || defined __i386__ || defined __amd64__)

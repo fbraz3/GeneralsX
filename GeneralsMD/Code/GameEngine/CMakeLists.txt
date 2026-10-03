@@ -1213,6 +1213,11 @@ target_link_libraries(z_gameengine PUBLIC
     d3d8lib  # Ensure DirectX8 headers available (Windows SDK or DXVK)
 )
 
+# GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW/Windows builds need winmm for timeGetTime() API.
+if(WIN32)
+    target_link_libraries(z_gameengine PRIVATE winmm)
+endif()
+
 target_precompile_headers(z_gameengine PRIVATE
     [["Precompiled/BasePrecomp.h"]] # Must be first
 )

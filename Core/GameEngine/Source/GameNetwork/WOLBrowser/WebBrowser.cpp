@@ -47,7 +47,7 @@
 #include "GameClient/Display.h"
 
 // GeneralsX @build BenderAI 13/02/2026 Stub WebBrowser on Linux (WOL/Westwood Online servers offline since 2010, fighter19 pattern)
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 
 /**
 	* OLEInitializer class - Init and shutdown OLE & COM as a global
@@ -316,6 +316,11 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 // Linux stub - WOL (Westwood Online) servers offline since 2010
 #pragma message("WebBrowser is stubbed on this platform!")
 
+// GeneralsX @bugfix GitHub Copilot 22/05/2026 MinGW Windows still needs ATL module symbol exported as _Module.
+#if defined(_WIN32)
+CComModule _Module;
+#endif
+
 WebBrowser *TheWebBrowser = nullptr;
 
-#endif // _WIN32
+#endif // _WIN32 && _MSC_VER

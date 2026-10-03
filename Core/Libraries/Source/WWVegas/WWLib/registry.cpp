@@ -90,14 +90,14 @@ RegistryClass::RegistryClass( const char * sub_key, bool create ) :
 
 	if (ERROR_SUCCESS == result) {
 		IsValid = true;
-		Key = (int)key;
+		Key = key;
 	}
 }
 
 RegistryClass::~RegistryClass()
 {
 	if ( IsValid ) {
-		if (::RegCloseKey( (HKEY)Key ) != ERROR_SUCCESS) {
+		if (::RegCloseKey( Key ) != ERROR_SUCCESS) {
 			// Close the reg key
 		}
 		IsValid = false;

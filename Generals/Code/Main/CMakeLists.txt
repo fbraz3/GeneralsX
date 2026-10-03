@@ -1,3 +1,4 @@
+
 add_executable(g_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
@@ -10,7 +11,6 @@ if(WIN32)
     target_link_libraries(g_generals PRIVATE
         binkloader
         comctl32
-        d3d8
         dinput8
         dxguid
         imm32
@@ -20,9 +20,9 @@ if(WIN32)
     )
 endif()
 
+
 # Cross-platform core libraries
 target_link_libraries(g_generals PRIVATE
-    d3dx8
     g_gameengine
     g_gameenginedevice
     gi_always
@@ -75,30 +75,82 @@ target_include_directories(g_generals PRIVATE
     ${CMAKE_BINARY_DIR}/Code/Libraries
 )
 
-target_sources(g_generals PRIVATE
-    $<$<BOOL:${WIN32}>:WinMain.cpp>
-    $<$<BOOL:${WIN32}>:WinMain.h>
-    # Linux SDL3 entry point
-    $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
-    # Linux stubs
-    $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
-)
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Ensure g_generals also gets explicit FFmpeg include paths to keep FFmpeg source compilation consistent with ZH target behavior.
+if(RTS_BUILD_OPTION_FFMPEG)
+    find_package(FFmpeg QUIET)
+    if(FFMPEG_FOUND)
+        target_include_directories(g_generals PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg include directories were not found for g_generals.")
+    endif()
+endif()
 
-# RC files are optional for MinGW builds
-# Icon: LoadIcon() handles missing resource gracefully (uses default system icon)
-# Manifest: DPI awareness metadata (nice to have but not essential)
+if(MINGW)
+    # GeneralsX @bugfix GitHub Copilot 22/05/2026 Ensure MinGW SDK headers are searched before CompatLib wrappers for this Win32 entrypoint target.
+    get_filename_component(_mingw_bin_dir "${CMAKE_C_COMPILER}" DIRECTORY)
+    get_filename_component(_mingw_root_dir "${_mingw_bin_dir}/.." ABSOLUTE)
+    set(_mingw_include_dir "${_mingw_root_dir}/include")
+    if(EXISTS "${_mingw_include_dir}/windows.h")
+        target_include_directories(g_generals BEFORE PRIVATE "${_mingw_include_dir}")
+    endif()
+endif()
+
+# GeneralsX @build fbraz3 29/09/2026 Use SDL3Main entry point across platforms when SAGE_USE_SDL3 is enabled
+if(SAGE_USE_SDL3)
+    target_sources(g_generals PRIVATE
+        SDL3Main.cpp
+        # Linux stubs for P2-P3 platform functions (Linux/macOS only)
+        $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
+    )
+else()
+    target_sources(g_generals PRIVATE
+        WinMain.cpp
+        WinMain.h
+    )
+endif()
+
+# RC files for Windows builds (MSVC + MinGW)
+# GeneralsX @feature GitHub Copilot 20/05/2026 Embed app icon and manifest on all Windows toolchains.
 # TYPELIB: Broken (0 bytes) and causes windres memory exhaustion errors
-if(MSVC)
+if(WIN32)
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
-    if(NOT IS_VS6_BUILD)
+    if(MSVC AND NOT IS_VS6_BUILD)
         target_link_options(g_generals PRIVATE
             "/MANIFEST:NO"
         )
     endif()
 
-    target_sources(g_generals PRIVATE
-        RTS.RC
+    if(MINGW)
+        # GeneralsX @bugfix GitHub Copilot 22/05/2026 Use a minimal dedicated windres invocation to avoid memory exhaustion from inherited C/C++ flags.
+        set(g_generals_rc_obj "${CMAKE_CURRENT_BINARY_DIR}/RTS.RC.res")
+        add_custom_command(
+            OUTPUT ${g_generals_rc_obj}
+            COMMAND ${CMAKE_RC_COMPILER} -O coff -I "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/RTS.RC" "${g_generals_rc_obj}"
+            DEPENDS RTS.RC resource.h
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Compiling RTS.RC with minimal windres flags"
+            VERBATIM
+        )
+        target_sources(g_generals PRIVATE ${g_generals_rc_obj})
+    else()
+        target_sources(g_generals PRIVATE
+            RTS.RC
+        )
+    endif()
+endif()
+
+# GeneralsX @bugfix GitHub Copilot 22/05/2026 Keep MinGW static-library resolution stable by linking dependent Windows libs/stubs after all game/static libraries.
+if(WIN32)
+    target_link_libraries(g_generals PRIVATE
+        d3dx8
+        ws2_32
     )
+    if(TARGET binkstub)
+        target_link_libraries(g_generals PRIVATE binkstub)
+    endif()
+    if(TARGET milesstub)
+        target_link_libraries(g_generals PRIVATE milesstub)
+    endif()
 endif()
 
 # Strip debug symbols to separate file for MinGW Release builds

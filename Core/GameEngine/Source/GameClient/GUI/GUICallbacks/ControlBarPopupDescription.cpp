@@ -141,9 +141,9 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 	if(prevWindow == cmdButton)
 	{
 		m_showBuildToolTipLayout = TRUE;
-		if(!isInitialized &&  beginWaitTime + cmdButton->getTooltipDelay() < timeGetTime())
+		if(!isInitialized &&  beginWaitTime + cmdButton->getTooltipDelay() < static_cast<UnsignedInt>(GetTickCount()))
 		{
-			//DEBUG_LOG(("%d beginwaittime, %d tooltipdelay, %dtimegettime", beginWaitTime, cmdButton->getTooltipDelay(), timeGetTime()));
+			//DEBUG_LOG(("%d beginwaittime, %d tooltipdelay, %dtimegettime", beginWaitTime, cmdButton->getTooltipDelay(), static_cast<UnsignedInt>(GetTickCount())));
 			passedWaitTime = TRUE;
 		}
 
@@ -174,7 +174,8 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 	if(!passedWaitTime)
 	{
 		prevWindow = cmdButton;
-		beginWaitTime = timeGetTime();
+		// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GetTickCount for MinGW compatibility in tooltip wait timing.
+		beginWaitTime = static_cast<UnsignedInt>(GetTickCount());
 		isInitialized = FALSE;
 		return;
 	}

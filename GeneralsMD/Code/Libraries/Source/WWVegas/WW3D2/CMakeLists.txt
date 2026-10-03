@@ -70,6 +70,8 @@ set(WW3D2_SRC
     #font3d.h
     #formconv.cpp
     #formconv.h
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Provide FrameGrab stubs on MinGW when legacy AVI implementation is not compiled in this target.
+    FrameGrabStub.cpp
     #FramGrab.cpp
     #framgrab.h
     #hanim.cpp

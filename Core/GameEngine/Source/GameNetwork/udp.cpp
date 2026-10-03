@@ -35,8 +35,11 @@
 //#include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/udp.h"
 
-#if defined(_WIN32) && defined(_MSC_VER)
+// GeneralsX @build fbraz3 01/10/2026 Define socklen_t as int on Windows for MSVC and MinGW
+#if defined(_WIN32)
+#ifndef socklen_t
 typedef int socklen_t;
+#endif
 #endif
 
 //-------------------------------------------------------------------------

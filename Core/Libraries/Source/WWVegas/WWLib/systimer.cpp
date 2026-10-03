@@ -36,6 +36,12 @@
 
 #include "systimer.h"
 
+#ifdef _WIN32
+#include <windows.h>
+extern "C" UINT WINAPI timeBeginPeriod(UINT uPeriod);
+extern "C" UINT WINAPI timeEndPeriod(UINT uPeriod);
+#endif
+
 SysTimeClass SystemTime;
 
 

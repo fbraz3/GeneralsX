@@ -31,6 +31,23 @@ DBGHELP(SymSetOptions,
         DWORD,
         (DWORD SymOptions))
 
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+DBGHELP(StackWalk,
+        BOOL,
+        (DWORD MachineType, HANDLE hProcess, HANDLE hThread, LPSTACKFRAME StackFrame,
+        LPVOID ContextRecord, PREAD_PROCESS_MEMORY_ROUTINE ReadMemoryRoutine,
+        PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine,
+        PGET_MODULE_BASE_ROUTINE64 GetModuleBaseRoutine,
+        PTRANSLATE_ADDRESS_ROUTINE TranslateAddress))
+
+DBGHELP(SymFunctionTableAccess,
+        LPVOID,
+        (HANDLE hProcess, DWORD64 AddrBase))
+
+DBGHELP(SymGetModuleBase,
+        DWORD64,
+        (HANDLE hProcess, DWORD64 dwAddr))
+#else
 DBGHELP(StackWalk,
         BOOL,
         (DWORD MachineType, HANDLE hProcess, HANDLE hThread, LPSTACKFRAME StackFrame,
@@ -46,6 +63,7 @@ DBGHELP(SymFunctionTableAccess,
 DBGHELP(SymGetModuleBase,
         DWORD,
         (HANDLE hProcess, DWORD dwAddr))
+#endif
 
 DBGHELP(SymGetSymFromAddr,
         BOOL,

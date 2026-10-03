@@ -24,7 +24,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#if (defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)) && defined(_WIN32)
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 StackDump uses x86-only inline asm and STACKFRAME (32-bit); disable on MinGW x64.
+#if (defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)) && defined(_WIN32) && !defined(__MINGW32__)
 
 #pragma pack(push, 8)
 

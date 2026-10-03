@@ -58,7 +58,124 @@ if(SAGE_USE_SDL3)
         # Before SDL3_image build: force PNG discovery to platform-specific libpng
         # Linux: System libpng16.so is dynamic shared library
         # macOS: Use Homebrew PNG or system framework
-        if(NOT APPLE)
+        if(WIN32)
+            # GeneralsX @build GitHub Copilot 19/05/2026 MinGW Windows: resolve MinGW/MSYS2 prefix dynamically for ZLIB/PNG discovery.
+            set(_MINGW_CANDIDATE_PREFIXES "")
+            if(DEFINED ENV{MINGW_PREFIX} AND EXISTS "$ENV{MINGW_PREFIX}")
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{MINGW_PREFIX}")
+            endif()
+            if(DEFINED ENV{MSYSTEM_PREFIX} AND EXISTS "$ENV{MSYSTEM_PREFIX}")
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{MSYSTEM_PREFIX}")
+            endif()
+            if(CMAKE_C_COMPILER)
+                get_filename_component(_CC_DIR "${CMAKE_C_COMPILER}" DIRECTORY)
+                get_filename_component(_CC_PARENT "${_CC_DIR}" DIRECTORY)
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "${_CC_PARENT}")
+            endif()
+            if(CMAKE_CXX_COMPILER)
+                get_filename_component(_CXX_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+                get_filename_component(_CXX_PARENT "${_CXX_DIR}" DIRECTORY)
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "${_CXX_PARENT}")
+            endif()
+            list(APPEND _MINGW_CANDIDATE_PREFIXES
+                "${CMAKE_SOURCE_DIR}/msys64/mingw64"
+                "C:/msys64/mingw64"
+                "D:/msys64/mingw64"
+                "C:/mingw64"
+                "D:/a/_temp/msys2/mingw64"
+                "D:/a/_temp/msys64/mingw64"
+            )
+            if(DEFINED ENV{GITHUB_WORKSPACE} AND EXISTS "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
+                list(APPEND _MINGW_CANDIDATE_PREFIXES "$ENV{GITHUB_WORKSPACE}/msys64/mingw64")
+            endif()
+            if(DEFINED ENV{RUNNER_TEMP})
+                list(APPEND _MINGW_CANDIDATE_PREFIXES
+                    "$ENV{RUNNER_TEMP}/msys2/mingw64"
+                    "$ENV{RUNNER_TEMP}/msys64/mingw64"
+                    "$ENV{RUNNER_TEMP}/setup-msys2/msys64/mingw64"
+                    "$ENV{RUNNER_TEMP}/setup-msys2/mingw64"
+                )
+            endif()
+
+            # Check candidate prefixes directly
+            foreach(_prefix IN LISTS _MINGW_CANDIDATE_PREFIXES)
+                if(NOT ZLIB_INCLUDE_DIR AND EXISTS "${_prefix}/include/zlib.h")
+                    set(ZLIB_INCLUDE_DIR "${_prefix}/include")
+                endif()
+                if(NOT ZLIB_LIBRARY)
+                    if(EXISTS "${_prefix}/lib/libz.dll.a")
+                        set(ZLIB_LIBRARY "${_prefix}/lib/libz.dll.a")
+                    elseif(EXISTS "${_prefix}/lib/libz.a")
+                        set(ZLIB_LIBRARY "${_prefix}/lib/libz.a")
+                    endif()
+                endif()
+
+                if(NOT PNG_PNG_INCLUDE_DIR)
+                    if(EXISTS "${_prefix}/include/png.h")
+                        set(PNG_PNG_INCLUDE_DIR "${_prefix}/include")
+                    elseif(EXISTS "${_prefix}/include/libpng16/png.h")
+                        set(PNG_PNG_INCLUDE_DIR "${_prefix}/include/libpng16")
+                    endif()
+                endif()
+                if(NOT PNG_LIBRARY)
+                    if(EXISTS "${_prefix}/lib/libpng16.dll.a")
+                        set(PNG_LIBRARY "${_prefix}/lib/libpng16.dll.a")
+                    elseif(EXISTS "${_prefix}/lib/libpng.dll.a")
+                        set(PNG_LIBRARY "${_prefix}/lib/libpng.dll.a")
+                    elseif(EXISTS "${_prefix}/lib/libpng16.a")
+                        set(PNG_LIBRARY "${_prefix}/lib/libpng16.a")
+                    elseif(EXISTS "${_prefix}/lib/libpng.a")
+                        set(PNG_LIBRARY "${_prefix}/lib/libpng.a")
+                    endif()
+                endif()
+            endforeach()
+
+            if(NOT ZLIB_INCLUDE_DIR)
+                find_path(ZLIB_INCLUDE_DIR NAMES zlib.h PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES include)
+            endif()
+            if(NOT ZLIB_LIBRARY)
+                find_library(ZLIB_LIBRARY NAMES z libz zlib PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES lib)
+            endif()
+
+            if(NOT ZLIB_INCLUDE_DIR OR NOT ZLIB_LIBRARY)
+                message(FATAL_ERROR "MinGW ZLIB not found. Checked prefixes: ${_MINGW_CANDIDATE_PREFIXES}. Install mingw-w64-x86_64-zlib.")
+            endif()
+
+            set(ZLIB_FOUND TRUE)
+            set(ZLIB_INCLUDE_DIR "${ZLIB_INCLUDE_DIR}" CACHE PATH "Path to a file." FORCE)
+            set(ZLIB_LIBRARY "${ZLIB_LIBRARY}" CACHE FILEPATH "Path to a library." FORCE)
+            message(STATUS "MinGW ZLIB: ${ZLIB_INCLUDE_DIR} | ${ZLIB_LIBRARY}")
+            if(NOT TARGET ZLIB::ZLIB)
+                add_library(ZLIB::ZLIB UNKNOWN IMPORTED)
+                set_target_properties(ZLIB::ZLIB PROPERTIES
+                    IMPORTED_LOCATION "${ZLIB_LIBRARY}"
+                    INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIR}"
+                )
+            endif()
+
+            if(NOT PNG_PNG_INCLUDE_DIR)
+                find_path(PNG_PNG_INCLUDE_DIR NAMES png.h PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES include include/libpng16 libpng16)
+            endif()
+            if(NOT PNG_LIBRARY)
+                find_library(PNG_LIBRARY NAMES libpng16.dll.a libpng.dll.a png16.dll png.dll png16 libpng16 png libpng PATHS ${_MINGW_CANDIDATE_PREFIXES} PATH_SUFFIXES lib)
+            endif()
+
+            if(NOT PNG_PNG_INCLUDE_DIR OR NOT PNG_LIBRARY)
+                message(FATAL_ERROR "MinGW libpng not found. Checked prefixes: ${_MINGW_CANDIDATE_PREFIXES}. Install mingw-w64-x86_64-libpng.")
+            endif()
+
+            set(PNG_FOUND TRUE)
+            set(PNG_PNG_INCLUDE_DIR "${PNG_PNG_INCLUDE_DIR}" CACHE PATH "Path to a file." FORCE)
+            set(PNG_LIBRARY "${PNG_LIBRARY}" CACHE FILEPATH "Path to a library." FORCE)
+            message(STATUS "MinGW PNG: ${PNG_PNG_INCLUDE_DIR} | ${PNG_LIBRARY}")
+            if(NOT TARGET PNG::PNG)
+                add_library(PNG::PNG UNKNOWN IMPORTED)
+                set_target_properties(PNG::PNG PROPERTIES
+                    IMPORTED_LOCATION "${PNG_LIBRARY}"
+                    INTERFACE_INCLUDE_DIRECTORIES "${PNG_PNG_INCLUDE_DIR}"
+                )
+            endif()
+        elseif(NOT APPLE)
             # Find system shared libpng, bypassing vcpkg's static .a.
             # SDL3_image requires a shared .so but vcpkg only provides static libpng16.a.
             # NO_CMAKE_PATH + NO_CMAKE_FIND_ROOT_PATH skips all vcpkg-injected search paths,
@@ -95,8 +212,6 @@ if(SAGE_USE_SDL3)
             endif()
             find_package(PNG REQUIRED MODULE)
         endif()
-        
-        # Tell CMake to find PNG - this should use our explicit system .so above, not vcpkg
         
         # SDL3_image - Image format support (PNG, JPG for cursor ANI loading)
         message(STATUS "Configuring SDL3_image (v3.4.0) with FetchContent (native build)...")

@@ -36,12 +36,12 @@
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/dx8webbrowser.h"
 
-W3DWebBrowser::W3DWebBrowser() : WebBrowser() {
+W3DWebBrowser::W3DWebBrowser() : WebBrowser()
+{
 }
 
 Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 {
-
 	WinInstanceData *winData = win->winGetInstanceData();
 	AsciiString windowName = winData->m_decoratedNameString;
 
@@ -50,40 +50,35 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 	win->winGetSize(&w, &h);
 	win->winGetScreenPosition(&x, &y);
 
-	WebBrowserURL *url = findURL( AsciiString(tag) );
+	WebBrowserURL *url = findURL(AsciiString(tag));
 
-	if (url == nullptr) {
+	if (url == nullptr)
+	{
 		DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - couldn't find URL for page %s", tag));
 		return FALSE;
 	}
 
-#ifdef _WIN32
-	#ifdef __GNUC__
-	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
-	#else
-	CComQIPtr<IDispatch> idisp(m_dispatch);
-	#endif
+#if defined(_WIN32) && defined(_MSC_VER)
 	if (m_dispatch == nullptr)
 	{
 		return FALSE;
 	}
 
 	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
-#else
-	// GeneralsX @build fbraz 12/02/2026 BenderAI - Web browser stub for Linux
-	// WOL (Westwood Online) was discontinued years ago; browser COM/ATL only available on Windows
-	DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - Web browser not supported on Linux"));
-#endif
-
 	return TRUE;
+#else
+	// GeneralsX @bugfix Copilot 21/05/2026 Keep the browser stubbed on MinGW builds.
+	DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - Web browser not supported on this build"));
+	return FALSE;
+#endif
 }
 
 void W3DWebBrowser::closeBrowserWindow(GameWindow *win)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 	DX8WebBrowser::DestroyBrowser(win->winGetInstanceData()->m_decoratedNameString.str());
 #else
-	// GeneralsX @build fbraz 12/02/2026 BenderAI - Web browser stub for Linux
-	// No-op on Linux since browser was never created
+	// GeneralsX @bugfix Copilot 21/05/2026 Keep the browser stubbed on MinGW builds.
+	// No-op when the browser feature is not compiled in.
 #endif
 }

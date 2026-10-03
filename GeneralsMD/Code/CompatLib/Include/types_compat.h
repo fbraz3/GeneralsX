@@ -3,9 +3,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef _WIN32
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 On Windows builds, consume native SDK typedefs to avoid redefinition conflicts with MinGW headers.
+#include <windows.h>
+#endif
+
 // GeneralsX @build BenderAI 10/02/2026
 // Basic Win32 types - CompatLib must be self-contained
 // These MAY also be defined in bittype.h, but CompatLib compiles standalone
+#ifndef _WIN32
 #ifndef DWORD
 typedef uint32_t DWORD;
 #endif
@@ -33,10 +39,13 @@ typedef const char* LPCSTR;
 #ifndef LPCWSTR
 typedef const wchar_t* LPCWSTR;
 #endif
+#endif
 
 // GeneralsX @build fbraz 11/02/2026 BenderAI - GDI color reference (0x00BBGGRR format)
+#ifndef _WIN32
 #ifndef COLORREF
 typedef DWORD COLORREF;
+#endif
 #endif
 
 // GeneralsX @build fbraz 10/02/2026
@@ -51,6 +60,7 @@ typedef DWORD COLORREF;
 // We only define Windows-specific types that bittype.h doesn't have
 
 // DECLARE_HANDLE macro (from windef.h) - creates opaque handle types
+#ifndef _WIN32
 #ifndef DECLARE_HANDLE
 #ifdef STRICT
 typedef void *HANDLE;
@@ -105,10 +115,12 @@ typedef size_t WPARAM;
 
 // GeneralsX @build BenderAI 10/02/2026 - Pointer-sized unsigned integer for 64-bit safe pointer arithmetic
 typedef size_t SIZE_T;
+#endif // !_WIN32
 
 // GeneralsX @build fbraz 12/02/2026 BenderAI - COM/OLE types (for WOL browser support)
 // LPDISPATCH is IDispatch* - COM interface pointer for runtime method dispatch
 // On Linux, used only for dx8webbrowser CreateBrowser parameter stub
+#ifndef _WIN32
 #ifndef LPDISPATCH
 typedef void *LPDISPATCH;
 #endif
@@ -129,3 +141,4 @@ typedef void *LPDISPATCH;
 
 #define _isnan isnan
 #define _finite isfinite
+#endif
