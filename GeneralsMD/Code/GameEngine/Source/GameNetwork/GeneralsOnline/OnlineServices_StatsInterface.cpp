@@ -290,23 +290,6 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 
-	// GeneralsX @bugfix fbraz3 03/10/2026 Defer progress report if no valid bearer token is available
-	if (authToken.empty())
-	{
-		if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion))
-		{
-			authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
-			tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
-		}
-
-		if (authToken.empty())
-		{
-			fprintf(stderr, "[NGMP] SendMatchProgress: no bearer auth token available, deferring progress report\n");
-			fflush(stderr);
-			return;
-		}
-	}
-
 	static std::atomic<bool> s_progressInFlight{false};
 	if (s_progressInFlight.exchange(true))
 	{
@@ -315,11 +298,22 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 		return;
 	}
 
-	// GeneralsX @bugfix fbraz3 03/10/2026 Carry isInitial into worker and retry failed initial report with bounded backoff
-	std::thread([url, payloadStr, authToken, tokenVersion, isInitial]() {
+	// GeneralsX @bugfix fbraz3 03/10/2026 Keep token refresh on worker thread and guard against 401 refresh loop
+	std::thread([url, payloadStr, authToken, tokenVersion, isInitial]() mutable {
 		int attemptsLeft = isInitial ? 3 : 1;
 		bool success = false;
+		bool refreshedOnce = false;
 		std::string currentToken = authToken;
+
+		if (currentToken.empty()) {
+			fprintf(stderr, "[NGMP] SendMatchProgress: auth token is empty, refreshing on worker thread...\n");
+			fflush(stderr);
+			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+				currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+				tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+				refreshedOnce = true;
+			}
+		}
 
 		while (attemptsLeft > 0 && !success) {
 			attemptsLeft--;
@@ -357,10 +351,17 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 			curl_easy_cleanup(curl);
 
 			if (httpCode == 401) {
+				if (refreshedOnce) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized after token refresh, aborting\n");
+					fflush(stderr);
+					break;
+				}
+				refreshedOnce = true;
 				fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
 				fflush(stderr);
 				if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
 					currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+					tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 					if (!currentToken.empty()) {
 						attemptsLeft++; // allow immediate retry with the fresh token
 						continue;
