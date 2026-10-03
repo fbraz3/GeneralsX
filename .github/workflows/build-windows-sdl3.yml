@@ -171,6 +171,8 @@ jobs:
             "libwinpthread-1.dll",
             "zlib1.dll",
             "libcurl-4.dll",
+            "libssl-3-x64.dll",
+            "libcrypto-3-x64.dll",
             "GameNetworkingSockets.dll",
             "libprotobuf.dll",
             "libgamespy.dll",

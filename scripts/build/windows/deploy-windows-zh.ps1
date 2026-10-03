@@ -108,19 +108,27 @@ $mingwBin = if ($env:MINGW_PREFIX -and (Test-Path (Join-Path $env:MINGW_PREFIX "
 
 if ($mingwBin) {
     # Core MinGW compiler runtime and multimedia libraries
+    # GeneralsX @bugfix fbraz3 02/10/2026 Deploy MSYS2 OpenSSL DLLs to avoid entrypoint mismatch (0xC0000139) with libcurl-4.
     $coreMinGwDlls = @(
         "libgcc_s_seh-1.dll",
         "libstdc++-6.dll",
         "libwinpthread-1.dll",
         "libpng16-16.dll",
         "zlib1.dll",
-        "libcurl-4.dll"
+        "libcurl-4.dll",
+        "libssl-3-x64.dll",
+        "libcrypto-3-x64.dll"
     )
     foreach ($d in $coreMinGwDlls) {
         $p = Join-Path $mingwBin $d
         if ((Test-Path $p) -and (Test-IsPe64 $p)) {
             Copy-Item $p $bundleDir -Force
         }
+    }
+
+    # Clean up redundant vcpkg libcurl.dll if MinGW libcurl-4.dll is present
+    if ((Test-Path (Join-Path $bundleDir "libcurl-4.dll")) -and (Test-Path (Join-Path $bundleDir "libcurl.dll"))) {
+        Remove-Item (Join-Path $bundleDir "libcurl.dll") -Force
     }
 
     # Audio/Video decoding libraries required by OpenAL/Engine
@@ -302,6 +310,14 @@ Get-ChildItem -Path $bundleDir -Filter "*.dll" -File | ForEach-Object {
         Write-Warning "Removing incompatible non-x64 DLL from bundle: $($_.Name)"
         Remove-Item $_.FullName -Force
     }
+}
+
+# Remove stray debug runtime DLLs
+Get-ChildItem -Path $bundleDir -Filter "*.dll" -File | Where-Object {
+    $_.Name -match '^(libcurl-d\.dll|libprotobufd\.dll|libprotocd\.dll|zlibd1\.dll)$'
+} | ForEach-Object {
+    Write-Host "Removing unused debug DLL from bundle: $($_.Name)"
+    Remove-Item $_.FullName -Force
 }
 
 Write-Host "Deploy complete: $bundleDir"
