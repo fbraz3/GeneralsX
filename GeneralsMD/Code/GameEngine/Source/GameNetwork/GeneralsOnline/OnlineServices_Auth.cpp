@@ -215,6 +215,7 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                         m_isLoggedIn = true;
                     }
                     m_authTokenVersion++;
+                    m_sessionGeneration++;
 
                     NGMP::SaveAuthToken(sessionToken);
                     NGMP::SaveRefreshToken(refreshToken);
@@ -402,6 +403,7 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
                             m_isLoggedIn = true;
                         }
                         m_authTokenVersion++;
+                        m_sessionGeneration++;
 
                         NGMP::SaveAuthToken(sessionToken);
                         if (!newRefreshToken.empty()) {
@@ -472,9 +474,11 @@ void NGMP_OnlineServicesManager::logout() {
         m_authToken.clear();
         m_username.clear();
         m_isLoggedIn = false;
+        // GeneralsX @bugfix fbraz3 03/10/2026 Clear user ID on logout
         m_userId = 0;
     }
     m_authTokenVersion++;
+    m_sessionGeneration++;
     m_lastMatchProgressTime = {};
     m_lastMatchProgressMatchId = 0;
     NGMP::SaveAuthToken("");

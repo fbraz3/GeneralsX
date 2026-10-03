@@ -12,6 +12,8 @@
 #include <atomic>
 #include <chrono>
 #include <cinttypes>
+#include <memory>
+#include <mutex>
 #include <thread>
 #include <curl/curl.h>
 
@@ -295,121 +297,196 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 		return;
 	}
 
-	static std::atomic<bool> s_progressInFlight{false};
-	if (s_progressInFlight.exchange(true))
+	struct QueuedProgressReport {
+		std::string url;
+		std::string payloadStr;
+		std::string authToken;
+		uint32_t tokenVersion;
+		uint32_t sessionGen;
+		int64_t userId;
+	};
+
+	static std::mutex s_progressMutex;
+	static bool s_progressInFlight = false;
+	static std::unique_ptr<QueuedProgressReport> s_pendingInitialReport;
+
+	uint32_t originatingSessionGen = NGMP_OnlineServicesManager::getInstance().getSessionGeneration();
+
 	{
-		fprintf(stderr, "[NGMP] SendMatchProgress: previous progress request still in flight, skipping\n");
-		fflush(stderr);
-		return;
+		std::lock_guard<std::mutex> lock(s_progressMutex);
+		if (s_progressInFlight)
+		{
+			if (isInitial)
+			{
+				fprintf(stderr, "[NGMP] SendMatchProgress: request in flight, queueing initial report for execution after active worker\n");
+				fflush(stderr);
+				s_pendingInitialReport = std::make_unique<QueuedProgressReport>(
+					QueuedProgressReport{url, payloadStr, authToken, tokenVersion, originatingSessionGen, originatingUserId}
+				);
+			}
+			else
+			{
+				fprintf(stderr, "[NGMP] SendMatchProgress: previous progress request still in flight, skipping periodic report\n");
+				fflush(stderr);
+			}
+			return;
+		}
+		s_progressInFlight = true;
 	}
 
-	// GeneralsX @bugfix fbraz3 03/10/2026 Bind progress report and retries to originating user session
-	std::thread([url, payloadStr, authToken, tokenVersion, isInitial, originatingUserId]() mutable {
-		int attemptsLeft = isInitial ? 3 : 1;
-		bool success = false;
-		bool refreshedOnce = false;
-		std::string currentToken = authToken;
+	// GeneralsX @bugfix fbraz3 03/10/2026 Bind progress report and retries to originating session generation and retain queued initial reports
+	std::thread([url, payloadStr, authToken, tokenVersion, originatingSessionGen, originatingUserId, isInitial]() mutable {
+		std::string curUrl = std::move(url);
+		std::string curPayloadStr = std::move(payloadStr);
+		std::string curToken = std::move(authToken);
+		uint32_t curTokenVersion = tokenVersion;
+		uint32_t curSessionGen = originatingSessionGen;
+		int64_t curUserId = originatingUserId;
+		bool curIsInitial = isInitial;
 
-		if (currentToken.empty()) {
-			fprintf(stderr, "[NGMP] SendMatchProgress: auth token is empty, refreshing on worker thread...\n");
-			fflush(stderr);
-			if (NGMP_OnlineServicesManager::getInstance().getUserId() == originatingUserId &&
-			    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
-				if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
-					fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during initial token refresh, aborting\n");
-					fflush(stderr);
-					s_progressInFlight = false;
-					return;
+		while (true) {
+			int attemptsLeft = curIsInitial ? 3 : 1;
+			bool success = false;
+			bool refreshedOnce = false;
+
+			if (curToken.empty()) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: auth token is empty, refreshing on worker thread...\n");
+				fflush(stderr);
+				if (NGMP_OnlineServicesManager::getInstance().getUserId() == curUserId &&
+				    NGMP_OnlineServicesManager::getInstance().getSessionGeneration() == curSessionGen &&
+				    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(curTokenVersion)) {
+					if (NGMP_OnlineServicesManager::getInstance().getUserId() != curUserId ||
+					    NGMP_OnlineServicesManager::getInstance().getSessionGeneration() != curSessionGen) {
+						fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during initial token refresh, aborting\n");
+						fflush(stderr);
+						attemptsLeft = 0;
+					} else {
+						curToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+						curTokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+						refreshedOnce = true;
+					}
 				}
-				currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
-				tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
-				refreshedOnce = true;
-			}
-		}
-
-		while (attemptsLeft > 0 && !success) {
-			attemptsLeft--;
-
-			if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
-				fprintf(stderr, "[NGMP] SendMatchProgress: account session changed or logged out, aborting progress report\n");
-				fflush(stderr);
-				break;
 			}
 
-			if (currentToken.empty()) {
-				fprintf(stderr, "[NGMP] SendMatchProgress: empty bearer token, aborting request\n");
-				fflush(stderr);
-				break;
-			}
+			while (attemptsLeft > 0 && !success) {
+				attemptsLeft--;
 
-			CURL* curl = curl_easy_init();
-			if (!curl) {
-				fprintf(stderr, "[NGMP] SendMatchProgress: failed to initialize curl\n");
-				fflush(stderr);
-				break;
-			}
-
-			NGMP::Internal::CurlResponse response;
-			struct curl_slist* headers = nullptr;
-			headers = curl_slist_append(headers, "Content-Type: application/json");
-			std::string authHeader = "Authorization: Bearer " + currentToken;
-			headers = curl_slist_append(headers, authHeader.c_str());
-
-			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
-
-			CURLcode res = curl_easy_perform(curl);
-			long httpCode = 0;
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-			curl_slist_free_all(headers);
-			curl_easy_cleanup(curl);
-
-			if (httpCode == 401) {
-				if (refreshedOnce) {
-					fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized after token refresh, aborting\n");
+				if (NGMP_OnlineServicesManager::getInstance().getUserId() != curUserId ||
+				    NGMP_OnlineServicesManager::getInstance().getSessionGeneration() != curSessionGen) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: account session changed or logged out, aborting progress report\n");
 					fflush(stderr);
 					break;
 				}
-				refreshedOnce = true;
-				fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
-				fflush(stderr);
-				if (NGMP_OnlineServicesManager::getInstance().getUserId() == originatingUserId &&
-				    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
-					if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
-						fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during 401 token refresh, aborting\n");
+
+				{
+					std::lock_guard<std::mutex> lock(s_progressMutex);
+					if (s_pendingInitialReport) {
+						fprintf(stderr, "[NGMP] SendMatchProgress: newer initial report queued, abandoning retries of previous report\n");
 						fflush(stderr);
 						break;
 					}
-					currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
-					tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
-					if (!currentToken.empty()) {
-						attemptsLeft++; // allow immediate retry with the fresh token
-						continue;
+				}
+
+				if (curToken.empty()) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: empty bearer token, aborting request\n");
+					fflush(stderr);
+					break;
+				}
+
+				CURL* curl = curl_easy_init();
+				if (!curl) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: failed to initialize curl\n");
+					fflush(stderr);
+					break;
+				}
+
+				NGMP::Internal::CurlResponse response;
+				struct curl_slist* headers = nullptr;
+				headers = curl_slist_append(headers, "Content-Type: application/json");
+				std::string authHeader = "Authorization: Bearer " + curToken;
+				headers = curl_slist_append(headers, authHeader.c_str());
+
+				curl_easy_setopt(curl, CURLOPT_URL, curUrl.c_str());
+				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, curPayloadStr.c_str());
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+				curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+				CURLcode res = curl_easy_perform(curl);
+				long httpCode = 0;
+				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+				curl_slist_free_all(headers);
+				curl_easy_cleanup(curl);
+
+				if (httpCode == 401) {
+					if (refreshedOnce) {
+						fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized after token refresh, aborting\n");
+						fflush(stderr);
+						break;
+					}
+					refreshedOnce = true;
+					fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
+					fflush(stderr);
+					if (NGMP_OnlineServicesManager::getInstance().getUserId() == curUserId &&
+					    NGMP_OnlineServicesManager::getInstance().getSessionGeneration() == curSessionGen &&
+					    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(curTokenVersion)) {
+						if (NGMP_OnlineServicesManager::getInstance().getUserId() != curUserId ||
+						    NGMP_OnlineServicesManager::getInstance().getSessionGeneration() != curSessionGen) {
+							fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during 401 token refresh, aborting\n");
+							fflush(stderr);
+							break;
+						}
+						curToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+						curTokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+						if (!curToken.empty()) {
+							attemptsLeft++; // allow immediate retry with the fresh token
+							continue;
+						}
+					}
+					break;
+				}
+
+				if (res == CURLE_OK && httpCode == 200) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: server accepted progress update (HTTP 200)\n");
+					fflush(stderr);
+					success = true;
+					break;
+				} else {
+					fprintf(stderr, "[NGMP] SendMatchProgress: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
+					fflush(stderr);
+					if (attemptsLeft > 0) {
+						{
+							std::lock_guard<std::mutex> lock(s_progressMutex);
+							if (s_pendingInitialReport) {
+								fprintf(stderr, "[NGMP] SendMatchProgress: newer initial report queued, abandoning retries of previous report\n");
+								fflush(stderr);
+								break;
+							}
+						}
+						fprintf(stderr, "[NGMP] SendMatchProgress: retrying initial progress in 2 seconds (%d attempts remaining)...\n", attemptsLeft);
+						fflush(stderr);
+						std::this_thread::sleep_for(std::chrono::seconds(2));
 					}
 				}
-				break;
 			}
 
-			if (res == CURLE_OK && httpCode == 200) {
-				fprintf(stderr, "[NGMP] SendMatchProgress: server accepted progress update (HTTP 200)\n");
-				fflush(stderr);
-				success = true;
-				break;
-			} else {
-				fprintf(stderr, "[NGMP] SendMatchProgress: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
-				fflush(stderr);
-				if (attemptsLeft > 0) {
-					fprintf(stderr, "[NGMP] SendMatchProgress: retrying initial progress in 2 seconds (%d attempts remaining)...\n", attemptsLeft);
-					fflush(stderr);
-					std::this_thread::sleep_for(std::chrono::seconds(2));
+			{
+				std::lock_guard<std::mutex> lock(s_progressMutex);
+				if (s_pendingInitialReport) {
+					curUrl = std::move(s_pendingInitialReport->url);
+					curPayloadStr = std::move(s_pendingInitialReport->payloadStr);
+					curToken = std::move(s_pendingInitialReport->authToken);
+					curTokenVersion = s_pendingInitialReport->tokenVersion;
+					curSessionGen = s_pendingInitialReport->sessionGen;
+					curUserId = s_pendingInitialReport->userId;
+					curIsInitial = true;
+					s_pendingInitialReport.reset();
+					continue;
 				}
+				s_progressInFlight = false;
+				break;
 			}
 		}
-
-		s_progressInFlight = false;
 	}).detach();
 }

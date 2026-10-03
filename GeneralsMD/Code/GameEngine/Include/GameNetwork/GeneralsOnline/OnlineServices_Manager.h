@@ -243,6 +243,8 @@ public:
         std::lock_guard<std::mutex> lock(m_authMutex);
         return m_userId;
     }
+    // GeneralsX @bugfix fbraz3 03/10/2026 Return active session generation
+    uint32_t getSessionGeneration() const { return m_sessionGeneration.load(); }
     const std::vector<NGMPLobby>& getLobbies() const { return m_lobbies; }
     const std::vector<NGMPLobbyPlayer>& getLobbyPlayers() const { return m_lobbyPlayers; }
 
@@ -272,6 +274,8 @@ private:
     mutable std::mutex m_authMutex;
     std::mutex m_refreshMutex;
     std::atomic<uint32_t> m_authTokenVersion{0};
+    // GeneralsX @bugfix fbraz3 03/10/2026 Track session generation to prevent cross-session request leaks
+    std::atomic<uint32_t> m_sessionGeneration{0};
     std::atomic<int> m_onlinePlayersCount{0};
 
     bool m_initialized = false;
