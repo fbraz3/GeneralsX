@@ -474,6 +474,8 @@ void NGMP_OnlineServicesManager::logout() {
         m_isLoggedIn = false;
     }
     m_authTokenVersion++;
+    m_lastMatchProgressTime = {};
+    m_lastMatchProgressMatchId = 0;
     NGMP::SaveAuthToken("");
     NGMP::SaveRefreshToken("");
 }

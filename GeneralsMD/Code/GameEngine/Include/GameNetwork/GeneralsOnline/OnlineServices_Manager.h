@@ -322,6 +322,7 @@ private:
 
     // GeneralsX @feature fbraz3 03/10/2026 Periodic match progress timer
     std::chrono::steady_clock::time_point m_lastMatchProgressTime{};
+    uint64_t m_lastMatchProgressMatchId{0};
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;

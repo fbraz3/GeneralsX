@@ -368,9 +368,11 @@ void NGMP_OnlineServicesManager::update() {
     // GeneralsX @feature fbraz3 03/10/2026 Periodic match progress telemetry (every 120s)
     if (m_isLoggedIn) {
         NGMP_OnlineServices_LobbyInterface* pLobby = GetInterface<NGMP_OnlineServices_LobbyInterface>();
-        if (pLobby && pLobby->GetCurrentMatchID() > 0 && ThePlayerList && ThePlayerList->getLocalPlayer()) {
+        uint64_t currentMatchId = pLobby ? pLobby->GetCurrentMatchID() : 0;
+        if (currentMatchId > 0 && ThePlayerList && ThePlayerList->getLocalPlayer()) {
             auto now = std::chrono::steady_clock::now();
-            if (m_lastMatchProgressTime == std::chrono::steady_clock::time_point{}) {
+            if (m_lastMatchProgressMatchId != currentMatchId || m_lastMatchProgressTime == std::chrono::steady_clock::time_point{}) {
+                m_lastMatchProgressMatchId = currentMatchId;
                 m_lastMatchProgressTime = now;
             } else if (std::chrono::duration_cast<std::chrono::seconds>(now - m_lastMatchProgressTime).count() >= 120) {
                 m_lastMatchProgressTime = now;
@@ -381,7 +383,11 @@ void NGMP_OnlineServicesManager::update() {
             }
         } else {
             m_lastMatchProgressTime = {};
+            m_lastMatchProgressMatchId = 0;
         }
+    } else {
+        m_lastMatchProgressTime = {};
+        m_lastMatchProgressMatchId = 0;
     }
 }
 
