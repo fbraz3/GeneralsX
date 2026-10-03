@@ -262,12 +262,12 @@ jobs:
             }
 
             $source = if ($replay.Name.StartsWith("linux_")) { "Linux" } elseif ($replay.Name.StartsWith("macos_")) { "macOS" } else { "other" }
-            $completionLines = @($stdoutOutput |
-              Select-String -Pattern '^Elapsed Time: \d{2}:\d{2} Game Time: (\d{2}:\d{2})/\1$')
+            $completionLines = @($output |
+              Select-String -Pattern 'Elapsed Time: \d{2}:\d{2} Game Time: (\d{2}:\d{2})/\1')
             $completed = $completionLines.Count -gt 0
             if (!$timedOut -and $exitCode -eq 0 -and $completed) {
               $passed++
-              $completion = $completionLines[-1].Line
+              $completion = $completionLines[-1].Line.Trim()
               Write-Host "Replay completed: $($replay.Name) - $completion"
               "| ``$($replay.Name)`` | $source | PASS | exit 0; $completion |" >> $env:GITHUB_STEP_SUMMARY
             } else {
@@ -276,7 +276,7 @@ jobs:
                 $detail = "missing completed Game Time marker"
               } else {
                 $detail = ($output |
-                  Select-String -Pattern "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay" |
+                  Select-String -Pattern "Error|CRC|MISMATCH|FATAL|Cannot open replay" |
                   Select-Object -Last 3).Line -join " "
               }
               if (!$detail) {
