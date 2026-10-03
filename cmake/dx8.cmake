@@ -40,7 +40,7 @@ if(SAGE_USE_DX8 OR WIN32)
     set(dxvk_SOURCE_DIR "${dx8_SOURCE_DIR}" CACHE PATH "Header source for Windows64 modern DXVK path" FORCE)
 
     # GeneralsX @build GitHub Copilot 18/05/2026 Windows64 DXVK runtime policy: stage DXVK d3d8/dxgi/d3d11 beside game executable.
-    # GeneralsX @security fbraz3 03/10/2026 Pin SHA256 hash for DXVK release tarball.
+    # GeneralsX @build fbraz3 03/10/2026 Pin SHA256 hash for DXVK release tarball.
     FetchContent_Declare(
       dxvk_windows
       URL        https://github.com/doitsujin/dxvk/releases/download/${DXVK_VERSION}/dxvk-2.6.tar.gz

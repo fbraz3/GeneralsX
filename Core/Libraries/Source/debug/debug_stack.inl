@@ -65,6 +65,17 @@ DBGHELP(SymGetModuleBase,
         (HANDLE hProcess, DWORD dwAddr))
 #endif
 
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+DBGHELP(SymGetSymFromAddr64,
+        BOOL,
+        (HANDLE hProcess, DWORD64 qwAddr, PDWORD64 pdwDisplacement,
+        PIMAGEHLP_SYMBOL64 Symbol))
+
+DBGHELP(SymGetLineFromAddr64,
+        BOOL,
+        (HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement,
+        PIMAGEHLP_LINE64 Line))
+#else
 DBGHELP(SymGetSymFromAddr,
         BOOL,
         (HANDLE hProcess, DWORD Address, LPDWORD Displacement,
@@ -74,6 +85,7 @@ DBGHELP(SymGetLineFromAddr,
         BOOL,
         (HANDLE hProcess, DWORD dwAddr, PDWORD pdwDisplacement,
         PIMAGEHLP_LINE Line))
+#endif
 
 // keep this always as last entry
 DBGHELP(SymCleanup,

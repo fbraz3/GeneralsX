@@ -111,7 +111,8 @@ void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_P
 
   char buf[512];
 #if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
-  DebugStackwalk::Signature::GetSymbol(static_cast<unsigned>(ctx.Rip),buf,sizeof(buf));
+  // GeneralsX @bugfix fbraz3 03/10/2026 Pass full 64-bit RIP to GetSymbol without 32-bit truncation.
+  DebugStackwalk::Signature::GetSymbol(static_cast<uintptr_t>(ctx.Rip),buf,sizeof(buf));
 #else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
 #endif
@@ -229,7 +230,8 @@ static INT_PTR CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
   // address
   struct _CONTEXT &ctx=*exPtrs->ContextRecord;
 #if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
-  DebugStackwalk::Signature::GetSymbol(static_cast<unsigned>(ctx.Rip),regInfo,sizeof(regInfo));
+  // GeneralsX @bugfix fbraz3 03/10/2026 Pass full 64-bit RIP to GetSymbol without 32-bit truncation.
+  DebugStackwalk::Signature::GetSymbol(static_cast<uintptr_t>(ctx.Rip),regInfo,sizeof(regInfo));
 #else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,regInfo,sizeof(regInfo));
 #endif

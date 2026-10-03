@@ -205,9 +205,14 @@ else()
     list(APPEND GAMEENGINEDEVICE_SRC
         ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp
         ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
         ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
     )
+    # GeneralsX @bugfix fbraz3 03/10/2026 Avoid duplicate symbol when Win32DIKeyboardStub is enabled via RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT.
+    if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        )
+    endif()
 endif()
 
 # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
