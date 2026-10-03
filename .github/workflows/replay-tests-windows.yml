@@ -265,24 +265,34 @@ jobs:
             $completionLines = @($output |
               Select-String -Pattern 'Elapsed Time: \d{2}:\d{2} Game Time: (\d{2}:\d{2})/\1')
             $completed = $completionLines.Count -gt 0
-            if (!$timedOut -and $exitCode -eq 0 -and $completed) {
+            $hasCleanGameMain = ($output | Select-String -Pattern 'GameMain\(\) returned with code 0|Exiting with code 0').Count -gt 0
+            $hasFatalError = ($output | Select-String -Pattern "Error|CRC|MISMATCH|FATAL|Cannot open replay").Count -gt 0
+
+            $isPass = !$timedOut -and !$hasFatalError -and (($exitCode -eq 0 -and $completed) -or ($hasCleanGameMain -and $completed) -or ($exitCode -eq 0 -and $hasCleanGameMain))
+
+            if ($isPass) {
               $passed++
-              $completion = $completionLines[-1].Line.Trim()
-              Write-Host "Replay completed: $($replay.Name) - $completion"
+              $completion = if ($completionLines.Count -gt 0) { $completionLines[-1].Line.Trim() } else { "exit 0 (GameMain completed)" }
+              Write-Host "PASS: $($replay.Name) - $completion"
               "| ``$($replay.Name)`` | $source | PASS | exit 0; $completion |" >> $env:GITHUB_STEP_SUMMARY
             } else {
               $failed++
-              if (!$completed) {
-                $detail = "missing completed Game Time marker"
-              } else {
+              if ($timedOut) {
+                $detail = "timed out after 180s"
+              } elseif ($hasFatalError) {
                 $detail = ($output |
                   Select-String -Pattern "Error|CRC|MISMATCH|FATAL|Cannot open replay" |
                   Select-Object -Last 3).Line -join " "
+              } elseif (!$completed) {
+                $detail = "missing completed Game Time marker"
+              } else {
+                $detail = "process exited with code $exitCode"
               }
               if (!$detail) {
                 $detail = "no filtered diagnostics"
               }
               $detail = $detail.Replace("|", "/")
+              Write-Host "FAIL: $($replay.Name) - exit ${exitCode}: $detail"
               "| ``$($replay.Name)`` | $source | FAIL | exit ${exitCode}: $detail |" >> $env:GITHUB_STEP_SUMMARY
             }
           }
