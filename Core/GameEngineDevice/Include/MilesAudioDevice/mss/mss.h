@@ -3,6 +3,9 @@
  *
  * @author OmniBlade
  *
+ * // Upstream reference: OmniBlade, W3D / GeneralsGameCode open-source Miles Sound System stub
+ * // https://github.com/TheSuperHackers/GeneralsGameCode
+ *
  * @brief Stub library containing subset of functions from mss32.dll as used by the W3D engine.
  *
  * @copyright This is free software: you can redistribute it and/or

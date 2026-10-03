@@ -213,7 +213,7 @@ endif()
 # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
 # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
 # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
-if(NOT SAGE_USE_OPENAL)
+if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/OpenALAudioManager.cpp
     )

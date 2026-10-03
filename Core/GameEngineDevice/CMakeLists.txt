@@ -222,21 +222,13 @@ if(WIN32)
         )
     endif()
     # GeneralsX @build fbraz3 29/09/2026 Isolate legacy Win32 input devices when SDL3 backend is enabled
-    if(NOT SAGE_USE_SDL3)
+    # GeneralsX @bugfix fbraz3 03/10/2026 Win32DIKeyboard/Win32Mouse are provided by game targets (z_gameenginedevice/g_gameenginedevice).
+    # Only compile Win32DIKeyboardStub if explicitly requested for headless/isolated MinGW legacy builds.
+    if(NOT SAGE_USE_SDL3 AND RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
         list(APPEND GAMEENGINEDEVICE_SRC
             Include/Win32Device/GameClient/Win32DIKeyboard.h
-            Include/Win32Device/GameClient/Win32Mouse.h
             Source/Win32Device/GameClient/Win32DIKeyboardStub.cpp
-            Source/Win32Device/GameClient/Win32Mouse.cpp
         )
-
-        # GeneralsX @build GitHub Copilot 18/05/2026 Keep legacy Win32GameEngine isolated on modern Windows64 path.
-        if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
-            list(APPEND GAMEENGINEDEVICE_SRC
-                Include/Win32Device/Common/Win32GameEngine.h
-                Source/Win32Device/Common/Win32GameEngine.cpp
-            )
-        endif()
     endif()
 else()
     # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation

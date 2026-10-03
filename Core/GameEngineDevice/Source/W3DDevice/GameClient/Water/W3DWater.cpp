@@ -1021,7 +1021,8 @@ Int WaterRenderObjClass::init(Real waterLevel, Real dx, Real dy, SceneClass *par
 	m_dy=dy;
 	m_level=waterLevel;
 
-	m_LastUpdateTime=static_cast<Int>(GetTickCount());
+	// GeneralsX @tweak fbraz3 03/10/2026 Restore high-resolution timeGetTime() across all Windows platforms.
+	m_LastUpdateTime=timeGetTime();
 	m_uScrollPerMs=0.001f;
 	m_vScrollPerMs=0.001f;
 	m_uOffset=0;
@@ -2084,7 +2085,8 @@ void WaterRenderObjClass::renderSky()
 
 	Setting *setting=&m_settings[m_tod];
 
-	timeNow=static_cast<Int>(GetTickCount());
+	// GeneralsX @tweak fbraz3 03/10/2026 Restore high-resolution timeGetTime() across all Windows platforms.
+	timeNow=timeGetTime();
 
 	timeDiff=timeNow-m_LastUpdateTime;
 	m_LastUpdateTime=timeNow;

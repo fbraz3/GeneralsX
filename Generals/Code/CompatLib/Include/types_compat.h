@@ -5,6 +5,13 @@
 
 #ifdef _WIN32
 // GeneralsX @bugfix GitHub Copilot 19/05/2026 On Windows builds, consume native SDK typedefs to avoid redefinition conflicts with MinGW headers.
+// GeneralsX @tweak fbraz3 03/10/2026 Guard against macro pollution (min/max, etc.) by enforcing WIN32_LEAN_AND_MEAN and NOMINMAX.
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #endif
 

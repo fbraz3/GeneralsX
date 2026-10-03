@@ -376,6 +376,10 @@ int main(int argc, char* argv[])
 		// Store window handle globally
 #if defined(_WIN32)
 		ApplicationHWnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(TheSDL3Window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+		if (!ApplicationHWnd) {
+			fprintf(stderr, "FATAL: Failed to obtain Win32 HWND from SDL window: %s\n", SDL_GetError());
+			return 1;
+		}
 #else
 		ApplicationHWnd = (HWND)TheSDL3Window;
 #endif
