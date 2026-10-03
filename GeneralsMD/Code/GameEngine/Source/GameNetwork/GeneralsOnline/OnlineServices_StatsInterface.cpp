@@ -10,6 +10,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerTemplate.h"
 #include <atomic>
+#include <chrono>
 #include <cinttypes>
 #include <thread>
 #include <curl/curl.h>
@@ -289,6 +290,23 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 
+	// GeneralsX @bugfix fbraz3 03/10/2026 Defer progress report if no valid bearer token is available
+	if (authToken.empty())
+	{
+		if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion))
+		{
+			authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+			tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+		}
+
+		if (authToken.empty())
+		{
+			fprintf(stderr, "[NGMP] SendMatchProgress: no bearer auth token available, deferring progress report\n");
+			fflush(stderr);
+			return;
+		}
+	}
+
 	static std::atomic<bool> s_progressInFlight{false};
 	if (s_progressInFlight.exchange(true))
 	{
@@ -297,71 +315,76 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 		return;
 	}
 
-	std::thread([url, payloadStr, authToken, tokenVersion]() {
-		CURL* curl = curl_easy_init();
-		if (!curl) {
-			fprintf(stderr, "[NGMP] SendMatchProgress: failed to initialize curl\n");
-			fflush(stderr);
-			s_progressInFlight = false;
-			return;
-		}
+	// GeneralsX @bugfix fbraz3 03/10/2026 Carry isInitial into worker and retry failed initial report with bounded backoff
+	std::thread([url, payloadStr, authToken, tokenVersion, isInitial]() {
+		int attemptsLeft = isInitial ? 3 : 1;
+		bool success = false;
+		std::string currentToken = authToken;
 
-		NGMP::Internal::CurlResponse response;
-		struct curl_slist* headers = nullptr;
-		headers = curl_slist_append(headers, "Content-Type: application/json");
-		if (!authToken.empty()) {
-			std::string authHeader = "Authorization: Bearer " + authToken;
+		while (attemptsLeft > 0 && !success) {
+			attemptsLeft--;
+
+			if (currentToken.empty()) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: empty bearer token, aborting request\n");
+				fflush(stderr);
+				break;
+			}
+
+			CURL* curl = curl_easy_init();
+			if (!curl) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: failed to initialize curl\n");
+				fflush(stderr);
+				break;
+			}
+
+			NGMP::Internal::CurlResponse response;
+			struct curl_slist* headers = nullptr;
+			headers = curl_slist_append(headers, "Content-Type: application/json");
+			std::string authHeader = "Authorization: Bearer " + currentToken;
 			headers = curl_slist_append(headers, authHeader.c_str());
-		}
 
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 
-		CURLcode res = curl_easy_perform(curl);
-		long httpCode = 0;
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-		curl_slist_free_all(headers);
-		curl_easy_cleanup(curl);
+			CURLcode res = curl_easy_perform(curl);
+			long httpCode = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl);
 
-		if (httpCode == 401) {
-			fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
-			fflush(stderr);
-			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
-				std::string freshToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
-				curl = curl_easy_init();
-				if (curl) {
-					headers = nullptr;
-					headers = curl_slist_append(headers, "Content-Type: application/json");
-					if (!freshToken.empty()) {
-						std::string authHeader = "Authorization: Bearer " + freshToken;
-						headers = curl_slist_append(headers, authHeader.c_str());
+			if (httpCode == 401) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
+				fflush(stderr);
+				if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+					currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+					if (!currentToken.empty()) {
+						attemptsLeft++; // allow immediate retry with the fresh token
+						continue;
 					}
-					response.text.clear();
-					curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-					curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
-					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-					curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-					curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+				}
+				break;
+			}
 
-					res = curl_easy_perform(curl);
-					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-					curl_slist_free_all(headers);
-					curl_easy_cleanup(curl);
+			if (res == CURLE_OK && httpCode == 200) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: server accepted progress update (HTTP 200)\n");
+				fflush(stderr);
+				success = true;
+				break;
+			} else {
+				fprintf(stderr, "[NGMP] SendMatchProgress: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
+				fflush(stderr);
+				if (attemptsLeft > 0) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: retrying initial progress in 2 seconds (%d attempts remaining)...\n", attemptsLeft);
+					fflush(stderr);
+					std::this_thread::sleep_for(std::chrono::seconds(2));
 				}
 			}
 		}
 
-		if (res == CURLE_OK && httpCode == 200) {
-			fprintf(stderr, "[NGMP] SendMatchProgress: server accepted progress update (HTTP 200)\n");
-		} else {
-			fprintf(stderr, "[NGMP] SendMatchProgress: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
-		}
-		fflush(stderr);
 		s_progressInFlight = false;
 	}).detach();
 }
