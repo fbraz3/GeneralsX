@@ -345,3 +345,59 @@ void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirecto
 		it++;
 	}
 }
+
+// GeneralsX @bugfix felipebraz 02/10/2026 Allow mod archives to take precedence over loose stock files.
+// Retail Zero Hour shipped stock loose files (e.g. Data/Scripts/SkirmishScripts.scb) that shadow mod archives
+// (such as Shockwave's !Shw_scripts.big) unless the launcher explicitly renamed them on disk.
+Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
+{
+	if (filename == nullptr || filename[0] == '\0')
+	{
+		return FALSE;
+	}
+
+	ArchiveFile *archive = getArchiveFile(AsciiString(filename));
+	if (archive == nullptr)
+	{
+		return FALSE;
+	}
+
+	// 1. Script files: SkirmishScripts.scb, MultiplayerScripts.scb, Scripts.ini.
+	// Vanilla Zero Hour never packaged these into any .big archive; they only shipped as loose files.
+	// If any archive in the archive file system contains them, it is guaranteed to be a mod.
+	AsciiString fname = filename;
+	if (fname.endsWithNoCase("SkirmishScripts.scb") ||
+	    fname.endsWithNoCase("MultiplayerScripts.scb") ||
+	    fname.endsWithNoCase("Scripts.ini"))
+	{
+		return TRUE;
+	}
+
+	// 2. Mod archives starting with '!' (or '!!', '@', etc.) - the universal SAGE mod convention.
+	AsciiString archiveName = archive->getName();
+	const char* raw = archiveName.str();
+	const char* lastSlash = strrchr(raw, '/');
+	const char* lastBackslash = strrchr(raw, '\\');
+	const char* split = lastSlash;
+	if (split == nullptr || (lastBackslash != nullptr && lastBackslash > split))
+	{
+		split = lastBackslash;
+	}
+	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+	if (baseName[0] == '!' || baseName[0] == '@')
+	{
+		return TRUE;
+	}
+
+	// 3. Archives loaded explicitly via -mod command line parameter.
+	if (TheGlobalData && TheGlobalData->m_modDir.isNotEmpty())
+	{
+		if (strstr(archiveName.str(), TheGlobalData->m_modDir.str()) != nullptr)
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+

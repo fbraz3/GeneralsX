@@ -177,6 +177,21 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 	USE_PERF_TIMER(FileSystem)
 	File *file = nullptr;
 
+	// GeneralsX @bugfix felipebraz 02/10/2026 Allow mod archives (e.g. !*.big, custom SkirmishScripts)
+	// to override stock loose files that otherwise shadow mod contents.
+	const Bool hasModOverride = (TheArchiveFileSystem != nullptr) &&
+	                            !(access & File::WRITE) &&
+	                            TheArchiveFileSystem->hasModArchiveOverride(filename);
+
+	if (hasModOverride)
+	{
+		file = TheArchiveFileSystem->openFile( filename, 0, instance );
+		if (file != nullptr)
+		{
+			return file;
+		}
+	}
+
 	if ( TheLocalFileSystem != nullptr )
 	{
 		if (instance != 0)
@@ -241,6 +256,22 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 		}
 	}
 #endif
+
+	// GeneralsX @bugfix felipebraz 02/10/2026 Prioritize mod archive existence if an override is active.
+	if (TheArchiveFileSystem != nullptr && TheArchiveFileSystem->hasModArchiveOverride(filename))
+	{
+		if (TheArchiveFileSystem->doesFileExist(filename, instance))
+		{
+#if ENABLE_FILESYSTEM_EXISTENCE_CACHE
+			{
+				FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
+				FileExistMap::mapped_type& value = m_fileExist[filename];
+				value.instanceExists = max(value.instanceExists, instance);
+			}
+#endif
+			return TRUE;
+		}
+	}
 
 	if (TheLocalFileSystem->doesFileExist(filename))
 	{

@@ -145,6 +145,9 @@ public:
 
 	void loadMods();
 
+	// GeneralsX @bugfix felipebraz 02/10/2026 Check if a file is provided by an overriding mod archive (!*.big or script files)
+	Bool					hasModArchiveOverride(const Char *filename) const;
+
 	ArchivedDirectoryInfo* friend_getArchivedDirectoryInfo(const Char* directory);
 
 protected:
