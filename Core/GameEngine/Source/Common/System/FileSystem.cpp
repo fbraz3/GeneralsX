@@ -183,23 +183,25 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 	                            !(access & File::WRITE) &&
 	                            TheArchiveFileSystem->hasModArchiveOverride(filename);
 
+	FileInstance remainingInstance = instance;
+
 	if (hasModOverride)
 	{
-		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename);
-		if (instance < archiveCount)
+		FileInstance modArchiveCount = TheArchiveFileSystem->getFileCount(filename, ArchiveFileSystem::ARCHIVE_FILTER_MOD_ONLY);
+		if (remainingInstance < modArchiveCount)
 		{
-			return TheArchiveFileSystem->openFile( filename, access, instance );
+			return TheArchiveFileSystem->openFile( filename, access, remainingInstance, ArchiveFileSystem::ARCHIVE_FILTER_MOD_ONLY );
 		}
-		instance -= archiveCount;
+		remainingInstance -= modArchiveCount;
 	}
 
 	if ( TheLocalFileSystem != nullptr )
 	{
-		if (instance != 0)
+		if (remainingInstance != 0)
 		{
 			if (TheLocalFileSystem->doesFileExist(filename))
 			{
-				--instance;
+				--remainingInstance;
 			}
 		}
 		else
@@ -226,10 +228,11 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 		}
 	}
 
-	if ( !hasModOverride && (TheArchiveFileSystem != nullptr) && (file == nullptr) )
+	if ( (TheArchiveFileSystem != nullptr) && (file == nullptr) )
 	{
-		// TheSuperHackers @todo Pass 'access' here?
-		file = TheArchiveFileSystem->openFile( filename, 0, instance );
+		// Non-mod (ordinary) archives fallback if mod overrides were active, or all archives if not.
+		ArchiveFileSystem::ArchiveFilter filter = hasModOverride ? ArchiveFileSystem::ARCHIVE_FILTER_NON_MOD_ONLY : ArchiveFileSystem::ARCHIVE_FILTER_ALL;
+		file = TheArchiveFileSystem->openFile( filename, 0, remainingInstance, filter );
 	}
 
 	return file;
@@ -258,50 +261,55 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 	}
 #endif
 
+	const FileInstance requestedInstance = instance;
+	FileInstance remainingInstance = instance;
+
 	// GeneralsX @bugfix felipebraz 02/10/2026 Prioritize mod archive existence if an override is active.
 	const Bool hasModOverride = (TheArchiveFileSystem != nullptr) &&
 	                            TheArchiveFileSystem->hasModArchiveOverride(filename);
 
 	if (hasModOverride)
 	{
-		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename);
-		if (instance < archiveCount)
+		FileInstance modArchiveCount = TheArchiveFileSystem->getFileCount(filename, ArchiveFileSystem::ARCHIVE_FILTER_MOD_ONLY);
+		if (remainingInstance < modArchiveCount)
 		{
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 			{
 				FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
 				FileExistMap::mapped_type& value = m_fileExist[filename];
-				value.instanceExists = max(value.instanceExists, instance);
+				value.instanceExists = max(value.instanceExists, requestedInstance);
 			}
 #endif
 			return TRUE;
 		}
-		instance -= archiveCount;
+		remainingInstance -= modArchiveCount;
 	}
 
 	if (TheLocalFileSystem->doesFileExist(filename))
 	{
-		if (instance == 0)
+		if (remainingInstance == 0)
 		{
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 			{
 				FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
-				m_fileExist[filename];
+				FileExistMap::mapped_type& value = m_fileExist[filename];
+				value.instanceExists = max(value.instanceExists, requestedInstance);
 			}
 #endif
 			return TRUE;
 		}
 
-		--instance;
+		--remainingInstance;
 	}
 
-	if (!hasModOverride && TheArchiveFileSystem->doesFileExist(filename, instance))
+	ArchiveFileSystem::ArchiveFilter filter = hasModOverride ? ArchiveFileSystem::ARCHIVE_FILTER_NON_MOD_ONLY : ArchiveFileSystem::ARCHIVE_FILTER_ALL;
+	if (TheArchiveFileSystem->doesFileExist(filename, remainingInstance, filter))
 	{
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 		{
 			FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
 			FileExistMap::mapped_type& value = m_fileExist[filename];
-			value.instanceExists = max(value.instanceExists, instance);
+			value.instanceExists = max(value.instanceExists, requestedInstance);
 		}
 #endif
 		return TRUE;
@@ -311,7 +319,7 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 	{
 		FastCriticalSectionClass::LockClass lock(m_fileExistMutex);
 		FileExistMap::mapped_type& value = m_fileExist[filename];
-		value.instanceDoesNotExist = min(value.instanceDoesNotExist, instance);
+		value.instanceDoesNotExist = min(value.instanceDoesNotExist, requestedInstance);
 	}
 #endif
 	return FALSE;
@@ -341,29 +349,32 @@ Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, Fi
 	}
 	memset(fileInfo, 0, sizeof(*fileInfo));
 
+	FileInstance remainingInstance = instance;
+
 	// GeneralsX @bugfix felipebraz 02/10/2026 Prioritize mod archive metadata if an override is active.
 	const Bool hasModOverride = (TheArchiveFileSystem != nullptr) &&
 	                            TheArchiveFileSystem->hasModArchiveOverride(filename.str());
 
 	if (hasModOverride)
 	{
-		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename.str());
-		if (instance < archiveCount)
+		FileInstance modArchiveCount = TheArchiveFileSystem->getFileCount(filename.str(), ArchiveFileSystem::ARCHIVE_FILTER_MOD_ONLY);
+		if (remainingInstance < modArchiveCount)
 		{
-			return TheArchiveFileSystem->getFileInfo(filename, fileInfo, instance);
+			return TheArchiveFileSystem->getFileInfo(filename, fileInfo, remainingInstance, ArchiveFileSystem::ARCHIVE_FILTER_MOD_ONLY);
 		}
-		instance -= archiveCount;
+		remainingInstance -= modArchiveCount;
 	}
 
 	if (TheLocalFileSystem->getFileInfo(filename, fileInfo)) {
-		if (instance == 0) {
+		if (remainingInstance == 0) {
 			return TRUE;
 		}
 
-		--instance;
+		--remainingInstance;
 	}
 
-	if (!hasModOverride && TheArchiveFileSystem->getFileInfo(filename, fileInfo, instance)) {
+	ArchiveFileSystem::ArchiveFilter filter = hasModOverride ? ArchiveFileSystem::ARCHIVE_FILTER_NON_MOD_ONLY : ArchiveFileSystem::ARCHIVE_FILTER_ALL;
+	if (TheArchiveFileSystem->getFileInfo(filename, fileInfo, remainingInstance, filter)) {
 		return TRUE;
 	}
 

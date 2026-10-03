@@ -245,14 +245,17 @@ void ArchiveFileSystem::loadMods()
 
 Bool ArchiveFileSystem::doesFileExist(const Char *filename, FileInstance instance) const
 {
-	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename);
+	return doesFileExist(filename, instance, ARCHIVE_FILTER_ALL);
+}
 
-	if (!result.valid())
+Bool ArchiveFileSystem::doesFileExist(const Char *filename, FileInstance instance, ArchiveFilter filter) const
+{
+	if (filename == nullptr || filename[0] == '\0')
+	{
 		return false;
+	}
 
-	stl::const_range<ArchivedFileLocationMap> range = stl::get_range(result.dirInfo->m_files, result.lastToken, instance);
-
-	return range.valid();
+	return getArchiveFile(AsciiString(filename), instance, filter) != nullptr;
 }
 
 ArchivedDirectoryInfo* ArchiveFileSystem::friend_getArchivedDirectoryInfo(const Char* directory)
@@ -296,7 +299,17 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 
 File * ArchiveFileSystem::openFile(const Char *filename, Int access, FileInstance instance)
 {
-	ArchiveFile* archive = getArchiveFile(filename, instance);
+	return openFile(filename, access, instance, ARCHIVE_FILTER_ALL);
+}
+
+File * ArchiveFileSystem::openFile(const Char *filename, Int access, FileInstance instance, ArchiveFilter filter)
+{
+	if (filename == nullptr || filename[0] == '\0')
+	{
+		return nullptr;
+	}
+
+	ArchiveFile* archive = getArchiveFile(AsciiString(filename), instance, filter);
 
 	if (archive == nullptr)
 		return nullptr;
@@ -306,15 +319,16 @@ File * ArchiveFileSystem::openFile(const Char *filename, Int access, FileInstanc
 
 Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance) const
 {
-	if (fileInfo == nullptr) {
+	return getFileInfo(filename, fileInfo, instance, ARCHIVE_FILTER_ALL);
+}
+
+Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance, ArchiveFilter filter) const
+{
+	if (fileInfo == nullptr || filename.isEmpty()) {
 		return FALSE;
 	}
 
-	if (filename.isEmpty()) {
-		return FALSE;
-	}
-
-	ArchiveFile* archive = getArchiveFile(filename, instance);
+	ArchiveFile* archive = getArchiveFile(filename, instance, filter);
 
 	if (archive == nullptr)
 		return FALSE;
@@ -322,19 +336,37 @@ Bool ArchiveFileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileI
 	return archive->getFileInfo(filename, fileInfo);
 }
 
-ArchiveFile* ArchiveFileSystem::getArchiveFile(const AsciiString& filename, FileInstance instance) const
+ArchiveFile* ArchiveFileSystem::getArchiveFile(const AsciiString& filename, FileInstance instance, ArchiveFilter filter) const
 {
 	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename.str());
 
 	if (!result.valid())
 		return nullptr;
 
-	stl::const_range<ArchivedFileLocationMap> range = stl::get_range(result.dirInfo->m_files, result.lastToken, instance);
+	std::pair<ArchivedFileLocationMap::const_iterator, ArchivedFileLocationMap::const_iterator> range =
+		result.dirInfo->m_files.equal_range(result.lastToken);
 
-	if (!range.valid())
-		return nullptr;
-	
-	return range.get()->second;
+	FileInstance currentInstance = 0;
+	for (ArchivedFileLocationMap::const_iterator it = range.first; it != range.second; ++it)
+	{
+		ArchiveFile* archive = it->second;
+		if (filter == ARCHIVE_FILTER_MOD_ONLY && !isModArchive(archive, filename.str()))
+		{
+			continue;
+		}
+		if (filter == ARCHIVE_FILTER_NON_MOD_ONLY && isModArchive(archive, filename.str()))
+		{
+			continue;
+		}
+
+		if (currentInstance == instance)
+		{
+			return archive;
+		}
+		++currentInstance;
+	}
+
+	return nullptr;
 }
 
 void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const
@@ -349,14 +381,8 @@ void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirecto
 // GeneralsX @bugfix felipebraz 02/10/2026 Allow mod archives to take precedence over loose stock files.
 // Retail Zero Hour shipped stock loose files (e.g. Data/Scripts/SkirmishScripts.scb) that shadow mod archives
 // (such as Shockwave's !Shw_scripts.big) unless the launcher explicitly renamed them on disk.
-Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
+Bool ArchiveFileSystem::isModArchive(ArchiveFile *archive, const Char *filename) const
 {
-	if (filename == nullptr || filename[0] == '\0')
-	{
-		return FALSE;
-	}
-
-	ArchiveFile *archive = getArchiveFile(AsciiString(filename));
 	if (archive == nullptr)
 	{
 		return FALSE;
@@ -365,20 +391,23 @@ Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 	// 1. Script files: SkirmishScripts.scb, MultiplayerScripts.scb, Scripts.ini.
 	// Vanilla Zero Hour never packaged these into any .big archive; they only shipped as loose files.
 	// If any archive in the archive file system contains them, it is guaranteed to be a mod.
-	const char* fnRaw = filename;
-	const char* fnLastSlash = strrchr(fnRaw, '/');
-	const char* fnLastBackslash = strrchr(fnRaw, '\\');
-	const char* fnSplit = fnLastSlash;
-	if (fnSplit == nullptr || (fnLastBackslash != nullptr && fnLastBackslash > fnSplit))
+	if (filename != nullptr)
 	{
-		fnSplit = fnLastBackslash;
-	}
-	const char* fnBase = (fnSplit != nullptr) ? (fnSplit + 1) : fnRaw;
-	if (stricmp(fnBase, "SkirmishScripts.scb") == 0 ||
-	    stricmp(fnBase, "MultiplayerScripts.scb") == 0 ||
-	    stricmp(fnBase, "Scripts.ini") == 0)
-	{
-		return TRUE;
+		const char* fnRaw = filename;
+		const char* fnLastSlash = strrchr(fnRaw, '/');
+		const char* fnLastBackslash = strrchr(fnRaw, '\\');
+		const char* fnSplit = fnLastSlash;
+		if (fnSplit == nullptr || (fnLastBackslash != nullptr && fnLastBackslash > fnSplit))
+		{
+			fnSplit = fnLastBackslash;
+		}
+		const char* fnBase = (fnSplit != nullptr) ? (fnSplit + 1) : fnRaw;
+		if (stricmp(fnBase, "SkirmishScripts.scb") == 0 ||
+		    stricmp(fnBase, "MultiplayerScripts.scb") == 0 ||
+		    stricmp(fnBase, "Scripts.ini") == 0)
+		{
+			return TRUE;
+		}
 	}
 
 	// 2. Mod archives starting with '!' (or '!!', '@', etc.) - the universal SAGE mod convention.
@@ -414,9 +443,14 @@ Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 	return FALSE;
 }
 
-FileInstance ArchiveFileSystem::getFileCount(const Char *filename) const
+Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 {
-	if (filename == nullptr)
+	return getFileCount(filename, ARCHIVE_FILTER_MOD_ONLY) > 0;
+}
+
+FileInstance ArchiveFileSystem::getFileCount(const Char *filename, ArchiveFilter filter) const
+{
+	if (filename == nullptr || filename[0] == '\0')
 	{
 		return 0;
 	}
@@ -427,7 +461,31 @@ FileInstance ArchiveFileSystem::getFileCount(const Char *filename) const
 		return 0;
 	}
 
-	return static_cast<FileInstance>(result.dirInfo->m_files.count(result.lastToken));
+	if (filter == ARCHIVE_FILTER_ALL)
+	{
+		return static_cast<FileInstance>(result.dirInfo->m_files.count(result.lastToken));
+	}
+
+	std::pair<ArchivedFileLocationMap::const_iterator, ArchivedFileLocationMap::const_iterator> range =
+		result.dirInfo->m_files.equal_range(result.lastToken);
+
+	FileInstance count = 0;
+	for (ArchivedFileLocationMap::const_iterator it = range.first; it != range.second; ++it)
+	{
+		ArchiveFile* archive = it->second;
+		if (filter == ARCHIVE_FILTER_MOD_ONLY && !isModArchive(archive, filename))
+		{
+			continue;
+		}
+		if (filter == ARCHIVE_FILTER_NON_MOD_ONLY && isModArchive(archive, filename))
+		{
+			continue;
+		}
+		++count;
+	}
+
+	return count;
 }
+
 
 
