@@ -6,11 +6,56 @@
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "Common/ScoreKeeper.h"
+#include "Common/PlayerList.h"
+#include "Common/Player.h"
+#include "Common/PlayerTemplate.h"
+#include <atomic>
 #include <cinttypes>
 #include <thread>
 #include <curl/curl.h>
 
 using json = nlohmann::json;
+
+// GeneralsX @bugfix fbraz3 03/10/2026 Resolve local player's side/faction, falling back to in-game PlayerTemplate if Random
+static int ResolveLocalPlayerSide(NGMP_OnlineServices_LobbyInterface* pLobbyInterface)
+{
+	int resolvedSide = -1;
+	if (pLobbyInterface != nullptr)
+	{
+		NGMPGame* myGame = pLobbyInterface->GetCurrentGame();
+		if (myGame != nullptr)
+		{
+			GameSlot* pLocalSlot = myGame->getSlot(myGame->getLocalSlotNum());
+			if (pLocalSlot != nullptr)
+			{
+				resolvedSide = pLocalSlot->getPlayerTemplate();
+			}
+		}
+	}
+
+	// If side was Random (-1) or invalid, resolve actual rolled faction from active in-game Player
+	if (resolvedSide < 0 && ThePlayerList != nullptr)
+	{
+		Player* localPlayer = ThePlayerList->getLocalPlayer();
+		if (localPlayer != nullptr)
+		{
+			const PlayerTemplate* myTemplate = localPlayer->getPlayerTemplate();
+			if (myTemplate != nullptr && ThePlayerTemplateStore != nullptr)
+			{
+				for (Int ptIdx = 0; ptIdx < ThePlayerTemplateStore->getPlayerTemplateCount(); ++ptIdx)
+				{
+					if (ThePlayerTemplateStore->getNthPlayerTemplate(ptIdx) == myTemplate)
+					{
+						resolvedSide = ptIdx;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return resolvedSide;
+}
 
 NGMP_OnlineServices_StatsInterface::NGMP_OnlineServices_StatsInterface()
 {
@@ -71,16 +116,7 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	Int totalMoney = pScoreKeeper ? pScoreKeeper->getTotalMoneyEarned() : 0;
 
 	// Resolve local player's side/faction
-	int resolvedSide = -1;
-	NGMPGame* myGame = pLobbyInterface->GetCurrentGame();
-	if (myGame != nullptr)
-	{
-		GameSlot* pLocalSlot = myGame->getSlot(myGame->getLocalSlotNum());
-		if (pLocalSlot != nullptr)
-		{
-			resolvedSide = pLocalSlot->getPlayerTemplate();
-		}
-	}
+	int resolvedSide = ResolveLocalPlayerSide(pLobbyInterface);
 
 	fprintf(stderr, "[NGMP] CommitMyOutcome: won=%d matchID=%" PRIu64 " bldBuilt=%d bldKill=%d bldLost=%d unitBuilt=%d unitKill=%d unitLost=%d money=%d side=%d\n",
 		bWon ? 1 : 0, currentMatchID, buildingsBuilt, buildingsDestroyed, buildingsLost, unitsBuilt, unitsDestroyed, unitsLost, totalMoney, resolvedSide);
@@ -179,5 +215,153 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		}
 		fflush(stderr);
 		NGMP_OnlineServicesManager::getInstance().postEvent(ev);
+	}).detach();
+}
+
+// GeneralsX @feature fbraz3 03/10/2026 Send initial or periodic match progress telemetry to server
+void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
+{
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface == nullptr)
+	{
+		return;
+	}
+
+	uint64_t currentMatchID = pLobbyInterface->GetCurrentMatchID();
+	if (currentMatchID == 0)
+	{
+		return;
+	}
+
+	// Resolve local player's side/faction
+	int resolvedSide = ResolveLocalPlayerSide(pLobbyInterface);
+
+	Int buildingsBuilt = 0;
+	Int buildingsDestroyed = 0;
+	Int buildingsLost = 0;
+	Int unitsBuilt = 0;
+	Int unitsDestroyed = 0;
+	Int unitsLost = 0;
+	Int totalMoney = 0;
+
+	if (ThePlayerList != nullptr)
+	{
+		Player* localPlayer = ThePlayerList->getLocalPlayer();
+		if (localPlayer != nullptr)
+		{
+			ScoreKeeper* pScoreKeeper = localPlayer->getScoreKeeper();
+			if (pScoreKeeper != nullptr)
+			{
+				buildingsBuilt = pScoreKeeper->getTotalBuildingsBuilt();
+				buildingsDestroyed = pScoreKeeper->getTotalBuildingsDestroyed();
+				buildingsLost = pScoreKeeper->getTotalBuildingsLost();
+				unitsBuilt = pScoreKeeper->getTotalUnitsBuilt();
+				unitsDestroyed = pScoreKeeper->getTotalUnitsDestroyed();
+				unitsLost = pScoreKeeper->getTotalUnitsLost();
+				totalMoney = pScoreKeeper->getTotalMoneyEarned();
+			}
+		}
+	}
+
+	fprintf(stderr, "[NGMP] SendMatchProgress: initial=%d matchID=%" PRIu64 " side=%d bldBuilt=%d bldKill=%d bldLost=%d unitBuilt=%d unitKill=%d unitLost=%d money=%d\n",
+		isInitial ? 1 : 0, currentMatchID, resolvedSide, buildingsBuilt, buildingsDestroyed, buildingsLost, unitsBuilt, unitsDestroyed, unitsLost, totalMoney);
+	fflush(stderr);
+
+	json payload = {
+		{"match_id", currentMatchID}
+	};
+
+	if (resolvedSide >= 0)
+	{
+		payload["side"] = resolvedSide;
+	}
+
+	payload["buildings_built"] = buildingsBuilt;
+	payload["buildings_killed"] = buildingsDestroyed;
+	payload["buildings_lost"] = buildingsLost;
+	payload["units_built"] = unitsBuilt;
+	payload["units_killed"] = unitsDestroyed;
+	payload["units_lost"] = unitsLost;
+	payload["total_money"] = totalMoney;
+
+	std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
+	std::string url = NGMP::GetAPIEndpoint("Lobby/MatchProgress");
+	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+
+	static std::atomic<bool> s_progressInFlight{false};
+	if (s_progressInFlight.exchange(true))
+	{
+		fprintf(stderr, "[NGMP] SendMatchProgress: previous progress request still in flight, skipping\n");
+		fflush(stderr);
+		return;
+	}
+
+	std::thread([url, payloadStr, authToken, tokenVersion]() {
+		CURL* curl = curl_easy_init();
+		if (!curl) {
+			fprintf(stderr, "[NGMP] SendMatchProgress: failed to initialize curl\n");
+			fflush(stderr);
+			s_progressInFlight = false;
+			return;
+		}
+
+		NGMP::Internal::CurlResponse response;
+		struct curl_slist* headers = nullptr;
+		headers = curl_slist_append(headers, "Content-Type: application/json");
+		if (!authToken.empty()) {
+			std::string authHeader = "Authorization: Bearer " + authToken;
+			headers = curl_slist_append(headers, authHeader.c_str());
+		}
+
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+		CURLcode res = curl_easy_perform(curl);
+		long httpCode = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+
+		if (httpCode == 401) {
+			fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
+			fflush(stderr);
+			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+				std::string freshToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
+				curl = curl_easy_init();
+				if (curl) {
+					headers = nullptr;
+					headers = curl_slist_append(headers, "Content-Type: application/json");
+					if (!freshToken.empty()) {
+						std::string authHeader = "Authorization: Bearer " + freshToken;
+						headers = curl_slist_append(headers, authHeader.c_str());
+					}
+					response.text.clear();
+					curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+					curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
+					curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+					curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+					curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+
+					res = curl_easy_perform(curl);
+					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+					curl_slist_free_all(headers);
+					curl_easy_cleanup(curl);
+				}
+			}
+		}
+
+		if (res == CURLE_OK && httpCode == 200) {
+			fprintf(stderr, "[NGMP] SendMatchProgress: server accepted progress update (HTTP 200)\n");
+		} else {
+			fprintf(stderr, "[NGMP] SendMatchProgress: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
+		}
+		fflush(stderr);
+		s_progressInFlight = false;
 	}).detach();
 }

@@ -320,6 +320,9 @@ private:
     // Chat WebSocket session
     std::unique_ptr<NGMP::NGMPWebSocket> m_chatSession;
 
+    // GeneralsX @feature fbraz3 03/10/2026 Periodic match progress timer
+    std::chrono::steady_clock::time_point m_lastMatchProgressTime{};
+
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;
     std::queue<NGMPEvent> m_uiEventQueue;

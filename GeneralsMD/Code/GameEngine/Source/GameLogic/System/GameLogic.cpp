@@ -130,6 +130,7 @@
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/GeneralsOnline/NetworkMesh.h"
 #endif
 
@@ -2359,6 +2360,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				if (pMesh)
 				{
 					pMesh->StopLoadingKeepalive();
+				}
+
+				// GeneralsX @feature fbraz3 03/10/2026 Send initial match progress to resolve Random faction immediately
+				NGMP_OnlineServices_StatsInterface* pStats = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+				if (pStats)
+				{
+					pStats->SendMatchProgress(true);
 				}
 			}
 #endif
