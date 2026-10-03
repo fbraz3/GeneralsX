@@ -365,10 +365,18 @@ Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 	// 1. Script files: SkirmishScripts.scb, MultiplayerScripts.scb, Scripts.ini.
 	// Vanilla Zero Hour never packaged these into any .big archive; they only shipped as loose files.
 	// If any archive in the archive file system contains them, it is guaranteed to be a mod.
-	AsciiString fname = filename;
-	if (fname.endsWithNoCase("SkirmishScripts.scb") ||
-	    fname.endsWithNoCase("MultiplayerScripts.scb") ||
-	    fname.endsWithNoCase("Scripts.ini"))
+	const char* fnRaw = filename;
+	const char* fnLastSlash = strrchr(fnRaw, '/');
+	const char* fnLastBackslash = strrchr(fnRaw, '\\');
+	const char* fnSplit = fnLastSlash;
+	if (fnSplit == nullptr || (fnLastBackslash != nullptr && fnLastBackslash > fnSplit))
+	{
+		fnSplit = fnLastBackslash;
+	}
+	const char* fnBase = (fnSplit != nullptr) ? (fnSplit + 1) : fnRaw;
+	if (stricmp(fnBase, "SkirmishScripts.scb") == 0 ||
+	    stricmp(fnBase, "MultiplayerScripts.scb") == 0 ||
+	    stricmp(fnBase, "Scripts.ini") == 0)
 	{
 		return TRUE;
 	}
@@ -389,10 +397,15 @@ Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 		return TRUE;
 	}
 
-	// 3. Archives loaded explicitly via -mod command line parameter.
-	if (TheGlobalData && TheGlobalData->m_modDir.isNotEmpty())
+	// 3. Archives loaded explicitly via -mod command line parameter (directory or direct .big).
+	if (TheGlobalData)
 	{
-		if (strstr(archiveName.str(), TheGlobalData->m_modDir.str()) != nullptr)
+		if (TheGlobalData->m_modDir.isNotEmpty() && strstr(archiveName.str(), TheGlobalData->m_modDir.str()) != nullptr)
+		{
+			return TRUE;
+		}
+		if (TheGlobalData->m_modBIG.isNotEmpty() &&
+		    (archiveName.compareNoCase(TheGlobalData->m_modBIG) == 0 || strstr(archiveName.str(), TheGlobalData->m_modBIG.str()) != nullptr))
 		{
 			return TRUE;
 		}
@@ -400,4 +413,21 @@ Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 
 	return FALSE;
 }
+
+FileInstance ArchiveFileSystem::getFileCount(const Char *filename) const
+{
+	if (filename == nullptr)
+	{
+		return 0;
+	}
+
+	ArchivedDirectoryInfoResult result = const_cast<ArchiveFileSystem*>(this)->getArchivedDirectoryInfo(filename);
+	if (!result.valid())
+	{
+		return 0;
+	}
+
+	return static_cast<FileInstance>(result.dirInfo->m_files.count(result.lastToken));
+}
+
 

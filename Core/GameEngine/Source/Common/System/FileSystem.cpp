@@ -185,11 +185,12 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 
 	if (hasModOverride)
 	{
-		file = TheArchiveFileSystem->openFile( filename, 0, instance );
-		if (file != nullptr)
+		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename);
+		if (instance < archiveCount)
 		{
-			return file;
+			return TheArchiveFileSystem->openFile( filename, access, instance );
 		}
+		instance -= archiveCount;
 	}
 
 	if ( TheLocalFileSystem != nullptr )
@@ -225,7 +226,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 		}
 	}
 
-	if ( (TheArchiveFileSystem != nullptr) && (file == nullptr) )
+	if ( !hasModOverride && (TheArchiveFileSystem != nullptr) && (file == nullptr) )
 	{
 		// TheSuperHackers @todo Pass 'access' here?
 		file = TheArchiveFileSystem->openFile( filename, 0, instance );
@@ -258,9 +259,13 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 #endif
 
 	// GeneralsX @bugfix felipebraz 02/10/2026 Prioritize mod archive existence if an override is active.
-	if (TheArchiveFileSystem != nullptr && TheArchiveFileSystem->hasModArchiveOverride(filename))
+	const Bool hasModOverride = (TheArchiveFileSystem != nullptr) &&
+	                            TheArchiveFileSystem->hasModArchiveOverride(filename);
+
+	if (hasModOverride)
 	{
-		if (TheArchiveFileSystem->doesFileExist(filename, instance))
+		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename);
+		if (instance < archiveCount)
 		{
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 			{
@@ -271,6 +276,7 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 #endif
 			return TRUE;
 		}
+		instance -= archiveCount;
 	}
 
 	if (TheLocalFileSystem->doesFileExist(filename))
@@ -289,7 +295,7 @@ Bool FileSystem::doesFileExist(const Char *filename, FileInstance instance) cons
 		--instance;
 	}
 
-	if (TheArchiveFileSystem->doesFileExist(filename, instance))
+	if (!hasModOverride && TheArchiveFileSystem->doesFileExist(filename, instance))
 	{
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 		{
@@ -335,6 +341,20 @@ Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, Fi
 	}
 	memset(fileInfo, 0, sizeof(*fileInfo));
 
+	// GeneralsX @bugfix felipebraz 02/10/2026 Prioritize mod archive metadata if an override is active.
+	const Bool hasModOverride = (TheArchiveFileSystem != nullptr) &&
+	                            TheArchiveFileSystem->hasModArchiveOverride(filename.str());
+
+	if (hasModOverride)
+	{
+		FileInstance archiveCount = TheArchiveFileSystem->getFileCount(filename.str());
+		if (instance < archiveCount)
+		{
+			return TheArchiveFileSystem->getFileInfo(filename, fileInfo, instance);
+		}
+		instance -= archiveCount;
+	}
+
 	if (TheLocalFileSystem->getFileInfo(filename, fileInfo)) {
 		if (instance == 0) {
 			return TRUE;
@@ -343,7 +363,7 @@ Bool FileSystem::getFileInfo(const AsciiString& filename, FileInfo *fileInfo, Fi
 		--instance;
 	}
 
-	if (TheArchiveFileSystem->getFileInfo(filename, fileInfo, instance)) {
+	if (!hasModOverride && TheArchiveFileSystem->getFileInfo(filename, fileInfo, instance)) {
 		return TRUE;
 	}
 
