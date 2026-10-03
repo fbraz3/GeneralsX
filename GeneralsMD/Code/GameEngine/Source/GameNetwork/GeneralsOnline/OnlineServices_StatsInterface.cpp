@@ -289,6 +289,11 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 	std::string url = NGMP::GetAPIEndpoint("Lobby/MatchProgress");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
+	int64_t originatingUserId = NGMP_OnlineServicesManager::getInstance().getUserId();
+	if (originatingUserId <= 0)
+	{
+		return;
+	}
 
 	static std::atomic<bool> s_progressInFlight{false};
 	if (s_progressInFlight.exchange(true))
@@ -298,8 +303,8 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 		return;
 	}
 
-	// GeneralsX @bugfix fbraz3 03/10/2026 Keep token refresh on worker thread and guard against 401 refresh loop
-	std::thread([url, payloadStr, authToken, tokenVersion, isInitial]() mutable {
+	// GeneralsX @bugfix fbraz3 03/10/2026 Bind progress report and retries to originating user session
+	std::thread([url, payloadStr, authToken, tokenVersion, isInitial, originatingUserId]() mutable {
 		int attemptsLeft = isInitial ? 3 : 1;
 		bool success = false;
 		bool refreshedOnce = false;
@@ -308,7 +313,14 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 		if (currentToken.empty()) {
 			fprintf(stderr, "[NGMP] SendMatchProgress: auth token is empty, refreshing on worker thread...\n");
 			fflush(stderr);
-			if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+			if (NGMP_OnlineServicesManager::getInstance().getUserId() == originatingUserId &&
+			    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+				if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
+					fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during initial token refresh, aborting\n");
+					fflush(stderr);
+					s_progressInFlight = false;
+					return;
+				}
 				currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 				tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 				refreshedOnce = true;
@@ -317,6 +329,12 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 
 		while (attemptsLeft > 0 && !success) {
 			attemptsLeft--;
+
+			if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
+				fprintf(stderr, "[NGMP] SendMatchProgress: account session changed or logged out, aborting progress report\n");
+				fflush(stderr);
+				break;
+			}
 
 			if (currentToken.empty()) {
 				fprintf(stderr, "[NGMP] SendMatchProgress: empty bearer token, aborting request\n");
@@ -359,7 +377,13 @@ void NGMP_OnlineServices_StatsInterface::SendMatchProgress(bool isInitial)
 				refreshedOnce = true;
 				fprintf(stderr, "[NGMP] SendMatchProgress: 401 Unauthorized, refreshing token...\n");
 				fflush(stderr);
-				if (NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+				if (NGMP_OnlineServicesManager::getInstance().getUserId() == originatingUserId &&
+				    NGMP_OnlineServicesManager::getInstance().refreshSessionTokenSync(tokenVersion)) {
+					if (NGMP_OnlineServicesManager::getInstance().getUserId() != originatingUserId) {
+						fprintf(stderr, "[NGMP] SendMatchProgress: account session changed during 401 token refresh, aborting\n");
+						fflush(stderr);
+						break;
+					}
 					currentToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 					tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 					if (!currentToken.empty()) {

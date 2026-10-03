@@ -472,6 +472,7 @@ void NGMP_OnlineServicesManager::logout() {
         m_authToken.clear();
         m_username.clear();
         m_isLoggedIn = false;
+        m_userId = 0;
     }
     m_authTokenVersion++;
     m_lastMatchProgressTime = {};
