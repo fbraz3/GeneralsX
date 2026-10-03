@@ -26,7 +26,8 @@
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 #include "SDL3GameEngine.h"
 // GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
@@ -591,5 +592,12 @@ AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 #endif
 }
 
-#endif // !_WIN32
+#if defined(_WIN32)
+extern HWND ApplicationHWnd;
+extern HINSTANCE ApplicationHInstance;
+void *SDL3GameEngine::getOSDisplay(void) { return (void*)ApplicationHWnd; }
+void *SDL3GameEngine::getOSInstance(void) { return (void*)ApplicationHInstance; }
+#endif
+
+#endif // SAGE_USE_SDL3
 

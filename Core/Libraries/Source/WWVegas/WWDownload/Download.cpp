@@ -30,6 +30,15 @@
 #ifdef _WIN32
 #include <mmsystem.h>
 #include <direct.h>
+#if defined(__MINGW32__)
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 Provide legacy helpers expected by WWDownload when building with MinGW.
+// GeneralsX @bugfix fbraz 30/09/2026 Omit duplicate strlcpy conflicting with Utility/stringex.h
+#include <string.h>
+extern "C" DWORD WINAPI timeGetTime(void);
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+#endif
 #else
 #include <string.h>
 #define SEVERITY_ERROR 1

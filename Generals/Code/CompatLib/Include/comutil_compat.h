@@ -5,7 +5,7 @@
 // Used by WW3D2/dx8webbrowser.cpp (DirectX web browser embedding)
 // Phase 3 out-of-scope: Minimal stubs to allow compilation
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
 
 // _com_error class stub (COM error handling)
 class _com_error {
@@ -47,4 +47,4 @@ public:
     ~_variant_t() {}
 };
 
-#endif // !_WIN32
+#endif // !WIN32 or MinGW

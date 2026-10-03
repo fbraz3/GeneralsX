@@ -110,7 +110,12 @@ void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_P
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   char buf[512];
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+  // GeneralsX @bugfix fbraz3 03/10/2026 Pass full 64-bit RIP to GetSymbol without 32-bit truncation.
+  DebugStackwalk::Signature::GetSymbol(static_cast<uintptr_t>(ctx.Rip),buf,sizeof(buf));
+#else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
+#endif
   dbg << "Exception occured at\n" << buf << ".";
 }
 
@@ -118,6 +123,26 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
 {
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+  dbg << Debug::FillChar('0')
+      << Debug::Hex()
+      <<  "RAX:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rax)
+      << " RBX:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rbx)
+      << " RCX:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rcx) << "\n"
+      <<  "RDX:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rdx)
+      << " RSI:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rsi)
+      << " RDI:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rdi) << "\n"
+      <<  "RIP:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rip)
+      << " RSP:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rsp)
+      << " RBP:" << Debug::Width(16) << static_cast<unsigned __int64>(ctx.Rbp) << "\n"
+      <<  "Flags:" << Debug::Bin() << Debug::Width(32) << ctx.EFlags << Debug::Hex() << "\n"
+      <<  "CS:" << Debug::Width(4) << ctx.SegCs
+      << " DS:" << Debug::Width(4) << ctx.SegDs
+      << " SS:" << Debug::Width(4) << ctx.SegSs
+      << "\nES:" << Debug::Width(4) << ctx.SegEs
+      << " FS:" << Debug::Width(4) << ctx.SegFs
+      << " GS:" << Debug::Width(4) << ctx.SegGs << "\n" << Debug::FillChar() << Debug::Dec();
+#else
   dbg << Debug::FillChar('0')
       << Debug::Hex()
       <<  "EAX:" << Debug::Width(8) << ctx.Eax
@@ -136,51 +161,15 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
       << "\nES:" << Debug::Width(4) << ctx.SegEs
       << " FS:" << Debug::Width(4) << ctx.SegFs
       << " GS:" << Debug::Width(4) << ctx.SegGs << "\n" << Debug::FillChar() << Debug::Dec();
+    #endif
 }
 
 void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTERS *exptr)
 {
-  struct _CONTEXT &ctx=*exptr->ContextRecord;
-
-  if (!(ctx.ContextFlags&CONTEXT_FLOATING_POINT))
-  {
-    dbg << "FP registers not available\n";
-    return;
-  }
-
-  FLOATING_SAVE_AREA &flt=ctx.FloatSave;
-  dbg << Debug::Bin() << Debug::FillChar('0')
-      << "CW:" << Debug::Width(16) << (flt.ControlWord&0xffff) << "\n"
-      << "SW:" << Debug::Width(16) << (flt.StatusWord&0xffff) << "\n"
-      << "TW:" << Debug::Width(16) << (flt.TagWord&0xffff) << "\n"
-      << Debug::Hex()
-      << "ErrOfs:      " << Debug::Width(8) << flt.ErrorOffset
-      << " ErrSel:  "    << Debug::Width(8) << flt.ErrorSelector << "\n"
-      << "DataOfs:     " << Debug::Width(8) << flt.DataOffset
-      << " DataSel: "    << Debug::Width(8) << flt.DataSelector << "\n"
-#if !defined(WOW64_SIZE_OF_80387_REGISTERS)
-      << "Cr0NpxState: " << Debug::Width(8) << flt.Cr0NpxState << "\n"
-#endif
-  ;
-
-  for (unsigned k=0;k<SIZE_OF_80387_REGISTERS/10;++k)
-  {
-    dbg << Debug::Dec() << "ST(" << k << ") ";
-    dbg.SetPrefixAndRadix("",16);
-
-    BYTE *value=flt.RegisterArea+k*10;
-    for (unsigned i=0;i<10;i++)
-      dbg << Debug::Width(2) << value[i];
-
-    // TheSuperHackers @refactor Replaced MSVC inline assembly with portable C++ cast for MinGW compatibility
-    // Convert from temporary real (10 byte) to double (8 bytes).
-    // On x86, long double is the 10-byte x87 format, so we can just cast.
-    double fpVal = (double)(*(long double*)value);
-    dbg << " " << fpVal;
-
-    dbg << "\n";
-  }
-  dbg << Debug::FillChar() << Debug::Dec();
+  // GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW/Win64: legacy x87 context layouts are unavailable/incompatible.
+  (void)exptr;
+  dbg << "FP register dump not available for x64 context\n";
+  return;
 }
 
 // include exception dialog box
@@ -195,7 +184,7 @@ static char regInfo[1024],verInfo[256];
 // and this saves us from doing a stack walk twice
 static DebugStackwalk::Signature sig;
 
-static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch(uMsg)
   {
@@ -240,7 +229,12 @@ static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
   // address
   struct _CONTEXT &ctx=*exPtrs->ContextRecord;
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+  // GeneralsX @bugfix fbraz3 03/10/2026 Pass full 64-bit RIP to GetSymbol without 32-bit truncation.
+  DebugStackwalk::Signature::GetSymbol(static_cast<uintptr_t>(ctx.Rip),regInfo,sizeof(regInfo));
+#else
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,regInfo,sizeof(regInfo));
+#endif
   SendDlgItemMessage(hWnd,102,WM_SETTEXT,0,(LPARAM)regInfo);
 
   // stack
@@ -396,7 +390,11 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   dbg.m_stackWalk.StackWalk(sig,pExPtrs->ContextRecord);
   dbg << sig << "\n";
 
+#if defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_WIN64)
+  dbg << "Bytes around RIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Rip))-32,80);
+#else
   dbg << "Bytes around EIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Eip))-32,80);
+#endif
 
   dbg.FlushOutput();
 

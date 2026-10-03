@@ -83,6 +83,12 @@ class STLSpecialAlloc;
     #include <shlguid.h>
     #include <snmp.h>
 #endif
+
+#if defined(_WIN32) && defined(__MINGW32__) && !defined(timeGetTime)
+    // GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW fallback: map legacy timeGetTime calls to GetTickCount.
+    #define timeGetTime() GetTickCount()
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -96,6 +102,14 @@ class STLSpecialAlloc;
 #endif
 #include <time.h>
 #ifdef _WIN32
+    // GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW may not expose these VFW prerequisites under current header feature set.
+    #ifndef DRV_USER
+        #define DRV_USER 0x4000
+    #endif
+    #ifndef LPWAVEHDR
+        typedef struct wavehdr_tag WAVEHDR;
+        typedef WAVEHDR *LPWAVEHDR;
+    #endif
     #include <vfw.h>
     #include <winerror.h>
     #include <wininet.h>

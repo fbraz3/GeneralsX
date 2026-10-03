@@ -341,7 +341,12 @@ void Keyboard::initKeyNames()
 
 	HKL kLayout = GetKeyboardLayout(0);
 
-	Int low = (UnsignedInt)kLayout & 0xFFFF;
+	// GeneralsX @bugfix GitHub Copilot 24/05/2026 Treat HKL as an integral handle across platforms.
+#if defined(_WIN32)
+	Int low = static_cast<Int>(reinterpret_cast<ULONG_PTR>(kLayout) & 0xFFFF);
+#else
+	Int low = static_cast<Int>(static_cast<ULONG_PTR>(kLayout) & 0xFFFF);
+#endif
 	LanguageID currentLanguage = OurLanguage;
 	if(low == 0x040c ||
 		 low == 0x080c ||

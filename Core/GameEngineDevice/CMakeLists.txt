@@ -185,30 +185,51 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameLogic/W3DGameLogic.cpp
 #    Source/W3DDevice/GameLogic/W3DGhostObject.cpp
 #    Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-    Source/Win32Device/Common/Win32BIGFile.cpp
-    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-#    Source/Win32Device/Common/Win32GameEngine.cpp
-#    Source/Win32Device/GameClient/Win32DIMouse.cpp
-#    Source/Win32Device/GameClient/Win32Mouse.cpp
+    # Legacy Windows input devices: isolate for future removal (RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+  #    Source/Win32Device/GameClient/Win32DIMouse.cpp (isolated legacy input)
+  #    Source/Win32Device/GameClient/Win32Mouse.cpp (isolated legacy input)
+        # Keep for SDL3 filesystem compatibility on Windows modern path.
+        Source/Win32Device/Common/Win32BIGFile.cpp
+        Source/Win32Device/Common/Win32BIGFileSystem.cpp
+#    Source/Win32Device/Common/Win32GameEngine.cpp (isolated legacy entry point)
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific file implementations
 if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
-        Include/MilesAudioDevice/MilesAudioManager.h
-        Include/VideoDevice/Bink/BinkVideoPlayer.h
         Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
-        Source/MilesAudioDevice/MilesAudioManager.cpp
-        Source/VideoDevice/Bink/BinkVideoPlayer.cpp
         Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
         Source/Win32Device/Common/Win32LocalFileSystem.cpp
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
+    # GeneralsX @build fbraz3 01/10/2026 Isolate legacy Miles audio manager when OpenAL or MiniAudio is enabled
+    if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/MilesAudioDevice/MilesAudioManager.h
+            Source/MilesAudioDevice/MilesAudioManager.cpp
+        )
+    endif()
+    # GeneralsX @build fbraz3 01/10/2026 Isolate legacy Bink video player when SDL3 backend is enabled
+    if(NOT SAGE_USE_SDL3)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/VideoDevice/Bink/BinkVideoPlayer.h
+            Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+        )
+    endif()
+    # GeneralsX @build fbraz3 29/09/2026 Isolate legacy Win32 input devices when SDL3 backend is enabled
+    # GeneralsX @bugfix fbraz3 03/10/2026 Win32DIKeyboard/Win32Mouse are provided by game targets (z_gameenginedevice/g_gameenginedevice).
+    # Only compile Win32DIKeyboardStub if explicitly requested for headless/isolated MinGW legacy builds.
+    if(NOT SAGE_USE_SDL3 AND RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/Win32Device/GameClient/Win32DIKeyboard.h
+            Source/Win32Device/GameClient/Win32DIKeyboardStub.cpp
+        )
+    endif()
 else()
     # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation
     list(APPEND GAMEENGINEDEVICE_SRC
@@ -252,11 +273,17 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 )
 
 if(WIN32)
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep modern Windows64 MinGW path linkable when legacy Miles/Bink stubs are disabled.
     target_link_libraries(corei_gameenginedevice_public INTERFACE
         binkloader
         d3d8lib
         milesloader
     )
+endif()
+
+# GeneralsX @build fbraz3 29/09/2026 Propagate SDL3 interface library to game engine device
+if(SAGE_USE_SDL3)
+    target_link_libraries(corei_gameenginedevice_public INTERFACE sdl3lib)
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
@@ -284,12 +311,58 @@ if(SAGE_USE_OPENAL)
     target_include_directories(corei_gameenginedevice_private INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/OpenALAudioDevice
     )
-    # FFmpegFile.cpp is required by OpenALAudioCache for audio decoding;
-    # add it here when RTS_BUILD_OPTION_FFMPEG has not already provided it.
+    # FFmpegFile.cpp is required by OpenALAudioCache for audio decoding.
+    # GeneralsX @bugfix GitHub Copilot 20/05/2026 Even with RTS_BUILD_OPTION_FFMPEG=OFF, OpenAL decoding still needs FFmpeg symbols when FFmpegFile.cpp is compiled.
     if(NOT RTS_BUILD_OPTION_FFMPEG)
-        target_sources(corei_gameenginedevice_private INTERFACE
-            Source/VideoDevice/FFmpeg/FFmpegFile.cpp
-        )
+        find_package(FFmpeg QUIET)
+
+        # GeneralsX @bugfix GitHub Copilot 20/05/2026 MinGW fallback: use standard MSYS2 FFmpeg import libs when FindFFmpeg fails.
+        # GeneralsX @bugfix fbraz3 01/10/2026 Dynamically discover MinGW prefix for FFmpeg headers on CI runners.
+        if(NOT FFMPEG_FOUND AND MINGW)
+            set(_FFMPEG_CANDIDATES "")
+            if(DEFINED ENV{MINGW_PREFIX} AND EXISTS "$ENV{MINGW_PREFIX}/include/libavcodec/avcodec.h")
+                list(APPEND _FFMPEG_CANDIDATES "$ENV{MINGW_PREFIX}")
+            endif()
+            if(DEFINED ENV{MSYSTEM_PREFIX} AND EXISTS "$ENV{MSYSTEM_PREFIX}/include/libavcodec/avcodec.h")
+                list(APPEND _FFMPEG_CANDIDATES "$ENV{MSYSTEM_PREFIX}")
+            endif()
+            if(CMAKE_C_COMPILER)
+                get_filename_component(_CC_DIR "${CMAKE_C_COMPILER}" DIRECTORY)
+                get_filename_component(_CC_PARENT "${_CC_DIR}" DIRECTORY)
+                if(EXISTS "${_CC_PARENT}/include/libavcodec/avcodec.h")
+                    list(APPEND _FFMPEG_CANDIDATES "${_CC_PARENT}")
+                endif()
+            endif()
+            list(APPEND _FFMPEG_CANDIDATES "C:/msys64/mingw64")
+
+            foreach(_PREFIX ${_FFMPEG_CANDIDATES})
+                if(EXISTS "${_PREFIX}/include/libavcodec/avcodec.h")
+                    set(FFMPEG_FOUND TRUE)
+                    set(FFMPEG_INCLUDE_DIRS "${_PREFIX}/include")
+                    set(FFMPEG_LIBRARIES "")
+                    foreach(_LIB avformat avcodec avutil swresample swscale)
+                        find_library(FFMPEG_LIB_${_LIB} NAMES ${_LIB} HINTS "${_PREFIX}/lib")
+                        if(FFMPEG_LIB_${_LIB})
+                            list(APPEND FFMPEG_LIBRARIES "${FFMPEG_LIB_${_LIB}}")
+                        else()
+                            list(APPEND FFMPEG_LIBRARIES "${_LIB}")
+                        endif()
+                    endforeach()
+                    target_link_directories(corei_gameenginedevice_private INTERFACE "${_PREFIX}/lib")
+                    break()
+                endif()
+            endforeach()
+        endif()
+
+        if(FFMPEG_FOUND)
+            target_sources(corei_gameenginedevice_private INTERFACE
+                Source/VideoDevice/FFmpeg/FFmpegFile.cpp
+            )
+            target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
+            target_link_libraries(corei_gameenginedevice_private INTERFACE ${FFMPEG_LIBRARIES})
+        else()
+            message(WARNING "OpenAL audio decode requested FFmpegFile.cpp but FFmpeg was not found.")
+        endif()
     endif()
 endif()
 
@@ -313,8 +386,8 @@ if(SAGE_USE_MINIAUDIO)
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    # GeneralsX @build GitHub Copilot 19/05/2026 Phase 5: consume find_package(FFmpeg) results so Windows64 does not require pkg-config.
+    find_package(FFmpeg QUIET)
 
     if(FFMPEG_FOUND)
         target_sources(corei_gameenginedevice_private INTERFACE
@@ -324,7 +397,9 @@ if(RTS_BUILD_OPTION_FFMPEG)
             Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
         )
         target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
-        target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
+        target_link_libraries(corei_gameenginedevice_private INTERFACE ${FFMPEG_LIBRARIES})
         target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg was not found. Video playback sources remain disabled.")
     endif()
 endif()

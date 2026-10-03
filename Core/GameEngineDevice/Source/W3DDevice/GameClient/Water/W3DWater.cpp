@@ -927,9 +927,9 @@ void WaterRenderObjClass::ReAcquireResources()
 	if (W3DShaderManager::getChipset() >= DC_GENERIC_PIXEL_SHADER_1_1)
 	{
 		// GeneralsX @bugfix BenderAI 13/02/2026 Runtime shader compilation Windows-only (stubbed on Linux)
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 		// GeneralsX @bugfix BenderAI 13/02/2026 LPD3DXBUFFER instead of ID3DXBuffer for compat
-		LPD3DXBUFFER compiledShader;
+		ID3DXBuffer *compiledShader;
 		const char *shader =
 			"ps.1.1\n \
 			tex t0 \n\
@@ -974,7 +974,7 @@ void WaterRenderObjClass::ReAcquireResources()
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
 			compiledShader->Release();
 		}
-#endif // _WIN32 - Runtime shader compilation
+		#endif // _WIN32 && !__MINGW32__ - Runtime shader compilation
 	}
 
 	//W3D Invalidate textures after losing the device and since we peek at the textures directly, it won't
@@ -1021,6 +1021,7 @@ Int WaterRenderObjClass::init(Real waterLevel, Real dx, Real dy, SceneClass *par
 	m_dy=dy;
 	m_level=waterLevel;
 
+	// GeneralsX @tweak fbraz3 03/10/2026 Restore high-resolution timeGetTime() across all Windows platforms.
 	m_LastUpdateTime=timeGetTime();
 	m_uScrollPerMs=0.001f;
 	m_vScrollPerMs=0.001f;
@@ -2084,6 +2085,7 @@ void WaterRenderObjClass::renderSky()
 
 	Setting *setting=&m_settings[m_tod];
 
+	// GeneralsX @tweak fbraz3 03/10/2026 Restore high-resolution timeGetTime() across all Windows platforms.
 	timeNow=timeGetTime();
 
 	timeDiff=timeNow-m_LastUpdateTime;

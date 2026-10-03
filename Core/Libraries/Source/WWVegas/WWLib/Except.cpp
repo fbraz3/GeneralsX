@@ -117,7 +117,12 @@ DynamicVectorClass<ThreadInfoType*> ThreadList;
 **
 */
 typedef BOOL  (WINAPI *SymCleanupType) (HANDLE hProcess);
+// GeneralsX @bugfix fbraz3 03/10/2026 Use 64-bit DbgHelp symbol API on Win64 to avoid RIP address truncation.
+#if defined(_WIN64)
+typedef BOOL  (WINAPI *SymGetSymFromAddr64Type) (HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PIMAGEHLP_SYMBOL64 Symbol);
+#else
 typedef BOOL  (WINAPI *SymGetSymFromAddrType) (HANDLE hProcess, DWORD Address, LPDWORD Displacement, PIMAGEHLP_SYMBOL Symbol);
+#endif
 typedef BOOL  (WINAPI *SymInitializeType) (HANDLE hProcess, LPSTR UserSearchPath, BOOL fInvadeProcess);
 typedef BOOL  (WINAPI *SymLoadModuleType) (HANDLE hProcess, HANDLE hFile, LPSTR ImageName, LPSTR ModuleName, DWORD BaseOfDll, DWORD SizeOfDll);
 typedef DWORD (WINAPI *SymSetOptionsType) (DWORD SymOptions);
@@ -128,7 +133,11 @@ typedef DWORD (WINAPI *SymGetModuleBaseType) (HANDLE hProcess, DWORD dwAddr);
 
 
 static SymCleanupType							_SymCleanup = nullptr;
+#if defined(_WIN64)
+static SymGetSymFromAddr64Type				_SymGetSymFromAddr64 = nullptr;
+#else
 static SymGetSymFromAddrType				_SymGetSymFromAddr = nullptr;
+#endif
 static SymInitializeType						_SymInitialize = nullptr;
 static SymLoadModuleType						_SymLoadModule = nullptr;
 static SymSetOptionsType						_SymSetOptions = nullptr;
@@ -140,7 +149,11 @@ static SymGetModuleBaseType				_SymGetModuleBase = nullptr;
 static char const *const ImagehelpFunctionNames[] =
 {
 	"SymCleanup",
+#if defined(_WIN64)
+	"SymGetSymFromAddr64",
+#else
 	"SymGetSymFromAddr",
+#endif
 	"SymInitialize",
 	"SymLoadModule",
 	"SymSetOptions",
@@ -355,13 +368,13 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	if (imagehelp != nullptr) {
 		DebugString ("Exception Handler: Found IMAGEHLP.DLL - linking to required functions\n");
 		char const *function_name = nullptr;
-		unsigned long *fptr = (unsigned long*) &_SymCleanup;
+		ULONG_PTR *fptr = (ULONG_PTR*) &_SymCleanup;
 		int count = 0;
 
 		do {
 			function_name = ImagehelpFunctionNames[count];
 			if (function_name) {
-				*fptr = (unsigned long) GetProcAddress(imagehelp, function_name);
+				*fptr = (ULONG_PTR) GetProcAddress(imagehelp, function_name);
 				fptr++;
 				count++;
 			}
@@ -407,9 +420,15 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	}
 
 
+#if defined(_WIN64)
+	unsigned char symbol [sizeof (IMAGEHLP_SYMBOL64) + 256];
+	DWORD64 displacement = 0;
+	IMAGEHLP_SYMBOL64 *symptr = (IMAGEHLP_SYMBOL64*)&symbol;
+#else
 	unsigned char symbol [256];
 	unsigned long displacement;
 	IMAGEHLP_SYMBOL *symptr = (IMAGEHLP_SYMBOL*)&symbol;
+#endif
 
 	/*
 	** Get the exception address and the machine context at the time of the exception
@@ -420,7 +439,11 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	** The following are set for access violation only
 	*/
 	int access_read_write=-1;
+#if defined(_WIN64)
+	ULONG_PTR access_address = 0;
+#else
 	unsigned long access_address = 0;
+#endif
 
 	if (e_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
 		DebugString("Exception Handler: Exception is access violation\n");
@@ -447,7 +470,11 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	** For access violations, print out the violation address and if it was read or write.
 	*/
 	if (e_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
+#if defined(_WIN64)
+		snprintf(scrap, ARRAY_SIZE(scrap), "Access address:%016llX ", static_cast<unsigned long long>(access_address));
+#else
 		sprintf(scrap, "Access address:%08X ", access_address);
+#endif
 		Add_Txt(scrap);
 		if (access_read_write) {
 			Add_Txt("was written to.\r\n");
@@ -461,12 +488,29 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	** If symbols are available, print out the exception eip address and the name of the
 	** function it represents.
 	*/
+#if defined(_WIN64)
+	memset(symptr, 0, sizeof (symbol));
+	symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL64);
+	symptr->MaxNameLength = 256;
+	symptr->Size = 0;
+	symptr->Address = static_cast<DWORD64>(context->Rip);
+
+	if (_SymGetSymFromAddr64 != nullptr && _SymGetSymFromAddr64 (GetCurrentProcess(), static_cast<DWORD64>(context->Rip), &displacement, symptr)) {
+		snprintf(scrap, ARRAY_SIZE(scrap), "Exception occurred at %016llX - %s + %016llX\r\n",
+			static_cast<unsigned long long>(context->Rip), symptr->Name, static_cast<unsigned long long>(displacement));
+	} else {
+		DebugString ("Exception Handler: Failed to get symbol for RIP\r\n");
+		if (_SymGetSymFromAddr64 != nullptr) {
+			DebugString ("Exception Handler: SymGetSymFromAddr64 failed with code %d - %s\n", GetLastError(), Last_Error_Text());
+		}
+		snprintf (scrap, ARRAY_SIZE(scrap), "Exception occurred at %016llX\r\n", static_cast<unsigned long long>(context->Rip));
+	}
+#else
 	memset(symptr, 0, sizeof (IMAGEHLP_SYMBOL));
 	symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL);
 	symptr->MaxNameLength = 256-sizeof (IMAGEHLP_SYMBOL);
 	symptr->Size = 0;
 	symptr->Address = context->Eip;
-
 	if (!IsBadCodePtr((FARPROC)context->Eip)) {
 		if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), context->Eip, &displacement, symptr)) {
 			snprintf(scrap, ARRAY_SIZE(scrap), "Exception occurred at %08X - %s + %08X\r\n",
@@ -481,6 +525,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	} else {
 		DebugString ("Exception Handler: context->Eip is bad code pointer\n");
 	}
+	#endif
 
 	Add_Txt (scrap);
 
@@ -503,6 +548,18 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 			}
 
 			if (symbols_available) {
+#if defined(_WIN64)
+				symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL64);
+				symptr->MaxNameLength = 256;
+				symptr->Size = 0;
+				symptr->Address = static_cast<DWORD64>(temp_addr);
+
+				if (_SymGetSymFromAddr64 != nullptr && _SymGetSymFromAddr64 (GetCurrentProcess(), static_cast<DWORD64>(temp_addr), &displacement, symptr)) {
+					char symbuf[256];
+					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %016llX\r\n", symptr->Name, static_cast<unsigned long long>(displacement));
+					Add_Txt(symbuf);
+				}
+#else
 				symptr->SizeOfStruct = sizeof(symbol);
 				symptr->MaxNameLength = 128;
 				symptr->Size = 0;
@@ -513,6 +570,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %08X\r\n", symptr->Name, displacement);
 					Add_Txt(symbuf);
 				}
+#endif
 			} else {
 				char symbuf[256];
 				sprintf(symbuf, "%08x\r\n", temp_addr);
@@ -585,6 +643,14 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	/*
 	** Dump the registers.
 	*/
+	#if defined(_WIN64)
+	snprintf(scrap, ARRAY_SIZE(scrap), "Rip:%016llX\tRsp:%016llX\tRbp:%016llX\r\n",
+		static_cast<unsigned long long>(context->Rip),
+		static_cast<unsigned long long>(context->Rsp),
+		static_cast<unsigned long long>(context->Rbp));
+	Add_Txt(scrap);
+	Add_Txt("Register and stack dump unavailable on 64-bit builds.\r\n");
+	#else
 	sprintf(scrap, "Eip:%08X\tEsp:%08X\tEbp:%08X\r\n", context->Eip, context->Esp, context->Ebp);
 	Add_Txt(scrap);
 	sprintf(scrap, "Eax:%08X\tEbx:%08X\tEcx:%08X\r\n", context->Eax, context->Ebx, context->Ecx);
@@ -706,6 +772,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		Add_Txt(scrap);
 		stackptr++;
 	}
+	#endif
 
 	/*
 	** Unload the symbols.
@@ -1065,13 +1132,13 @@ void Load_Image_Helper()
 
 		if (ImageHelp != nullptr) {
 			char const *function_name = nullptr;
-			unsigned long *fptr = (unsigned long *) &_SymCleanup;
+			ULONG_PTR *fptr = (ULONG_PTR *) &_SymCleanup;
 			int count = 0;
 
 			do {
 				function_name = ImagehelpFunctionNames[count];
 				if (function_name) {
-					*fptr = (unsigned long) GetProcAddress(ImageHelp, function_name);
+					*fptr = (ULONG_PTR) GetProcAddress(ImageHelp, function_name);
 					fptr++;
 					count++;
 				}
@@ -1135,6 +1202,12 @@ void Load_Image_Helper()
  *=============================================================================================*/
 bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 {
+	#if defined(_WIN64)
+	(void)code_ptr;
+	(void)symbol;
+	(void)displacement;
+	return false;
+	#else
 	/*
 	** Locals.
 	*/
@@ -1183,6 +1256,7 @@ bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 		return(true);
 	}
 	return(false);
+	#endif
 }
 
 
@@ -1207,6 +1281,13 @@ bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *context)
 {
 	static HINSTANCE _imagehelp = (HINSTANCE) -1;
+
+	#if defined(_WIN64)
+	(void)return_addresses;
+	(void)num_addresses;
+	(void)context;
+	return 0;
+	#else
 
 	/*
 	** If this is the first time through then fix up the imagehelp function pointers since imagehlp.dll
@@ -1289,6 +1370,7 @@ here:
 	}
 
 	return(pointer_index);
+	#endif
 }
 
 

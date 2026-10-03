@@ -9,6 +9,7 @@ target_link_libraries(g_wwcommon INTERFACE
     stlport
 )
 
+
 target_include_directories(g_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )

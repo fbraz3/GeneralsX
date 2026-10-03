@@ -187,38 +187,41 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
 
-# GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
-if(WIN32)
-    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
-    list(APPEND GAMEENGINEDEVICE_SRC
-#        Source/Win32Device/Common/Win32BIGFile.cpp
-#        Source/Win32Device/Common/Win32BIGFileSystem.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp
-#        Source/Win32Device/Common/Win32LocalFile.cpp
-#        Source/Win32Device/Common/Win32LocalFileSystem.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-#        Source/Win32Device/GameClient/Win32DIMouse.cpp
-        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
-    )
-else()
-    # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
+# GeneralsX @build fbraz3 29/09/2026 Select SDL3 backend when SAGE_USE_SDL3 is enabled across all platforms
+if(SAGE_USE_SDL3)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
         Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
-
-    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
-    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
-    # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
-    # GeneralsX @feature fbraz 11/06/2026 MiniAudio sources also provided by Core when SAGE_USE_MINIAUDIO is enabled.
-    if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+    if(WIN32)
         list(APPEND GAMEENGINEDEVICE_SRC
-            Source/OpenALAudioManager.cpp
+            ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
         )
     endif()
+else()
+    # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/Common/Win32OSDisplay.cpp
+        ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+    # GeneralsX @bugfix fbraz3 03/10/2026 Avoid duplicate symbol when Win32DIKeyboardStub is enabled via RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT.
+    if(NOT RTS_BUILD_OPTION_ISOLATE_LEGACY_WININPUT)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        )
+    endif()
+endif()
+
+# GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
+# OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
+# are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/OpenALAudioManager.cpp
+    )
 endif()
 
 add_library(z_gameenginedevice STATIC)

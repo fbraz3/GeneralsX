@@ -30,6 +30,12 @@
 
 #include "Common/PerfTimer.h"
 
+#ifdef _WIN32
+// GeneralsX @bugfix Copilot 20/05/2026 Ensure Win32 critical section types are available without forcing MinGW's minwinbase.h into the include chain.
+#include <windows.h>
+#include <synchapi.h>
+#endif
+
 // TheSuperHackers @build felipebraz 10/02/2026 Phase 1.5
 // Include threads_compat for Linux CRITICAL_SECTION support
 #ifdef _UNIX

@@ -1,3 +1,4 @@
+
 add_executable(z_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
@@ -11,7 +12,6 @@ if(WIN32)
         binkloader
         comctl32
         core_debug
-        d3d8
         dinput8
         dxguid
         imm32
@@ -21,14 +21,19 @@ if(WIN32)
     )
 endif()
 
+
 # Cross-platform core libraries
 target_link_libraries(z_generals PRIVATE
     core_profile_legacy
-    d3dx8
     z_gameengine
     z_gameenginedevice
     zi_always
+    d3dx8
 )
+
+if(WIN32)
+    target_link_libraries(z_generals PRIVATE ws2_32)
+endif()
 
 # Linux SDL3 windowing/input (Phase 1)
 # GeneralsX @build BenderAI 11/02/2026
@@ -65,21 +70,35 @@ target_include_directories(z_generals PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_sources(z_generals PRIVATE
-    $<$<BOOL:${WIN32}>:WinMain.cpp>
-    $<$<BOOL:${WIN32}>:WinMain.h>
-    # Linux SDL3 entry point (Phase 1.5 - TheSuperHackers @build 10/02/2026)
-    $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
-    # Linux stubs for P2-P3 platform functions (P2-P3 - TheSuperHackers @build 13/02/2026 BenderAI Session 37)
-    $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
-)
+# GeneralsX @bugfix GitHub Copilot 25/05/2026 Ensure z_generals receives FFmpeg headers explicitly; transitive include propagation was insufficient for CI macOS compile of FFmpeg sources.
+if(RTS_BUILD_OPTION_FFMPEG)
+    find_package(FFmpeg QUIET)
+    if(FFMPEG_FOUND)
+        target_include_directories(z_generals PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    else()
+        message(WARNING "RTS_BUILD_OPTION_FFMPEG=ON but FFmpeg include directories were not found for z_generals.")
+    endif()
+endif()
 
-# RC files optional for MinGW builds
-# Icon: LoadIcon() handles missing resource gracefully (uses default system icon)
-# Manifest: DPI awareness metadata (nice to have but not essential)
-if(MSVC)
+# GeneralsX @build fbraz3 29/09/2026 Use SDL3Main entry point across platforms when SAGE_USE_SDL3 is enabled
+if(SAGE_USE_SDL3)
+    target_sources(z_generals PRIVATE
+        SDL3Main.cpp
+        # Linux stubs for P2-P3 platform functions (Linux/macOS only)
+        $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
+    )
+else()
+    target_sources(z_generals PRIVATE
+        WinMain.cpp
+        WinMain.h
+    )
+endif()
+
+# RC files for Windows builds (MSVC + MinGW)
+# GeneralsX @feature GitHub Copilot 20/05/2026 Embed app icon and manifest on all Windows toolchains.
+if(WIN32)
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
-    if(NOT IS_VS6_BUILD)
+    if(MSVC AND NOT IS_VS6_BUILD)
         target_link_options(z_generals PRIVATE
             "/MANIFEST:NO"
         )

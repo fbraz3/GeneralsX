@@ -172,7 +172,7 @@ void PopupReplayUpdate( WindowLayout *layout, void *userData )
 	{
 		// the replay save confirmation popup is up
 		// check to see if its time to take it down.
-		if ((timeGetTime() - s_fileSavePopupStartTime) >= s_fileSavePopupDuration)
+		if ((static_cast<UnsignedInt>(GetTickCount()) - s_fileSavePopupStartTime) >= s_fileSavePopupDuration)
 		{
 			ShowReplaySavedPopup(FALSE);
 
@@ -329,7 +329,8 @@ void reallySaveReplay()
 	PopulateReplayFileListbox(listboxGames);
 
 	ShowReplaySavedPopup(TRUE);
-	s_fileSavePopupStartTime = timeGetTime();
+	// GeneralsX @bugfix GitHub Copilot 20/05/2026 Use GetTickCount for MinGW compatibility in replay popup timing.
+	s_fileSavePopupStartTime = static_cast<UnsignedInt>(GetTickCount());
 }
 
 //-------------------------------------------------------------------------------------------------

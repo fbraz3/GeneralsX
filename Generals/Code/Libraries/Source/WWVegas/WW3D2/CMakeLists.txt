@@ -68,6 +68,8 @@ set(WW3D2_SRC
     #font3d.h
     #formconv.cpp
     #formconv.h
+    # GeneralsX @bugfix GitHub Copilot 22/05/2026 Reuse shared FrameGrab stub when legacy AVI implementation is not compiled in this target.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/FrameGrabStub.cpp
     #FramGrab.cpp
     #framgrab.h
     #hanim.cpp

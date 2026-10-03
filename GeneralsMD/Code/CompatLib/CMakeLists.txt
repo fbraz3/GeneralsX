@@ -4,6 +4,7 @@
 # GeneralsX @bugfix felipebraz 02/03/2026 - Build real d3dx8 STATIC on Linux too (D3DXGetFVFVertexSize / D3DXLoadSurfaceFromSurface required for link)
 # d3dx8 is a math/texture helper stub; core game code doesn't require it
 if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE OR (UNIX AND NOT APPLE))
+if(NOT TARGET d3dx8)
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
@@ -26,10 +27,14 @@ endif()
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
-# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang - only link on Windows
+# GeneralsX @bugfix GitHub Copilot 20/05/2026 GLI is optional on MinGW; keep configure working when package is unavailable.
 if(NOT APPLE)
-    find_package(gli CONFIG REQUIRED)
-    target_link_libraries(d3dx8 PUBLIC gli)
+    find_package(gli CONFIG QUIET)
+    if(gli_FOUND)
+        target_link_libraries(d3dx8 PUBLIC gli)
+    else()
+        message(WARNING "GLI not found; d3dx8 will use fallback mipmap filtering implementation.")
+    endif()
 endif()
 
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
@@ -45,6 +50,9 @@ endif()
 
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
+else()
+    message(STATUS "Using pre-existing d3dx8 target from toolchain configuration")
+endif()
 
 elseif(UNIX)
 # Unix only: Create empty d3dx8 stub library to satisfy d3d8lib linkage.
@@ -56,8 +64,9 @@ endif()
 # GeneralsX @build BenderAI 10/02/2026
 # Configure d3d8lib target globally (created early in Core/CMakeLists.txt)
 # Fighter19's approach: Windows uses min-dx8-sdk, Linux uses ONLY DXVK headers
-if(SAGE_USE_DX8)
-    # Windows native: Use min-dx8-sdk headers and libs
+if(SAGE_USE_DX8 OR WIN32)
+    # Windows native + Windows64 modern DXVK runtime: use min-dx8-sdk headers/import libs.
+    # GeneralsX @build GitHub Copilot 18/05/2026 Keep Windows compile-time headers stable while runtime d3d8 is provided by DXVK.
     if(NOT dx8_SOURCE_DIR)
         message(FATAL_ERROR "DirectX 8 SDK (min-dx8-sdk) not fetched! Ensure cmake/dx8.cmake was included")
     endif()

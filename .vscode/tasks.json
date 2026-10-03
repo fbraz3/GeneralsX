@@ -12,6 +12,9 @@
 			"linux": {
 				"command": "./scripts/build/linux/docker-configure-linux.sh linux64-deploy"
 			},
+			"windows": {
+				"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/configure-windows64.ps1"
+			},
 			"osx": {
 				"command": "mkdir -p logs && cmake --preset macos-vulkan 2>&1 | tee logs/configure_macos.log"
 			},
@@ -32,6 +35,9 @@
 			"command": "echo 'Unsupported platform for this task'",
 			"linux": {
 				"command": "./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy"
+			},
+			"windows": {
+				"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-zh.ps1"
 			},
 			"osx": {
 				"command": "./scripts/build/macos/build-macos-zh.sh --build-only 2>&1 | tee logs/build_zh_macos.log"
@@ -61,6 +67,9 @@
 			"linux": {
 				"command": "./scripts/build/linux/docker-build-linux-generals.sh linux64-deploy"
 			},
+			"windows": {
+				"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/build-windows-generals.ps1"
+			},
 			"osx": {
 				"command": "./scripts/build/macos/build-macos-generals.sh --build-only 2>&1 | tee logs/build_generals_macos.log"
 			},
@@ -86,6 +95,9 @@
 			"linux": {
 				"command": "./scripts/build/linux/deploy-linux.sh"
 			},
+			"windows": {
+				"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-generals.ps1"
+			},
 			"osx": {
 				"command": "./scripts/build/macos/deploy-macos-generals.sh"
 			},
@@ -110,6 +122,9 @@
 			"command": "echo 'Unsupported platform for this task'",
 			"linux": {
 				"command": "./scripts/build/linux/deploy-linux-zh.sh"
+			},
+			"windows": {
+				"command": "powershell -ExecutionPolicy Bypass -File ./scripts/build/windows/deploy-windows-zh.ps1"
 			},
 			"osx": {
 				"command": "./scripts/build/macos/deploy-macos-zh.sh"

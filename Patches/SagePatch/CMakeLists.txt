@@ -70,6 +70,11 @@ elseif(UNIX)
         ${CMAKE_DL_LIBS}
         SDL3::SDL3
     )
+elseif(WIN32)
+    # GeneralsX @build fbraz3 01/10/2026 Link SDL3 on Windows so DLL symbols resolve at link time
+    target_link_libraries(sage_patch PRIVATE
+        SDL3::SDL3
+    )
 endif()
 
 set_target_properties(sage_patch PROPERTIES

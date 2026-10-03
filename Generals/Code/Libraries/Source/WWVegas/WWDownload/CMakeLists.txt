@@ -6,3 +6,8 @@ target_link_libraries(g_wwdownload PRIVATE
     gi_always
     gi_gameengine_include
 )
+
+# GeneralsX @bugfix GitHub Copilot 22/05/2026 FTP implementation requires Winsock symbols on MinGW link.
+if(WIN32)
+    target_link_libraries(g_wwdownload PRIVATE ws2_32)
+endif()

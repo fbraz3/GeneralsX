@@ -25,7 +25,8 @@
 ** Replaces Win32DIKeyboard with SDL3 keyboard APIs for Linux.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz3 29/09/2026 Support SDL3 backend on Windows, Linux, and macOS
+#if defined(SAGE_USE_SDL3)
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -335,4 +336,4 @@ KeyVal SDL3Keyboard::translateScanCodeToKeyVal(unsigned char scan)
 	}
 }
 
-#endif // !_WIN32
+#endif // SAGE_USE_SDL3

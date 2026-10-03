@@ -48,6 +48,18 @@
 #include "windows.h"
 #endif
 
+// GeneralsX @bugfix GitHub Copilot 19/05/2026 MinGW headers may hide driver/wave aliases required by vfw.h.
+#include <mmsystem.h>
+
+#ifndef DRV_USER
+#define DRV_USER 0x4000
+#endif
+
+#ifndef LPWAVEHDR
+typedef struct wavehdr_tag WAVEHDR;
+typedef WAVEHDR *LPWAVEHDR;
+#endif
+
 #ifndef _INC_WINDOWSX
 #include "windowsx.h"
 #endif
