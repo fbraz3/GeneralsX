@@ -6,12 +6,14 @@
 #include "GameNetwork/GeneralsOnline/NGMPWebSocket.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/StagingRoomGameInfo.h"
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "Common/Money.h"
 #include "Common/GlobalData.h"
+#include "Common/PlayerList.h"
 #include <cstdio>
 #include <thread>
 #include <curl/curl.h>
@@ -361,6 +363,31 @@ void NGMP_OnlineServicesManager::update() {
     }
     if (m_pNetworkMesh) {
         m_pNetworkMesh->Tick();
+    }
+
+    // GeneralsX @feature fbraz3 03/10/2026 Periodic match progress telemetry (every 120s)
+    if (m_isLoggedIn) {
+        NGMP_OnlineServices_LobbyInterface* pLobby = GetInterface<NGMP_OnlineServices_LobbyInterface>();
+        uint64_t currentMatchId = pLobby ? pLobby->GetCurrentMatchID() : 0;
+        if (currentMatchId > 0 && ThePlayerList && ThePlayerList->getLocalPlayer()) {
+            auto now = std::chrono::steady_clock::now();
+            if (m_lastMatchProgressMatchId != currentMatchId || m_lastMatchProgressTime == std::chrono::steady_clock::time_point{}) {
+                m_lastMatchProgressMatchId = currentMatchId;
+                m_lastMatchProgressTime = now;
+            } else if (std::chrono::duration_cast<std::chrono::seconds>(now - m_lastMatchProgressTime).count() >= 120) {
+                m_lastMatchProgressTime = now;
+                NGMP_OnlineServices_StatsInterface* pStats = GetInterface<NGMP_OnlineServices_StatsInterface>();
+                if (pStats) {
+                    pStats->SendMatchProgress(false);
+                }
+            }
+        } else {
+            m_lastMatchProgressTime = {};
+            m_lastMatchProgressMatchId = 0;
+        }
+    } else {
+        m_lastMatchProgressTime = {};
+        m_lastMatchProgressMatchId = 0;
     }
 }
 
