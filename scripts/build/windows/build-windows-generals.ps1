@@ -35,20 +35,26 @@ $logFile = "logs/build_windows64_generals.log"
 
 if (Get-Command ccache.exe -ErrorAction SilentlyContinue) {
     Write-Host "ccache statistics before build:"
-    & ccache.exe -s
+    & ccache.exe -s -v
 }
 
 Write-Host "Building target g_generals..."
 # GeneralsX @bugfix GitHub Copilot 21/05/2026 Prevent PowerShell from treating CMake stderr warnings as terminating errors.
+# GeneralsX @performance fbraz3 03/10/2026 Uncap Ninja parallelism (respect CMAKE_BUILD_PARALLEL_LEVEL if set, otherwise let Ninja use default optimal threads).
 $previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
-cmake --build --preset windows64-deploy --target g_generals -j4 2>&1 | Tee-Object -FilePath $logFile
+$jobsArg = if ($env:CMAKE_BUILD_PARALLEL_LEVEL) { "-j$($env:CMAKE_BUILD_PARALLEL_LEVEL)" } else { "" }
+if ($jobsArg) {
+    cmake --build --preset windows64-deploy --target g_generals $jobsArg 2>&1 | Tee-Object -FilePath $logFile
+} else {
+    cmake --build --preset windows64-deploy --target g_generals 2>&1 | Tee-Object -FilePath $logFile
+}
 $cmakeExitCode = $LASTEXITCODE
 $ErrorActionPreference = $previousErrorActionPreference
 
 if (Get-Command ccache.exe -ErrorAction SilentlyContinue) {
     Write-Host "ccache statistics after build:"
-    & ccache.exe -s
+    & ccache.exe -s -v
 }
 
 if ($cmakeExitCode -ne 0) {

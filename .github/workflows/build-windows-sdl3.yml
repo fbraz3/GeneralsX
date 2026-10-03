@@ -109,31 +109,24 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.ccache
-          key: ccache-windows-sdl3-${{ matrix.game.id }}-${{ github.sha }}
+          key: ccache-windows-sdl3-v2-${{ matrix.game.id }}-${{ github.sha }}
           restore-keys: |
-            ccache-windows-sdl3-${{ matrix.game.id }}-
-            ccache-windows-sdl3-
+            ccache-windows-sdl3-v2-${{ matrix.game.id }}-
+            ccache-windows-sdl3-v2-
 
       - name: Configure ccache environment
         shell: pwsh
         run: |
-          $ccacheDir = Join-Path $HOME ".ccache"
+          $ccacheDir = (Join-Path $HOME ".ccache").Replace('\', '/')
+          $ccacheBaseDir = "${{ github.workspace }}".Replace('\', '/')
           New-Item -ItemType Directory -Force -Path $ccacheDir | Out-Null
           "CCACHE_DIR=$ccacheDir" >> $env:GITHUB_ENV
-          "CCACHE_BASEDIR=${{ github.workspace }}" >> $env:GITHUB_ENV
-          "CCACHE_SLOPPINESS=time_macros,include_file_mtime,locale" >> $env:GITHUB_ENV
+          "CCACHE_BASEDIR=$ccacheBaseDir" >> $env:GITHUB_ENV
+          "CCACHE_SLOPPINESS=pch_defines,time_macros,include_file_mtime,include_file_ctime,locale" >> $env:GITHUB_ENV
           "CCACHE_COMPILERCHECK=content" >> $env:GITHUB_ENV
           "CCACHE_MAXSIZE=2G" >> $env:GITHUB_ENV
           "CMAKE_C_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
           "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> $env:GITHUB_ENV
-
-      - name: Cache CMake FetchContent
-        uses: actions/cache@v5
-        with:
-          path: build/windows64-deploy/_deps
-          key: fetchcontent-windows64-${{ hashFiles('cmake/**', 'CMakeLists.txt') }}
-          restore-keys: |
-            fetchcontent-windows64-
 
       - name: Configure CMake (${{ inputs.preset || 'windows64-deploy' }})
         shell: pwsh
