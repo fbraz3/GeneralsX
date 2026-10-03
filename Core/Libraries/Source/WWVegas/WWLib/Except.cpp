@@ -548,6 +548,18 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 			}
 
 			if (symbols_available) {
+#if defined(_WIN64)
+				symptr->SizeOfStruct = sizeof (IMAGEHLP_SYMBOL64);
+				symptr->MaxNameLength = 256;
+				symptr->Size = 0;
+				symptr->Address = static_cast<DWORD64>(temp_addr);
+
+				if (_SymGetSymFromAddr64 != nullptr && _SymGetSymFromAddr64 (GetCurrentProcess(), static_cast<DWORD64>(temp_addr), &displacement, symptr)) {
+					char symbuf[256];
+					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %016llX\r\n", symptr->Name, static_cast<unsigned long long>(displacement));
+					Add_Txt(symbuf);
+				}
+#else
 				symptr->SizeOfStruct = sizeof(symbol);
 				symptr->MaxNameLength = 128;
 				symptr->Size = 0;
@@ -558,6 +570,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %08X\r\n", symptr->Name, displacement);
 					Add_Txt(symbuf);
 				}
+#endif
 			} else {
 				char symbuf[256];
 				sprintf(symbuf, "%08x\r\n", temp_addr);
