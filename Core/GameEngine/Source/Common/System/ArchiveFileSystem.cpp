@@ -429,14 +429,37 @@ Bool ArchiveFileSystem::isModArchive(ArchiveFile *archive, const Char *filename)
 	// 3. Archives loaded explicitly via -mod command line parameter (directory or direct .big).
 	if (TheGlobalData)
 	{
-		if (TheGlobalData->m_modDir.isNotEmpty() && strstr(archiveName.str(), TheGlobalData->m_modDir.str()) != nullptr)
+		if (TheGlobalData->m_modDir.isNotEmpty())
 		{
-			return TRUE;
+			const char* match = strstr(archiveName.str(), TheGlobalData->m_modDir.str());
+			if (match != nullptr)
+			{
+				char nextChar = match[TheGlobalData->m_modDir.getLength()];
+				if (nextChar == '/' || nextChar == '\\' || nextChar == '\0')
+				{
+					return TRUE;
+				}
+			}
 		}
-		if (TheGlobalData->m_modBIG.isNotEmpty() &&
-		    (archiveName.compareNoCase(TheGlobalData->m_modBIG) == 0 || strstr(archiveName.str(), TheGlobalData->m_modBIG.str()) != nullptr))
+		if (TheGlobalData->m_modBIG.isNotEmpty())
 		{
-			return TRUE;
+			if (archiveName.compareNoCase(TheGlobalData->m_modBIG) == 0)
+			{
+				return TRUE;
+			}
+			const char* modBigRaw = TheGlobalData->m_modBIG.str();
+			const char* modBigSlash = strrchr(modBigRaw, '/');
+			const char* modBigBackslash = strrchr(modBigRaw, '\\');
+			const char* modBigSplit = modBigSlash;
+			if (modBigSplit == nullptr || (modBigBackslash != nullptr && modBigBackslash > modBigSplit))
+			{
+				modBigSplit = modBigBackslash;
+			}
+			const char* modBigBase = (modBigSplit != nullptr) ? (modBigSplit + 1) : modBigRaw;
+			if (stricmp(baseName, modBigBase) == 0)
+			{
+				return TRUE;
+			}
 		}
 	}
 
