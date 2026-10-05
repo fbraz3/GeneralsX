@@ -53,8 +53,14 @@
 
 // GeneralsX @feature fbraz3 04/10/2026 Upload replay to NGMP storage on game end
 #if defined(SAGE_USE_NGMP) && __has_include("GameNetwork/GeneralsOnline/OnlineServices_Manager.h")
-#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#if defined(min)
+#undef min
+#endif
+#if defined(max)
+#undef max
+#endif
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+class NGMPGame;
 extern NGMPGame* TheNGMPGame;
 #endif
 

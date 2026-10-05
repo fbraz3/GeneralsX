@@ -145,6 +145,10 @@ void NGMP_OnlineServicesManager::shutdown() {
         m_playlistsThread.join();
     }
 
+    if (m_replayUploadThread.joinable()) {
+        m_replayUploadThread.join();
+    }
+
     logout();
 
     {

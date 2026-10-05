@@ -342,6 +342,7 @@ private:
     };
     mutable std::mutex m_replayMutex;
     CachedReplayUpload m_cachedReplayUpload;
+    std::thread m_replayUploadThread;
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;

@@ -1548,42 +1548,64 @@ void NGMP_OnlineServicesManager::setReplayUploadUrl(uint64_t matchId, const std:
 
 // GeneralsX @feature fbraz3 04/10/2026 Dispatch asynchronous HTTP PUT of replay buffer to S3/R2
 void NGMP_OnlineServicesManager::dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl) {
+    if (uploadUrl.rfind("https://", 0) != 0) {
+        fprintf(stderr, "[NGMP] dispatchReplayUpload: rejected non-HTTPS upload URL: %s\n", uploadUrl.c_str());
+        fflush(stderr);
+        return;
+    }
+
     fprintf(stderr, "[NGMP] dispatchReplayUpload: uploading %zu bytes to storage for match %" PRIu64 "...\n", bytes.size(), matchId);
     fflush(stderr);
 
-    std::thread([matchId, bytes = std::move(bytes), uploadUrl = std::move(uploadUrl)]() {
-        CURL* curl = curl_easy_init();
-        if (!curl) {
-            fprintf(stderr, "[NGMP] dispatchReplayUpload: failed to initialize curl\n");
-            fflush(stderr);
-            return;
+    if (m_replayUploadThread.joinable()) {
+        m_replayUploadThread.join();
+    }
+
+    m_replayUploadThread = std::thread([matchId, bytes = std::move(bytes), uploadUrl = std::move(uploadUrl)]() {
+        for (int attempt = 1; attempt <= 3; ++attempt) {
+            CURL* curl = curl_easy_init();
+            if (!curl) {
+                fprintf(stderr, "[NGMP] dispatchReplayUpload: failed to initialize curl (attempt %d)\n", attempt);
+                fflush(stderr);
+                break;
+            }
+
+            struct curl_slist* headers = nullptr;
+            headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
+
+            NGMP::Internal::CurlResponse response;
+            curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
+#if defined(CURLOPT_PROTOCOLS_STR)
+            curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "https");
+#elif defined(CURLOPT_PROTOCOLS) && defined(CURLPROTO_HTTPS)
+            curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+#endif
+            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)bytes.data());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)bytes.size());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+
+            CURLcode res = curl_easy_perform(curl);
+            long httpCode = 0;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+
+            if (res == CURLE_OK && httpCode >= 200 && httpCode < 300) {
+                fprintf(stderr, "[NGMP] dispatchReplayUpload: SUCCESS for match %" PRIu64 " (attempt %d, HTTP %ld, %zu bytes uploaded)\n", matchId, attempt, httpCode, bytes.size());
+                fflush(stderr);
+                break;
+            } else {
+                fprintf(stderr, "[NGMP] dispatchReplayUpload: attempt %d failed for match %" PRIu64 " (res=%d, HTTP %ld, body: %s)\n", attempt, matchId, (int)res, httpCode, response.text.c_str());
+                fflush(stderr);
+                if (attempt < 3) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                }
+            }
         }
-
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
-
-        NGMP::Internal::CurlResponse response;
-        curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)bytes.data());
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)bytes.size());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
-
-        CURLcode res = curl_easy_perform(curl);
-        long httpCode = 0;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-        curl_slist_free_all(headers);
-        curl_easy_cleanup(curl);
-
-        if (res == CURLE_OK && httpCode >= 200 && httpCode < 300) {
-            fprintf(stderr, "[NGMP] dispatchReplayUpload: SUCCESS for match %" PRIu64 " (HTTP %ld, %zu bytes uploaded)\n", matchId, httpCode, bytes.size());
-        } else {
-            fprintf(stderr, "[NGMP] dispatchReplayUpload: FAILED for match %" PRIu64 " (res=%d, HTTP %ld, body: %s)\n", matchId, (int)res, httpCode, response.text.c_str());
-        }
-        fflush(stderr);
-    }).detach();
+    });
 }
 
