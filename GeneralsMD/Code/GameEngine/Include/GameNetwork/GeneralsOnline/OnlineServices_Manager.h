@@ -19,6 +19,7 @@
 #include <vector>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 #include <memory>
 #include <thread>
 #include <atomic>
@@ -332,15 +333,27 @@ private:
     std::chrono::steady_clock::time_point m_lastMatchProgressTime{};
     uint64_t m_lastMatchProgressMatchId{0};
 
-    // GeneralsX @feature fbraz3 04/10/2026 Replay upload state
+    // GeneralsX @feature fbraz3 04/10/2026 Replay upload queue & worker state
+    struct ReplayUploadTask {
+        uint64_t matchId{0};
+        std::vector<uint8_t> bytes;
+        std::string uploadUrl;
+    };
     void dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl);
+    void replayWorkerLoop();
+    void stopReplayWorker();
+
     struct PendingReplayUpload {
         std::vector<uint8_t> bytes;
         std::string uploadUrl;
     };
     mutable std::mutex m_replayMutex;
     std::unordered_map<uint64_t, PendingReplayUpload> m_pendingReplayUploads;
-    std::thread m_replayUploadThread;
+    std::queue<ReplayUploadTask> m_replayQueue;
+    std::condition_variable m_replayQueueCv;
+    std::thread m_replayWorkerThread;
+    std::atomic<bool> m_replayWorkerStopping{false};
+    std::atomic<bool> m_shuttingDown{false};
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;

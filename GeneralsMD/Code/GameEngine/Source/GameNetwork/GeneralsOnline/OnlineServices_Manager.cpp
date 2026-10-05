@@ -34,6 +34,7 @@ NetworkMesh* NGMP_OnlineServicesManager::GetNetworkMesh() {
 NGMP_OnlineServicesManager::NGMP_OnlineServicesManager() = default;
 NGMP_OnlineServicesManager::~NGMP_OnlineServicesManager() {
     shutdown();
+    stopReplayWorker();
 }
 
 void NGMP_OnlineServicesManager::postEvent(const NGMPEvent& event) {
@@ -1455,6 +1456,10 @@ void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
 
 // GeneralsX @feature fbraz3 04/10/2026 Commit and cache recorded replay file for S3/R2 upload
 void NGMP_OnlineServicesManager::commitReplay(const std::string& absoluteReplayPath) {
+    if (m_shuttingDown.load()) {
+        return;
+    }
+
     NGMP_OnlineServices_LobbyInterface* pLobby = GetInterface<NGMP_OnlineServices_LobbyInterface>();
     uint64_t matchId = pLobby ? pLobby->GetCurrentMatchID() : 0;
     if (matchId == 0) {
@@ -1502,6 +1507,9 @@ void NGMP_OnlineServicesManager::commitReplay(const std::string& absoluteReplayP
 
     {
         std::lock_guard<std::mutex> lock(m_replayMutex);
+        if (m_shuttingDown.load() || m_replayWorkerStopping.load()) {
+            return;
+        }
         auto& entry = m_pendingReplayUploads[matchId];
         entry.bytes = std::move(replayData);
 
@@ -1519,7 +1527,7 @@ void NGMP_OnlineServicesManager::commitReplay(const std::string& absoluteReplayP
 
 // GeneralsX @feature fbraz3 04/10/2026 Set presigned S3/R2 upload URL received from server outcome response
 void NGMP_OnlineServicesManager::setReplayUploadUrl(uint64_t matchId, const std::string& uploadUrl) {
-    if (matchId == 0 || uploadUrl.empty()) {
+    if (matchId == 0 || uploadUrl.empty() || m_shuttingDown.load()) {
         return;
     }
 
@@ -1531,6 +1539,9 @@ void NGMP_OnlineServicesManager::setReplayUploadUrl(uint64_t matchId, const std:
 
     {
         std::lock_guard<std::mutex> lock(m_replayMutex);
+        if (m_shuttingDown.load() || m_replayWorkerStopping.load()) {
+            return;
+        }
         auto& entry = m_pendingReplayUploads[matchId];
         entry.uploadUrl = uploadUrl;
 
@@ -1554,18 +1565,59 @@ void NGMP_OnlineServicesManager::dispatchReplayUpload(uint64_t matchId, std::vec
         return;
     }
 
-    fprintf(stderr, "[NGMP] dispatchReplayUpload: uploading %zu bytes to storage for match %" PRIu64 "...\n", bytes.size(), matchId);
-    fflush(stderr);
-
-    if (m_replayUploadThread.joinable()) {
-        m_replayUploadThread.join();
+    if (m_shuttingDown.load()) {
+        fprintf(stderr, "[NGMP] dispatchReplayUpload: manager is shutting down, dropping upload for match %" PRIu64 "\n", matchId);
+        fflush(stderr);
+        return;
     }
 
-    m_replayUploadThread = std::thread([matchId, bytes = std::move(bytes), uploadUrl = std::move(uploadUrl)]() {
+    fprintf(stderr, "[NGMP] dispatchReplayUpload: queueing %zu bytes to storage for match %" PRIu64 "...\n", bytes.size(), matchId);
+    fflush(stderr);
+
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        if (m_replayWorkerStopping.load() || m_shuttingDown.load()) {
+            return;
+        }
+        m_replayQueue.push({matchId, std::move(bytes), std::move(uploadUrl)});
+        if (!m_replayWorkerThread.joinable()) {
+            m_replayWorkerThread = std::thread(&NGMP_OnlineServicesManager::replayWorkerLoop, this);
+        }
+    }
+    m_replayQueueCv.notify_one();
+}
+
+void NGMP_OnlineServicesManager::replayWorkerLoop() {
+    while (true) {
+        ReplayUploadTask task;
+        {
+            std::unique_lock<std::mutex> lock(m_replayMutex);
+            m_replayQueueCv.wait(lock, [this]() {
+                return m_replayWorkerStopping.load() || !m_replayQueue.empty();
+            });
+
+            if (m_replayQueue.empty()) {
+                if (m_replayWorkerStopping.load()) {
+                    break;
+                }
+                continue;
+            }
+
+            task = std::move(m_replayQueue.front());
+            m_replayQueue.pop();
+        }
+
+        fprintf(stderr, "[NGMP] replayWorker: uploading %zu bytes for match %" PRIu64 "...\n", task.bytes.size(), task.matchId);
+        fflush(stderr);
+
         for (int attempt = 1; attempt <= 3; ++attempt) {
+            if (m_replayWorkerStopping.load() && attempt > 1) {
+                break;
+            }
+
             CURL* curl = curl_easy_init();
             if (!curl) {
-                fprintf(stderr, "[NGMP] dispatchReplayUpload: failed to initialize curl (attempt %d)\n", attempt);
+                fprintf(stderr, "[NGMP] replayWorker: failed to initialize curl (attempt %d)\n", attempt);
                 fflush(stderr);
                 break;
             }
@@ -1574,15 +1626,15 @@ void NGMP_OnlineServicesManager::dispatchReplayUpload(uint64_t matchId, std::vec
             headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
 
             NGMP::Internal::CurlResponse response;
-            curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
+            curl_easy_setopt(curl, CURLOPT_URL, task.uploadUrl.c_str());
 #if defined(CURLOPT_PROTOCOLS_STR)
             curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "https");
 #elif defined(CURLOPT_PROTOCOLS) && defined(CURLPROTO_HTTPS)
             curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
 #endif
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)bytes.data());
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)bytes.size());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)task.bytes.data());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)task.bytes.size());
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
@@ -1595,17 +1647,30 @@ void NGMP_OnlineServicesManager::dispatchReplayUpload(uint64_t matchId, std::vec
             curl_easy_cleanup(curl);
 
             if (res == CURLE_OK && httpCode >= 200 && httpCode < 300) {
-                fprintf(stderr, "[NGMP] dispatchReplayUpload: SUCCESS for match %" PRIu64 " (attempt %d, HTTP %ld, %zu bytes uploaded)\n", matchId, attempt, httpCode, bytes.size());
+                fprintf(stderr, "[NGMP] replayWorker: SUCCESS for match %" PRIu64 " (attempt %d, HTTP %ld, %zu bytes uploaded)\n", task.matchId, attempt, httpCode, task.bytes.size());
                 fflush(stderr);
                 break;
             } else {
-                fprintf(stderr, "[NGMP] dispatchReplayUpload: attempt %d failed for match %" PRIu64 " (res=%d, HTTP %ld, body: %s)\n", attempt, matchId, (int)res, httpCode, response.text.c_str());
+                fprintf(stderr, "[NGMP] replayWorker: attempt %d failed for match %" PRIu64 " (res=%d, HTTP %ld, body: %s)\n", attempt, task.matchId, (int)res, httpCode, response.text.c_str());
                 fflush(stderr);
-                if (attempt < 3) {
+                if (attempt < 3 && !m_replayWorkerStopping.load()) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 }
             }
         }
-    });
+    }
+}
+
+void NGMP_OnlineServicesManager::stopReplayWorker() {
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_replayWorkerStopping = true;
+        std::queue<ReplayUploadTask> emptyQueue;
+        std::swap(m_replayQueue, emptyQueue);
+    }
+    m_replayQueueCv.notify_all();
+    if (m_replayWorkerThread.joinable()) {
+        m_replayWorkerThread.join();
+    }
 }
 

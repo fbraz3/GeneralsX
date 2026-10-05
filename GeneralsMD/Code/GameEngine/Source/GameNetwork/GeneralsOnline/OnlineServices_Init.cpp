@@ -114,6 +114,8 @@ void NGMP_OnlineServicesManager::shutdown() {
         return;
     }
 
+    m_shuttingDown = true;
+
     fprintf(stderr, "[NGMP] Shutting down NGMP Online Services\n");
     fflush(stderr);
 
@@ -145,9 +147,12 @@ void NGMP_OnlineServicesManager::shutdown() {
         m_playlistsThread.join();
     }
 
-    if (m_replayUploadThread.joinable()) {
-        m_replayUploadThread.join();
+    // GeneralsX @bugfix fbraz3 05/10/2026 Quiesce outcome worker before stopping replay upload worker so no subsequent upload can be started
+    if (m_pStatsInterface) {
+        m_pStatsInterface->quiesceOutcome();
     }
+
+    stopReplayWorker();
 
     logout();
 

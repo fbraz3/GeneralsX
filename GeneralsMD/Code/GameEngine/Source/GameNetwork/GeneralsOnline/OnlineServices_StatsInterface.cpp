@@ -64,6 +64,20 @@ NGMP_OnlineServices_StatsInterface::NGMP_OnlineServices_StatsInterface()
 {
 }
 
+NGMP_OnlineServices_StatsInterface::~NGMP_OnlineServices_StatsInterface()
+{
+	quiesceOutcome();
+}
+
+void NGMP_OnlineServices_StatsInterface::quiesceOutcome()
+{
+	std::lock_guard<std::mutex> lock(m_outcomeMutex);
+	if (m_outcomeThread.joinable())
+	{
+		m_outcomeThread.join();
+	}
+}
+
 void NGMP_OnlineServices_StatsInterface::findPlayerStatsByID(int64_t userID, std::function<void(bool, PSPlayerStats)> callback, EStatsRequestPolicy policy)
 {
 	PSPlayerStats stats;
@@ -143,8 +157,12 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
-
-	std::thread([url, payloadStr, authToken, tokenVersion, currentMatchID]() {
+	{
+		std::lock_guard<std::mutex> lock(m_outcomeMutex);
+		if (m_outcomeThread.joinable()) {
+			m_outcomeThread.join();
+		}
+		m_outcomeThread = std::thread([url, payloadStr, authToken, tokenVersion, currentMatchID]() {
 		CURL* curl = curl_easy_init();
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
@@ -234,7 +252,8 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		}
 		fflush(stderr);
 		NGMP_OnlineServicesManager::getInstance().postEvent(ev);
-	}).detach();
+	});
+	}
 }
 
 // GeneralsX @feature fbraz3 03/10/2026 Send initial or periodic match progress telemetry to server
