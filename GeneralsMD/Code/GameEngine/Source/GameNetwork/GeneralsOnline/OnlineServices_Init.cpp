@@ -147,6 +147,11 @@ void NGMP_OnlineServicesManager::shutdown() {
 
     logout();
 
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_cachedReplayUpload = {};
+    }
+
     if (TheNGMPGame) {
         delete TheNGMPGame;
         TheNGMPGame = nullptr;

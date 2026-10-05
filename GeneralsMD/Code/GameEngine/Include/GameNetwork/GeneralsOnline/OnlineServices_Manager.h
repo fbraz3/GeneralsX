@@ -251,6 +251,10 @@ public:
     static NetworkMesh* GetNetworkMesh();
     NetworkMesh* getNetworkMesh() { return m_pNetworkMesh.get(); }
 
+    // GeneralsX @feature fbraz3 04/10/2026 Replay upload routines for Cloudflare R2
+    void commitReplay(const std::string& absoluteReplayPath);
+    void setReplayUploadUrl(uint64_t matchId, const std::string& uploadUrl);
+
     // Internal thread-safe event poster (called from worker threads)
     void postEvent(const NGMPEvent& event);
 
@@ -324,9 +328,20 @@ private:
     // Chat WebSocket session
     std::unique_ptr<NGMP::NGMPWebSocket> m_chatSession;
 
-    // GeneralsX @feature fbraz3 03/10/2026 Periodic match progress timer
+    // GeneralsX @feature fbraz3 04/10/2026 Periodic match progress timer
     std::chrono::steady_clock::time_point m_lastMatchProgressTime{};
     uint64_t m_lastMatchProgressMatchId{0};
+
+    // GeneralsX @feature fbraz3 04/10/2026 Replay upload state
+    void dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl);
+    struct CachedReplayUpload {
+        uint64_t dataMatchId = 0;
+        std::vector<uint8_t> bytes;
+        uint64_t urlMatchId = 0;
+        std::string uploadUrl;
+    };
+    mutable std::mutex m_replayMutex;
+    CachedReplayUpload m_cachedReplayUpload;
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;

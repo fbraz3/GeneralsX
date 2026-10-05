@@ -144,7 +144,7 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
 
-	std::thread([url, payloadStr, authToken, tokenVersion]() {
+	std::thread([url, payloadStr, authToken, tokenVersion, currentMatchID]() {
 		CURL* curl = curl_easy_init();
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
@@ -212,6 +212,22 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		if (res == CURLE_OK && httpCode == 200) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: server accepted outcome (HTTP 200)\n");
 			ev.payload = "1";
+
+			// GeneralsX @feature fbraz3 04/10/2026 Parse replay_url from match outcome response and notify OnlineServicesManager
+			try {
+				json outcomeJson = json::parse(response.text);
+				if (outcomeJson.contains("replay_url") && outcomeJson["replay_url"].is_string()) {
+					std::string replayUrl = outcomeJson["replay_url"].get<std::string>();
+					if (!replayUrl.empty()) {
+						fprintf(stderr, "[NGMP] CommitMyOutcome: received replay upload URL\n");
+						fflush(stderr);
+						NGMP_OnlineServicesManager::getInstance().setReplayUploadUrl(currentMatchID, replayUrl);
+					}
+				}
+			} catch (const std::exception& e) {
+				fprintf(stderr, "[NGMP] CommitMyOutcome: JSON parse exception: %s\n", e.what());
+				fflush(stderr);
+			}
 		} else {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
 			ev.payload = "0";

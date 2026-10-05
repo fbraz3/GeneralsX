@@ -15,6 +15,7 @@
 #include "Common/GlobalData.h"
 #include "Common/PlayerList.h"
 #include <cstdio>
+#include <cinttypes>
 #include <thread>
 #include <curl/curl.h>
 #include "GameNetwork/GeneralsOnline/NGMP_json.h"
@@ -1451,3 +1452,138 @@ void NGMP_OnlineServicesManager::changeNetworkRoom(int16_t roomID) {
         fflush(stderr);
     }
 }
+
+// GeneralsX @feature fbraz3 04/10/2026 Commit and cache recorded replay file for S3/R2 upload
+void NGMP_OnlineServicesManager::commitReplay(const std::string& absoluteReplayPath) {
+    NGMP_OnlineServices_LobbyInterface* pLobby = GetInterface<NGMP_OnlineServices_LobbyInterface>();
+    uint64_t matchId = pLobby ? pLobby->GetCurrentMatchID() : 0;
+    if (matchId == 0) {
+        matchId = m_lastMatchProgressMatchId;
+    }
+    if (matchId == 0) {
+        fprintf(stderr, "[NGMP] commitReplay: match ID is unavailable, skipping replay upload\n");
+        fflush(stderr);
+        return;
+    }
+
+    FILE* pFile = fopen(absoluteReplayPath.c_str(), "rb");
+    if (!pFile) {
+        fprintf(stderr, "[NGMP] commitReplay: failed to open replay file: %s\n", absoluteReplayPath.c_str());
+        fflush(stderr);
+        return;
+    }
+
+    fseek(pFile, 0, SEEK_END);
+    long fileSize = ftell(pFile);
+    fseek(pFile, 0, SEEK_SET);
+
+    if (fileSize <= 0) {
+        fclose(pFile);
+        fprintf(stderr, "[NGMP] commitReplay: replay file is empty: %s\n", absoluteReplayPath.c_str());
+        fflush(stderr);
+        return;
+    }
+
+    std::vector<uint8_t> replayData(fileSize);
+    size_t readBytes = fread(replayData.data(), 1, fileSize, pFile);
+    fclose(pFile);
+
+    if (readBytes != (size_t)fileSize) {
+        fprintf(stderr, "[NGMP] commitReplay: failed to read full file (%zu / %ld bytes)\n", readBytes, fileSize);
+        fflush(stderr);
+        return;
+    }
+
+    fprintf(stderr, "[NGMP] commitReplay: cached %zu bytes for match %" PRIu64 "\n", replayData.size(), matchId);
+    fflush(stderr);
+
+    std::vector<uint8_t> bytesToUpload;
+    std::string targetUrl;
+
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_cachedReplayUpload.dataMatchId = matchId;
+        m_cachedReplayUpload.bytes = std::move(replayData);
+
+        if (m_cachedReplayUpload.urlMatchId == matchId && !m_cachedReplayUpload.uploadUrl.empty()) {
+            bytesToUpload = std::move(m_cachedReplayUpload.bytes);
+            targetUrl = std::move(m_cachedReplayUpload.uploadUrl);
+            m_cachedReplayUpload = {};
+        }
+    }
+
+    if (!bytesToUpload.empty() && !targetUrl.empty()) {
+        dispatchReplayUpload(matchId, std::move(bytesToUpload), std::move(targetUrl));
+    }
+}
+
+// GeneralsX @feature fbraz3 04/10/2026 Set presigned S3/R2 upload URL received from server outcome response
+void NGMP_OnlineServicesManager::setReplayUploadUrl(uint64_t matchId, const std::string& uploadUrl) {
+    if (matchId == 0 || uploadUrl.empty()) {
+        return;
+    }
+
+    fprintf(stderr, "[NGMP] setReplayUploadUrl: received upload URL for match %" PRIu64 "\n", matchId);
+    fflush(stderr);
+
+    std::vector<uint8_t> bytesToUpload;
+    std::string targetUrl;
+
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_cachedReplayUpload.urlMatchId = matchId;
+        m_cachedReplayUpload.uploadUrl = uploadUrl;
+
+        if (m_cachedReplayUpload.dataMatchId == matchId && !m_cachedReplayUpload.bytes.empty()) {
+            bytesToUpload = std::move(m_cachedReplayUpload.bytes);
+            targetUrl = std::move(m_cachedReplayUpload.uploadUrl);
+            m_cachedReplayUpload = {};
+        }
+    }
+
+    if (!bytesToUpload.empty() && !targetUrl.empty()) {
+        dispatchReplayUpload(matchId, std::move(bytesToUpload), std::move(targetUrl));
+    }
+}
+
+// GeneralsX @feature fbraz3 04/10/2026 Dispatch asynchronous HTTP PUT of replay buffer to S3/R2
+void NGMP_OnlineServicesManager::dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl) {
+    fprintf(stderr, "[NGMP] dispatchReplayUpload: uploading %zu bytes to storage for match %" PRIu64 "...\n", bytes.size(), matchId);
+    fflush(stderr);
+
+    std::thread([matchId, bytes = std::move(bytes), uploadUrl = std::move(uploadUrl)]() {
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            fprintf(stderr, "[NGMP] dispatchReplayUpload: failed to initialize curl\n");
+            fflush(stderr);
+            return;
+        }
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
+
+        NGMP::Internal::CurlResponse response;
+        curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)bytes.data());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)bytes.size());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+
+        CURLcode res = curl_easy_perform(curl);
+        long httpCode = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res == CURLE_OK && httpCode >= 200 && httpCode < 300) {
+            fprintf(stderr, "[NGMP] dispatchReplayUpload: SUCCESS for match %" PRIu64 " (HTTP %ld, %zu bytes uploaded)\n", matchId, httpCode, bytes.size());
+        } else {
+            fprintf(stderr, "[NGMP] dispatchReplayUpload: FAILED for match %" PRIu64 " (res=%d, HTTP %ld, body: %s)\n", matchId, (int)res, httpCode, response.text.c_str());
+        }
+        fflush(stderr);
+    }).detach();
+}
+

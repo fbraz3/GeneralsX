@@ -51,6 +51,13 @@
 #include "Common/version.h"
 #include "Lib/PathUtil.h"
 
+// GeneralsX @feature fbraz3 04/10/2026 Upload replay to NGMP storage on game end
+#if defined(SAGE_USE_NGMP)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+extern NGMPGame* TheNGMPGame;
+#endif
+
 
 constexpr const char s_genrep[] = "GENREP";
 constexpr const UnsignedInt replayBufferBytes = 8192;
@@ -678,6 +685,20 @@ void RecorderClass::stopRecording() {
 
 		if (m_archiveReplays)
 			archiveReplay(m_fileName);
+
+		// GeneralsX @feature fbraz3 04/10/2026 Upload replay to NGMP storage on game end
+#if defined(SAGE_USE_NGMP)
+		if (TheNGMPGame != nullptr)
+		{
+			AsciiString absoluteReplayPath = getReplayDir();
+			absoluteReplayPath.concat(m_fileName);
+			if (!absoluteReplayPath.endsWith(getReplayExtention())) {
+				absoluteReplayPath.concat(getReplayExtention());
+			}
+
+			NGMP_OnlineServicesManager::getInstance().commitReplay(absoluteReplayPath.str());
+		}
+#endif
 	}
 	m_fileName.clear();
 }
