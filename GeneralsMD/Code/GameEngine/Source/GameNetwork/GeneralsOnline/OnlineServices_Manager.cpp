@@ -1502,13 +1502,13 @@ void NGMP_OnlineServicesManager::commitReplay(const std::string& absoluteReplayP
 
     {
         std::lock_guard<std::mutex> lock(m_replayMutex);
-        m_cachedReplayUpload.dataMatchId = matchId;
-        m_cachedReplayUpload.bytes = std::move(replayData);
+        auto& entry = m_pendingReplayUploads[matchId];
+        entry.bytes = std::move(replayData);
 
-        if (m_cachedReplayUpload.urlMatchId == matchId && !m_cachedReplayUpload.uploadUrl.empty()) {
-            bytesToUpload = std::move(m_cachedReplayUpload.bytes);
-            targetUrl = std::move(m_cachedReplayUpload.uploadUrl);
-            m_cachedReplayUpload = {};
+        if (!entry.bytes.empty() && !entry.uploadUrl.empty()) {
+            bytesToUpload = std::move(entry.bytes);
+            targetUrl = std::move(entry.uploadUrl);
+            m_pendingReplayUploads.erase(matchId);
         }
     }
 
@@ -1531,13 +1531,13 @@ void NGMP_OnlineServicesManager::setReplayUploadUrl(uint64_t matchId, const std:
 
     {
         std::lock_guard<std::mutex> lock(m_replayMutex);
-        m_cachedReplayUpload.urlMatchId = matchId;
-        m_cachedReplayUpload.uploadUrl = uploadUrl;
+        auto& entry = m_pendingReplayUploads[matchId];
+        entry.uploadUrl = uploadUrl;
 
-        if (m_cachedReplayUpload.dataMatchId == matchId && !m_cachedReplayUpload.bytes.empty()) {
-            bytesToUpload = std::move(m_cachedReplayUpload.bytes);
-            targetUrl = std::move(m_cachedReplayUpload.uploadUrl);
-            m_cachedReplayUpload = {};
+        if (!entry.bytes.empty() && !entry.uploadUrl.empty()) {
+            bytesToUpload = std::move(entry.bytes);
+            targetUrl = std::move(entry.uploadUrl);
+            m_pendingReplayUploads.erase(matchId);
         }
     }
 

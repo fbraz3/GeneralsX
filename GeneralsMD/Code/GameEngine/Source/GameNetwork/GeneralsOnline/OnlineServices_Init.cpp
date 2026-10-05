@@ -153,7 +153,7 @@ void NGMP_OnlineServicesManager::shutdown() {
 
     {
         std::lock_guard<std::mutex> lock(m_replayMutex);
-        m_cachedReplayUpload = {};
+        m_pendingReplayUploads.clear();
     }
 
     if (TheNGMPGame) {

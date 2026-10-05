@@ -334,14 +334,12 @@ private:
 
     // GeneralsX @feature fbraz3 04/10/2026 Replay upload state
     void dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl);
-    struct CachedReplayUpload {
-        uint64_t dataMatchId = 0;
+    struct PendingReplayUpload {
         std::vector<uint8_t> bytes;
-        uint64_t urlMatchId = 0;
         std::string uploadUrl;
     };
     mutable std::mutex m_replayMutex;
-    CachedReplayUpload m_cachedReplayUpload;
+    std::unordered_map<uint64_t, PendingReplayUpload> m_pendingReplayUploads;
     std::thread m_replayUploadThread;
 
     mutable std::mutex m_eventMutex;
