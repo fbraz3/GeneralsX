@@ -3,6 +3,14 @@
 
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/GeneralsOnline/NGMP_types.h"
+
+#if defined(min)
+#undef min
+#endif
+#if defined(max)
+#undef max
+#endif
+
 #include <chrono>
 
 struct LobbyEntry;

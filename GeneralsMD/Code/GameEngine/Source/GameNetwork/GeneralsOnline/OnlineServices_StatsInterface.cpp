@@ -64,6 +64,20 @@ NGMP_OnlineServices_StatsInterface::NGMP_OnlineServices_StatsInterface()
 {
 }
 
+NGMP_OnlineServices_StatsInterface::~NGMP_OnlineServices_StatsInterface()
+{
+	quiesceOutcome();
+}
+
+void NGMP_OnlineServices_StatsInterface::quiesceOutcome()
+{
+	std::lock_guard<std::mutex> lock(m_outcomeMutex);
+	if (m_outcomeThread.joinable())
+	{
+		m_outcomeThread.join();
+	}
+}
+
 void NGMP_OnlineServices_StatsInterface::findPlayerStatsByID(int64_t userID, std::function<void(bool, PSPlayerStats)> callback, EStatsRequestPolicy policy)
 {
 	PSPlayerStats stats;
@@ -143,8 +157,12 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
 	std::string authToken = NGMP_OnlineServicesManager::getInstance().getAuthToken();
 	uint32_t tokenVersion = NGMP_OnlineServicesManager::getInstance().getAuthTokenVersion();
-
-	std::thread([url, payloadStr, authToken, tokenVersion]() {
+	{
+		std::lock_guard<std::mutex> lock(m_outcomeMutex);
+		if (m_outcomeThread.joinable()) {
+			m_outcomeThread.join();
+		}
+		m_outcomeThread = std::thread([url, payloadStr, authToken, tokenVersion, currentMatchID]() {
 		CURL* curl = curl_easy_init();
 		if (!curl) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: failed to initialize curl\n");
@@ -212,13 +230,30 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		if (res == CURLE_OK && httpCode == 200) {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: server accepted outcome (HTTP 200)\n");
 			ev.payload = "1";
+
+			// GeneralsX @feature fbraz3 04/10/2026 Parse replay_url from match outcome response and notify OnlineServicesManager
+			try {
+				json outcomeJson = json::parse(response.text);
+				if (outcomeJson.contains("replay_url") && outcomeJson["replay_url"].is_string()) {
+					std::string replayUrl = outcomeJson["replay_url"].get<std::string>();
+					if (!replayUrl.empty()) {
+						fprintf(stderr, "[NGMP] CommitMyOutcome: received replay upload URL\n");
+						fflush(stderr);
+						NGMP_OnlineServicesManager::getInstance().setReplayUploadUrl(currentMatchID, replayUrl);
+					}
+				}
+			} catch (const std::exception& e) {
+				fprintf(stderr, "[NGMP] CommitMyOutcome: JSON parse exception: %s\n", e.what());
+				fflush(stderr);
+			}
 		} else {
 			fprintf(stderr, "[NGMP] CommitMyOutcome: POST failed (res=%d, HTTP %ld, body: %s)\n", (int)res, httpCode, response.text.c_str());
 			ev.payload = "0";
 		}
 		fflush(stderr);
 		NGMP_OnlineServicesManager::getInstance().postEvent(ev);
-	}).detach();
+	});
+	}
 }
 
 // GeneralsX @feature fbraz3 03/10/2026 Send initial or periodic match progress telemetry to server
