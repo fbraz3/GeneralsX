@@ -123,6 +123,13 @@ public:
 class ArchiveFileSystem : public SubsystemInterface
 {
 public:
+	enum ArchiveFilter
+	{
+		ARCHIVE_FILTER_ALL = 0,
+		ARCHIVE_FILTER_MOD_ONLY,
+		ARCHIVE_FILTER_NON_MOD_ONLY
+	};
+
 	ArchiveFileSystem();
 	virtual ~ArchiveFileSystem() override;
 
@@ -135,15 +142,23 @@ public:
 
 	// File operations
 	virtual File*					openFile( const Char *filename, Int access = 0, FileInstance instance = 0);	///< Search Archive files for specified file name and open it if found
+	File*							openFile( const Char *filename, Int access, FileInstance instance, ArchiveFilter filter );
 	virtual void					closeAllFiles() = 0;									///< Close all files associated with Archive files
 	virtual Bool					doesFileExist(const Char *filename, FileInstance instance = 0) const;	///< return true if that file exists in an archive file somewhere.
+	Bool							doesFileExist(const Char *filename, FileInstance instance, ArchiveFilter filter) const;
 
 	void					getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const; ///< search the given directory for files matching the searchName (egs. *.ini, *.rep).  Possibly search subdirectories.  Scans each Archive file.
 	Bool					getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance = 0) const; ///< see FileSystem.h
+	Bool					getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance, ArchiveFilter filter) const;
 
 	virtual Bool	loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite = FALSE) = 0;
 
 	void loadMods();
+
+	// GeneralsX @bugfix felipebraz 02/10/2026 Check if a file is provided by an overriding mod archive (!*.big or script files)
+	Bool					hasModArchiveOverride(const Char *filename) const;
+	FileInstance			getFileCount(const Char *filename, ArchiveFilter filter = ARCHIVE_FILTER_ALL) const;
+	Bool					isModArchive(ArchiveFile *archive, const Char *filename) const;
 
 	ArchivedDirectoryInfo* friend_getArchivedDirectoryInfo(const Char* directory);
 
@@ -157,7 +172,7 @@ protected:
 		AsciiString lastToken; ///< Synonymous for file name if the search directory was a file path
 	};
 
-	ArchiveFile* getArchiveFile(const AsciiString& filename, FileInstance instance = 0) const;
+	ArchiveFile* getArchiveFile(const AsciiString& filename, FileInstance instance = 0, ArchiveFilter filter = ARCHIVE_FILTER_ALL) const;
 	ArchivedDirectoryInfoResult getArchivedDirectoryInfo(const Char* directory);
 
 	virtual void loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool overwrite = FALSE);	///< load the archive file's header information and apply it to the global archive directory tree.

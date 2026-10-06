@@ -421,7 +421,7 @@ SidesInfo *SidesList::findSkirmishSideInfo(AsciiString name, Int* index /*= null
 	return nullptr;
 }
 
-static AsciiString static_readPlayerNames[MAX_PLAYER_COUNT];
+static AsciiString static_readPlayerNames[SidesList::MAX_SKIRMISH_SIDES];
 
 /**
 * ParsePlayersDataChunk - read players names data chunk.
@@ -434,6 +434,7 @@ static AsciiString static_readPlayerNames[MAX_PLAYER_COUNT];
 
 static Bool ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData)
 {
+	SidesList *sides = (SidesList *)userData;
 	Int readDicts = 0;
 	if (info->version >= K_PLAYERS_NAMES_FOR_SCRIPTS_VERSION_2) {
 		readDicts = file.readInt();
@@ -441,10 +442,24 @@ static Bool ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, voi
 	Int numNames = file.readInt();
 	Int i;
 	for (i=0; i<numNames; i++) {
-		if (i>=MAX_PLAYER_COUNT) break;
-		static_readPlayerNames[i] = file.readAsciiString();
+		AsciiString playerName = file.readAsciiString();
+		if (i < SidesList::MAX_SKIRMISH_SIDES) {
+			static_readPlayerNames[i] = playerName;
+		}
 		if (readDicts) {
 			Dict sideDict = file.readDict();
+			// GeneralsX @bugfix fbraz3/gpherai 05/10/2026 Import missing skirmish player definitions
+			// from SkirmishScripts chunk to dynamically support mod factions on custom/retail maps (#335).
+			if (sides && !playerName.isEmpty() && sides->findSkirmishSideInfo(playerName) == nullptr) {
+				if (sideDict.getAsciiString(TheKey_playerName).isEmpty()) {
+					sideDict.setAsciiString(TheKey_playerName, playerName);
+				}
+				sides->addSkirmishSide(&sideDict);
+#ifdef ALLOW_DEBUG_UTILS
+				fprintf(stderr, "[SKIRMISH_DIAG] Imported missing skirmish side '%s' from SkirmishScripts\n", playerName.str());
+				fflush(stderr);
+#endif
+			}
 		}
 	}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
@@ -487,7 +502,7 @@ void SidesList::prepareForMP_or_Skirmish()
 	}
 	m_teamrec.clear();
 
-	for (i = 0; i < MAX_PLAYER_COUNT; i++) {
+	for (i = 0; i < MAX_SKIRMISH_SIDES; i++) {
 		m_skirmishSides[i].clear();
 	}
 	m_numSkirmishSides = 0;
@@ -573,7 +588,7 @@ void SidesList::prepareForMP_or_Skirmish()
 					getSkirmishSideInfo(curSide)->setScriptList(scripts[i]);
 					scripts[i] = nullptr;
 				}
-				for (i=0; i<MAX_PLAYER_COUNT; i++) {
+				for (i=0; i<MAX_SKIRMISH_SIDES; i++) {
 					static_readPlayerNames[i].clear();
 				}
 		} else {
@@ -615,6 +630,8 @@ void SidesList::emptySides()
 	m_numSkirmishSides = 0;
 	for (i = 0; i < MAX_PLAYER_COUNT; i++) {
 		m_sides[i].clear();
+	}
+	for (i = 0; i < MAX_SKIRMISH_SIDES; i++) {
 		m_skirmishSides[i].clear();
 	}
 }
@@ -630,6 +647,14 @@ void SidesList::addSide(const Dict* d)
 	DEBUG_ASSERTCRASH(m_numSides < MAX_PLAYER_COUNT, ("too many players"));
 	if (m_numSides < MAX_PLAYER_COUNT)
 		m_sides[m_numSides++].init(d);
+}
+
+// GeneralsX @bugfix fbraz3 05/10/2026 Add skirmish side definition imported from SkirmishScripts chunk (#335).
+void SidesList::addSkirmishSide(const Dict* d)
+{
+	DEBUG_ASSERTCRASH(m_numSkirmishSides < MAX_SKIRMISH_SIDES, ("too many skirmish players"));
+	if (m_numSkirmishSides < MAX_SKIRMISH_SIDES)
+		m_skirmishSides[m_numSkirmishSides++].init(d);
 }
 
 void SidesList::addTeam(const Dict* d)
