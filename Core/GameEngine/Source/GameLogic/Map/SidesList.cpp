@@ -649,6 +649,7 @@ void SidesList::addSide(const Dict* d)
 		m_sides[m_numSides++].init(d);
 }
 
+// GeneralsX @bugfix fbraz3 05/10/2026 Add skirmish side definition imported from SkirmishScripts chunk (#335).
 void SidesList::addSkirmishSide(const Dict* d)
 {
 	DEBUG_ASSERTCRASH(m_numSkirmishSides < MAX_SKIRMISH_SIDES, ("too many skirmish players"));
