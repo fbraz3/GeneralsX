@@ -19,6 +19,7 @@
 #include <vector>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 #include <memory>
 #include <thread>
 #include <atomic>
@@ -243,11 +244,17 @@ public:
         std::lock_guard<std::mutex> lock(m_authMutex);
         return m_userId;
     }
+    // GeneralsX @bugfix fbraz3 03/10/2026 Return active session generation
+    uint32_t getSessionGeneration() const { return m_sessionGeneration.load(); }
     const std::vector<NGMPLobby>& getLobbies() const { return m_lobbies; }
     const std::vector<NGMPLobbyPlayer>& getLobbyPlayers() const { return m_lobbyPlayers; }
 
     static NetworkMesh* GetNetworkMesh();
     NetworkMesh* getNetworkMesh() { return m_pNetworkMesh.get(); }
+
+    // GeneralsX @feature fbraz3 04/10/2026 Replay upload routines for Cloudflare R2
+    void commitReplay(const std::string& absoluteReplayPath);
+    void setReplayUploadUrl(uint64_t matchId, const std::string& uploadUrl);
 
     // Internal thread-safe event poster (called from worker threads)
     void postEvent(const NGMPEvent& event);
@@ -272,6 +279,8 @@ private:
     mutable std::mutex m_authMutex;
     std::mutex m_refreshMutex;
     std::atomic<uint32_t> m_authTokenVersion{0};
+    // GeneralsX @bugfix fbraz3 03/10/2026 Track session generation to prevent cross-session request leaks
+    std::atomic<uint32_t> m_sessionGeneration{0};
     std::atomic<int> m_onlinePlayersCount{0};
 
     bool m_initialized = false;
@@ -319,6 +328,32 @@ private:
 
     // Chat WebSocket session
     std::unique_ptr<NGMP::NGMPWebSocket> m_chatSession;
+
+    // GeneralsX @feature fbraz3 04/10/2026 Periodic match progress timer
+    std::chrono::steady_clock::time_point m_lastMatchProgressTime{};
+    uint64_t m_lastMatchProgressMatchId{0};
+
+    // GeneralsX @feature fbraz3 04/10/2026 Replay upload queue & worker state
+    struct ReplayUploadTask {
+        uint64_t matchId{0};
+        std::vector<uint8_t> bytes;
+        std::string uploadUrl;
+    };
+    void dispatchReplayUpload(uint64_t matchId, std::vector<uint8_t> bytes, std::string uploadUrl);
+    void replayWorkerLoop();
+    void stopReplayWorker();
+
+    struct PendingReplayUpload {
+        std::vector<uint8_t> bytes;
+        std::string uploadUrl;
+    };
+    mutable std::mutex m_replayMutex;
+    std::unordered_map<uint64_t, PendingReplayUpload> m_pendingReplayUploads;
+    std::queue<ReplayUploadTask> m_replayQueue;
+    std::condition_variable m_replayQueueCv;
+    std::thread m_replayWorkerThread;
+    std::atomic<bool> m_replayWorkerStopping{false};
+    std::atomic<bool> m_shuttingDown{false};
 
     mutable std::mutex m_eventMutex;
     std::queue<NGMPEvent> m_eventQueue;

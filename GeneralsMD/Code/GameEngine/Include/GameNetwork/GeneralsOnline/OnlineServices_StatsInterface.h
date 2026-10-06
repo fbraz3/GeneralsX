@@ -3,6 +3,8 @@
 
 #include <functional>
 #include <cstdint>
+#include <thread>
+#include <mutex>
 #include "GameNetwork/RankPointValue.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
@@ -26,8 +28,16 @@ class NGMP_OnlineServices_StatsInterface
 {
 public:
 	NGMP_OnlineServices_StatsInterface();
+	~NGMP_OnlineServices_StatsInterface();
 
 	void findPlayerStatsByID(int64_t userID, std::function<void(bool, PSPlayerStats)> callback, EStatsRequestPolicy policy = EStatsRequestPolicy::RESPECT_CACHE_ALLOW_REQUEST);
 	void CommitMyOutcome(ScoreKeeper* pScoreKeeper, bool bWon);
+	void quiesceOutcome();
+	// GeneralsX @feature fbraz3 03/10/2026 Send initial or periodic match progress telemetry to server
+	void SendMatchProgress(bool isInitial = false);
 	void UpdateMyStats(PSPlayerStats stats) {}
+
+private:
+	std::thread m_outcomeThread;
+	std::mutex m_outcomeMutex;
 };

@@ -111,9 +111,26 @@ static bool IsUsableInterface(const struct ifaddrs *ifa)
 
 	return true;
 }
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Identify wireless interface name prefixes (e.g. wlan*, wlp*, wls*, wlo*, ra*)
+// to allow prioritizing wired physical Ethernet adapters before Wi-Fi adapters in enumeration.
+static bool IsWirelessInterfaceName(const char *name)
+{
+	if (name == nullptr)
+	{
+		return false;
+	}
+
+	if (strncmp(name, "wl", 2) == 0 || strncmp(name, "ra", 2) == 0)
+	{
+		return true;
+	}
+
+	return false;
+}
 #endif
 
 // GeneralsX @feature Mr. Meesseeks 17/09/2026 Enumerate local active IPv4 interface addresses on POSIX.
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Prioritize wired physical Ethernet interfaces before wireless adapters.
 Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 {
 	if (outAddrs == nullptr || maxAddrs <= 0)
@@ -130,13 +147,8 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 	}
 
 	Int count = 0;
-	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+	auto appendIfa = [&](const struct ifaddrs *ifa)
 	{
-		if (!IsUsableInterface(ifa))
-		{
-			continue;
-		}
-
 		const sockaddr_in *addr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_addr);
 		// GeneralsX @bugfix BenderAI 31/03/2026 Use ntohl to convert from network byte order before extracting octets;
 		// reading s_addr byte-by-byte on little-endian platforms reverses the IPv4 octets.
@@ -156,6 +168,24 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 		{
 			outAddrs[count++] = hostAddr;
 		}
+	};
+
+	// Pass 1: Active wired physical interfaces (eth*, en*, etc.)
+	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+	{
+		if (IsUsableInterface(ifa) && !IsWirelessInterfaceName(ifa->ifa_name))
+		{
+			appendIfa(ifa);
+		}
+	}
+
+	// Pass 2: Active wireless interfaces (wlan*, wlp*, etc.)
+	for (struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+	{
+		if (IsUsableInterface(ifa) && IsWirelessInterfaceName(ifa->ifa_name))
+		{
+			appendIfa(ifa);
+		}
 	}
 
 	freeifaddrs(ifaddr);
@@ -163,6 +193,46 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 #else
 	return 0;
 #endif
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to a real active local network adapter (excluding loopback).
+Bool StdLANInterface::isRealLocalInterfaceAddress(UnsignedInt ip)
+{
+	if (ip == 0 || (ip >> 24) == 127)
+	{
+		return FALSE;
+	}
+
+#ifndef _WIN32
+	UnsignedInt addrs[16];
+	Int count = getLocalHostAddresses(addrs, ARRAY_SIZE(addrs));
+	for (Int i = 0; i < count; ++i)
+	{
+		if (addrs[i] == ip)
+		{
+			return TRUE;
+		}
+	}
+#endif
+
+	return FALSE;
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Test if an IPv4 address belongs to any active local interface on this machine.
+Bool StdLANInterface::isLocalHostAddress(UnsignedInt ip)
+{
+	if (ip == 0)
+	{
+		return FALSE;
+	}
+
+	// 127.0.0.0/8 loopback range
+	if ((ip >> 24) == 127)
+	{
+		return TRUE;
+	}
+
+	return isRealLocalInterfaceAddress(ip);
 }
 
 // GeneralsX @feature Mr. Meesseeks 17/09/2026 Discover per-interface IPv4 subnet broadcast addresses for LAN discovery on POSIX.
@@ -244,4 +314,16 @@ Int LANInterfaceDevice::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddr
 Int LANInterfaceDevice::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs)
 {
 	return StdLANInterface::getSubnetBroadcastAddresses(localIP, outAddrs, maxAddrs);
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Bridge isLocalHostAddress to StdLANInterface on POSIX.
+Bool LANInterfaceDevice::isLocalHostAddress(UnsignedInt ip)
+{
+	return StdLANInterface::isLocalHostAddress(ip);
+}
+
+// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Bridge isRealLocalInterfaceAddress to StdLANInterface on POSIX.
+Bool LANInterfaceDevice::isRealLocalInterfaceAddress(UnsignedInt ip)
+{
+	return StdLANInterface::isRealLocalInterfaceAddress(ip);
 }

@@ -36,4 +36,8 @@ class Win32LANInterface
 public:
 	static Int getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs);
 	static Int getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedInt *outAddrs, Int maxAddrs);
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Windows fallback implementation for local address matching.
+	static Bool isLocalHostAddress(UnsignedInt ip);
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Windows fallback for real local adapter matching (excluding loopback).
+	static Bool isRealLocalInterfaceAddress(UnsignedInt ip);
 };
