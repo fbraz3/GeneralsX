@@ -105,6 +105,12 @@ bool NGMP_OnlineServicesManager::init() {
         TheGameSpyPSMessageQueue = new DummyGameSpyPSMessageQueue();
     }
 
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_shuttingDown = false;
+        m_replayWorkerStopping = false;
+    }
+
     m_initialized = true;
     return true;
 }
