@@ -154,6 +154,7 @@ public:
 	inline SidesInfo *getSideInfo(Int side);
 	inline SidesInfo *getSkirmishSideInfo(Int side);
 	Int getNumSkirmishSides() { return m_numSkirmishSides; }
+	void addSkirmishSide(const Dict* d);
 	SidesInfo *findSideInfo(AsciiString name, Int* index = nullptr);
 	SidesInfo *findSkirmishSideInfo(AsciiString name, Int* index = nullptr);
 
@@ -180,7 +181,8 @@ public:
 
 	enum
 	{
-		MAX_TEAM_DEPTH = 3
+		MAX_TEAM_DEPTH = 3,
+		MAX_SKIRMISH_SIDES = 64
 	};
 
 protected:
@@ -194,7 +196,7 @@ protected:
 	SidesInfo		m_sides[MAX_PLAYER_COUNT];
 
 	Int					m_numSkirmishSides;
-	SidesInfo		m_skirmishSides[MAX_PLAYER_COUNT];
+	SidesInfo		m_skirmishSides[MAX_SKIRMISH_SIDES];
 
 	TeamsInfoRec	m_teamrec;
 	TeamsInfoRec	m_skirmishTeamrec;
