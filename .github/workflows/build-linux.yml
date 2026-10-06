@@ -292,9 +292,12 @@ jobs:
             echo "ERROR: Missing required runtime library: libSDL3.so*"
             exit 1
           fi
-          if ! compgen -G "${RUNTIME_DIR}/libopenal.so*" > /dev/null; then
-            echo "ERROR: Missing required runtime library: libopenal.so*"
-            exit 1
+          # Only check for libopenal.so if OpenAL was built (e.g. legacy OpenAL preset)
+          if compgen -G "build/${{ inputs.preset }}/_deps/openal_soft-build/*.so*" > /dev/null; then
+            if ! compgen -G "${RUNTIME_DIR}/libopenal.so*" > /dev/null; then
+              echo "ERROR: Missing required runtime library: libopenal.so*"
+              exit 1
+            fi
           fi
           if ! compgen -G "${RUNTIME_DIR}/libavcodec.so*" > /dev/null; then
             echo "ERROR: Missing required runtime library: libavcodec.so*"
