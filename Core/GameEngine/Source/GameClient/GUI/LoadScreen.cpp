@@ -1301,7 +1301,8 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 #else
 	// add portrait, features, and name for the local player's general
-	const GeneralPersona *localGeneral = TheChallengeGenerals->getGeneralByTemplateName( pt->getName() );
+	// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
+	const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
 	const Image *portrait = nullptr;
 	UnicodeString localName;
 	if (localGeneral)
@@ -1567,7 +1568,8 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 #else
 	// add portrait, features, and name for the local player's general
-	const GeneralPersona *localGeneral = TheChallengeGenerals->getGeneralByTemplateName( pt->getName() );
+	// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
+	const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
 	const Image *portrait = nullptr;
 	UnicodeString localName;
 	if (localGeneral)
