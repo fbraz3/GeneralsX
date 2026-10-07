@@ -343,10 +343,12 @@ static void populateQMSideComboBox(Int favSide, const LadderInfo *li = nullptr)
 
 		// Remove disallowed generals from the choice list.
 		// This is also enforced at GUI setup (GUIUtil.cpp and UserPreferences.cpp).
-		// @todo: unlock these when something rad happens
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and prevent FactionBossGeneral in QuickMatch menu dropdown
 		Bool disallowLockedGenerals = TRUE;
-		const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(fac->getName());
+		const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(fac->getName()) : nullptr;
 		Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+		if (fac->getName().compareNoCase("FactionBossGeneral") == 0)
+			startsLocked = TRUE;
 		if (disallowLockedGenerals && startsLocked)
 			continue;
 
