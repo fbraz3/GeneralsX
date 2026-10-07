@@ -1,7 +1,7 @@
 # GeneralsX: Instructions for AI Coding Agents
 
 ## What I Am
-GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
+GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + MiniAudio + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
@@ -18,7 +18,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
 | Windowing| SDL3              | Win32 API                    |
-| Audio   | OpenAL (MiniAudio WIP)| Miles Sound System           |
+| Audio   | MiniAudio (OpenAL legacy)| Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
 | Platform| SDL3 + libc         | Win32 POSIX calls            |
 
