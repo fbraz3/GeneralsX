@@ -322,18 +322,25 @@ jobs:
       - name: Set artifact metadata
         id: artifact
         if: success()
+        env:
+          PRESET: ${{ inputs.preset }}
+          FORMAT: ${{ matrix.package_format }}
+          GAME_SLUG: ${{ matrix.game.id }}
+          GAME_VALUE: ${{ matrix.game.value }}
+          GAME_OUTPUT: ${{ matrix.game.output }}
         run: |
-          PRESET="${{ inputs.preset }}"
-          FORMAT="${{ matrix.package_format }}"
-          GAME_SLUG="${{ matrix.game.id }}"
-          PRESET_SLUG="${{ inputs.preset == 'linux64-deploy' && 'linux64' || inputs.preset }}"
+          if [ "${PRESET}" = "linux64-deploy" ]; then
+            PRESET_SLUG="linux64"
+          else
+            PRESET_SLUG="${PRESET}"
+          fi
 
           if [ "${FORMAT}" = "gzip" ]; then
             echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-bundle" >> "$GITHUB_OUTPUT"
-            echo "path=/tmp/GeneralsX-${{ matrix.game.value }}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
+            echo "path=/tmp/GeneralsX-${GAME_VALUE}-${PRESET}.tar" >> "$GITHUB_OUTPUT"
           else
-            INPUT_PATH="build/${{ matrix.game.output }}-${PRESET}-x86_64.AppImage"
-            OUTPUT_PATH="/tmp/${{ matrix.game.output }}-${PRESET}-x86_64.AppImage"
+            INPUT_PATH="build/${GAME_OUTPUT}-${PRESET}-x86_64.AppImage"
+            OUTPUT_PATH="/tmp/${GAME_OUTPUT}-${PRESET}-x86_64.AppImage"
             # GeneralsX @bugfix GitHubCopilot 10/04/2026 Flatten uploaded AppImage artifact structure (no intermediate directories inside zip).
             cp -f "${INPUT_PATH}" "${OUTPUT_PATH}"
             echo "name=linux-${GAME_SLUG}-${PRESET_SLUG}-appimage" >> "$GITHUB_OUTPUT"
