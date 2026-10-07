@@ -746,8 +746,9 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 
 		for ( ;curTree<m_numTrees;curTree++) {
 			Int type = m_trees[curTree].treeType;
-			if (type<0 || m_treeTypes[type].m_mesh == nullptr) {
-				continue; // Deleted tree or missing mesh. [6/9/2003]
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type and validate m_mesh and m_data
+			if (type<0 || type>=m_numTreeTypes || m_treeTypes[type].m_mesh == nullptr || m_treeTypes[type].m_data == nullptr) {
+				continue; // Deleted tree, invalid type, missing mesh or missing data. [6/9/2003]
 			}
 			if (!m_trees[curTree].visible) continue;
 			Real scale = m_trees[curTree].scale;
@@ -939,6 +940,10 @@ void W3DTreeBuffer::updateVertexBuffer()
 				continue;
 			}
 			Int type = m_trees[curTree].treeType;
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type and validate m_mesh and m_data
+			if (type<0 || type>=m_numTreeTypes || m_treeTypes[type].m_mesh == nullptr || m_treeTypes[type].m_data == nullptr) {
+				continue;
+			}
 			if (m_trees[curTree].pushAsideDelta==0.0f && m_trees[curTree].m_toppleState == TOPPLE_UPRIGHT) {
 				continue; // not toppling or pushed, no need to update. jba [7/11/2003]
 			}
@@ -1115,23 +1120,30 @@ void W3DTreeBuffer::unitMoved(Object *unit)
 					DEBUG_CRASH(("Invalid index."));
 					break;
 				}
-				if (m_trees[treeNdx].treeType<0) {
+				// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check treeType and null check m_data to prevent SIGSEGV
+				Int treeType = m_trees[treeNdx].treeType;
+				if (treeType < 0 || treeType >= m_numTreeTypes) {
 					treeNdx = m_trees[treeNdx].nextInPartition;
-					continue;	//  Tree is deleted. [7/11/2003]
+					continue;	//  Tree is deleted or invalid. [7/11/2003]
+				}
+				const W3DTreeDrawModuleData *treeData = m_treeTypes[treeType].m_data;
+				if (treeData == nullptr) {
+					treeNdx = m_trees[treeNdx].nextInPartition;
+					continue;
 				}
 				Coord3D delta;
 				delta.set(m_trees[treeNdx].location.X, m_trees[treeNdx].location.Y, m_trees[treeNdx].location.Z );
 				delta.sub(pos);
 				if (radius*radius>delta.lengthSqr()) {
 					bool canTopple = unit->getCrusherLevel() > 1;
-					if (canTopple && m_treeTypes[m_trees[treeNdx].treeType].m_data->m_doTopple) {
+					if (canTopple && treeData->m_doTopple) {
 						// Give a vector with direction to thing.
 						Coord3D toppleVector;
 						toppleVector.set(m_trees[treeNdx].location.X, m_trees[treeNdx].location.Y, 0);
 						toppleVector.x -= unit->getPosition()->x;
 						toppleVector.y -= unit->getPosition()->y;
 						applyTopplingForce(m_trees+treeNdx, &toppleVector, 0, W3D_TOPPLE_OPTIONS_NONE);
-					} else if (m_treeTypes[m_trees[treeNdx].treeType].m_data->m_framesToMoveOutward>1) {
+					} else if (treeData->m_framesToMoveOutward>1) {
 						pushAsideTree(m_trees[treeNdx].drawableID, &pos, unit->getUnitDirectionVector2D(), unit->getID());
 					}
 				}
@@ -1259,11 +1271,15 @@ void W3DTreeBuffer::removeTreesForConstruction(const Coord3D* pos, const Geometr
 //=============================================================================
 /** Adds a type of tree (model & texture). */
 //=============================================================================
+// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Return -1 on error so caller knows addTreeType failed
 Int W3DTreeBuffer::addTreeType(const W3DTreeDrawModuleData *data)
 {
+	if (data == nullptr) {
+		return -1;
+	}
 	if (m_numTreeTypes>=MAX_TYPES) {
 		DEBUG_CRASH(("Too many kinds of trees in map.  Reduce kinds of trees, or raise tree limit. jba."));
-		return 0;
+		return -1;
 	}
 	m_needToUpdateTexture = true;
 
@@ -1273,7 +1289,7 @@ Int W3DTreeBuffer::addTreeType(const W3DTreeDrawModuleData *data)
 
 	if (robj==nullptr) {
 		DEBUG_CRASH(("Unable to find model for tree %s", data->m_modelName.str()));
-		return 0;
+		return -1;
 	}
 	AABoxClass box;
 
@@ -1292,7 +1308,7 @@ Int W3DTreeBuffer::addTreeType(const W3DTreeDrawModuleData *data)
 
 	if (m_treeTypes[m_numTreeTypes].m_mesh==nullptr) {
 		DEBUG_CRASH(("Tree %s is not simple mesh. Tell artist to re-export. Don't Ignore!!!", data->m_modelName.str()));
-		return 0;
+		return -1;
 	}
 
 	Int numVertex = m_treeTypes[m_numTreeTypes].m_mesh->Peek_Model()->Get_Vertex_Count();
@@ -1323,13 +1339,15 @@ void W3DTreeBuffer::addTree(DrawableID id, Coord3D location, Real scale, Real an
 	if (m_numTrees >= MAX_TREES) {
 		return;
 	}
-	if (!m_initialized) {
+	// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Guard data != nullptr
+	if (!m_initialized || data == nullptr) {
 		return;
 	}
 	Int treeType = DELETED_TREE_TYPE;
 	Int i;
 	for (i=0; i<m_numTreeTypes; i++) {
-		if (m_treeTypes[i].m_data->m_modelName.compareNoCase(data->m_modelName)==0 &&
+		if (m_treeTypes[i].m_data &&
+				m_treeTypes[i].m_data->m_modelName.compareNoCase(data->m_modelName)==0 &&
 				m_treeTypes[i].m_data->m_textureName.compareNoCase(data->m_textureName)==0) {
 			treeType = i;
 			break;
@@ -1422,6 +1440,15 @@ void W3DTreeBuffer::pushAsideTree(DrawableID id, const Coord3D *pusherPos,
 	Int i;
 	for (i=0; i<m_numTrees; i++) {
 		if (m_trees[i].drawableID == id) {
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Validate treeType and treeData before dereferencing
+			Int treeType = m_trees[i].treeType;
+			if (treeType < 0 || treeType >= m_numTreeTypes) {
+				return;
+			}
+			const W3DTreeDrawModuleData *treeData = m_treeTypes[treeType].m_data;
+			if (treeData == nullptr || treeData->m_framesToMoveOutward == 0) {
+				return;
+			}
 			UnsignedInt lastFrame = m_trees[i].lastFrameUpdated;
 			m_trees[i].lastFrameUpdated = TheGameLogic->getFrame();
 			if(m_trees[i].pushAsideSource == pusherID) {
@@ -1445,7 +1472,7 @@ void W3DTreeBuffer::pushAsideTree(DrawableID id, const Coord3D *pusherPos,
 				m_trees[i].pushAsideSin = -pusherDirection->x;
 			}
 			m_anyPushChanged = true;
-			m_trees[i].pushAsideDelta = 1.0f/(Real)m_treeTypes[m_trees[i].treeType].m_data->m_framesToMoveOutward;
+			m_trees[i].pushAsideDelta = 1.0f/(Real)treeData->m_framesToMoveOutward;
 		}
 	}
 }
@@ -1509,7 +1536,8 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	if (m_shadow && TheW3DProjectedShadowManager && TheGlobalData->m_useShadowDecals) {
 		for (curTree=0; curTree<m_numTrees; curTree++) {
 			Int type = m_trees[curTree].treeType;
-			if (type<0) {
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type
+			if (type<0 || type>=m_numTreeTypes) {
 				// deleted.
 				continue;
 			}
@@ -1531,11 +1559,15 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	// Update pushed aside and toppling trees.
 	for (curTree=0; curTree<m_numTrees; curTree++) {
 		Int type = m_trees[curTree].treeType;
-		if (type<0) {
-			// deleted.
+		// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type and null check moduleData
+		if (type<0 || type>=m_numTreeTypes) {
+			// deleted or invalid.
 			continue;
 		}
 		const W3DTreeDrawModuleData *moduleData = m_treeTypes[type].m_data;
+		if (moduleData == nullptr) {
+			continue;
+		}
 		if(m_trees[curTree].m_toppleState == TOPPLE_FALLING ||
 			 m_trees[curTree].m_toppleState == TOPPLE_FOGGED) {
 			updateTopplingTree(m_trees+curTree, timeScale);
@@ -1545,7 +1577,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 					m_trees[curTree].treeType = DELETED_TREE_TYPE; // delete it. [7/11/2003]
 					m_anythingChanged = true; // need to regenerate trees. [7/11/2003]
 				}
-				const Real sinkDistancePerFrame = moduleData->m_sinkDistance / moduleData->m_sinkFrames;
+				const Real sinkDistancePerFrame = (moduleData->m_sinkFrames > 0) ? (moduleData->m_sinkDistance / moduleData->m_sinkFrames) : 0.0f;
 				m_trees[curTree].m_sinkFramesLeft -= timeScale;
 				m_trees[curTree].location.Z -= sinkDistancePerFrame * timeScale;
 				m_trees[curTree].m_mtx.Set_Translation(m_trees[curTree].location);
@@ -1553,7 +1585,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 		} else if (m_trees[curTree].pushAsideDelta!=0.0f) {
 			m_trees[curTree].pushAside += m_trees[curTree].pushAsideDelta;
 			if (m_trees[curTree].pushAside>=1.0f) {
-				m_trees[curTree].pushAsideDelta = -1.0f/(Real)moduleData->m_framesToMoveInward;
+				m_trees[curTree].pushAsideDelta = (moduleData->m_framesToMoveInward > 0) ? (-1.0f/(Real)moduleData->m_framesToMoveInward) : 0.0f;
 			} else if (m_trees[curTree].pushAside<=0.0f) {
 				m_trees[curTree].pushAsideDelta = 0.0f;
 				m_trees[curTree].pushAside = 0.0f;
@@ -1739,10 +1771,17 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 void W3DTreeBuffer::applyTopplingForce( TTree *tree, const Coord3D* toppleDirection, Real toppleSpeed,
 																			 UnsignedInt options )
 {
-	if (tree->m_toppleState != TOPPLE_UPRIGHT) {
+	// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Null/bounds check tree and treeData
+	if (!tree || tree->m_toppleState != TOPPLE_UPRIGHT) {
+		return;
+	}
+	if (tree->treeType < 0 || tree->treeType >= m_numTreeTypes) {
 		return;
 	}
 	const W3DTreeDrawModuleData* d = m_treeTypes[tree->treeType].m_data;
+	if (d == nullptr) {
+		return;
+	}
   // Having a low toppleSpeed is BAD. In particular, if the toppleSpeed is exactly 0, the
   // tree will stay upright forever, frozen in place (because the sway update is dead)
   // but never dying
@@ -1777,11 +1816,19 @@ static const Real ANGULAR_LIMIT = PI/2 - PI/64;
 void W3DTreeBuffer::updateTopplingTree(TTree *tree, Real timeScale)
 {
 	//DLOG(Debug::Format("updating W3DTreeBuffer %08lx\n",this));
+	// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Null/bounds check tree and treeData
+	if (!tree) return;
 	DEBUG_ASSERTCRASH(tree->m_toppleState != TOPPLE_UPRIGHT, ("hmm, we should be sleeping here"));
 	if ( (tree->m_toppleState == TOPPLE_UPRIGHT)  ||  (tree->m_toppleState == TOPPLE_DOWN) )
 		return;
 
+	if (tree->treeType < 0 || tree->treeType >= m_numTreeTypes) {
+		return;
+	}
 	const W3DTreeDrawModuleData* d = m_treeTypes[tree->treeType].m_data;
+	if (d == nullptr) {
+		return;
+	}
 	const Int localPlayerIndex = rts::getObservedOrLocalPlayerIndex_Safe();
 	Coord3D pos;
 	pos.set(tree->location.X, tree->location.Y, tree->location.Z);
@@ -1895,7 +1942,8 @@ void W3DTreeBuffer::xfer( Xfer *xfer )
 		if (xfer->getXferMode() != XFER_LOAD) {
 			tree = m_trees[i];
 			treeType = m_trees[i].treeType;
-			if (treeType != DELETED_TREE_TYPE) {
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check treeType and null check m_data
+			if (treeType >= 0 && treeType < m_numTreeTypes && m_treeTypes[treeType].m_data) {
 				modelName = m_treeTypes[treeType].m_data->m_modelName;
 				modelTexture = m_treeTypes[treeType].m_data->m_textureName;
 			}
@@ -1905,7 +1953,8 @@ void W3DTreeBuffer::xfer( Xfer *xfer )
 		if (xfer->getXferMode() == XFER_LOAD) {
 			Int j;
 			for (j=0; j<m_numTreeTypes; j++) {
-				if (m_treeTypes[j].m_data->m_modelName.compareNoCase(modelName)==0 &&
+				if (m_treeTypes[j].m_data &&
+						m_treeTypes[j].m_data->m_modelName.compareNoCase(modelName)==0 &&
 						m_treeTypes[j].m_data->m_textureName.compareNoCase(modelTexture)==0) {
 					treeType = j;
 					break;
@@ -1943,7 +1992,8 @@ void W3DTreeBuffer::xfer( Xfer *xfer )
 			xfer->xferReal(&tree.m_sinkFramesLeft);	///< Toppled trees sink into the terrain & disappear, how many frames left.
 		}
 
-		if (xfer->getXferMode() == XFER_LOAD && treeType != DELETED_TREE_TYPE && treeType < m_numTreeTypes) {
+		// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check treeType and null check m_data
+		if (xfer->getXferMode() == XFER_LOAD && treeType != DELETED_TREE_TYPE && treeType >= 0 && treeType < m_numTreeTypes && m_treeTypes[treeType].m_data) {
 			Coord3D pos;
 			pos.set(tree.location.X, tree.location.Y, tree.location.Z);
 			Real angle = 0;
