@@ -253,9 +253,9 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 
 if(WIN32)
     target_link_libraries(corei_gameenginedevice_public INTERFACE
-        binkloader
+        deps_bink
         d3d8lib
-        milesloader
+        deps_miles
     )
 endif()
 

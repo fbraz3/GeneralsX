@@ -169,7 +169,7 @@ public:
 
 		Region3D mapRegion;
 		TheTerrainLogic->getExtentIncludingBorder( &mapRegion );
-		if( !mapRegion.isInRegionNoZ( *owner->getPosition() ) )
+		if( !mapRegion.isInRegion( owner->getPosition()->asCoord2D() ) )
 		{
 			TheGameLogic->destroyObject(owner);
 			return STATE_SUCCESS;
@@ -923,7 +923,7 @@ ChinookAIUpdateModuleData::ChinookAIUpdateModuleData()
 		{ "RotorWashParticleSystem", INI::parseAsciiString,	nullptr, offsetof( ChinookAIUpdateModuleData, m_rotorWashParticleSystem ) },
 		{ "UpgradedSupplyBoost", INI::parseInt, nullptr, offsetof( ChinookAIUpdateModuleData, m_upgradedSupplyBoost) },
 
-		{ 0, 0, 0, 0 }
+		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }

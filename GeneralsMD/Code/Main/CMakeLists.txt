@@ -8,14 +8,14 @@ set_target_properties(z_generals PROPERTIES OUTPUT_NAME GeneralsXZH)
 # GeneralsX @build BenderAI 13/02/2026 Windows-specific libraries
 if(WIN32)
     target_link_libraries(z_generals PRIVATE
-        binkloader
+        deps_bink
         comctl32
         core_debug
         d3d8
         dinput8
         dxguid
         imm32
-        milesloader
+        deps_miles
         vfw32
         winmm
     )
