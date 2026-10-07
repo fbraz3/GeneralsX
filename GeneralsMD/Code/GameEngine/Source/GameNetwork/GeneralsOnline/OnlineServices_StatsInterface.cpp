@@ -5,6 +5,8 @@
 #include "GameNetwork/GeneralsOnline/NGMP_json.h"
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/NetworkDefs.h"
+#include "GameNetwork/NetworkInterface.h"
 #include "Common/ScoreKeeper.h"
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
@@ -135,8 +137,15 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 	// Resolve local player's side/faction
 	int resolvedSide = ResolveLocalPlayerSide(pLobbyInterface);
 
-	fprintf(stderr, "[NGMP] CommitMyOutcome: won=%d matchID=%" PRIu64 " bldBuilt=%d bldKill=%d bldLost=%d unitBuilt=%d unitKill=%d unitLost=%d money=%d side=%d\n",
-		bWon ? 1 : 0, currentMatchID, buildingsBuilt, buildingsDestroyed, buildingsLost, unitsBuilt, unitsDestroyed, unitsLost, totalMoney, resolvedSide);
+	// GeneralsX @bugfix fbraz3 07/10/2026 Check if match ended in CRC desync and report to backend
+	bool bDesynced = (TheNetwork != nullptr && TheNetwork->sawCRCMismatch());
+	if (bDesynced)
+	{
+		bWon = false;
+	}
+
+	fprintf(stderr, "[NGMP] CommitMyOutcome: won=%d desynced=%d matchID=%" PRIu64 " bldBuilt=%d bldKill=%d bldLost=%d unitBuilt=%d unitKill=%d unitLost=%d money=%d side=%d\n",
+		bWon ? 1 : 0, bDesynced ? 1 : 0, currentMatchID, buildingsBuilt, buildingsDestroyed, buildingsLost, unitsBuilt, unitsDestroyed, unitsLost, totalMoney, resolvedSide);
 	fflush(stderr);
 
 	// GeneralsX @feature fbraz3 27/08/2026 POST match outcome to NGMP stats endpoint
@@ -151,7 +160,7 @@ void NGMP_OnlineServices_StatsInterface::CommitMyOutcome(ScoreKeeper* pScoreKeep
 		{"total_money", totalMoney},
 		{"won", bWon},
 		{"side", resolvedSide},
-		{"desynced", false}
+		{"desynced", bDesynced}
 	};
 	std::string payloadStr = payload.dump(-1, ' ', false, json::error_handler_t::replace);
 	std::string url = NGMP::GetAPIEndpoint("Lobby/Outcome");
