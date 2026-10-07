@@ -9,10 +9,10 @@ target_compile_definitions(core_wwcommon INTERFACE
 # GeneralsX @build BenderAI 13/02/2026 d3d8lib is INTERFACE (headers only) - safe for all
 target_link_libraries(core_wwcommon INTERFACE
     d3d8lib     # INTERFACE target: provides DXVK/DirectX types (DWORD, BOOL, etc.)
-    dbghelploader
-    milesloader
+    deps_dbghelp
+    deps_miles
+    deps_usp10
     stlport
-    usp10loader
 )
 
 target_include_directories(core_wwcommon INTERFACE

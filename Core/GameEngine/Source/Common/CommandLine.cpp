@@ -97,6 +97,7 @@ static void ConvertShortMapPathToLongMapPath(AsciiString &mapName)
 	if (!token.endsWithNoCase(".map"))
 	{
 		DEBUG_CRASH(("Invalid map name %s", mapName.str()));
+		return;
 	}
 	// remove the .map from the end.
 	token.truncateBy(4);

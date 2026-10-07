@@ -132,9 +132,9 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 		AsciiString token;
 		AsciiString tokenizer = *it;
 		tokenizer.toLower();
-		Bool infoInPath = tokenizer.nextToken(&token, "\\/");
+		tokenizer.nextToken(&token, "\\/");
 
-		while (infoInPath && (!token.find('.') || tokenizer.find('.')))
+		while (!tokenizer.isEmpty())
 		{
 			path.concat(token);
 			path.concat('\\');
@@ -151,7 +151,7 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 				dirInfo = &tempiter->second;
 			}
 
-			infoInPath = tokenizer.nextToken(&token, "\\/");
+			tokenizer.nextToken(&token, "\\/");
 		}
 
 		// GeneralsX @bugfix felipebraz 16/09/2026 Skip dummy/wildcard archive entries (e.g. Data\* in PatchZH.big)
@@ -273,15 +273,15 @@ ArchiveFileSystem::ArchivedDirectoryInfoResult ArchiveFileSystem::getArchivedDir
 	AsciiString token;
 	AsciiString tokenizer = directory;
 	tokenizer.toLower();
-	Bool infoInPath = tokenizer.nextToken(&token, "\\/");
+	tokenizer.nextToken(&token, "\\/");
 
-	while (infoInPath && (!token.find('.') || tokenizer.find('.')))
+	while (!tokenizer.isEmpty())
 	{
 		ArchivedDirectoryInfoMap::iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter != dirInfo->m_directories.end())
 		{
 			dirInfo = &tempiter->second;
-			infoInPath = tokenizer.nextToken(&token, "\\/");
+			tokenizer.nextToken(&token, "\\/");
 		}
 		else
 		{

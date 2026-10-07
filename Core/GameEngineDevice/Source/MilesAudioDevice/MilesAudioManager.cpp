@@ -42,7 +42,6 @@
 #ifdef _WIN32
 #include <dsound.h>
 #endif
-
 #include "Lib/BaseType.h"
 #include "MilesAudioDevice/MilesAudioManager.h"
 
@@ -73,6 +72,7 @@
 #include <Utility/interlocked_adapter.h>
 #include "MilesLoader.h"
 
+#include <dsound.h>
 
 enum { INFINITE_LOOP_COUNT = 1000000 };
 
