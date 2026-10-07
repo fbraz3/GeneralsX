@@ -502,7 +502,7 @@ void LANAPI::OnSlotList( ReturnType ret, LANGameInfo *theGame )
 */
 void LANAPI::OnPlayerJoin( Int slot, UnicodeString playerName )
 {
-	if (m_currentGame && m_currentGame->getIP(0) == m_localIP)
+	if (AmIHost())
 	{
 		// Someone New Joined.. lets reset the accepts
 		m_currentGame->resetAccepted();
@@ -583,7 +583,7 @@ void LANAPI::OnPlayerLeave( UnicodeString player )
 	}
 	else
 	{
-		if (m_currentGame && m_currentGame->getIP(0) == m_localIP)
+		if (AmIHost())
 		{
 			// Force a new slotlist send
 			m_lastResendTime = 0;

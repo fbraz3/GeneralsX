@@ -13,7 +13,7 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
 
 ## 1. Objectives & Principles
 
-1. **Exhaustive CodeRabbit Triage**: Review every active comment and suggestion thread opened by `coderabbitai[bot]`.
+1. **Exhaustive CodeRabbit Triage**: Review every active inline comment, suggestion thread, and high-level summary review (including pre-merge checks) opened by `coderabbitai[bot]`.
 2. **Technical Merits Over Automated Dogma**:
    - **Valid findings**: Implement robust fixes, test locally, and reply concisely with technical specifics.
    - **False positives / Inapplicable suggestions**: Rebut with a technical explanation in English explaining why the suggestion does not apply to this engine's architecture (e.g. legacy game loop constraints, memory pool design, retail compatibility, or cross-platform determinism requirements).
@@ -46,13 +46,37 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
    env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --method GET -f per_page=100 repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/comments \
      | jq '[.[] | select(.user.login == "coderabbitai[bot]")] | map({id: .id, path: .path, line: .line, original_line: .original_line, body: .body, in_reply_to_id: .in_reply_to_id})'
    ```
-   *(Note: To also inspect high-level summary comments posted at the issue level, query `repos/fbraz3/GeneralsX/issues/"$PR_NUMBER"/comments` with the same author filter).*
-5. Check for already answered/resolved threads to avoid duplicate replies.
+5. Fetch the latest CodeRabbit high-level summary comment for pre-merge checks and failed/inconclusive items (paginating all pages with `--slurp`):
+   ```bash
+   env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/issues/"$PR_NUMBER"/comments \
+     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]")] | last | .body'
+   ```
+6. Inspect CodeRabbit reviews for **Outside diff range comments** (paginating all pages with `--slurp`):
+   ```bash
+   env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
+     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
+   ```
+   *(Note: GitHub prevents inline review comments outside git diff hunks; CodeRabbit posts these findings in the review body under `> **⚠️ Outside diff range comments`).*
+7. Check for already answered/resolved threads to avoid duplicate replies.
 
 ### Step 2: Analyze & Categorize Findings
 Group every finding into one of two categories:
 - **Actionable / Valid**: Real bugs, resource/memory leaks, unhandled error conditions, null dereferences, or style/naming inconsistencies with existing code.
 - **Inapplicable / False Positive**: Suggestions that contradict engine architecture, attempt to replace `WWMath` with standard library math, add premature abstractions, break retail replay determinism, or misunderstand legacy SAGE subsystems.
+
+### Step 2.1: Triage Summary Pre-Merge & Failed Checks
+CodeRabbit posts a high-level summary review containing a `Pre-merge checks` block with pass/fail/inconclusive statuses:
+1. **Identify Failing or Inconclusive Checks**: Inspect `### ❌ Failed checks` (e.g., `Linked Issues check: ❓ Inconclusive`, `Title check`, `Conventional Commit Standards`).
+2. **Remediate Documentation & Context Deficits**:
+   - For `Linked Issues check`: CodeRabbit evaluates whether the PR body clearly explains how code changes address the issue symptoms. Remediate by editing the PR description (`gh pr edit --body-file <file>`) to include technical context on root causes, why the changes fix the issue, and verification steps.
+   - For `Title check` / `Conventional Commit Standards`: Fix PR title formatting or amend commit subjects to strictly follow Conventional Commits without `@`.
+3. **Rebut Inapplicable Checks**: If an inconclusive check requests verification or automated tests that cannot exist (e.g. interactive runtime audio streams in headless CI), document the technical explanation and evidence in the PR summary or reply.
+
+### Step 2.2: Triage Outside Diff Range Comments
+When CodeRabbit flags issues located outside the pull request's diff hunks, it nests them inside the top-level review body (`Outside diff range comments`) because GitHub's API rejects inline comments outside modified line ranges.
+1. **Extract & Inspect**: Parse the target file, line numbers, and issue description from the collapsible review body details.
+2. **Treat with Equal Priority**: Apply the same scrutiny and fixes as inline comments. Security/SAST warnings (e.g. template-injection in surrounding workflow steps) frequently appear outside the immediate PR diff hunk.
+3. **Resolution & Reporting**: Since GitHub does not provide an inline thread to reply to outside-diff comments, document the resolution in the commit message, deliverables breakdown table, and PR discussion summary.
 
 ### Step 3: Implement Fixes for Valid Findings
 1. Apply the necessary code modifications cleanly.
@@ -108,3 +132,4 @@ Provide a concise, structured report containing:
 
 3. **Parity Check**: Confirmation that applied fixes were backported to Generals base game (if applicable).
 4. **CI & Merge Status**: Current state of remote CI checks.
+5. **Pre-Merge / Failed Checks Status**: Status of CodeRabbit pre-merge checks (e.g. `Linked Issues check`, `Title check`), detailing any documentation updates, PR description enrichments, or technical rebuttals made.

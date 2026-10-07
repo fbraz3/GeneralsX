@@ -105,6 +105,12 @@ bool NGMP_OnlineServicesManager::init() {
         TheGameSpyPSMessageQueue = new DummyGameSpyPSMessageQueue();
     }
 
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_shuttingDown = false;
+        m_replayWorkerStopping = false;
+    }
+
     m_initialized = true;
     return true;
 }
@@ -113,6 +119,8 @@ void NGMP_OnlineServicesManager::shutdown() {
     if (!m_initialized) {
         return;
     }
+
+    m_shuttingDown = true;
 
     fprintf(stderr, "[NGMP] Shutting down NGMP Online Services\n");
     fflush(stderr);
@@ -145,7 +153,19 @@ void NGMP_OnlineServicesManager::shutdown() {
         m_playlistsThread.join();
     }
 
+    // GeneralsX @bugfix fbraz3 05/10/2026 Quiesce outcome worker before stopping replay upload worker so no subsequent upload can be started
+    if (m_pStatsInterface) {
+        m_pStatsInterface->quiesceOutcome();
+    }
+
+    stopReplayWorker();
+
     logout();
+
+    {
+        std::lock_guard<std::mutex> lock(m_replayMutex);
+        m_pendingReplayUploads.clear();
+    }
 
     if (TheNGMPGame) {
         delete TheNGMPGame;

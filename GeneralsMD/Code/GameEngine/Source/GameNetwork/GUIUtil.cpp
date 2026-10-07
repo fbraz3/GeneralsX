@@ -259,10 +259,12 @@ void PopulatePlayerTemplateComboBox(Int comboBox, GameWindow *comboArray[], Game
 
 		// Prevent players from selecting the disabled Generals for use.
 		// This is also enforced at game loading (GameLogic.cpp and UserPreferences.cpp).
-		// @todo: unlock these when something rad happens
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and prevent FactionBossGeneral in multiplayer GUI dropdown
 		Bool disallowLockedGenerals = TRUE;
-		const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(fac->getName());
+		const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(fac->getName()) : nullptr;
 		Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+		if (fac->getName().compareNoCase("FactionBossGeneral") == 0)
+			startsLocked = TRUE;
 		if (disallowLockedGenerals && startsLocked)
 			continue;
 

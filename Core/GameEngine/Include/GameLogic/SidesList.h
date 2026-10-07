@@ -154,6 +154,8 @@ public:
 	inline SidesInfo *getSideInfo(Int side);
 	inline SidesInfo *getSkirmishSideInfo(Int side);
 	Int getNumSkirmishSides() { return m_numSkirmishSides; }
+	// GeneralsX @bugfix fbraz3 05/10/2026 Allow importing missing skirmish player definitions from SkirmishScripts chunk (#335).
+	void addSkirmishSide(const Dict* d);
 	SidesInfo *findSideInfo(AsciiString name, Int* index = nullptr);
 	SidesInfo *findSkirmishSideInfo(AsciiString name, Int* index = nullptr);
 
@@ -180,7 +182,9 @@ public:
 
 	enum
 	{
-		MAX_TEAM_DEPTH = 3
+		MAX_TEAM_DEPTH = 3,
+		// GeneralsX @bugfix fbraz3 05/10/2026 Expand skirmish sides capacity to accommodate mod rosters on custom maps (#335).
+		MAX_SKIRMISH_SIDES = 64
 	};
 
 protected:
@@ -194,7 +198,8 @@ protected:
 	SidesInfo		m_sides[MAX_PLAYER_COUNT];
 
 	Int					m_numSkirmishSides;
-	SidesInfo		m_skirmishSides[MAX_PLAYER_COUNT];
+	// GeneralsX @bugfix fbraz3 05/10/2026 Size skirmish sides array with MAX_SKIRMISH_SIDES to prevent buffer overflow (#335).
+	SidesInfo		m_skirmishSides[MAX_SKIRMISH_SIDES];
 
 	TeamsInfoRec	m_teamrec;
 	TeamsInfoRec	m_skirmishTeamrec;

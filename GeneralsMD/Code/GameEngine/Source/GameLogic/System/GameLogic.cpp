@@ -130,6 +130,7 @@
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/GeneralsOnline/NetworkMesh.h"
 #endif
 
@@ -773,9 +774,12 @@ static void populateRandomSideAndColor( GameInfo *game )
 
 		// TheSuperHackers @logic-client-separation helmutbuhler 11/04/2025
 		// TheChallengeGenerals belongs to client, we shouldn't depend on that here.
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and ensure FactionBossGeneral is never in the random faction pool to guarantee cross-platform determinism
 		Bool disallowLockedGenerals = TRUE;
-		const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(ptTest->getName());
+		const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(ptTest->getName()) : nullptr;
 		Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+		if (ptTest->getName().compareNoCase("FactionBossGeneral") == 0)
+			startsLocked = TRUE;
 		if (disallowLockedGenerals && startsLocked)
 			continue;
 
@@ -2113,9 +2117,12 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 				// TheSuperHackers @logic-client-separation helmutbuhler 11/04/2025
 				// TheChallengeGenerals belongs to client, we shouldn't depend on that here.
+				// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and lock FactionBossGeneral in multiplayer
 				Bool disallowLockedGenerals = TRUE;
-				const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(pt->getName());
+				const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(pt->getName()) : nullptr;
 				Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+				if (isInMultiplayerGame() && pt->getName().compareNoCase("FactionBossGeneral") == 0)
+					startsLocked = TRUE;
 				if (disallowLockedGenerals && startsLocked)
 					continue;
 
@@ -2359,6 +2366,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				if (pMesh)
 				{
 					pMesh->StopLoadingKeepalive();
+				}
+
+				// GeneralsX @feature fbraz3 03/10/2026 Send initial match progress to resolve Random faction immediately
+				NGMP_OnlineServices_StatsInterface* pStats = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+				if (pStats)
+				{
+					pStats->SendMatchProgress(true);
 				}
 			}
 #endif
