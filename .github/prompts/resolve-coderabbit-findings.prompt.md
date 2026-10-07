@@ -51,10 +51,10 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
    env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/issues/"$PR_NUMBER"/comments \
      | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]")] | last | .body'
    ```
-6. Inspect CodeRabbit reviews for **Outside diff range comments**:
+6. Inspect CodeRabbit reviews for **Outside diff range comments** (paginating all pages with `--slurp`):
    ```bash
-   env -u GITHUB_TOKEN -u GH_TOKEN gh api repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
-     | jq -r '[.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
+   env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
+     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
    ```
    *(Note: GitHub prevents inline review comments outside git diff hunks; CodeRabbit posts these findings in the review body under `> **⚠️ Outside diff range comments`).*
 7. Check for already answered/resolved threads to avoid duplicate replies.
