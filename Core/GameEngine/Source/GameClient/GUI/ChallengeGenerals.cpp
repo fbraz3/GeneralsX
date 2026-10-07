@@ -40,7 +40,10 @@ ChallengeGenerals *createChallengeGenerals()
 }
 
 
-ChallengeGenerals::ChallengeGenerals()
+// GeneralsX @bugfix felipebraz 06/10/2026 Initialize template number and difficulty in ChallengeGenerals constructor
+ChallengeGenerals::ChallengeGenerals() :
+	m_PlayerTemplateNum(0),
+	m_currentDifficulty(DIFFICULTY_NORMAL)
 {
 	//ctor
 }

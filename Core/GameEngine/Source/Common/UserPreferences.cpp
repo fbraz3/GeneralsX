@@ -584,10 +584,12 @@ Int CustomMatchPreferences::getPreferredFaction()
 		else {
 			// Prevent from loading the disabled Generals, in case you had previously selected one as your preferred faction.
 			// This is also enforced at GUI setup (GUIUtil.cpp and GameLogic.cpp).
-			// @todo: unlock these when something rad happens
+			// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and reset FactionBossGeneral to random
 			Bool disallowLockedGenerals = TRUE;
-			const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(fac->getName());
+			const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(fac->getName()) : nullptr;
 			Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+			if (fac->getName().compareNoCase("FactionBossGeneral") == 0)
+				startsLocked = TRUE;
 			if (disallowLockedGenerals && startsLocked)
 				ret = PLAYERTEMPLATE_RANDOM;
 		}
