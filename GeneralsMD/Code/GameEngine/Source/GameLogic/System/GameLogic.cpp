@@ -2121,7 +2121,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				Bool disallowLockedGenerals = TRUE;
 				const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(pt->getName()) : nullptr;
 				Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
-				if (isInInternetGame() && pt->getName().compareNoCase("FactionBossGeneral") == 0)
+				if (isInMultiplayerGame() && pt->getName().compareNoCase("FactionBossGeneral") == 0)
 					startsLocked = TRUE;
 				if (disallowLockedGenerals && startsLocked)
 					continue;

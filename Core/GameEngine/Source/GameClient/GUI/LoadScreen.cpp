@@ -1320,6 +1320,9 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 			portrait = TheMappedImageCollection->findImageByName("SUFactionLogoLg_GLA");
 		else if (pt->getName() == "FactionChina")
 			portrait = TheMappedImageCollection->findImageByName("SNFactionLogoLg_China");
+		// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
+		else if (pt->getName() == "FactionObserver")
+			portrait = nullptr;
 		else
 			DEBUG_CRASH(("Unexpected player template"));
 
@@ -1587,6 +1590,9 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 			portrait = TheMappedImageCollection->findImageByName("SUFactionLogo144_GLA");
 		else if (pt->getName() == "FactionChina")
 			portrait = TheMappedImageCollection->findImageByName("SNFactionLogo144_China");
+		// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
+		else if (pt->getName() == "FactionObserver")
+			portrait = nullptr;
 		else
 			DEBUG_CRASH(("Unexpected player template"));
 
