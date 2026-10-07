@@ -26,6 +26,7 @@
 #include "GameNetwork/GeneralsOnline/ngmp_curl_utils.h"
 #include "Common/UnicodeString.h"
 #include "WWLib/utf8.h"
+#include "gitinfo.h"
 
 #include "PlatformBrowser.h"
 
@@ -56,6 +57,22 @@
 #endif
 
 namespace NGMP {
+
+// GeneralsX @feature fbraz3 07/10/2026 Client version and User-Agent helpers for version enforcement
+std::string GetClientVersion() {
+    if (GitTag != nullptr && GitTag[0] != '\0') {
+        const char* tag = GitTag;
+        if (tag[0] == 'v' || tag[0] == 'V') {
+            tag++;
+        }
+        return tag;
+    }
+    return "dev";
+}
+
+std::string GetUserAgent() {
+    return std::format("GeneralsX/{} ({})", GetClientVersion(), NGMP_CLIENT_ID);
+}
 
 bool IsSSLEnabled() {
 #if defined(NGMP_USE_SSL) && NGMP_USE_SSL
@@ -269,7 +286,7 @@ void FetchMOTD() {
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, GetUserAgent().c_str());
 
     CURLcode res = curl_easy_perform(curl);
     long httpCode = 0;
@@ -297,7 +314,7 @@ std::string GetAPIEndpoint(const char* szEndpoint) {
 }
 
 std::string GetBrowserLoginURL(const std::string& gamecode) {
-    return std::format("{}/login/?gamecode={}", GetWebPortalURL(), gamecode);
+    return std::format("{}/login/?gamecode={}&v={}", GetWebPortalURL(), gamecode, GetClientVersion());
 }
 
 std::string GetMatchViewURL(uint64_t matchId) {

@@ -38,7 +38,7 @@ static std::string RequestLoginCodeFromServer() {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
 
     CURLcode res = curl_easy_perform(curl);
     long httpCode = 0;
@@ -138,11 +138,12 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
             std::string url = NGMP::GetAPIEndpoint("CheckLogin");
 
             json requestJson = {
-                { "code",        m_gamecode },
-                { "client_id",   NGMP_CLIENT_ID },
-                { "reserved_0",  "" },
-                { "reserved_1",  "" },
-                { "reserved_2",  "" }
+                { "code",           m_gamecode },
+                { "client_id",      NGMP_CLIENT_ID },
+                { "client_version", NGMP::GetClientVersion() },
+                { "reserved_0",     NGMP::GetClientVersion() },
+                { "reserved_1",     "" },
+                { "reserved_2",     "" }
             };
             std::string requestBody = requestJson.dump(-1, ' ', false, json::error_handler_t::replace);
 
@@ -163,6 +164,7 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
             curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
 
             CURLcode res = curl_easy_perform(curl);
             long httpCode = 0;
@@ -183,6 +185,20 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                 fprintf(stderr, "[NGMP] CheckLogin response (%ld)\n", httpCode);
             }
             fflush(stderr);
+
+            if (httpCode == 426) {
+                fprintf(stderr, "[NGMP] Server rejected login: client version is outdated (HTTP 426 Upgrade Required)\n");
+                fflush(stderr);
+
+                m_waitingBrowserLogin = false;
+                m_pollThreadRunning   = false;
+
+                NGMPEvent ev;
+                ev.type    = NGMPEvent::EVENT_AUTH_FAILURE;
+                ev.payload = "UpdateRequired";
+                postEvent(ev);
+                return;
+            }
 
             try {
                 auto respJson = json::parse(response.text);
@@ -343,9 +359,10 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
         fflush(stderr);
 
         json requestJson = {
-            { "reserved_0", "" },
-            { "reserved_1", "" },
-            { "reserved_2", "" },
+            { "client_version", NGMP::GetClientVersion() },
+            { "reserved_0",     NGMP::GetClientVersion() },
+            { "reserved_1",     "" },
+            { "reserved_2",     "" },
             { "exe_crc", TheGlobalData ? TheGlobalData->m_exeCRC : 0 },
             { "ini_crc", TheGlobalData ? TheGlobalData->m_iniCRC : 0 }
         };
@@ -368,7 +385,7 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
             curl_easy_setopt(curl, CURLOPT_TIMEOUT, 6L);
             curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 4L);
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
             curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
             CURLcode res = curl_easy_perform(curl);
@@ -429,6 +446,16 @@ void NGMP_OnlineServicesManager::loginWithRefreshToken(const std::string& refres
                     fprintf(stderr, "[NGMP] LoginWithToken JSON parse error: %s\n", e.what());
                     fflush(stderr);
                 }
+            } else if (httpCode == 426) {
+                fprintf(stderr, "[NGMP] Silent login rejected: client version is outdated (HTTP 426 Upgrade Required)\n");
+                fflush(stderr);
+                m_waitingBrowserLogin = false;
+                m_pollThreadRunning   = false;
+                NGMPEvent ev;
+                ev.type    = NGMPEvent::EVENT_AUTH_FAILURE;
+                ev.payload = "UpdateRequired";
+                postEvent(ev);
+                return;
             } else if (httpCode == 423) {
                 fprintf(stderr, "[NGMP] Account is banned\n");
                 fflush(stderr);
@@ -555,7 +582,7 @@ bool NGMP_OnlineServicesManager::refreshSessionTokenSync(uint32_t knownVersion) 
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 8L);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 4L);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "GeneralsX/" NGMP_CLIENT_ID);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
     CURLcode res = curl_easy_perform(curl);
