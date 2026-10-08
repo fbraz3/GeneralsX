@@ -149,11 +149,11 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsX" 2>/dev/null || {
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
 
-# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListReforged.ini for dynamic explosion & superweapon lights
-FXLIST_REFORGED_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListReforged.ini"
-if [[ -f "${FXLIST_REFORGED_SRC}" ]]; then
+# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
     mkdir -p "${RUNTIME_DIR}/Data/INI"
-    cp -v "${FXLIST_REFORGED_SRC}" "${RUNTIME_DIR}/Data/INI/FXListReforged.ini"
+    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
 fi
 
 echo "  Deploying fonts..."
