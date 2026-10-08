@@ -526,6 +526,10 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
  	if (m_disableTextures)
  		devicePasses=1;	//force to 1 lighting-only pass
 
+	// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out (Reforged pattern)
+	if (ShaderClass::Is_Backface_Culling_Inverted())
+		devicePasses=0;
+
  	//Specify all textures that this shader may need.
  	W3DShaderManager::setTexture(0,m_stageZeroTexture);
 	if (m_shroud && rinfo.Additional_Pass_Count() && !m_disableTextures)
@@ -586,7 +590,8 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 #if 1
 
 	//Draw feathered shorelines
-	renderShoreLines(&rinfo.Camera);
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		renderShoreLines(&rinfo.Camera);
 
 #ifdef DO_ROADS
 	DX8Wrapper::Set_Texture(0,nullptr);
@@ -609,7 +614,9 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	m_stageTwoTexture->restore();
 
-	drawScorches();
+	if (!ShaderClass::Is_Backface_Culling_Inverted()) {
+		drawScorches();
+	}
 
 	DX8Wrapper::Set_Texture(0,nullptr);
 	DX8Wrapper::Set_Texture(1,nullptr);
@@ -619,7 +626,7 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 	m_bridgeBuffer->drawBridges(&rinfo.Camera, m_disableTextures, m_stageTwoTexture);
 
-	if (TheTerrainTracksRenderObjClassSystem)
+	if (TheTerrainTracksRenderObjClassSystem && !ShaderClass::Is_Backface_Culling_Inverted())
 		TheTerrainTracksRenderObjClassSystem->flush();
 
 	ShaderClass::Invalidate();
@@ -627,7 +634,8 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 	m_waypointBuffer->drawWaypoints(rinfo);
 
-	m_bibBuffer->renderBibs();
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		m_bibBuffer->renderBibs();
 #endif
 	// We do some custom blending, so tell the shader class to reset everything.
 	DX8Wrapper::Set_Texture(0,nullptr);

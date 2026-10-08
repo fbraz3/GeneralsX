@@ -98,7 +98,8 @@
 // GeneralsX @feature BenderAI 08/10/2026 Water reflection constants from Reforged
 #define WATER_REFLECTION_SIZE 512	//dimensions of the reflection texture laid over map water
 #define WATER_REFLECTION_AREA_MARGIN 0.05f	//slack around the water's screen area, so filtering at its edge reads inside it
-#define WATER_REFLECTION_STRENGTH 0.55f	//how far a reflected object darkens the water under it
+// GeneralsX @tweak fbraz3 08/10/2026 Softened reflection strength from 0.55f to 0.35f for natural translucent water
+#define WATER_REFLECTION_STRENGTH 0.35f	//how far a reflected object darkens the water under it
 #define WATER_REFLECTION_SKY_COLOR Vector3(1.0f,1.0f,1.0f)	//white, so where nothing stands the water keeps its own colour
 
 #define SEA_BUMP_SCALE		(0.06f)		//scales the du/dv offsets stored in bump map (~ amount to perturb)
