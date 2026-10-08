@@ -994,23 +994,39 @@ void WaterRenderObjClass::ReAcquireResources()
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
 			compiledShader->Release();
 		}
-		shader =
-			"ps.1.1\n \
-			def c1, 0.333333, 0.333333, 0.333333, 0\n\
-			tex t0 ; the mirrored scene, looked up through the projected stage, white where nothing stands\n\
-			dp3 r1.rgb, t0, c1 ; how bright the mirror is here\n\
-			mov r1.rgb, 1-r1 ; how far that is from the white it was cleared to\n\
-			add r1.rgb, r1, r1\n\
-			add r1.rgb, r1, r1 ; four times and clamped, so anything standing there counts in full whatever its colour\n\
-			mul r0.rgb, r1, c0 ; darkened by the strength\n\
-			mov r0.rgb, 1-r0 ; multiplied into the water, so white leaves it as it was\n\
-			+mov r0.a, c0\n";
-		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
-		if (hr==0) {
-			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_reflectionPixelShader);
-			compiledShader->Release();
-		}
+		// GeneralsX @feature fbraz3 08/10/2026 Precompiled ps.1.1 bytecode for water reflection shader (Reforged pattern)
+		static const DWORD reflectionShaderBytecode[] = {
+			0xFFFF0101, // ps_1_1
+			0x00000051, 0xA00F0001, 0x3EAAAAAB, 0x3EAAAAAB, 0x3EAAAAAB, 0x00000000, // def c1, 0.333333, 0.333333, 0.333333, 0
+			0x00000042, 0xB00F0000,                                                 // tex t0
+			0x00000008, 0x80070001, 0xB0E40000, 0xA0E40001,                         // dp3 r1.rgb, t0, c1
+			0x00000001, 0x80070001, 0x86E40001,                                     // mov r1.rgb, 1-r1
+			0x00000002, 0x80070001, 0x80E40001, 0x80E40001,                         // add r1.rgb, r1, r1
+			0x00000002, 0x80070001, 0x80E40001, 0x80E40001,                         // add r1.rgb, r1, r1
+			0x00000005, 0x80070000, 0x80E40001, 0xA0E40000,                         // mul r0.rgb, r1, c0
+			0x00000001, 0x80070000, 0x86E40000,                                     // mov r0.rgb, 1-r0
+			0x40000001, 0x80080000, 0xA0E40000,                                     // +mov r0.a, c0
+			0x0000FFFF                                                               // end
+		};
+		DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(reflectionShaderBytecode, &m_reflectionPixelShader);
 #endif // _WIN32 - Runtime shader compilation
+		if (!m_reflectionPixelShader)
+		{
+			static const DWORD reflectionShaderBytecode[] = {
+				0xFFFF0101, // ps_1_1
+				0x00000051, 0xA00F0001, 0x3EAAAAAB, 0x3EAAAAAB, 0x3EAAAAAB, 0x00000000,
+				0x00000042, 0xB00F0000,
+				0x00000008, 0x80070001, 0xB0E40000, 0xA0E40001,
+				0x00000001, 0x80070001, 0x86E40001,
+				0x00000002, 0x80070001, 0x80E40001, 0x80E40001,
+				0x00000002, 0x80070001, 0x80E40001, 0x80E40001,
+				0x00000005, 0x80070000, 0x80E40001, 0xA0E40000,
+				0x00000001, 0x80070000, 0x86E40000,
+				0x40000001, 0x80080000, 0xA0E40000,
+				0x0000FFFF
+			};
+			DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(reflectionShaderBytecode, &m_reflectionPixelShader);
+		}
 	}
 
 	//W3D Invalidate textures after losing the device and since we peek at the textures directly, it won't
@@ -3110,8 +3126,9 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 {
-	if (!m_pReflectionTexture)
-		return;	// the card refused a render target
+	// GeneralsX @bugfix fbraz3 08/10/2026 Guard against missing RT or pixel shader (Reforged pattern)
+	if (!m_pReflectionTexture || !m_reflectionPixelShader)
+		return;	// the card refused a render target or a pixel shader
 
 	// multiplied into the water, so it keeps the colour it was drawn with and the shroud already on it
 	DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
@@ -3154,28 +3171,16 @@ void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 | D3DTTFF_PROJECTED);
 
-	if (m_reflectionPixelShader)
-	{
-		Vector4 strength(WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, &strength.X, 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_reflectionPixelShader);
-	}
-	else
-	{
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, (REAL_TO_INT(WATER_REFLECTION_STRENGTH * 255.0f) << 24) | 0x00FFFFFF);
-		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
-	}
-
+	Vector4 strength(WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH);
+	DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, &strength.X, 1);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, REAL_TO_INT(WATER_REFLECTION_STRENGTH * 255.0f) << 24);
+	DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_reflectionPixelShader);
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	DX8Wrapper::Draw_Triangles(0, triangleCount, 0, vertexCount);
 
-	if (m_reflectionPixelShader)
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
-
+	DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU|0);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 	DX8Wrapper::Set_DX8_Texture(0, nullptr);

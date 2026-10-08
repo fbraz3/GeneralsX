@@ -2195,7 +2195,8 @@ AGAIN:
 
 			TheParticleSystemManager->DRAW();
 
-			if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
+			// GeneralsX @feature fbraz3 08/10/2026 Update water render target for all water types (Reforged pattern)
+			if (TheWaterRenderObj)
 				TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());	//do a render into each texture
 
 			//Can't render into textures while rendering to screen so these textures need to be updated
