@@ -114,6 +114,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseShadowVolumes",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowVolumes ) },
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Also cast volume shadows off skinned meshes
 	{ "UseShadowVolumesForSkins",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowVolumesForSkins ) },
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
+	{ "ShadowsForProjectiles",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProjectiles ) },
 	{ "UseShadowDecals",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowDecals ) },
 	{ "TextureReductionFactor",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_textureReductionFactor ) },
 	{ "UseBehindBuildingMarker",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_enableBehindBuildingMarkers ) },
@@ -677,6 +679,7 @@ GlobalData::GlobalData()
 	m_downwindAngle = ( -0.785f );//Northeast!
 	m_useShadowVolumes = FALSE;
 	m_useShadowVolumesForSkins = TRUE;
+	m_shadowsForProjectiles = TRUE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;

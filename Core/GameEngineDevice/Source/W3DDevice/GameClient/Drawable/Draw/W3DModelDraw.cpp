@@ -1854,25 +1854,107 @@ void W3DModelDraw::releaseShadows()	///< frees all shadow resources used by this
 	m_shadow = nullptr;
 }
 
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned mesh shadow promotion and projectile decal shadows
+/** Does this model contain any skinned (bone-deformed) geometry? Infantry and other animated
+characters do; vehicles and structures are built from rigid sub-meshes. Only LOD 0 is checked - that
+is the LOD the shadow system fetches its live meshes from. */
+static Bool hasSkinnedGeometry(RenderObjClass *robj)
+{
+	if (robj == nullptr || robj->Class_ID() != RenderObjClass::CLASSID_HLOD)
+		return FALSE;
+
+	HLodClass *hlod = (HLodClass *)robj;
+
+	for (Int i = 0; i < hlod->Get_Lod_Model_Count(0); i++)
+	{
+		RenderObjClass *lodModel = hlod->Peek_Lod_Model(0, i);
+
+		if (lodModel && lodModel->Class_ID() == RenderObjClass::CLASSID_MESH &&
+				((MeshClass *)lodModel)->Peek_Model()->Get_Flag(MeshGeometryClass::SKIN))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/** Infantry ship with a flat blob decal because the old shadow system refused to build a volume out
+of a skinned mesh. It can now, so give them a real cast shadow that follows the pose. Returns TRUE
+when the type was changed, so the caller can fall back if no volume geometry could be built. */
+static Bool promoteSkinShadowToVolume(RenderObjClass *robj, Shadow::ShadowTypeInfo *shadowInfo)
+{
+	if (shadowInfo->m_type != SHADOW_DECAL ||
+			!TheGlobalData || !TheGlobalData->m_useShadowVolumes || !TheGlobalData->m_useShadowVolumesForSkins ||
+			!hasSkinnedGeometry(robj))
+		return FALSE;
+
+	shadowInfo->m_type = SHADOW_VOLUME;
+	// m_sizeX is the decal's width for a decal but the sun's elevation angle for a volume -
+	// feeding the decal size through would clamp the shadow to a nonsense length.
+	shadowInfo->m_sizeX = 0.0f;
+	shadowInfo->m_sizeY = 0.0f;
+	return TRUE;
+}
+
+/** Fill in the shadow this template asks for. A template that asks for nothing still gets one if it
+is a projectile: a missile or a bomb with no shadow slides over the ground with nothing tying it to
+the terrain. There can be dozens in the air at once, so it is always the cheap projected blob and
+never a volume; a zero decal size makes addShadow take the size from the model's own bounding box.
+Returns FALSE when this drawable gets no shadow at all. */
+static Bool fillShadowInfoFromTemplate(const ThingTemplate *tmplate, Shadow::ShadowTypeInfo *shadowInfo)
+{
+	if (tmplate->getShadowType() == SHADOW_NONE)
+	{
+		if (!TheGlobalData || !TheGlobalData->m_shadowsForProjectiles || !tmplate->isKindOf(KINDOF_PROJECTILE))
+			return FALSE;
+
+		// Most of these name no texture of their own, so ask for the round blob a sphere gets
+		strlcpy(shadowInfo->m_ShadowName, tmplate->getShadowTextureName().isEmpty() ? "shadow" : tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo->m_ShadowName));
+		shadowInfo->allowUpdates = FALSE;
+		shadowInfo->allowWorldAlign = TRUE;
+		shadowInfo->m_type = SHADOW_DECAL;
+		shadowInfo->m_sizeX = 0.0f;
+		shadowInfo->m_sizeY = 0.0f;
+		shadowInfo->m_offsetX = 0.0f;
+		shadowInfo->m_offsetY = 0.0f;
+		return TRUE;
+	}
+
+	strlcpy(shadowInfo->m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo->m_ShadowName));
+	DEBUG_ASSERTCRASH(shadowInfo->m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
+	shadowInfo->allowUpdates = FALSE;
+	shadowInfo->allowWorldAlign = TRUE;
+	shadowInfo->m_type = (ShadowType)tmplate->getShadowType();
+	shadowInfo->m_sizeX = tmplate->getShadowSizeX();
+	shadowInfo->m_sizeY = tmplate->getShadowSizeY();
+	shadowInfo->m_offsetX = tmplate->getShadowOffsetX();
+	shadowInfo->m_offsetY = tmplate->getShadowOffsetY();
+	return TRUE;
+}
+
 /** Create shadow resources if not already present. This is used to dynamically enable/disable shadows by the options screen*/
 void W3DModelDraw::allocateShadows()
 {
-	const ThingTemplate *tmplate=getDrawable()->getTemplate();
+	Drawable *draw = getDrawable();
+	const ThingTemplate *tmplate = draw ? draw->getTemplate() : nullptr;
+	if (!tmplate)
+		return;
 
-	//Check if we don't already have a shadow but need one for this type of model.
-	if (m_shadow == nullptr && m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
+	// Check if we don't already have a shadow but need one for this type of model.
+	Shadow::ShadowTypeInfo shadowInfo;
+	if (m_shadow == nullptr && m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 	{
-		Shadow::ShadowTypeInfo shadowInfo;
-		strlcpy(shadowInfo.m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo.m_ShadowName));
-		DEBUG_ASSERTCRASH(shadowInfo.m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
-		shadowInfo.allowUpdates			= FALSE;		//shadow image will never update
-		shadowInfo.allowWorldAlign	= TRUE;	//shadow image will wrap around world objects
-		shadowInfo.m_type						= (ShadowType)tmplate->getShadowType();
-		shadowInfo.m_sizeX					= tmplate->getShadowSizeX();
-		shadowInfo.m_sizeY					= tmplate->getShadowSizeY();
-		shadowInfo.m_offsetX				= tmplate->getShadowOffsetX();
-		shadowInfo.m_offsetY				= tmplate->getShadowOffsetY();
-  		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo);
+		// a projectile's decal is ours rather than the template's - never trade it for a volume
+		Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
+								promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
+
+		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+
+		if (m_shadow == nullptr && promotedToVolume)
+		{	// no usable shadow geometry in this model - fall back to the decal the template asked for
+			fillShadowInfoFromTemplate(tmplate, &shadowInfo);
+			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+		}
+
 		if (m_shadow)
 		{	m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
@@ -3060,21 +3142,22 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		}
 
 		// set up shadows
-		if (m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
+		Shadow::ShadowTypeInfo shadowInfo;
+		if (m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 		{
-			Shadow::ShadowTypeInfo shadowInfo;
-			strlcpy(shadowInfo.m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo.m_ShadowName));
-			DEBUG_ASSERTCRASH(shadowInfo.m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
-			shadowInfo.allowUpdates			= FALSE;		//shadow image will never update
-			shadowInfo.allowWorldAlign	= TRUE;	//shadow image will wrap around world objects
-			shadowInfo.m_type						= (ShadowType)tmplate->getShadowType();
-			shadowInfo.m_sizeX					= tmplate->getShadowSizeX();
-			shadowInfo.m_sizeY					= tmplate->getShadowSizeY();
-			shadowInfo.m_offsetX				= tmplate->getShadowOffsetX();
-			shadowInfo.m_offsetY				= tmplate->getShadowOffsetY();
+			// a projectile's decal is ours rather than the template's - never trade it for a volume
+			Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
+									promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
 
 			DEBUG_ASSERTCRASH(m_shadow == nullptr, ("m_shadow is not null"));
 			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+
+			if (m_shadow == nullptr && promotedToVolume)
+			{	// no usable shadow geometry in this model - fall back to the decal the template asked for
+				fillShadowInfoFromTemplate(tmplate, &shadowInfo);
+				m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+			}
+
 			if (m_shadow)
 			{	m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 				m_shadow->enableShadowRender(m_shadowEnabled);

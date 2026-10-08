@@ -885,7 +885,17 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 			sunCasts = sunCast && toSun.Z > MIN_SUN_HEIGHT;	//a marker ring stays under its object
 			if (heightAboveGround > 0.0f && sunCasts)
 			{
-				const Real alongRay = heightAboveGround / toSun.Z;
+				Real effectiveSunZ = toSun.Z;
+				Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
+				if (owner && owner->isKindOf(KINDOF_AIRCRAFT))
+				{
+					const Real sunHoriz = WWMath::SqrtOrigin(toSun.X * toSun.X + toSun.Y * toSun.Y);
+					const Real minSunZ = sunHoriz * WWMath::TanTrig(30.0f / 180.0f * PI);
+					if (effectiveSunZ < minSunZ)
+						effectiveSunZ = minSunZ;
+				}
+
+				const Real alongRay = heightAboveGround / effectiveSunZ;
 				objPos.X -= toSun.X * alongRay;
 				objPos.Y -= toSun.Y * alongRay;
 			}
