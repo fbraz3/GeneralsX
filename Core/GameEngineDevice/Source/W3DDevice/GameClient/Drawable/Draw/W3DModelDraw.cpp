@@ -59,6 +59,7 @@
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DScene.h"
+#include "W3DDevice/GameClient/W3DDynamicLight.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
@@ -1728,6 +1729,8 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	int i;
 	m_animationMode = RenderObjClass::ANIM_MODE_LOOP;
 	m_hideHeadlights = true;
+	m_hasHeadlights = false;
+	m_headlightDynamicLight = nullptr;
 	m_pauseAnimation = false;
 	m_curState = nullptr;
 	m_hexColor = 0;
@@ -2272,6 +2275,8 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
                                           // IT REPOSITIONS PARTICLESYSTEMS TO TSTAY IN SYNC WITH ANIMATED BONES
 
   handleClientRecoil();
+
+  updateHeadlightDynamicLight();
 
 }
 
@@ -2953,6 +2958,12 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 		m_terrainDecal->release();
 	m_terrainDecal = nullptr;
 
+	if (m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(false);
+		m_headlightDynamicLight = nullptr;
+	}
+
 	// remove existing render object from the scene
 	if (m_renderObject)
 	{
@@ -3002,8 +3013,10 @@ void W3DModelDraw::hideGarrisonFlags(Bool hide)
 
 //-------------------------------------------------------------------------------------------------
 /** Hides all subobjects which are headlights.  Used to disable lights on models during the day.*/
+// GeneralsX @feature fbraz3 08/10/2026 Vehicle headlight dynamic light support
 void W3DModelDraw::hideAllHeadlights(Bool hide)
 {
+	m_hasHeadlights = false;
 	if (m_renderObject)
 	{
 		for (Int subObj = 0; subObj < m_renderObject->Get_Num_Sub_Objects(); subObj++)
@@ -3012,9 +3025,144 @@ void W3DModelDraw::hideAllHeadlights(Bool hide)
 			if (strstr(test->Get_Name(),"HEADLIGHT"))
 			{
 				test->Set_Hidden(hide);
+				m_hasHeadlights = true;
 			}
 			test->Release_Ref();
 		}
+	}
+	if (hide && m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(false);
+		m_headlightDynamicLight = nullptr;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Where this model's headlights shine from and which way, out of its visible HEADLIGHT beam meshes:
+ * the beam starts at the mesh's pivot and runs along whichever of its own axes reaches furthest
+ * from it, +Y on 84 of the 95 beams in W3DZH.big and +X on the Avenger and the train. The origin
+ * is the middle of the mesh across that axis, so a mesh holding both lamps puts one light between
+ * them. Several meshes are averaged into one light. FALSE when no beam is showing. */
+Bool W3DModelDraw::headlightBeam(Vector3& origin, Vector3& direction, Real& reach) const
+{
+	origin.Set(0.0f, 0.0f, 0.0f);
+	direction.Set(0.0f, 0.0f, 0.0f);
+	reach = 0.0f;
+	if (m_renderObject == nullptr)
+		return false;
+
+	Int beams = 0;
+	for (Int subObj = 0; subObj < m_renderObject->Get_Num_Sub_Objects(); subObj++)
+	{
+		RenderObjClass* test = m_renderObject->Get_Sub_Object(subObj);
+		if (!test->Is_Hidden() && strstr(test->Get_Name(), "HEADLIGHT"))
+		{
+			AABoxClass box;
+			test->Get_Obj_Space_Bounding_Box(box);
+			const Vector3 lo = box.Center - box.Extent;
+			const Vector3 hi = box.Center + box.Extent;
+			Int axis = 0;
+			Real length = 0.0f;
+			Real sign = 1.0f;
+			for (Int a = 0; a < 3; ++a)
+			{
+				if (hi[a] > length) { length = hi[a]; axis = a; sign = 1.0f; }
+				if (-lo[a] > length) { length = -lo[a]; axis = a; sign = -1.0f; }
+			}
+			// a lamp lens a unit long lights nothing
+			if (length > 5.0f)
+			{
+				Vector3 start = box.Center;
+				start[axis] = (sign > 0.0f) ? lo[axis] : hi[axis];
+				Vector3 local(0.0f, 0.0f, 0.0f);
+				local[axis] = sign;
+				const Matrix3D& tm = test->Get_Transform();
+				Vector3 worldStart, worldWay;
+				Matrix3D::Transform_Vector(tm, start, &worldStart);
+				Matrix3D::Rotate_Vector(tm, local, &worldWay);
+				origin += worldStart;
+				direction += worldWay;
+				if (length > reach)
+					reach = length;
+				++beams;
+			}
+		}
+		test->Release_Ref();
+	}
+	if (beams == 0 || direction.Length2() < 1e-6f)
+		return false;
+
+	origin /= (Real)beams;
+	direction.Normalize();
+	return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+void W3DModelDraw::updateHeadlightDynamicLight()
+{
+	if (m_hideHeadlights || !m_hasHeadlights || getDrawable() == nullptr || m_renderObject == nullptr)
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	if (getDrawable()->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud)
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	Vector3 origin, direction;
+	Real reach = 0.0f;
+	if (!headlightBeam(origin, direction, reach))
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	direction.Z = 0.0f;
+	if (direction.Length2() < 1e-4f)
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+	direction.Normalize();
+	direction.Z = -0.2f; // tilt down 11 degrees towards ground
+	direction.Normalize();
+
+	Real clampedReach = WWMath::Clamp(reach * 2.5f, 60.0f, 180.0f);
+	Vector3 lightPos = origin + direction * (clampedReach * 0.45f);
+	lightPos.Z += 6.0f;
+
+	if (m_headlightDynamicLight == nullptr && W3DDisplay::m_3DScene != nullptr)
+	{
+		m_headlightDynamicLight = W3DDisplay::m_3DScene->getADynamicLight();
+	}
+
+	if (m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(true);
+		m_headlightDynamicLight->Set_Ambient(Vector3(0.35f, 0.33f, 0.28f));
+		m_headlightDynamicLight->Set_Diffuse(Vector3(0.95f, 0.90f, 0.75f));
+		m_headlightDynamicLight->Set_Far_Attenuation_Range(clampedReach * 0.2f, clampedReach);
+		m_headlightDynamicLight->Set_Position(lightPos);
+		m_headlightDynamicLight->Set_Flag(LightClass::FAR_ATTENUATION, true);
 	}
 }
 

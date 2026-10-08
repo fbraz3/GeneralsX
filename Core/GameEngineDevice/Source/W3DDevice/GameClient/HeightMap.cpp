@@ -203,10 +203,18 @@ UnsignedInt HeightMapRenderObjClass::doTheDynamicLight(VERTEX_FORMAT *vb, VERTEX
 				double range, midRange;
 				pLight->Get_Far_Attenuation_Range(midRange, range);
 				Real dist = lightDirection.Length();
-				if (dist >= range) continue;
-				if (midRange < 0.1) continue;
-				factor = 1.0f - (dist - midRange) / (range - midRange);
-				factor = WWMath::Clamp(factor,0.0f,1.0f);
+				// GeneralsX @bugfix fbraz3 08/10/2026 Allow dynamic lights with zero or small inner radius
+				if (range <= 0.1 || range <= midRange) continue;
+				if (midRange < 0.0) midRange = 0.0;
+				if (dist <= midRange)
+				{
+					factor = 1.0f;
+				}
+				else
+				{
+					factor = 1.0f - (dist - midRange) / (range - midRange);
+					factor = WWMath::Clamp(factor, 0.0f, 1.0f);
+				}
 
 				// (gth) normalize here since we have the length
 				lightDirection /= dist;

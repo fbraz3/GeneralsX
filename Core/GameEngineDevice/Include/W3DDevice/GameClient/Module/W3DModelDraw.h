@@ -58,6 +58,7 @@ public:
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
 class RenderObjClass;
+class W3DDynamicLight;
 class Shadow;
 class TerrainTracksRenderObjClass;
 class HAnimClass;
@@ -510,6 +511,8 @@ private:
 	ParticleSystemIDVec						m_particleSystemIDs;							///< The ID numbers of the particle systems currently running.
 	std::vector<ModelConditionInfo::HideShowSubObjInfo>		m_subObjectVec;
 	Bool													m_hideHeadlights;
+	Bool													m_hasHeadlights;								///< the model has a HEADLIGHT sub-object
+	W3DDynamicLight*										m_headlightDynamicLight;						///< native dynamic light for active headlights
 	Bool													m_pauseAnimation;
 	Int														m_animationMode;
 
@@ -524,6 +527,8 @@ private:
 	void adjustAnimSpeedToMovementSpeed();
 	static void hideAllMuzzleFlashes(const ModelConditionInfo* state, RenderObjClass* renderObject);
 	void hideAllHeadlights(Bool hide);
+	Bool headlightBeam(Vector3& origin, Vector3& direction, Real& reach) const;
+	void updateHeadlightDynamicLight();
 #if defined(RTS_DEBUG)	//art wants to see buildings without flags as a test.
 	void hideGarrisonFlags(Bool hide);
 #endif
