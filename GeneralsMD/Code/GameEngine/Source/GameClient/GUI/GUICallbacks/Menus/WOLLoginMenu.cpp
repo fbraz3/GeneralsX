@@ -846,6 +846,7 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		if (ev.type == NGMPEvent::EVENT_AUTH_FAILURE) {
 			loginAttemptTime = 0;
 			EnableLoginControls(TRUE);
+			// GeneralsX @feature fbraz3 07/10/2026 Handle update-required authentication failures
 			if (ev.payload == "UpdateRequired") {
 				UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
 				ClearGSMessageBoxes();

@@ -200,6 +200,13 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                 return;
             }
 
+            // Reject non-2xx HTTP status codes before parsing JSON response
+            if (httpCode < 200 || httpCode >= 300) {
+                fprintf(stderr, "[NGMP] CheckLogin polling received non-2xx HTTP status (%ld), retrying...\n", httpCode);
+                fflush(stderr);
+                continue;
+            }
+
             try {
                 auto respJson = json::parse(response.text);
                 int resultCode = respJson.value("result", -1);

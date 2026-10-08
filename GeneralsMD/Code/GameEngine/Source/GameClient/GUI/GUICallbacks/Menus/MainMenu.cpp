@@ -171,6 +171,7 @@ static GameWindow *getUpdate = nullptr;
 static GameWindow *updateNotifyButton = nullptr;  // GeneralsX @feature BenderAI 21/04/2026 Dynamically created update notification button
 static AsciiString s_updateLatestTag;             // Tag of available update
 #if defined(SAGE_USE_NGMP)
+// GeneralsX @feature fbraz3 07/10/2026 Online flow update check gating and cancellation handling
 static Bool s_waitingUpdateCheckBeforeOnline = FALSE;
 static void cancelUpdateCheckBeforeOnline()
 {
@@ -747,6 +748,13 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 		TheWindowManager->winDestroy(updateNotifyButton);
 		updateNotifyButton = nullptr;
 	}
+#if defined(SAGE_USE_NGMP)
+	if (s_waitingUpdateCheckBeforeOnline)
+	{
+		s_waitingUpdateCheckBeforeOnline = FALSE;
+		ClearGSMessageBoxes();
+	}
+#endif
 #endif
 
 	CancelPatchCheckCallback();
@@ -974,6 +982,7 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	}
 
 #if defined(SAGE_USE_NGMP)
+	// GeneralsX @feature fbraz3 07/10/2026 Poll pending update check before transitioning to Online
 	if (s_waitingUpdateCheckBeforeOnline)
 	{
 		if (UpdateChecker::isDone())
@@ -1663,7 +1672,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 					break;
 
 #if defined(SAGE_USE_NGMP) && defined(SAGE_UPDATE_CHECK)
-				// GeneralsX @feature GeneralsOnline - In production mode, require latest game version
+				// GeneralsX @feature fbraz3 07/10/2026 Require latest game version and gate Online button until update check finishes
 				if (!NGMP::IsDevelopment()) {
 					if (UpdateChecker::hasUpdate()) {
 						UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
