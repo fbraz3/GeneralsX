@@ -45,11 +45,18 @@
 #include "WWLib/thread.h"
 #include "WWDebug/wwmemlog.h"
 
-#define DEFAULT_IB_SIZE 5000
+// GeneralsX @performance Olcay Seygan / Ilyas Akin 08/10/2026 Expand shared dynamic index buffer to 65535.
+// Made full size once, fully utilizing the 16-bit index space and preventing frequent DISCARD calls.
+#define DEFAULT_IB_SIZE 65535
 
 static bool _DynamicSortingIndexArrayInUse=false;
-static SortingIndexBufferClass* _DynamicSortingIndexArray;
+static SortingIndexBufferClass* _DynamicSortingIndexArray=nullptr;
 static unsigned short _DynamicSortingIndexArraySize=0;
+
+// GeneralsX @performance Olcay Seygan / Ilyas Akin 08/10/2026 Pool retired sorting index arrays to eliminate new[] / memset stalls
+static const unsigned short SORTING_INDEX_ARRAY_SIZE=65535;
+static const int MAX_RETIRED_SORTING_INDEX_ARRAYS=16;
+static SortingIndexBufferClass* _RetiredSortingIndexArrays[MAX_RETIRED_SORTING_INDEX_ARRAYS];
 static unsigned short _DynamicSortingIndexArrayOffset=0;
 
 static bool _DynamicDX8IndexBufferInUse=false;
@@ -408,6 +415,9 @@ void DynamicIBAccessClass::_Deinit()
 
 	WWASSERT ((_DynamicSortingIndexArray == nullptr) || (_DynamicSortingIndexArray->Num_Refs() == 1));
 	REF_PTR_RELEASE(_DynamicSortingIndexArray);
+	for (int i=0;i<MAX_RETIRED_SORTING_INDEX_ARRAYS;++i) {
+		REF_PTR_RELEASE(_RetiredSortingIndexArrays[i]);
+	}
 	_DynamicSortingIndexArrayInUse=false;
 	_DynamicSortingIndexArraySize=0;
 	_DynamicSortingIndexArrayOffset=0;
@@ -514,14 +524,32 @@ void DynamicIBAccessClass::Allocate_Sorting_Dynamic_Buffer()
 
 	unsigned new_index_count=_DynamicSortingIndexArrayOffset+IndexCount;
 	WWASSERT(new_index_count<65536);
-	if (new_index_count>_DynamicSortingIndexArraySize) {
-		REF_PTR_RELEASE(_DynamicSortingIndexArray);
-		_DynamicSortingIndexArraySize=new_index_count;
-		if (_DynamicSortingIndexArraySize<DEFAULT_IB_SIZE) _DynamicSortingIndexArraySize=DEFAULT_IB_SIZE;
+	if (_DynamicSortingIndexArray && new_index_count>_DynamicSortingIndexArraySize) {
+		int slot=0;
+		while (slot<MAX_RETIRED_SORTING_INDEX_ARRAYS && _RetiredSortingIndexArrays[slot]) {
+			++slot;
+		}
+		if (slot<MAX_RETIRED_SORTING_INDEX_ARRAYS) {
+			_RetiredSortingIndexArrays[slot]=_DynamicSortingIndexArray;
+			_DynamicSortingIndexArray=nullptr;
+		}
+		else {
+			REF_PTR_RELEASE(_DynamicSortingIndexArray);
+		}
 	}
 
 	if (!_DynamicSortingIndexArray) {
-		_DynamicSortingIndexArray=NEW_REF(SortingIndexBufferClass,(_DynamicSortingIndexArraySize));
+		for (int i=0;i<MAX_RETIRED_SORTING_INDEX_ARRAYS;++i) {
+			if (_RetiredSortingIndexArrays[i] && _RetiredSortingIndexArrays[i]->Num_Refs()==1) {
+				_DynamicSortingIndexArray=_RetiredSortingIndexArrays[i];
+				_RetiredSortingIndexArrays[i]=nullptr;
+				break;
+			}
+		}
+		if (!_DynamicSortingIndexArray) {
+			_DynamicSortingIndexArray=NEW_REF(SortingIndexBufferClass,(SORTING_INDEX_ARRAY_SIZE));
+		}
+		_DynamicSortingIndexArraySize=SORTING_INDEX_ARRAY_SIZE;
 		_DynamicSortingIndexArrayOffset=0;
 	}
 
