@@ -58,6 +58,8 @@
 #include "GameClient/GameWindowTransitions.h"
 
 #include "GameNetwork/GameSpy/GSConfig.h"
+#include "Common/UpdateChecker.h"
+#include "GameNetwork/GeneralsOnline/NGMP_Helpers.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/PingThread.h"
@@ -844,7 +846,23 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 		if (ev.type == NGMPEvent::EVENT_AUTH_FAILURE) {
 			loginAttemptTime = 0;
 			EnableLoginControls(TRUE);
-			GSMessageBoxOk(TheGameText->fetch("GUI:ConnectionErrorTitle"), TheGameText->fetch("GUI:ConnectionError"));
+			// GeneralsX @feature fbraz3 07/10/2026 Handle update-required authentication failures
+			if (ev.payload == "UpdateRequired") {
+				UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
+				ClearGSMessageBoxes();
+#ifdef SAGE_UPDATE_CHECK
+				GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
+					const char* url = UpdateChecker::getReleasesUrl();
+					if (url) {
+						NGMP::OpenURL(url);
+					}
+				});
+#else
+				GSMessageBoxOk(UnicodeString(L"Update Required"), msg);
+#endif
+			} else {
+				GSMessageBoxOk(TheGameText->fetch("GUI:ConnectionErrorTitle"), TheGameText->fetch("GUI:ConnectionError"));
+			}
 			fprintf(stderr, "[NGMP] Showing connection error to user: %s\n", ev.payload.c_str());
 			fflush(stderr);
 		}
