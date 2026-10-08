@@ -156,6 +156,8 @@ public:
 	Bool m_useWaterPlane;
 	Bool m_useCloudPlane;
 	Bool m_useShadowVolumes;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Also cast volume shadows off skinned meshes
+	Bool m_useShadowVolumesForSkins;
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;

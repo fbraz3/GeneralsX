@@ -279,6 +279,8 @@ public:
 	/// @todo: Cache/Store face normals someplace so they are not recomputed when lights move.
 	const Vector3& GetPolygonNormal(long dwPolyNormId) const
 	{
+		if (m_posedNormals)
+			return m_posedNormals[dwPolyNormId];	//skin: normals rebuilt from this frame's pose
 		WWASSERT(m_polygonNormals);
 		return m_polygonNormals[dwPolyNormId];
 	}
@@ -349,7 +351,18 @@ protected:
 #endif
 	const Vector3& GetVertex (int dwVertId) const
 	{
+		if (m_posedVerts)
+			return m_posedVerts[dwVertId];	//skin: this frame's deformed vertices
 		return m_verts[dwVertId];
+	}
+
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Support volumetric shadows for skinned meshes
+	Bool isSkin () const { return m_isSkin; }
+	Int getNumSourceVerts () const { return m_numSourceVerts; }
+	void setPosedData (const Vector3 *verts, const Vector3 *normals)
+	{
+		m_posedVerts = verts;
+		m_posedNormals = normals;
 	}
 
 	MeshClass *m_mesh;	///< W3D mesh for this geometry
@@ -365,6 +378,10 @@ protected:
 	Int m_numPolyNeighbors;  // length of m_polyNeighbors and the number of polygons
 							 // in our current geometry.
 	W3DShadowGeometry *m_parentGeometry; // mesh hierarchy containing this mesh.
+	Bool m_isSkin;	///<mesh deforms with the skeleton, so its silhouette must be rebuilt from the current pose.
+	Int m_numSourceVerts;	///<vertex count before duplicates were merged - the range m_parentVerts indexes into.
+	const Vector3 *m_posedVerts;	///<this frame's deformed vertices, nullptr unless a skin is being updated.
+	const Vector3 *m_posedNormals;	///<face normals matching m_posedVerts, nullptr unless a skin is being updated.
 
 };
 
@@ -655,6 +672,7 @@ Int W3DShadowGeometry::initFromHLOD(RenderObjClass *robj)
 
 			MeshModelClass *mm = geomMesh->m_mesh->Peek_Model();
 			geomMesh->m_numVerts=mm->Get_Vertex_Count();
+			geomMesh->m_numSourceVerts=geomMesh->m_numVerts;
 			geomMesh->m_verts=mm->Get_Vertex_Array();
 			geomMesh->m_numPolygons=mm->Get_Polygon_Count();
 			geomMesh->m_polygons=mm->Get_Polygon_Array();
@@ -776,6 +794,83 @@ Int W3DShadowGeometry::initFromHLOD(RenderObjClass *robj)
 
 	}
 
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Support volumetric shadows for skinned meshes
+	// Second pass: the skinned meshes the loop above deliberately skipped. Their vertices move with
+	// the skeleton, so the silhouette has to be rebuilt from the posed vertices every frame instead of
+	// once here - but the topology (polygons, neighbors, welded vertex indices) never changes, so it is
+	// shared exactly like a rigid mesh's. These are taken from LOD 0 because that is the LOD
+	// updateVolumes() and RenderVolume() fetch the live mesh from, and Get_Deformed_Vertices() must be
+	// called on the same mesh the indices were built from.
+	if (TheGlobalData && TheGlobalData->m_useShadowVolumesForSkins)
+	{
+		for (i = 0; i < hlod->Get_Lod_Model_Count(0); i++)
+		{
+			RenderObjClass *lodModel=hlod->Peek_Lod_Model(0,i);
+
+			if (!lodModel || lodModel->Class_ID() != RenderObjClass::CLASSID_MESH)
+				continue;
+
+			MeshClass *skinMesh=(MeshClass *)lodModel;
+
+			if (!skinMesh->Peek_Model()->Get_Flag(MeshGeometryClass::SKIN))
+				continue;	//rigid meshes were handled above
+
+			if ((skinMesh->Is_Alpha() || skinMesh->Is_Translucent()) && !skinMesh->Peek_Model()->Get_Flag(MeshGeometryClass::CAST_SHADOW))
+				continue;	//transparent meshes that don't have forced shadows will not cast volumetric shadows
+
+			if (m_meshCount >= MAX_SHADOW_CASTER_MESHES)
+			{	DEBUG_ASSERTCRASH(m_meshCount < MAX_SHADOW_CASTER_MESHES, ("Too many shadow sub-meshes"));
+				break;
+			}
+
+			geomMesh->m_mesh = skinMesh;
+			geomMesh->m_meshRobjIndex = i;
+			geomMesh->m_isSkin = TRUE;
+
+			MeshModelClass *mm = skinMesh->Peek_Model();
+			geomMesh->m_numVerts=mm->Get_Vertex_Count();
+			geomMesh->m_numSourceVerts=geomMesh->m_numVerts;
+			geomMesh->m_verts=mm->Get_Vertex_Array();	//bind pose, only used to weld duplicates below
+			geomMesh->m_numPolygons=mm->Get_Polygon_Count();
+			geomMesh->m_polygons=mm->Get_Polygon_Array();
+
+			if (geomMesh->m_numVerts > MAX_SHADOW_VOLUME_VERTS)
+				return FALSE;	//too many vertices to process
+
+			//reset index of all vertices
+			memset(vertParent,0xffffffff,sizeof(vertParent));
+			newVertexCount=geomMesh->m_numVerts;
+			//Find all duplicated vertices. A skin's duplicates are duplicated in the bind pose and stay
+			//welded in every pose, since both copies are driven by the same bone weights.
+			for (j=0; j<geomMesh->m_numVerts; j++)
+			{
+				if (vertParent[j] != 0xffff)
+					continue;	//this vertex has already been processed
+
+				const Vector3 *v_curr=&geomMesh->m_verts[j];
+
+				for (k=j+1; k<geomMesh->m_numVerts; k++)
+				{
+					Vector3 len(*v_curr - geomMesh->m_verts[k]);
+					if (len.Length2() == 0)
+					{	//found duplicate vertex
+						vertParent[k]=j;
+						newVertexCount--;	//decrease total vertices since duplicate found.
+					}
+				}
+				vertParent[j]=j;	//first instance of new vertex
+			}
+			geomMesh->m_parentVerts = NEW UnsignedShort[geomMesh->m_numVerts];
+			memcpy(geomMesh->m_parentVerts,vertParent,sizeof(UnsignedShort)*geomMesh->m_numVerts);
+			geomMesh->m_numVerts=newVertexCount;	//adjust actual vertex count to ignore duplicates
+			m_numTotalsVerts += newVertexCount;
+			geomMesh->m_parentGeometry = this;
+
+			geomMesh++;
+			m_meshCount++;
+		}
+	}
+
 //	for (i = 0; i < AdditionalModels.Count(); i++) {
 //		res |= AdditionalModels[i].Model->Cast_Ray(raytest);
 //	}
@@ -799,12 +894,13 @@ Int W3DShadowGeometry::initFromMesh(RenderObjClass *robj)
 	if (((geomMesh->m_mesh->Is_Alpha() || geomMesh->m_mesh->Is_Translucent()) && !geomMesh->m_mesh->Peek_Model()->Get_Flag(MeshGeometryClass::CAST_SHADOW)))
 		return FALSE; //transparent meshes that don't have forced shadows will not cast volumetric shadows
 
-	// GeneralsX @bugfix Mr. Meeseeks 17/06/2026 Skin meshes should never cast a volumetric shadow (matches initFromHLOD behavior and Zero Hour upstream)
-	if (geomMesh->m_mesh->Peek_Model()->Get_Flag(MeshGeometryClass::SKIN))
-		return FALSE;
-
 	MeshModelClass *mm = geomMesh->m_mesh->Peek_Model();
 	geomMesh->m_numVerts=mm->Get_Vertex_Count();
+	geomMesh->m_numSourceVerts=geomMesh->m_numVerts;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Support volumetric shadows for skinned meshes
+	geomMesh->m_isSkin=mm->Get_Flag(MeshGeometryClass::SKIN);
+	if (geomMesh->m_isSkin && (!TheGlobalData || !TheGlobalData->m_useShadowVolumesForSkins))
+		return FALSE;
 	geomMesh->m_verts=mm->Get_Vertex_Array();
 	geomMesh->m_numPolygons=mm->Get_Polygon_Count();
 	geomMesh->m_polygons=mm->Get_Polygon_Array();
@@ -868,6 +964,10 @@ W3DShadowGeometryMesh::W3DShadowGeometryMesh()
 	m_numPolyNeighbors = 0;
 	m_parentVerts = nullptr;
 	m_polygonNormals = nullptr;
+	m_isSkin = FALSE;
+	m_numSourceVerts = 0;
+	m_posedVerts = nullptr;
+	m_posedNormals = nullptr;
 }
 
 // ~W3DShadowGeometry ============================================================
@@ -1327,13 +1427,17 @@ void W3DVolumetricShadow::RenderVolume(Int meshIndex, Int lightIndex)
 
 	if (mesh)
 	{
+		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned volumes are in world space, render with identity
+		static const Matrix3D identityXform(1);
+		const Matrix3D *meshXform = m_geometry->getMesh(meshIndex)->isSkin() ? &identityXform : &mesh->Get_Transform();
+
 #ifdef SV_DEBUG_BOUNDS
-			RenderMeshVolumeBounds(meshIndex,lightIndex, &mesh->Get_Transform());
+			RenderMeshVolumeBounds(meshIndex,lightIndex, meshXform);
 #endif
 			if (m_shadowVolume[0][ meshIndex ]->GetFlags() & SHADOW_DYNAMIC)
-				RenderDynamicMeshVolume(meshIndex,lightIndex,&mesh->Get_Transform());
+				RenderDynamicMeshVolume(meshIndex,lightIndex,meshXform);
 			else
-				RenderMeshVolume(meshIndex,lightIndex,&mesh->Get_Transform());
+				RenderMeshVolume(meshIndex,lightIndex,meshXform);
 	}
 }
 
@@ -1692,6 +1796,7 @@ W3DVolumetricShadow::W3DVolumetricShadow()
 			m_shadowVolumeRenderTask[i][j].m_lightIndex = (UnsignedByte)i;
 			m_objectXformHistory[ i ][j].Make_Identity();
 			m_lightPosHistory[ i ][j] = Vector3(0,0,0);
+			m_skinRebuiltOnFrame[ i ][j] = 0;
 		}
 	}
 
@@ -1819,7 +1924,11 @@ void W3DVolumetricShadow::Update()
  			if (WWMath::Fabs(pos.X - bcX) > (beX + extent) ||
  				WWMath::Fabs(pos.Y - bcY) > (beY + extent) ||
  				WWMath::Fabs(pos.Z - bcZ) > (beZ + extent))
- 				return;	//shadow can't be visible so no point in updating.
+			{
+				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Check if shadow volume can reach view frustum
+				if (!volumeShadowCanReachView( *shadowCameraFrustum, m_robj->Get_Bounding_Sphere(), TheTerrainRenderObject->getMinHeight() ))
+					return;	//shadow can't be visible so no point in updating.
+			}
 
 			//this unit is above ground, extend shadow volume to reach lowest point on the terrain plus extra bit to make
 			//sure shadow goes under ground.
@@ -1833,7 +1942,11 @@ void W3DVolumetricShadow::Update()
  			if (WWMath::Fabs(pos.X - bcX) > (beX + m_robjExtent) ||
  				WWMath::Fabs(pos.Y - bcY) > (beY + m_robjExtent) ||
  				WWMath::Fabs(pos.Z - bcZ) > (beZ + m_robjExtent))
- 				return;	//shadow can't be visible so no point in updating.
+			{
+				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Check if shadow volume can reach view frustum
+				if (!volumeShadowCanReachView( *shadowCameraFrustum, m_robj->Get_Bounding_Sphere(), TheTerrainRenderObject->getMinHeight() ))
+					return;	//shadow can't be visible so no point in updating.
+			}
 
 				//check if this object has never had it's extrusion length updated.  Will only be true for
 				//immobile objects because finding an optimal extrusion length is expensive.
@@ -1870,6 +1983,9 @@ void W3DVolumetricShadow::updateVolumes(Real zoffset)
 
 	Bool parentVis=m_robj->Is_Really_Visible();
 
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned meshes have world-space vertices, use identity transform
+	static const Matrix3D identityXform(1);
+
 	for( i = 0; i < MAX_SHADOW_LIGHTS; i++ )
 	{
 		for (j=0; j<m_geometry->getMeshCount(); j++)
@@ -1886,10 +2002,12 @@ void W3DVolumetricShadow::updateVolumes(Real zoffset)
 				if (!mesh->Is_Not_Hidden_At_All())
 					continue;
 
+				const Matrix3D *meshXform = m_geometry->getMesh(j)->isSkin() ? &identityXform : &mesh->Get_Transform();
+
 				/**@todo: Getting the transform of the mesh may be forcing a full hierarchy evaluation.
 					Expensive for off-screen models... do we really need this?	*/
 				//Extend floor of model by 'zoffset' to compensate for flying units.
-				updateMeshVolume(j, i, &mesh->Get_Transform(), mesh->Get_Bounding_Box(),m_robj->Get_Position().Z - zoffset);
+				updateMeshVolume(j, i, mesh, meshXform, mesh->Get_Bounding_Box(),m_robj->Get_Position().Z - zoffset);
 				//update visibility if not set yet
 				if (m_shadowVolume[i][j])
 				{
@@ -1905,13 +2023,13 @@ void W3DVolumetricShadow::updateVolumes(Real zoffset)
  						}
  						else
 						{	sphere=m_shadowVolume[i][j]->getBoundingSphere();
-							sphere.Center += mesh->Get_Transform().Get_Translation();
+							sphere.Center += meshXform->Get_Translation();
 							CollisionMath::OverlapType result=CollisionMath::Overlap_Test(*shadowCameraFrustum,sphere);
 							if (result == CollisionMath::OVERLAPPED)
 							{
 								//do a more accurate test against bounding box.
 								aaBox=m_shadowVolume[i][j]->getBoundingBox();
-								aaBox.Translate(mesh->Get_Transform().Get_Translation());	//translate bounding box to world space.
+								aaBox.Translate(meshXform->Get_Translation());	//translate bounding box to world space.
 								if (CollisionMath::Overlap_Test(*shadowCameraFrustum,aaBox) != CollisionMath::OUTSIDE)
 									m_shadowVolume[i][j]->setVisibleState(Geometry::STATE_VISIBLE);
 								else
@@ -1943,9 +2061,87 @@ void W3DVolumetricShadow::updateVolumes(Real zoffset)
 	}
 }
 
+//Scratch used while a skinned mesh's silhouette is rebuilt.  It is grown on demand and shared by
+//every skinned caster: only one mesh is ever posed at a time, and the data is handed straight to the
+//silhouette/volume builders and dropped again before the next mesh is touched.  It deliberately does
+//not live in W3DShadowGeometryMesh - that object is cached by model name and shared by every unit
+//using the model, so per-instance pose data must never be stored in it.
+static Vector3 *skinPosedVerts = nullptr;
+static Vector3 *skinPosedNormals = nullptr;
+static Int skinPosedVertsSize = 0;
+static Int skinPosedNormalsSize = 0;
+
+void W3DVolumetricShadow::releaseSkinScratch(void)
+{
+	delete [] skinPosedVerts;
+	delete [] skinPosedNormals;
+	skinPosedVerts = nullptr;
+	skinPosedNormals = nullptr;
+	skinPosedVertsSize = 0;
+	skinPosedNormalsSize = 0;
+}
+
+/**Pose a skinned mesh into the shared scratch buffers and point the geometry's vertex/normal
+accessors at them.  Get_Deformed_Vertices() hands back world-space positions - the same ones the
+renderer draws with an identity world transform - so the silhouette and the extruded volume come out
+in world space.  Returns FALSE if the scratch could not be grown, in which case nothing was posed.*/
+Bool W3DVolumetricShadow::poseSkinMesh(W3DShadowGeometryMesh *geomMesh, MeshClass *mesh)
+{
+	Int numVerts = geomMesh->getNumSourceVerts();
+	Int numPolys = geomMesh->GetNumPolygon();
+
+	if (numVerts <= 0 || numPolys <= 0 || mesh == nullptr)
+		return FALSE;
+
+	//The polygon indices were welded against this exact vertex array.  If the mesh we are being asked
+	//to pose is a different one (a different LOD, say) the indices would run off the end of the
+	//scratch, so bail instead of corrupting memory.
+	if (mesh->Peek_Model() == nullptr || mesh->Peek_Model()->Get_Vertex_Count() != numVerts)
+	{	DEBUG_ASSERTCRASH(0, ("shadow skin vertex count changed under us"));
+		return FALSE;
+	}
+
+	if (numVerts > skinPosedVertsSize)
+	{	delete [] skinPosedVerts;
+		skinPosedVerts = NEW Vector3[numVerts];
+		skinPosedVertsSize = numVerts;
+	}
+
+	if (numPolys > skinPosedNormalsSize)
+	{	delete [] skinPosedNormals;
+		skinPosedNormals = NEW Vector3[numPolys];
+		skinPosedNormalsSize = numPolys;
+	}
+
+	//world-space positions for the current animation frame
+	mesh->Get_Deformed_Vertices(skinPosedVerts);
+
+	//the accessors must already see the posed vertices while the face normals are computed
+	geomMesh->setPosedData(skinPosedVerts, nullptr);
+
+	for (Int i=0; i<numPolys; i++)
+	{
+		short indexList[3];
+		geomMesh->GetPolygonIndex(i,indexList);
+
+		const Vector3& v0=geomMesh->GetVertex(indexList[0]);
+		const Vector3& v1=geomMesh->GetVertex(indexList[1]);
+		const Vector3& v2=geomMesh->GetVertex(indexList[2]);
+
+		//same winding convention as buildPolygonNormal()
+		Vector3 edge1=v1-v0;
+		Vector3 edge2=v1-v2;
+		Vector3::Normalized_Cross_Product(edge2,edge1,&skinPosedNormals[i]);
+	}
+
+	geomMesh->setPosedData(skinPosedVerts, skinPosedNormals);
+
+	return TRUE;
+}
+
 /*floorZ is the assumed ground height below the model.  The code will try to extrude shadows just long enough to hit this point in order
 to reduce fill rate usage.*/
-void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const Matrix3D *meshXform, const AABoxClass &meshBox, float floorZ )
+void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, MeshClass *mesh, const Matrix3D *meshXform, const AABoxClass &meshBox, float floorZ )
 {
 	Vector3 lightPosObject;
 	Matrix4x4 worldToObject;
@@ -1962,6 +2158,8 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 
 	Matrix4x4 objectToWorld(*meshXform);
 	Matrix4x4 *prevXForm=&m_objectXformHistory[ lightIndex ][meshIndex];
+	W3DShadowGeometryMesh *geomMesh=m_geometry->getMesh(meshIndex);
+	Bool isSkin=geomMesh->isSkin();
 
 	//
 	// build the shadow silhouette and construct shadow volume from
@@ -2073,6 +2271,39 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 	if (fabs(objectCenter.Z - prevXForm->operator [](2).W) > SHADOW_EXTRUSION_BUFFER)
 		isLightMoving = true;	//treat model rising just like rotation since volume needs update for longer extrusion.
 
+	//A skinned mesh's vertices move with the skeleton while its transform stays put, so none of the
+	//tests above can see the change - the silhouette has to be rebuilt every time.
+	if (isSkin)
+		isMeshRotating = true;
+
+	/* That rebuild is the most expensive thing a shadow does, and an army of infantry asks for it
+		 once per soldier per frame: 420 Rangers on screen were a tenth of the frame in shadows alone.
+		 So a frame rebuilds at most SKIN_SHADOW_REBUILDS_PER_FRAME skinned volumes, and any past that
+		 keep last frame's pose, but never one older than SKIN_SHADOW_MAX_AGE_FRAMES: a stale one is
+		 rebuilt whatever the budget says, which bounds how far a shadow's arms can lag its body. The
+		 volume still moves with the unit either way; only the pose waits. Drawing only, so the logic
+		 never sees it. */
+	if (isSkin && !isLightMoving && m_shadowVolume[ lightIndex ][meshIndex])
+	{
+		enum { SKIN_SHADOW_REBUILDS_PER_FRAME = 64, SKIN_SHADOW_MAX_AGE_FRAMES = 6 };
+		static UnsignedInt s_budgetFrame = 0;
+		static Int s_rebuildsThisFrame = 0;
+		const UnsignedInt frame = WW3D::Get_Frame_Count();
+		if (frame != s_budgetFrame)
+		{
+			s_budgetFrame = frame;
+			s_rebuildsThisFrame = 0;
+		}
+		const Bool isStale = frame - m_skinRebuiltOnFrame[ lightIndex ][meshIndex] >= SKIN_SHADOW_MAX_AGE_FRAMES;
+		if (!isStale && s_rebuildsThisFrame >= SKIN_SHADOW_REBUILDS_PER_FRAME)
+			isMeshRotating = false;
+		else
+		{
+			++s_rebuildsThisFrame;
+			m_skinRebuiltOnFrame[ lightIndex ][meshIndex] = frame;
+		}
+	}
+
 	// reconstruct if needed
 	if (isLightMoving || isMeshRotating)
 	{
@@ -2158,12 +2389,18 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 			// source perspective
 			//
 
+			if (isSkin)
+			{	//pose the mesh into scratch; the accessors read it until it is cleared below.
+				if (!poseSkinMesh(geomMesh, mesh))
+					return;
+			}
+			else
 			if (m_numSilhouetteIndices[meshIndex] != 0)
 			{
 				//this silhouette was built before and is being updated.
 				//this probably means it will change again in the future.
 				//make future updates faster by pre-caching face normals.
-				m_geometry->getMesh(meshIndex)->buildPolygonNormals();
+				geomMesh->buildPolygonNormals();
 			}
 			resetSilhouette(meshIndex);
 			buildSilhouette(meshIndex, &lightPosObject);
@@ -2174,6 +2411,13 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 			//
 			if (!m_shadowVolume[ lightIndex ][meshIndex])
 				allocateShadowVolume( lightIndex,meshIndex );
+			if (isSkin && !(m_shadowVolume[ lightIndex ][meshIndex]->GetFlags() & SHADOW_DYNAMIC))
+			{	//a skin is animated by definition - never bother with static vertex buffers
+				m_shadowVolume[ lightIndex ][meshIndex]->SetFlags(
+					m_shadowVolume[ lightIndex ][meshIndex]->GetFlags() | SHADOW_DYNAMIC);
+				resetShadowVolume( lightIndex,meshIndex );
+				allocateShadowVolume( lightIndex,meshIndex );	//now allocates system memory for the volume
+			}
 			if( m_shadowVolumeVB[ lightIndex ][meshIndex] )
 			{
 				//Updating an existing vertex buffer shadow volume.  This means we're
@@ -2204,6 +2448,9 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 				constructVolume( &lightPosObject, vectorScaleMax, lightIndex, meshIndex );
 			else
 				constructVolumeVB( &lightPosObject, vectorScaleMax, lightIndex, meshIndex );
+
+			if (isSkin)
+				geomMesh->setPosedData(nullptr,nullptr);	//scratch is shared - never leave it hooked up
 
 			//
 			// store the current light position and orientation that
@@ -3783,6 +4030,8 @@ W3DVolumetricShadowManager::~W3DVolumetricShadowManager()
 	delete TheW3DBufferManager;
 	TheW3DBufferManager=nullptr;
 
+	W3DVolumetricShadow::releaseSkinScratch();
+
 	//all shadows should be freed up at this point but check anyway
 	assert(m_shadowList==nullptr);
 
@@ -3906,11 +4155,21 @@ W3DVolumetricShadow* W3DVolumetricShadowManager::addShadow(RenderObjClass *robj,
  	robj->Get_Obj_Space_Bounding_Sphere(sphere);
  	shadow->setRenderObjExtent(sphere.Radius*MAX_SHADOW_LENGTH_SCALE_FACTOR);
 
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Align aircraft sun angle with natural elevation
+	const Real AIRCRAFT_MIN_SUN_ELEVATION = 30.0f;
+	Drawable *owner = draw;
+	if (owner == nullptr && robj->Get_User_Data())
+		owner = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
+
+	Real sunElevation = shadowInfo->m_sizeX;
+	if (owner && owner->isKindOf(KINDOF_AIRCRAFT) && sunElevation > AIRCRAFT_MIN_SUN_ELEVATION)
+		sunElevation = AIRCRAFT_MIN_SUN_ELEVATION;
+
 	Real sunElevationAngleTan = 0;
-	if (shadowInfo->m_sizeX)
+	if (sunElevation)
 	{
 		//need to adjust sun elevation for this model in order to limit shadow length
-		sunElevationAngleTan=tan(shadowInfo->m_sizeX/180.0f*PI);
+		sunElevationAngleTan=tan(sunElevation/180.0f*PI);
 	}
 	shadow->setShadowLengthScale(sunElevationAngleTan);
 

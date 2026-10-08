@@ -306,9 +306,20 @@ void W3DTreeBuffer::cull(const CameraClass * camera)
 	float z = zmod * camera_matrix[2][2] ;
 	m_cameraLookAtVector.Set(x,y,z);
 
+	const FrustumClass &cameraFrustum = camera->Get_Frustum();
+	const Bool shadowsEnabled = TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes;
+
 	for (curTree=0; curTree<m_numTrees; curTree++) {
 		Bool doKey = false;	// We calculate the key when a tree becomes visible.
 		Bool visible = !camera->Cull_Sphere(m_trees[curTree].bounds);
+		if (!visible && shadowsEnabled) {
+			Int type = m_trees[curTree].treeType;
+			if (type >= 0 && type < m_numTreeTypes && m_treeTypes[type].m_doShadow) {
+				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Keep tree visible if its projected/extruded shadow enters the view frustum
+				if (volumeShadowCanReachView(cameraFrustum, m_trees[curTree].bounds, m_trees[curTree].location.Z))
+					visible = true;
+			}
+		}
 		if (visible != m_trees[curTree].visible) {
 			m_trees[curTree].visible=visible;
 			m_anythingChanged = true;
@@ -1533,7 +1544,8 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 
 	Int curTree;
 	// Draw tree shadows.
-	if (m_shadow && TheW3DProjectedShadowManager && TheGlobalData->m_useShadowDecals) {
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Trees use decal shadows even when volumetric shadows are enabled
+	if (m_shadow && TheW3DProjectedShadowManager && (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes)) {
 		for (curTree=0; curTree<m_numTrees; curTree++) {
 			Int type = m_trees[curTree].treeType;
 			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type

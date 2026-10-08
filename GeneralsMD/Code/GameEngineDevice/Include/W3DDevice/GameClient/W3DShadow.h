@@ -65,6 +65,13 @@ protected:
 		Bool	m_isShadowScene;	///<flag if current scene needs shadows.  No shadows on pre-pass and 2D.
 		UnsignedInt m_shadowColor;	///<color and alpha for all shadows in scene.
 		Int m_stencilShadowMask;
+
 };
 
 extern W3DShadowManager *TheW3DShadowManager;
+
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
+class FrustumClass;
+class SphereClass;
+Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY );
+Bool volumeShadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ );
