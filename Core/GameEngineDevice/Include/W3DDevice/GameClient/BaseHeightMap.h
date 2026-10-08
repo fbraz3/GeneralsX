@@ -172,6 +172,13 @@ public:
 		Real angle
 	);
 
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Model shadow handover to tree buffer
+	/// Take a model's shadow over: the object keeps drawing itself, the buffer draws its shadow.
+	Bool addModelShadow(DrawableID id, RenderObjClass *robj);
+	/// Give it back, when the drawable goes away or changes its model.
+	void removeModelShadow(DrawableID id);
+	W3DBridgeBuffer *getBridgeBuffer() { return m_bridgeBuffer; }
+
 	/// Add a bib at location.
 	void addTerrainBib(Vector3 corners[4], ObjectID id, Bool highlight);
 	void addTerrainBibDrawable(Vector3 corners[4], DrawableID id, Bool highlight);

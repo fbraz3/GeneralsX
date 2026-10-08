@@ -155,6 +155,9 @@ public:
 	void clearAllBridges();
 	/// Draws the bridges.  Uses camera for culling.
 	void drawBridges(CameraClass * camera, Bool wireframe, TextureClass *cloudTexture);
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Draws the decks for shadow map casting
+	/// Draws the decks into whatever depth target is bound, for shadow casting.
+	void drawBridgeShadowCasters(void);
 	/// Called when the view changes, and sort key needs to be recalculated.
 	/// Normally sortKey gets calculated when a bridge becomes visible.
 	void doFullUpdate() {m_updateVis = true;};

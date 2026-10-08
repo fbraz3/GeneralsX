@@ -356,6 +356,10 @@ public:
 	virtual void releaseShadows() override;	///< frees all shadow resources used by this module - used by Options screen.
 	virtual void allocateShadows() override; ///< create shadow resources if not already present. Used by Options screen.
 
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Model shadow handover to tree buffer
+	Bool registerModelShadow(void);			///< hand this model's shape to the tree buffer to cast; TRUE if it took it
+	void unregisterModelShadow(void);		///< take it back when the model changes or the drawable goes
+
 #if defined(RTS_DEBUG)
 	virtual void getRenderCost(RenderCost & rc) const override;  ///< estimates the render cost of this draw module
 	void getRenderCostRecursive(RenderCost & rc,RenderObjClass * robj) const;
@@ -498,6 +502,7 @@ private:
 	Bool													m_needRecalcBoneParticleSystems;
 	Bool													m_fullyObscuredByShroud;
 	Bool													m_shadowEnabled;	///< cached state of shadow.  Used to determine if shadows should be enabled via options screen.
+	Bool													m_hasModelShadow;	///< this drawable's shape is being cast by the tree buffer, so it wants no decal of its own
 	RenderObjClass*								m_renderObject;										///< W3D Render object for this drawable
 	Shadow*												m_shadow;													///< Updates/Renders shadows of this object
 	Shadow*												m_terrainDecal;

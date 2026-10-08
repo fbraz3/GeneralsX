@@ -160,6 +160,8 @@ public:
 	Bool m_useShadowVolumesForSkins;
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
 	Bool m_shadowsForProjectiles;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
+	Bool m_shadowsForProps;
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;

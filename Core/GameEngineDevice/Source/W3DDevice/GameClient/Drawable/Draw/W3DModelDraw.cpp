@@ -54,6 +54,7 @@
 #include "GameLogic/FPUControl.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
+#include "W3DDevice/GameClient/BaseHeightMap.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
@@ -1733,6 +1734,7 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	m_renderObject = nullptr;
 	m_shadow = nullptr;
 	m_shadowEnabled = TRUE;
+	m_hasModelShadow = FALSE;
 	m_terrainDecal = nullptr;
 	m_trackRenderObject = nullptr;
 	m_whichAnimInCurState = -1;
@@ -1849,6 +1851,7 @@ void W3DModelDraw::setHidden(Bool hidden)
 /**Free all data used by this model's shadow.  This is used to dynamically enable/disable shadows by the options screen*/
 void W3DModelDraw::releaseShadows()	///< frees all shadow resources used by this module - used by Options screen.
 {
+	unregisterModelShadow();
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
@@ -1900,11 +1903,80 @@ is a projectile: a missile or a bomb with no shadow slides over the ground with 
 the terrain. There can be dozens in the air at once, so it is always the cheap projected blob and
 never a volume; a zero decal size makes addShadow take the size from the model's own bounding box.
 Returns FALSE when this drawable gets no shadow at all. */
-static Bool fillShadowInfoFromTemplate(const ThingTemplate *tmplate, Shadow::ShadowTypeInfo *shadowInfo)
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Object-tree model shadow casting via W3DTreeBuffer
+/** Maps place trees in two ways: the map's own terrain data puts thousands of them into the tree
+	buffer, batched together and drawn in one go.  A map designer who wanted one tree somewhere by
+	itself dropped an object there instead: a palm in the desert, an oak in a town, a shrub in a yard.
+	Those are full game objects, and Golden Oasis has 278 palms placed that way.  The code that lays a
+	tree's triangles on the ground has nothing of theirs to lay, and all they ever had was the round
+	decal their template asks for.  The tree buffer takes their meshes over instead.
+
+	The test is the template's own words: shrubbery, fixed in place, asking for a decal. */
+static Bool wantsModelShadow(const ThingTemplate *tmplate)
+{
+	return tmplate->getShadowType() == SHADOW_DECAL &&
+			TheGlobalData &&
+			TheGlobalData->m_shadowsForProps &&
+			(TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes) &&
+			tmplate->isKindOf(KINDOF_SHRUBBERY) &&
+			tmplate->isKindOf(KINDOF_IMMOBILE);
+}
+
+/** Hand this model's shadow to the tree buffer, and say whether it took it. */
+Bool W3DModelDraw::registerModelShadow(void)
+{
+	unregisterModelShadow();
+
+	Drawable *draw = getDrawable();
+	if (draw == nullptr || m_renderObject == nullptr || TheTerrainRenderObject == nullptr)
+		return FALSE;
+
+	const ThingTemplate *tmplate = draw->getTemplate();
+	if (tmplate == nullptr || !wantsModelShadow(tmplate))
+		return FALSE;
+
+	m_hasModelShadow = TheTerrainRenderObject->addModelShadow(draw->getID(), m_renderObject);
+	return m_hasModelShadow;
+}
+
+/** Take it back: the model is changing, or the drawable is going away. */
+void W3DModelDraw::unregisterModelShadow(void)
+{
+	if (!m_hasModelShadow)
+		return;
+	m_hasModelShadow = FALSE;
+	Drawable *draw = getDrawable();
+	if (draw && TheTerrainRenderObject)
+		TheTerrainRenderObject->removeModelShadow(draw->getID());
+}
+
+/** Fill in the shadow this template asks for. A template that asks for nothing still gets one if it
+is a projectile: a missile or a bomb with no shadow slides over the ground with nothing tying it to
+the terrain. There can be dozens in the air at once, so it is always the cheap projected blob and
+never a volume; a zero decal size makes addShadow take the size from the model's own bounding box.
+Props with no shadows (fences, rubbish, shrubbery) get volume shadows (or decal fallback).
+Returns FALSE when this drawable gets no shadow at all. */
+static Bool fillShadowInfoFromTemplate(const ThingTemplate *tmplate, Shadow::ShadowTypeInfo *shadowInfo, Bool allowPropVolume = TRUE)
 {
 	if (tmplate->getShadowType() == SHADOW_NONE)
 	{
-		if (!TheGlobalData || !TheGlobalData->m_shadowsForProjectiles || !tmplate->isKindOf(KINDOF_PROJECTILE))
+		const Bool prop = TheGlobalData && TheGlobalData->m_shadowsForProps && tmplate->isKindOf(KINDOF_IMMOBILE) &&
+							!tmplate->isKindOf(KINDOF_PROJECTILE);
+
+		if (prop && allowPropVolume && TheGlobalData->m_useShadowVolumes)
+		{
+			shadowInfo->m_ShadowName[0] = 0;
+			shadowInfo->allowUpdates = FALSE;
+			shadowInfo->allowWorldAlign = TRUE;
+			shadowInfo->m_type = SHADOW_VOLUME;
+			shadowInfo->m_sizeX = 0.0f;
+			shadowInfo->m_sizeY = 0.0f;
+			shadowInfo->m_offsetX = 0.0f;
+			shadowInfo->m_offsetY = 0.0f;
+			return TRUE;
+		}
+
+		if (!prop && (!TheGlobalData || !TheGlobalData->m_shadowsForProjectiles || !tmplate->isKindOf(KINDOF_PROJECTILE)))
 			return FALSE;
 
 		// Most of these name no texture of their own, so ask for the round blob a sphere gets
@@ -1940,18 +2012,23 @@ void W3DModelDraw::allocateShadows()
 		return;
 
 	// Check if we don't already have a shadow but need one for this type of model.
+	// A tree the buffer casts for us wants no decal of its own under it.
 	Shadow::ShadowTypeInfo shadowInfo;
-	if (m_shadow == nullptr && m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
+	if (!registerModelShadow() &&
+			m_shadow == nullptr && m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 	{
 		// a projectile's decal is ours rather than the template's - never trade it for a volume
 		Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
 								promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
+		// a prop we handed a volume the template never asked for falls back the same way
+		if (tmplate->getShadowType() == SHADOW_NONE && shadowInfo.m_type == SHADOW_VOLUME)
+			promotedToVolume = TRUE;
 
 		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
 
 		if (m_shadow == nullptr && promotedToVolume)
 		{	// no usable shadow geometry in this model - fall back to the decal the template asked for
-			fillShadowInfoFromTemplate(tmplate, &shadowInfo);
+			fillShadowInfoFromTemplate(tmplate, &shadowInfo, FALSE);
 			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
 		}
 
@@ -2867,6 +2944,7 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 	m_pauseAnimation = false;
 
 	// changing geometry, so we need to remove shadow if present
+	unregisterModelShadow();
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
@@ -3143,18 +3221,23 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 
 		// set up shadows
 		Shadow::ShadowTypeInfo shadowInfo;
-		if (m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
+		// a tree the buffer casts for us wants no decal of its own under it
+		if (!registerModelShadow() &&
+				m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 		{
 			// a projectile's decal is ours rather than the template's - never trade it for a volume
 			Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
 									promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
+			// a prop we handed a volume the template never asked for falls back the same way
+			if (tmplate->getShadowType() == SHADOW_NONE && shadowInfo.m_type == SHADOW_VOLUME)
+				promotedToVolume = TRUE;
 
 			DEBUG_ASSERTCRASH(m_shadow == nullptr, ("m_shadow is not null"));
 			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
 
 			if (m_shadow == nullptr && promotedToVolume)
 			{	// no usable shadow geometry in this model - fall back to the decal the template asked for
-				fillShadowInfoFromTemplate(tmplate, &shadowInfo);
+				fillShadowInfoFromTemplate(tmplate, &shadowInfo, FALSE);
 				m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
 			}
 

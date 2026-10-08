@@ -126,6 +126,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseShadowVolumesForSkins",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowVolumesForSkins ) },
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
 	{ "ShadowsForProjectiles",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProjectiles ) },
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
+	{ "ShadowsForProps",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProps ) },
 	{ "UseShadowDecals",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowDecals ) },
 	{ "TextureReductionFactor",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_textureReductionFactor ) },
 	{ "UseBehindBuildingMarker",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_enableBehindBuildingMarkers ) },
@@ -691,6 +693,7 @@ GlobalData::GlobalData()
 	m_useShadowVolumes = FALSE;
 	m_useShadowVolumesForSkins = TRUE;
 	m_shadowsForProjectiles = TRUE;
+	m_shadowsForProps = TRUE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;
