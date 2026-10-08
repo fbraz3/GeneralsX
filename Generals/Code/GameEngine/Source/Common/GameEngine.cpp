@@ -566,8 +566,21 @@ void GameEngine::init()
 		// GeneralsX @feature fbraz3 08/10/2026 Load dynamic light pulses for explosions & superweapons without altering multiplayer CRC
 		if (TheFileSystem && TheFileSystem->doesFileExist("Data\\INI\\FXListReforged.ini"))
 		{
-			INI iniReforged;
-			iniReforged.load(AsciiString("Data\\INI\\FXListReforged.ini"), INI_LOAD_OVERWRITE, nullptr);
+			try
+			{
+				INI iniReforged;
+				iniReforged.load(AsciiString("Data\\INI\\FXListReforged.ini"), INI_LOAD_OVERWRITE, nullptr);
+			}
+			catch (const INIException& ex)
+			{
+				fprintf(stderr, "[INI] WARNING: Failed to load Data\\INI\\FXListReforged.ini: %s\n", ex.mFailureMessage ? ex.mFailureMessage : "");
+				fflush(stderr);
+			}
+			catch (...)
+			{
+				fprintf(stderr, "[INI] WARNING: Unexpected exception loading Data\\INI\\FXListReforged.ini\n");
+				fflush(stderr);
+			}
 		}
 		initSubsystem(TheWeaponStore,"TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, nullptr, "Data\\INI\\Weapon");
 		initSubsystem(TheObjectCreationListStore,"TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, "Data\\INI\\Default\\ObjectCreationList", "Data\\INI\\ObjectCreationList");
