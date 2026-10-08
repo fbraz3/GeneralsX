@@ -787,6 +787,9 @@ Int W3DShadowGeometry::initFromHLOD(RenderObjClass *robj)
 			m_numTotalsVerts += newVertexCount;
 			geomMesh->m_parentGeometry = this;
 
+			// build our neighboring polygon information (bind pose; topology is pose-independent)
+			geomMesh->buildPolygonNeighbors();
+
 			geomMesh++;
 			m_meshCount++;
 		}
