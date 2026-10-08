@@ -1797,6 +1797,7 @@ W3DVolumetricShadow::W3DVolumetricShadow()
 			m_objectXformHistory[ i ][j].Make_Identity();
 			m_lightPosHistory[ i ][j] = Vector3(0,0,0);
 			m_skinRebuiltOnFrame[ i ][j] = 0;
+			m_skinLastPos[ i ][j].Set(0,0,0);
 		}
 	}
 
@@ -2070,6 +2071,8 @@ static Vector3 *skinPosedVerts = nullptr;
 static Vector3 *skinPosedNormals = nullptr;
 static Int skinPosedVertsSize = 0;
 static Int skinPosedNormalsSize = 0;
+static UnsignedInt s_skinBudgetFrame = 0;
+static Int s_skinRebuildsThisFrame = 0;
 
 void W3DVolumetricShadow::releaseSkinScratch(void)
 {
@@ -2079,6 +2082,8 @@ void W3DVolumetricShadow::releaseSkinScratch(void)
 	skinPosedNormals = nullptr;
 	skinPosedVertsSize = 0;
 	skinPosedNormalsSize = 0;
+	s_skinBudgetFrame = 0;
+	s_skinRebuildsThisFrame = 0;
 }
 
 /**Pose a skinned mesh into the shared scratch buffers and point the geometry's vertex/normal
@@ -2271,37 +2276,35 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, MeshCl
 	if (fabs(objectCenter.Z - prevXForm->operator [](2).W) > SHADOW_EXTRUSION_BUFFER)
 		isLightMoving = true;	//treat model rising just like rotation since volume needs update for longer extrusion.
 
-	//A skinned mesh's vertices move with the skeleton while its transform stays put, so none of the
-	//tests above can see the change - the silhouette has to be rebuilt every time.
-	if (isSkin)
+	Vector3 currentMeshPos(0, 0, 0);
+	Bool meshMoved = false;
+	if (isSkin && mesh)
+	{
 		isMeshRotating = true;
+		currentMeshPos = mesh->Get_Transform().Get_Translation();
+		const Real moveDistSq = (currentMeshPos - m_skinLastPos[ lightIndex ][ meshIndex ]).Length2();
+		if (moveDistSq > 0.01f)
+			meshMoved = true;
+	}
 
 	/* That rebuild is the most expensive thing a shadow does, and an army of infantry asks for it
 		 once per soldier per frame: 420 Rangers on screen were a tenth of the frame in shadows alone.
-		 So a frame rebuilds at most SKIN_SHADOW_REBUILDS_PER_FRAME skinned volumes, and any past that
-		 keep last frame's pose, but never one older than SKIN_SHADOW_MAX_AGE_FRAMES: a stale one is
-		 rebuilt whatever the budget says, which bounds how far a shadow's arms can lag its body. The
-		 volume still moves with the unit either way; only the pose waits. Drawing only, so the logic
-		 never sees it. */
-	if (isSkin && !isLightMoving && m_shadowVolume[ lightIndex ][meshIndex])
+		 If a unit is standing still (meshMoved == false), we can reuse last frame's pose up to
+		 SKIN_SHADOW_MAX_AGE_FRAMES to respect the frame rebuild budget. But if the unit moved in world space,
+		 its world-space shadow vertices must be rebuilt to avoid lagging behind. The rebuild budget is
+		 only counted after passing the view frustum test so off-screen units never exhaust the budget. */
+	if (isSkin && !isLightMoving && !meshMoved && m_shadowVolume[ lightIndex ][meshIndex])
 	{
 		enum { SKIN_SHADOW_REBUILDS_PER_FRAME = 64, SKIN_SHADOW_MAX_AGE_FRAMES = 6 };
-		static UnsignedInt s_budgetFrame = 0;
-		static Int s_rebuildsThisFrame = 0;
 		const UnsignedInt frame = WW3D::Get_Frame_Count();
-		if (frame != s_budgetFrame)
+		if (frame != s_skinBudgetFrame)
 		{
-			s_budgetFrame = frame;
-			s_rebuildsThisFrame = 0;
+			s_skinBudgetFrame = frame;
+			s_skinRebuildsThisFrame = 0;
 		}
 		const Bool isStale = frame - m_skinRebuiltOnFrame[ lightIndex ][meshIndex] >= SKIN_SHADOW_MAX_AGE_FRAMES;
-		if (!isStale && s_rebuildsThisFrame >= SKIN_SHADOW_REBUILDS_PER_FRAME)
+		if (!isStale && s_skinRebuildsThisFrame >= SKIN_SHADOW_REBUILDS_PER_FRAME)
 			isMeshRotating = false;
-		else
-		{
-			++s_rebuildsThisFrame;
-			m_skinRebuiltOnFrame[ lightIndex ][meshIndex] = frame;
-		}
 	}
 
 	// reconstruct if needed
@@ -2390,7 +2393,18 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, MeshCl
 			//
 
 			if (isSkin)
-			{	//pose the mesh into scratch; the accessors read it until it is cleared below.
+			{
+				const UnsignedInt frame = WW3D::Get_Frame_Count();
+				if (frame != s_skinBudgetFrame)
+				{
+					s_skinBudgetFrame = frame;
+					s_skinRebuildsThisFrame = 0;
+				}
+				++s_skinRebuildsThisFrame;
+				m_skinRebuiltOnFrame[ lightIndex ][meshIndex] = frame;
+				m_skinLastPos[ lightIndex ][meshIndex] = currentMeshPos;
+
+				//pose the mesh into scratch; the accessors read it until it is cleared below.
 				if (!poseSkinMesh(geomMesh, mesh))
 					return;
 			}
@@ -4162,14 +4176,14 @@ W3DVolumetricShadow* W3DVolumetricShadowManager::addShadow(RenderObjClass *robj,
 		owner = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
 
 	Real sunElevation = shadowInfo->m_sizeX;
-	if (owner && owner->isKindOf(KINDOF_AIRCRAFT) && sunElevation > AIRCRAFT_MIN_SUN_ELEVATION)
+	if (owner && owner->isKindOf(KINDOF_AIRCRAFT) && sunElevation < AIRCRAFT_MIN_SUN_ELEVATION)
 		sunElevation = AIRCRAFT_MIN_SUN_ELEVATION;
 
 	Real sunElevationAngleTan = 0;
 	if (sunElevation)
 	{
 		//need to adjust sun elevation for this model in order to limit shadow length
-		sunElevationAngleTan=tan(sunElevation/180.0f*PI);
+		sunElevationAngleTan = WWMath::TanTrig(sunElevation / 180.0f * PI);
 	}
 	shadow->setShadowLengthScale(sunElevationAngleTan);
 

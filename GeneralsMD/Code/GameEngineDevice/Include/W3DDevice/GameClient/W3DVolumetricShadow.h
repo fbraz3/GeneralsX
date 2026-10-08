@@ -191,5 +191,6 @@ class W3DVolumetricShadow	: public Shadow
 
 		Int	  m_numIndicesPerMesh[MAX_SHADOW_CASTER_MESHES];	///<silhouette indices from each mesh.
 		UnsignedInt m_skinRebuiltOnFrame[ MAX_SHADOW_LIGHTS ][MAX_SHADOW_CASTER_MESHES];	///<render frame a skinned volume was last rebuilt on
+		Vector3 m_skinLastPos[ MAX_SHADOW_LIGHTS ][MAX_SHADOW_CASTER_MESHES];	///<last mesh translation when skinned volume was rebuilt
 
 };
