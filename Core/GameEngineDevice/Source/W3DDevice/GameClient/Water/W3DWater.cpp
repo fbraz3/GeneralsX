@@ -95,6 +95,11 @@
 #define PATCH_UV_TILES	42	//number of times the bump map texture is tiled across patch (must be integer!).
 #define PATCH_SCALE (4.0f * MAP_XY_FACTOR)	//horizontal scale factor. Adjust this and size to get desired vertex density.
 #define SEA_REFLECTION_SIZE 256		//dimensions of reflection texture
+// GeneralsX @feature BenderAI 08/10/2026 Water reflection constants from Reforged
+#define WATER_REFLECTION_SIZE 512	//dimensions of the reflection texture laid over map water
+#define WATER_REFLECTION_AREA_MARGIN 0.05f	//slack around the water's screen area, so filtering at its edge reads inside it
+#define WATER_REFLECTION_STRENGTH 0.55f	//how far a reflected object darkens the water under it
+#define WATER_REFLECTION_SKY_COLOR Vector3(1.0f,1.0f,1.0f)	//white, so where nothing stands the water keeps its own colour
 
 #define SEA_BUMP_SCALE		(0.06f)		//scales the du/dv offsets stored in bump map (~ amount to perturb)
 #define BUMP_SIZE (50.f)
@@ -353,6 +358,11 @@ WaterRenderObjClass::WaterRenderObjClass()
 	m_waterType = WATER_TYPE_0_TRANSLUCENT;
 	m_tod=TIME_OF_DAY_AFTERNOON;
 	m_pReflectionTexture=nullptr;
+	m_reflectionLevel=0;
+	m_reflectionAreaMin.Set(-1.0f, -1.0f);
+	m_reflectionAreaMax.Set(1.0f, 1.0f);
+	m_reflectionCameraTransform.Make_Identity();
+	m_reflectionReused=FALSE;
 	m_skyBox=nullptr;
 	m_vertexBufferD3D=nullptr;
 	m_indexBufferD3D=nullptr;
@@ -385,6 +395,7 @@ WaterRenderObjClass::WaterRenderObjClass()
 	m_waterPixelShader=0;		///<D3D handle to pixel shader.
 	m_riverWaterPixelShader=0;		///<D3D handle to pixel shader.
 	m_trapezoidWaterPixelShader=0;		///<D3D handle to pixel shader.
+	m_reflectionPixelShader=0;
 	m_waterSparklesTexture=nullptr;
 	m_riverXOffset=0;
 	m_riverYOffset=0;
@@ -844,11 +855,15 @@ void WaterRenderObjClass::ReleaseResources()
 	if (m_riverWaterPixelShader)
 		m_pDev->DeletePixelShader(m_riverWaterPixelShader);
 
+	if (m_reflectionPixelShader)
+		m_pDev->DeletePixelShader(m_reflectionPixelShader);
+
 	m_dwWavePixelShader=0;
 	m_dwWaveVertexShader=0;
 	m_waterPixelShader = 0;
 	m_trapezoidWaterPixelShader=0;
 	m_riverWaterPixelShader=0;
+	m_reflectionPixelShader=0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -920,6 +935,11 @@ void WaterRenderObjClass::ReAcquireResources()
 		// Create reflection texture
 		m_pReflectionTexture = DX8Wrapper::Create_Render_Target (SEA_REFLECTION_SIZE, SEA_REFLECTION_SIZE);
 	}
+	else if (m_waterType == WATER_TYPE_0_TRANSLUCENT)
+	{
+		// GeneralsX @feature BenderAI 08/10/2026 Create 512x512 reflection render target for map rivers and lakes
+		m_pReflectionTexture = DX8Wrapper::Create_Render_Target (WATER_REFLECTION_SIZE, WATER_REFLECTION_SIZE);
+	}
 
 	if (m_waterTrackSystem)
 		m_waterTrackSystem->ReAcquireResources();
@@ -972,6 +992,22 @@ void WaterRenderObjClass::ReAcquireResources()
 		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
 		if (hr==0) {
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
+			compiledShader->Release();
+		}
+		shader =
+			"ps.1.1\n \
+			def c1, 0.333333, 0.333333, 0.333333, 0\n\
+			tex t0 ; the mirrored scene, looked up through the projected stage, white where nothing stands\n\
+			dp3 r1.rgb, t0, c1 ; how bright the mirror is here\n\
+			mov r1.rgb, 1-r1 ; how far that is from the white it was cleared to\n\
+			add r1.rgb, r1, r1\n\
+			add r1.rgb, r1, r1 ; four times and clamped, so anything standing there counts in full whatever its colour\n\
+			mul r0.rgb, r1, c0 ; darkened by the strength\n\
+			mov r0.rgb, 1-r0 ; multiplied into the water, so white leaves it as it was\n\
+			+mov r0.a, c0\n";
+		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
+		if (hr==0) {
+			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_reflectionPixelShader);
 			compiledShader->Release();
 		}
 #endif // _WIN32 - Runtime shader compilation
@@ -1450,15 +1486,90 @@ void WaterRenderObjClass::loadSetting( Setting *setting, TimeOfDay timeOfDay )
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 {
-	if (m_waterType == WATER_TYPE_2_PVSHADER && getClippedWaterPlane(cam, nullptr) &&
-		TheTerrainRenderObject && TheTerrainRenderObject->getMap())
-		renderMirror(cam);	//generate texture containing reflected scene
+	if (!TheTerrainRenderObject || !TheTerrainRenderObject->getMap())
+		return;
+
+	if (m_waterType == WATER_TYPE_2_PVSHADER && getClippedWaterPlane(cam, nullptr))
+	{
+		m_reflectionAreaMin.Set(-1.0f, -1.0f);
+		m_reflectionAreaMax.Set(1.0f, 1.0f);
+		renderMirror(cam, m_level);	//generate texture containing reflected scene
+	}
+
+	if (m_waterType != WATER_TYPE_0_TRANSLUCENT || !m_pReflectionTexture)
+		return;
+
+	// A camera that has not moved looks at the same water from the same place, so a reflection one
+	// frame old lines up with it exactly and only what moved in it is a frame late.  Such a frame
+	// keeps the last texture, and the one after it draws a new one.
+	const Bool cameraMoved = memcmp(&cam->Get_Transform(), &m_reflectionCameraTransform, sizeof(Matrix3D)) != 0;
+	if (!cameraMoved && !m_reflectionReused)
+	{
+		m_reflectionReused = TRUE;
+		return;
+	}
+	m_reflectionReused = FALSE;
+	m_reflectionCameraTransform = cam->Get_Transform();
+
+	// One mirror a frame, so the first water area in view decides the plane.  A map whose visible
+	// water sits at two different heights reflects the second one at the first one's level.  The
+	// mirror only covers the part of the screen the water is drawn on: whatever stands outside that
+	// part of its frustum can never show in the water, and is culled before it costs a draw.
+	Bool waterInView = FALSE;
+	Bool waterBehindCamera = FALSE;
+	Vector2 areaMin(1.0f, 1.0f);
+	Vector2 areaMax(-1.0f, -1.0f);
+	for (PolygonTrigger *pTrig=PolygonTrigger::getFirstPolygonTrigger(); pTrig; pTrig = pTrig->getNext())
+	{
+		if (!pTrig->isWaterArea() || pTrig->getNumPoints() < 3)
+			continue;
+
+		Coord3D center;
+		pTrig->getCenterPoint(&center);
+		if (cam->Cull_Sphere(SphereClass(Vector3(center.x, center.y, center.z), pTrig->getRadius())))
+			continue;
+
+		if (!waterInView)
+			m_reflectionLevel = pTrig->getPoint(0)->z;
+		waterInView = TRUE;
+
+		for (Int pointIndex = 0; pointIndex < pTrig->getNumPoints(); ++pointIndex)
+		{
+			const ICoord3D *point = pTrig->getPoint(pointIndex);
+			Vector3 projected;
+			if (cam->Project(projected, Vector3(point->x, point->y, point->z)) == CameraClass::OUTSIDE_NEAR_CLIP)
+			{
+				waterBehindCamera = TRUE;
+				continue;
+			}
+			areaMin.X = WWMath::Min(areaMin.X, projected.X);
+			areaMin.Y = WWMath::Min(areaMin.Y, projected.Y);
+			areaMax.X = WWMath::Max(areaMax.X, projected.X);
+			areaMax.Y = WWMath::Max(areaMax.Y, projected.Y);
+		}
+	}
+
+	if (!waterInView)
+		return;
+
+	if (waterBehindCamera)
+	{	//a corner the camera cannot project says nothing about where the rest lands
+		areaMin.Set(-1.0f, -1.0f);
+		areaMax.Set(1.0f, 1.0f);
+	}
+
+	m_reflectionAreaMin.Set(WWMath::Max(areaMin.X - WATER_REFLECTION_AREA_MARGIN, -1.0f), WWMath::Max(areaMin.Y - WATER_REFLECTION_AREA_MARGIN, -1.0f));
+	m_reflectionAreaMax.Set(WWMath::Min(areaMax.X + WATER_REFLECTION_AREA_MARGIN, 1.0f), WWMath::Min(areaMax.Y + WATER_REFLECTION_AREA_MARGIN, 1.0f));
+	if (m_reflectionAreaMin.X >= m_reflectionAreaMax.X || m_reflectionAreaMin.Y >= m_reflectionAreaMax.Y)
+		return;	//every corner is off one side of the screen
+
+	renderMirror(cam, m_reflectionLevel);
 }
 
 //-------------------------------------------------------------------------------------------------
 /** Renders the reflected scene into an offscreen texture. */
 //-------------------------------------------------------------------------------------------------
-void WaterRenderObjClass::renderMirror(CameraClass *cam)
+void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 {
 #ifdef EXTENDED_STATS
 	if (DX8Wrapper::stats.m_disableWater) {
@@ -1468,7 +1579,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam)
 	Matrix3D	OldCameraMatrix=cam->Get_Transform();
 	Matrix4x4	FullMatrix4(cam->Get_Transform());	//copy 3x4 matrix into a 4x4
 	Vector3		WaterNormal(0,0,1);	//normal of plane used for reflection
-	Vector4		WaterPlane(WaterNormal.X,WaterNormal.Y,WaterNormal.Z,m_level);
+	Vector4		WaterPlane(WaterNormal.X,WaterNormal.Y,WaterNormal.Z,level);
 	Vector3		rRight,rUp,rN,rPos;	//orientation and translation vectors of camera
 
 	Matrix4x4	FullMatrix(FullMatrix4.Transpose());	//swap rows/columns
@@ -1497,7 +1608,9 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam)
 	DX8Wrapper::Set_Render_Target_With_Z((TextureClass*)m_pReflectionTexture);
 
 	// Clear the backbuffer
-	WW3D::Begin_Render(false,true,Vector3(0.0f,0.0f,0.0f));	//clearing only z-buffer since background always filled with clouds
+	// The sea's cloud plane fills its background; map water has no such plane, so its target is
+	// cleared to white, which the overlay multiplies in as no change at all.
+	WW3D::Begin_Render(m_waterType == WATER_TYPE_0_TRANSLUCENT, true, WATER_REFLECTION_SKY_COLOR);
 
 	cam->Set_Transform( reflectedTransform );
 
@@ -1508,20 +1621,39 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam)
 	vMin.X=vMin.Y=0.0f;
  	cam->Set_Viewport(vMin,vMax);
 
+	// A point on the water plane lands on the same view plane position for both cameras, so the
+	// water's screen area is the same slice of the mirror's view plane, stretched over the texture.
+	Vector2 planeOldMin, planeOldMax;
+	cam->Get_View_Plane(planeOldMin, planeOldMax);
+	const Vector2 planeSize = planeOldMax - planeOldMin;
+	cam->Set_View_Plane(
+		Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMin.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMin.Y + 1.0f) * 0.5f),
+		Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMax.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMax.Y + 1.0f) * 0.5f));
+
 	cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
 
 	//flip the winding order of polygons to draw the reflected back sides.
 	ShaderClass::Invert_Backface_Culling(true);
 
 	// Render the scene
-	renderSky();
-	if (m_tod == TIME_OF_DAY_NIGHT)
-		renderSkyBody(&reflectedTransform);
+	if (m_waterType == WATER_TYPE_2_PVSHADER)
+	{
+		renderSky();
+		if (m_tod == TIME_OF_DAY_NIGHT)
+			renderSkyBody(&reflectedTransform);
+	}
+
+	// The mirrored camera sits under the water, so everything under the water is in front of it.
+	PlaneClass waterSurface(WaterNormal, level);
+	cam->Set_Oblique_Near_Plane(&waterSurface);
+	cam->Apply();
 
 	WW3D::Render(m_parentScene,cam);
 
+	cam->Set_Oblique_Near_Plane(nullptr);
 	cam->Set_Transform(OldCameraMatrix);	//restore original non-reflected matrix
  	cam->Set_Viewport(vOldMin,vOldMax);
+	cam->Set_View_Plane(planeOldMin, planeOldMax);
 
 	cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
 
@@ -2963,9 +3095,91 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 	if (TheWaterTransparency->m_additiveBlend)
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND, D3DBLEND_ONE );
 
+	// GeneralsX @feature BenderAI 08/10/2026 Lay reflection texture over river water
+	drawReflection(rectangleCount*2, (rectangleCount+1)*2);
+
 	DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, cull);
 
 
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Lays the reflection over water geometry still bound from the draw before.  The texture was
+	* rendered from a camera mirrored in the water plane, and a point on that plane lands on the
+	* same screen position in both views, so the ordinary camera's projection is the whole lookup. */
+//-------------------------------------------------------------------------------------------------
+void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
+{
+	if (!m_pReflectionTexture)
+		return;	// the card refused a render target
+
+	// multiplied into the water, so it keeps the colour it was drawn with and the shroud already on it
+	DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
+	DX8Wrapper::Set_Texture(0, nullptr);
+	DX8Wrapper::Apply_Render_State_Changes();
+
+	// camera space -> clip space -> 0..1 texture space, divided by w in the projected stage
+	D3DXMATRIX projection;
+	DX8Wrapper::_Get_DX8_Transform(D3DTS_PROJECTION, *(Matrix4x4*)&projection);
+	D3DXMATRIX clipToTexture;
+	memset(&clipToTexture, 0, sizeof(D3DXMATRIX));
+	clipToTexture._11 = 0.5f;
+	clipToTexture._22 = -0.5f;
+	clipToTexture._41 = 0.5f;
+	clipToTexture._42 = 0.5f;
+	clipToTexture._43 = 1.0f;
+	// then from the whole screen onto the slice of it the texture was rendered for, still before
+	// the divide, so the offsets are scaled by w
+	const Real areaWidth = m_reflectionAreaMax.X - m_reflectionAreaMin.X;
+	const Real areaHeight = m_reflectionAreaMax.Y - m_reflectionAreaMin.Y;
+	if (areaWidth <= 0.0001f || areaHeight <= 0.0001f)
+		return;
+	D3DXMATRIX screenToArea;
+	D3DXMatrixIdentity(&screenToArea);
+	screenToArea._11 = 2.0f / areaWidth;
+	screenToArea._31 = -(1.0f + m_reflectionAreaMin.X) / areaWidth;
+	screenToArea._22 = 2.0f / areaHeight;
+	screenToArea._32 = (m_reflectionAreaMax.Y - 1.0f) / areaHeight;
+	D3DXMATRIX viewToTexture;
+	D3DXMatrixMultiply(&viewToTexture, &projection, &clipToTexture);
+	D3DXMatrixMultiply(&viewToTexture, &viewToTexture, &screenToArea);
+	DX8Wrapper::_Set_DX8_Transform(D3DTS_TEXTURE0, *(Matrix4x4*)&viewToTexture);
+
+	DX8Wrapper::Set_DX8_Texture(0, m_pReflectionTexture->Peek_D3D_Texture());
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_MIPFILTER, D3DTEXF_NONE);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 | D3DTTFF_PROJECTED);
+
+	if (m_reflectionPixelShader)
+	{
+		Vector4 strength(WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH, WATER_REFLECTION_STRENGTH);
+		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, &strength.X, 1);
+		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_reflectionPixelShader);
+	}
+	else
+	{
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, (REAL_TO_INT(WATER_REFLECTION_STRENGTH * 255.0f) << 24) | 0x00FFFFFF);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG2, D3DTA_CURRENT);
+	}
+
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	DX8Wrapper::Draw_Triangles(0, triangleCount, 0, vertexCount);
+
+	if (m_reflectionPixelShader)
+		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
+
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU|0);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+	DX8Wrapper::Set_DX8_Texture(0, nullptr);
+	ShaderClass::Invalidate();	//everything above was set behind the shader's back
 }
 
 void WaterRenderObjClass::setupFlatWaterShader()
@@ -3383,6 +3597,10 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 			W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
 		}
 	}
+
+	// GeneralsX @feature BenderAI 08/10/2026 Lay reflection texture over trapezoid water
+	drawReflection(rectangleCount*2, (rectangleCount+1)*2);
+
 	DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, cull);
 }
 
