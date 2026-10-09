@@ -322,8 +322,25 @@ bool W3DPostProcess::beginScene()
 		return false;
 	}
 
-	// Select depth surface: prefer dedicated non-MSAA scene depth surface, fallback to saved device depth buffer
-	IDirect3DSurface8 *depthToUse = m_sceneDepthSurface ? m_sceneDepthSurface : m_savedDepthBuffer;
+	// Select depth surface: prefer saved device depth buffer if non-multisampled and matching dimensions,
+	// otherwise fall back to dedicated non-MSAA scene depth surface
+	D3DSURFACE_DESC savedDepthDesc;
+	bool canUseSavedDepth = false;
+	if (m_savedDepthBuffer && SUCCEEDED(m_savedDepthBuffer->GetDesc(&savedDepthDesc)))
+	{
+		if (savedDepthDesc.MultiSampleType == D3DMULTISAMPLE_NONE &&
+		    (int)savedDepthDesc.Width >= m_sceneWidth &&
+		    (int)savedDepthDesc.Height >= m_sceneHeight)
+		{
+			canUseSavedDepth = true;
+		}
+	}
+
+	IDirect3DSurface8 *depthToUse = canUseSavedDepth ? m_savedDepthBuffer : m_sceneDepthSurface;
+	if (!depthToUse)
+	{
+		depthToUse = m_savedDepthBuffer;
+	}
 
 	D3DSURFACE_DESC depthDesc;
 	depthToUse->GetDesc(&depthDesc);
@@ -349,14 +366,26 @@ bool W3DPostProcess::beginScene()
 	D3DVIEWPORT8 vpScene = {0, 0, (DWORD)m_sceneWidth, (DWORD)m_sceneHeight, 0.0f, 1.0f};
 	pDev->SetViewport(&vpScene);
 
-	// Clear scene surface to opaque black with alpha matching engine water transparency
+	// Clear scene surface to opaque black with alpha matching engine water transparency,
+	// and clear depth/stencil buffer so 3D geometry passes depth testing.
 	// GeneralsX @bugfix fbraz3 09/10/2026 Water blending uses D3DBLEND_DESTALPHA; alpha must be cleared to minWaterOpacity (0xFF)
+	// GeneralsX @bugfix fbraz3 09/10/2026 Clear Z-buffer and stencil to prevent 3D geometry from failing depth test
 	float destAlpha = (TheWaterTransparency != nullptr) ? TheWaterTransparency->m_minWaterOpacity : 1.0f;
 	if (destAlpha < 0.0f) destAlpha = 0.0f;
 	if (destAlpha > 1.0f) destAlpha = 1.0f;
 	DWORD alphaVal = (DWORD)(destAlpha * 255.0f);
 	D3DCOLOR clearColor = (alphaVal << 24);
-	pDev->Clear(0, nullptr, D3DCLEAR_TARGET, clearColor, 1.0f, 0);
+
+	DWORD clearFlags = D3DCLEAR_TARGET;
+	if (depthToUse)
+	{
+		clearFlags |= D3DCLEAR_ZBUFFER;
+		if (depthDesc.Format == D3DFMT_D24S8 || depthDesc.Format == D3DFMT_D24X4S4 || depthDesc.Format == D3DFMT_D15S1)
+		{
+			clearFlags |= D3DCLEAR_STENCIL;
+		}
+	}
+	pDev->Clear(0, nullptr, clearFlags, clearColor, 1.0f, 0);
 
 	m_isSceneActive = true;
 	return true;
