@@ -706,9 +706,9 @@ GlobalData::GlobalData()
 	m_explosionDynamicLights = TRUE;
 	m_vehicleHeadlights = TRUE;
 	m_enablePostProcessing = FALSE;
-	m_postProcessBloom = TRUE;
-	m_postProcessHDR = TRUE;
-	m_postProcessFXAA = TRUE;
+	m_postProcessBloom = FALSE;
+	m_postProcessHDR = FALSE;
+	m_postProcessFXAA = FALSE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;

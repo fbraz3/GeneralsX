@@ -151,9 +151,9 @@ public:
 	Bool getExplosionDynamicLights(Bool defaultVal = TRUE) const;
 	Bool getVehicleHeadlights(Bool defaultVal = TRUE) const;
 	Bool getEnablePostProcessing(Bool defaultVal = FALSE) const;
-	Bool getPostProcessBloom(Bool defaultVal = TRUE) const;
-	Bool getPostProcessHDR(Bool defaultVal = TRUE) const;
-	Bool getPostProcessFXAA(Bool defaultVal = TRUE) const;
+	Bool getPostProcessBloom(Bool defaultVal = FALSE) const;
+	Bool getPostProcessHDR(Bool defaultVal = FALSE) const;
+	Bool getPostProcessFXAA(Bool defaultVal = FALSE) const;
 
 	void setAdvancedShadows(Bool val);
 	void setAdvancedLighting(Bool val);
