@@ -287,6 +287,9 @@ public:
 	static void Shutdown();
 
 	static void SetCleanupHook(DX8_CleanupHook *pCleanupHook) {m_pCleanupHook = pCleanupHook;};
+	// GeneralsX @feature fbraz3 09/10/2026 Support multiple cleanup hooks for subsystems like W3DPostProcess
+	static void AddCleanupHook(DX8_CleanupHook *pCleanupHook);
+	static void RemoveCleanupHook(DX8_CleanupHook *pCleanupHook);
 	/*
 	** Some WW3D sub-systems need to be initialized after the device is created and shutdown
 	** before the device is released.

@@ -80,6 +80,7 @@ W3DPostProcess::W3DPostProcess()
 
 W3DPostProcess::~W3DPostProcess()
 {
+	DX8Wrapper::RemoveCleanupHook(this);
 	releaseResources();
 
 	LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
@@ -111,17 +112,15 @@ void W3DPostProcess::init()
 	if (TheGlobalData && TheGlobalData->m_headless)
 		return;
 
+	DX8Wrapper::AddCleanupHook(this);
 	initShaders();
-	reacquireResources();
 	m_initialized = true;
-	fprintf(stderr, "[POST_PROCESS] Initialized post-processing pipeline (%dx%d, bloom %dx%d)\n",
-		m_sceneWidth, m_sceneHeight, m_bloomWidth, m_bloomHeight);
+	fprintf(stderr, "[POST_PROCESS] Initialized post-processing pipeline shaders and cleanup hook\n");
 }
 
 void W3DPostProcess::reset()
 {
 	releaseResources();
-	reacquireResources();
 }
 
 void W3DPostProcess::update()
@@ -255,6 +254,13 @@ bool W3DPostProcess::beginScene()
 	if (!TheGlobalData || !TheGlobalData->isEnablePostProcessing())
 		return false;
 
+	if (!TheDisplay || !TheDisplay->getFirstView())
+		return false;
+
+	LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
+	if (!pDev || pDev->TestCooperativeLevel() != D3D_OK)
+		return false;
+
 	int curWidth = TheDisplay ? TheDisplay->getWidth() : 0;
 	int curHeight = TheDisplay ? TheDisplay->getHeight() : 0;
 	if (curWidth <= 0 || curHeight <= 0)
@@ -275,16 +281,13 @@ bool W3DPostProcess::beginScene()
 			return false;
 	}
 
-	LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
-	if (!pDev || pDev->TestCooperativeLevel() != D3D_OK)
-		return false;
-
-	// Save active render target and depth stencil
+	// Save active render target, depth stencil, and viewport
 	if (m_savedRenderTarget) { m_savedRenderTarget->Release(); m_savedRenderTarget = nullptr; }
 	if (m_savedDepthBuffer) { m_savedDepthBuffer->Release(); m_savedDepthBuffer = nullptr; }
 
 	pDev->GetRenderTarget(&m_savedRenderTarget);
 	pDev->GetDepthStencilSurface(&m_savedDepthBuffer);
+	pDev->GetViewport(&m_savedViewport);
 
 	if (!m_savedRenderTarget || !m_savedDepthBuffer)
 	{
@@ -302,6 +305,9 @@ bool W3DPostProcess::beginScene()
 		if (m_savedDepthBuffer) { m_savedDepthBuffer->Release(); m_savedDepthBuffer = nullptr; }
 		return false;
 	}
+
+	D3DVIEWPORT8 vpScene = {0, 0, (DWORD)m_sceneWidth, (DWORD)m_sceneHeight, 0.0f, 1.0f};
+	pDev->SetViewport(&vpScene);
 
 	// Clear scene surface to opaque black
 	pDev->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
@@ -396,9 +402,9 @@ bool W3DPostProcess::endSceneAndApply()
 		renderQuad(m_sceneTexture, m_psCopy, m_sceneWidth, m_sceneHeight);
 	}
 
-	// 4. Restore original render target and depth buffer for 2D UI rendering
+	// 4. Restore original render target, depth buffer, and viewport for 2D UI rendering
 	pDev->SetRenderTarget(m_savedRenderTarget, m_savedDepthBuffer);
-	pDev->SetViewport(&vpScene);
+	pDev->SetViewport(&m_savedViewport);
 
 	if (m_savedRenderTarget) { m_savedRenderTarget->Release(); m_savedRenderTarget = nullptr; }
 	if (m_savedDepthBuffer) { m_savedDepthBuffer->Release(); m_savedDepthBuffer = nullptr; }

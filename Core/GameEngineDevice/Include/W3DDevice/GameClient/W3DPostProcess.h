@@ -28,7 +28,7 @@
 #include "Common/SubsystemInterface.h"
 #include "WW3D2/dx8wrapper.h"
 
-class W3DPostProcess : public SubsystemInterface
+class W3DPostProcess : public SubsystemInterface, public DX8_CleanupHook
 {
 public:
 	W3DPostProcess();
@@ -37,6 +37,10 @@ public:
 	virtual void init() override;
 	virtual void reset() override;
 	virtual void update() override;
+
+	// DX8_CleanupHook interface
+	virtual void ReleaseResources() override { releaseResources(); }
+	virtual void ReAcquireResources() override {}
 
 	void releaseResources();
 	bool reacquireResources();
@@ -75,6 +79,7 @@ private:
 
 	IDirect3DSurface8 *m_savedRenderTarget;
 	IDirect3DSurface8 *m_savedDepthBuffer;
+	D3DVIEWPORT8 m_savedViewport;
 
 	DWORD m_psCopy;
 	DWORD m_psBloomExtract;

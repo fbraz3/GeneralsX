@@ -486,6 +486,27 @@ Direct3DCreate8Type	Direct3DCreate8Ptr = nullptr;
 HINSTANCE D3D8Lib = nullptr;
 
 DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=nullptr;
+static std::vector<DX8_CleanupHook*> s_cleanupHooks;
+
+void DX8Wrapper::AddCleanupHook(DX8_CleanupHook *pCleanupHook)
+{
+	if (!pCleanupHook) return;
+	for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
+		if (s_cleanupHooks[i] == pCleanupHook) return;
+	}
+	s_cleanupHooks.push_back(pCleanupHook);
+}
+
+void DX8Wrapper::RemoveCleanupHook(DX8_CleanupHook *pCleanupHook)
+{
+	for (auto it = s_cleanupHooks.begin(); it != s_cleanupHooks.end(); ++it) {
+		if (*it == pCleanupHook) {
+			s_cleanupHooks.erase(it);
+			break;
+		}
+	}
+}
+
 #ifdef EXTENDED_STATS
 DX8_Stats	 DX8Wrapper::stats;
 #endif
@@ -994,6 +1015,9 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		if (m_pCleanupHook) {
 			m_pCleanupHook->ReleaseResources();
 		}
+		for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
+			if (s_cleanupHooks[i]) s_cleanupHooks[i]->ReleaseResources();
+		}
 		DynamicVBAccessClass::_Deinit();
 		DynamicIBAccessClass::_Deinit();
 		DX8TextureManagerClass::Release_Textures();
@@ -1020,6 +1044,9 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 			if (m_pCleanupHook) {
 				m_pCleanupHook->ReAcquireResources();
 			}
+			for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
+				if (s_cleanupHooks[i]) s_cleanupHooks[i]->ReAcquireResources();
+			}
 		}
 		Invalidate_Cached_Render_States();
 		Set_Default_Global_Render_States();
@@ -1034,6 +1061,13 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 void DX8Wrapper::Release_Device()
 {
 	Pillarbox_Cleanup();
+
+	if (m_pCleanupHook) {
+		m_pCleanupHook->ReleaseResources();
+	}
+	for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
+		if (s_cleanupHooks[i]) s_cleanupHooks[i]->ReleaseResources();
+	}
 
 	if (D3DDevice) {
 
