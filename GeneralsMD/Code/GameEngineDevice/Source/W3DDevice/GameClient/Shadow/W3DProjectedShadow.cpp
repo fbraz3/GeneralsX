@@ -876,16 +876,18 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Project airborne decals along the sun ray
 		Bool sunCasts = FALSE;
 		Vector3 toSun(0.0f, 0.0f, 1.0f);
+		Real effectiveSunZ = 1.0f;
 		Real heightAboveGround = 0.0f;
 		if (layerHeight == 0.0f && TheW3DShadowManager != nullptr && TheTerrainLogic != nullptr)
 		{
 			heightAboveGround = objPos.Z - TheTerrainLogic->getGroundHeight(objPos.X, objPos.Y);
-			toSun = TheW3DShadowManager->getLightPosWorld(0);
+			toSun = TheW3DShadowManager->getLightPosWorld(0) - objPos;
+			toSun.Normalize();
+			effectiveSunZ = toSun.Z;
 			const Real MIN_SUN_HEIGHT = 0.01f;		// a sun on the horizon casts a shadow of infinite length
 			sunCasts = sunCast && toSun.Z > MIN_SUN_HEIGHT;	//a marker ring stays under its object
 			if (heightAboveGround > 0.0f && sunCasts)
 			{
-				Real effectiveSunZ = toSun.Z;
 				Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
 				if (owner && owner->isKindOf(KINDOF_AIRCRAFT))
 				{
@@ -910,7 +912,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		{
 			const Real lift = WWMath::Min((heightAboveGround - DECAL_AIRBORNE_HEIGHT) / DECAL_AIRBORNE_BLEND, 1.0f);
 			const Real axisLength = uVector.Length();
-			const Real fullDown = uVector.Z / toSun.Z;
+			const Real fullDown = (effectiveSunZ > 0.0001f) ? (uVector.Z / effectiveSunZ) : 0.0f;
 			Real down = lift * fullDown;
 			if (axisLength > 0.0001f && shadow->m_decalSizeX > 0.0001f && WWMath::Is_Valid_Float(shadow->m_decalSizeX) && WWMath::Is_Valid_Float(shadow->m_decalSizeY))
 			{

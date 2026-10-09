@@ -182,6 +182,7 @@ public:
 	Bool isExtendedShadowFrustumCulling() const { return m_advancedShadows && m_extendedShadowFrustumCulling; }
 	Bool isNaturalSunElevation() const { return m_advancedShadows && m_naturalSunElevation; }
 	Bool isBridgeShadows() const { return m_advancedShadows && m_bridgeShadows; }
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
 	Bool isWaterReflections() const { return m_waterReflections; }
 	Bool isExplosionDynamicLights() const { return m_advancedLighting && m_explosionDynamicLights; }
 	Bool isVehicleHeadlights() const { return m_advancedLighting && m_vehicleHeadlights; }
