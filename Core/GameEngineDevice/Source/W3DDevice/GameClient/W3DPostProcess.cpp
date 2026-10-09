@@ -24,6 +24,7 @@
 #include "W3DDevice/GameClient/W3DPostProcessShaders.h"
 #include "Common/GlobalData.h"
 #include "GameClient/Display.h"
+#include "GameClient/Water.h"
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/ww3d.h"
 
@@ -309,8 +310,14 @@ bool W3DPostProcess::beginScene()
 	D3DVIEWPORT8 vpScene = {0, 0, (DWORD)m_sceneWidth, (DWORD)m_sceneHeight, 0.0f, 1.0f};
 	pDev->SetViewport(&vpScene);
 
-	// Clear scene surface to opaque black
-	pDev->Clear(0, nullptr, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0);
+	// Clear scene surface to opaque black with alpha matching engine water transparency
+	// GeneralsX @bugfix fbraz3 09/10/2026 Water blending uses D3DBLEND_DESTALPHA; alpha must be cleared to minWaterOpacity (0xFF)
+	float destAlpha = (TheWaterTransparency != nullptr) ? TheWaterTransparency->m_minWaterOpacity : 1.0f;
+	if (destAlpha < 0.0f) destAlpha = 0.0f;
+	if (destAlpha > 1.0f) destAlpha = 1.0f;
+	DWORD alphaVal = (DWORD)(destAlpha * 255.0f);
+	D3DCOLOR clearColor = (alphaVal << 24);
+	pDev->Clear(0, nullptr, D3DCLEAR_TARGET, clearColor, 1.0f, 0);
 
 	m_isSceneActive = true;
 	return true;

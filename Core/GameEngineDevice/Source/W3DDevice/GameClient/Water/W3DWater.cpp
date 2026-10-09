@@ -3135,6 +3135,12 @@ void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 	if (TheGlobalData && !TheGlobalData->isWaterReflections())
 		return;
 
+	// GeneralsX @bugfix fbraz3 09/10/2026 Translucent water reflections are only computed for WATER_TYPE_0_TRANSLUCENT.
+	// On sea maps (WATER_TYPE_2_PVSHADER), m_pReflectionTexture contains sea mirror data and multiplying it onto
+	// river/trapezoid water blackens the surface.
+	if (m_waterType != WATER_TYPE_0_TRANSLUCENT)
+		return;
+
 	// GeneralsX @bugfix fbraz3 08/10/2026 Guard against missing RT or pixel shader (Reforged pattern)
 	if (!m_pReflectionTexture || !m_reflectionPixelShader)
 		return;	// the card refused a render target or a pixel shader
