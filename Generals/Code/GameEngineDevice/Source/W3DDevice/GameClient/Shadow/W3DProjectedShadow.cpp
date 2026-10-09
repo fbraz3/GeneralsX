@@ -912,7 +912,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 			const Real axisLength = uVector.Length();
 			const Real fullDown = uVector.Z / toSun.Z;
 			Real down = lift * fullDown;
-			if (axisLength > 0.0f)
+			if (axisLength > 0.0001f && shadow->m_decalSizeX > 0.0001f && WWMath::Is_Valid_Float(shadow->m_decalSizeX) && WWMath::Is_Valid_Float(shadow->m_decalSizeY))
 			{
 				const Real projectedX = uVector.X - toSun.X * fullDown;
 				const Real projectedY = uVector.Y - toSun.Y * fullDown;
@@ -921,7 +921,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 				const Real minStretch = WWMath::Min(1.0f, WWMath::Fabs(shadow->m_decalSizeY) / shadow->m_decalSizeX);
 				const Real capped = WWMath::Max(WWMath::Min(ratio, DECAL_MAX_STRETCH), minStretch);
 				stretch = 1.0f + lift * (capped - 1.0f);
-				const Real centreDown = (ratio > DECAL_MAX_STRETCH) ? down * DECAL_MAX_STRETCH / ratio : down;
+				const Real centreDown = (ratio > DECAL_MAX_STRETCH && ratio > 0.0001f) ? down * DECAL_MAX_STRETCH / ratio : down;
 				objPos.X -= toSun.X * centreDown * shadow->m_decalCenterU;
 				objPos.Y -= toSun.Y * centreDown * shadow->m_decalCenterU;
 			}
@@ -978,7 +978,10 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 			min_y = MIN(min_y,boxCorners[bi].Y);
 		}
 
-		uVector *= shadow->m_oowDecalSizeX / stretch;
+		if (stretch > 0.0001f && WWMath::Is_Valid_Float(stretch))
+			uVector *= shadow->m_oowDecalSizeX / stretch;
+		else
+			uVector *= shadow->m_oowDecalSizeX;
 		vVector *= shadow->m_oowDecalSizeY;
 		uOffset = shadow->m_decalOffsetU + 0.5f;
 		vOffset = shadow->m_decalOffsetV + 0.5f;
@@ -1033,10 +1036,21 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		dy=box.Extent.Y;
 
 		//Get terrain cell index for area with shadow
-		Int startX=REAL_TO_INT_FLOOR(((objPos.X+min_x)*mapScaleInv)) + borderSize;
-		Int endX=REAL_TO_INT_CEIL(((objPos.X+max_x)*mapScaleInv)) + borderSize;
-		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
-		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
+		Real rawMinX = (objPos.X + min_x) * mapScaleInv;
+		Real rawMaxX = (objPos.X + max_x) * mapScaleInv;
+		Real rawMinY = (objPos.Y + min_y) * mapScaleInv;
+		Real rawMaxY = (objPos.Y + max_y) * mapScaleInv;
+
+		if (!WWMath::Is_Valid_Float(rawMinX) || !WWMath::Is_Valid_Float(rawMaxX) ||
+		    !WWMath::Is_Valid_Float(rawMinY) || !WWMath::Is_Valid_Float(rawMaxY))
+		{
+			return;
+		}
+
+		Int startX=REAL_TO_INT_FLOOR(rawMinX) + borderSize;
+		Int endX=REAL_TO_INT_CEIL(rawMaxX) + borderSize;
+		Int	startY=REAL_TO_INT_FLOOR(rawMinY) + borderSize;
+		Int endY=REAL_TO_INT_CEIL(rawMaxY) + borderSize;
 
 		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX/MIN portability macros for draw-window clipping.
 		startX = MAX(startX,m_drawStartX);

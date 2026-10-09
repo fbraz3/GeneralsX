@@ -942,6 +942,10 @@ void WaterRenderObjClass::ReAcquireResources()
 		m_pReflectionTexture = DX8Wrapper::Create_Render_Target (WATER_REFLECTION_SIZE, WATER_REFLECTION_SIZE);
 	}
 
+	// GeneralsX @bugfix fbraz3 09/10/2026 Invalidate reflection reuse cache on device reset / resource reacquire
+	m_reflectionReused = FALSE;
+	memset(&m_reflectionCameraTransform, 0, sizeof(Matrix3D));
+
 	if (m_waterTrackSystem)
 		m_waterTrackSystem->ReAcquireResources();
 
@@ -995,22 +999,8 @@ void WaterRenderObjClass::ReAcquireResources()
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
 			compiledShader->Release();
 		}
-		// GeneralsX @feature fbraz3 08/10/2026 Precompiled ps.1.1 bytecode for water reflection shader (Reforged pattern)
-		static const DWORD reflectionShaderBytecode[] = {
-			0xFFFF0101, // ps_1_1
-			0x00000051, 0xA00F0001, 0x3EAAAAAB, 0x3EAAAAAB, 0x3EAAAAAB, 0x00000000, // def c1, 0.333333, 0.333333, 0.333333, 0
-			0x00000042, 0xB00F0000,                                                 // tex t0
-			0x00000008, 0x80070001, 0xB0E40000, 0xA0E40001,                         // dp3 r1.rgb, t0, c1
-			0x00000001, 0x80070001, 0x86E40001,                                     // mov r1.rgb, 1-r1
-			0x00000002, 0x80070001, 0x80E40001, 0x80E40001,                         // add r1.rgb, r1, r1
-			0x00000002, 0x80070001, 0x80E40001, 0x80E40001,                         // add r1.rgb, r1, r1
-			0x00000005, 0x80070000, 0x80E40001, 0xA0E40000,                         // mul r0.rgb, r1, c0
-			0x00000001, 0x80070000, 0x86E40000,                                     // mov r0.rgb, 1-r0
-			0x40000001, 0x80080000, 0xA0E40000,                                     // +mov r0.a, c0
-			0x0000FFFF                                                               // end
-		};
-		DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader(reflectionShaderBytecode, &m_reflectionPixelShader);
 #endif // _WIN32 - Runtime shader compilation
+		// GeneralsX @feature fbraz3 08/10/2026 Precompiled ps.1.1 bytecode for water reflection shader (Reforged pattern)
 		if (!m_reflectionPixelShader)
 		{
 			static const DWORD reflectionShaderBytecode[] = {
@@ -1513,7 +1503,8 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 		renderMirror(cam, m_level);	//generate texture containing reflected scene
 	}
 
-	if (m_waterType != WATER_TYPE_0_TRANSLUCENT || !m_pReflectionTexture)
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options for translucent water
+	if (m_waterType != WATER_TYPE_0_TRANSLUCENT || !m_pReflectionTexture || (TheGlobalData && !TheGlobalData->isWaterReflections()))
 		return;
 
 	// A camera that has not moved looks at the same water from the same place, so a reflection one
@@ -1588,10 +1579,6 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 {
-	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
-	if (TheGlobalData && !TheGlobalData->isWaterReflections())
-		return;
-
 #ifdef EXTENDED_STATS
 	if (DX8Wrapper::stats.m_disableWater) {
 		return;

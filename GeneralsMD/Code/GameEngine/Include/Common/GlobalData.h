@@ -182,7 +182,7 @@ public:
 	Bool isExtendedShadowFrustumCulling() const { return m_advancedShadows && m_extendedShadowFrustumCulling; }
 	Bool isNaturalSunElevation() const { return m_advancedShadows && m_naturalSunElevation; }
 	Bool isBridgeShadows() const { return m_advancedShadows && m_bridgeShadows; }
-	Bool isWaterReflections() const { return m_advancedShadows && m_waterReflections; }
+	Bool isWaterReflections() const { return m_waterReflections; }
 	Bool isExplosionDynamicLights() const { return m_advancedLighting && m_explosionDynamicLights; }
 	Bool isVehicleHeadlights() const { return m_advancedLighting && m_vehicleHeadlights; }
 	Bool isEnablePostProcessing() const { return m_enablePostProcessing && (m_postProcessBloom || m_postProcessHDR || m_postProcessFXAA); }

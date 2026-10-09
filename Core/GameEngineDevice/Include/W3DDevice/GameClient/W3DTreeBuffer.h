@@ -226,6 +226,7 @@ public:
 	TileData *getSourceTile(Int ndx) {return m_sourceTiles[ndx];}
 	void allocateTreeBuffers();							 ///< Allocates the buffers.
 	void freeTreeBuffers();									 ///< Frees the index and vertex buffers.
+	void releaseModelShadows();
 
 private:
 	enum { MAX_TREE_VERTEX=30000,

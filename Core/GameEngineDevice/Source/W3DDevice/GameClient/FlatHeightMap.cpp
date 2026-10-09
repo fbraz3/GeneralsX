@@ -632,7 +632,9 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	ShaderClass::Invalidate();
 	DX8Wrapper::Apply_Render_State_Changes();
 
-	m_waypointBuffer->drawWaypoints(rinfo);
+	// GeneralsX @bugfix fbraz3 09/10/2026 Skip waypoint buffer during reflection pass (inverted culling)
+	if (m_waypointBuffer && !ShaderClass::Is_Backface_Culling_Inverted())
+		m_waypointBuffer->drawWaypoints(rinfo);
 
 	if (!ShaderClass::Is_Backface_Culling_Inverted())
 		m_bibBuffer->renderBibs();

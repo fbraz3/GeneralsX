@@ -70,6 +70,7 @@ private:
 
 	IDirect3DTexture8 *m_sceneTexture;
 	IDirect3DSurface8 *m_sceneSurface;
+	IDirect3DSurface8 *m_sceneDepthSurface;
 
 	IDirect3DTexture8 *m_bloomTexture[2];
 	IDirect3DSurface8 *m_bloomSurface[2];

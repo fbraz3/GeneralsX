@@ -217,7 +217,14 @@ UnsignedInt HeightMapRenderObjClass::doTheDynamicLight(VERTEX_FORMAT *vb, VERTEX
 				}
 
 				// (gth) normalize here since we have the length
-				lightDirection /= dist;
+				if (dist > 0.0001f)
+				{
+					lightDirection /= dist;
+				}
+				else
+				{
+					lightDirection.Set(0.0f, 0.0f, 1.0f);
+				}
 			}
 			break;
 		case LightClass::DIRECTIONAL:
@@ -2117,6 +2124,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
 
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip scorches during reflection pass (inverted culling)
 		if (!ShaderClass::Is_Backface_Culling_Inverted()) {
 			drawScorches();
 		}
@@ -2129,6 +2137,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 		m_bridgeBuffer->drawBridges(&rinfo.Camera, m_disableTextures, doCloud?m_stageTwoTexture:nullptr);
 
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip terrain tracks during reflection pass (inverted culling)
 		if (TheTerrainTracksRenderObjClassSystem && !ShaderClass::Is_Backface_Culling_Inverted())
 			TheTerrainTracksRenderObjClassSystem->flush();
 

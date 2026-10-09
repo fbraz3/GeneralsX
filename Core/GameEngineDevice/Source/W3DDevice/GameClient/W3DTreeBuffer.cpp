@@ -1040,6 +1040,7 @@ void W3DTreeBuffer::updateVertexBuffer()
 W3DTreeBuffer::~W3DTreeBuffer()
 {
 	freeTreeBuffers();
+	releaseModelShadows();
 	REF_PTR_RELEASE(m_treeTexture);
 	Int i;
 	for (i=0; i<MAX_TYPES; i++) {
@@ -1247,22 +1248,33 @@ void W3DTreeBuffer::allocateTreeBuffers()
 //=============================================================================
 // W3DTreeBuffer::clearAllTrees
 //=============================================================================
-/** Removes all trees. */
 //=============================================================================
-void W3DTreeBuffer::clearAllTrees()
+// W3DTreeBuffer::releaseModelShadows
+//=============================================================================
+/** Releases model shadow mesh and texture references. */
+//=============================================================================
+void W3DTreeBuffer::releaseModelShadows()
 {
-	Int j;
-	for (j=0; j<m_numModelShadows; j++) {
-		Int k;
-		for (k=0; k<m_modelShadows[j].numMesh; k++) {
+	for (Int j = 0; j < m_numModelShadows; j++) {
+		for (Int k = 0; k < m_modelShadows[j].numMesh; k++) {
 			REF_PTR_RELEASE(m_modelShadows[j].mesh[k]);
 		}
 	}
 	m_numModelShadows = 0;
-	for (j=0; j<m_numShadowTextures; j++) {
+	for (Int j = 0; j < m_numShadowTextures; j++) {
 		REF_PTR_RELEASE(m_shadowTextures[j]);
 	}
 	m_numShadowTextures = 0;
+}
+
+//=============================================================================
+// W3DTreeBuffer::clearAllTrees
+//=============================================================================
+/** Removes all trees. */
+//=============================================================================
+void W3DTreeBuffer::clearAllTrees()
+{
+	releaseModelShadows();
 
 	m_numTrees=0;
 	m_bounds.lo.x = m_bounds.lo.y = 0;

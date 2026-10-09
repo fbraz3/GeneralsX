@@ -61,6 +61,7 @@ W3DPostProcess::W3DPostProcess()
 	, m_bloomHeight(0)
 	, m_sceneTexture(nullptr)
 	, m_sceneSurface(nullptr)
+	, m_sceneDepthSurface(nullptr)
 	, m_compositeTexture(nullptr)
 	, m_compositeSurface(nullptr)
 	, m_savedRenderTarget(nullptr)
@@ -162,6 +163,7 @@ bool W3DPostProcess::initShaders()
 
 void W3DPostProcess::releaseResources()
 {
+	if (m_sceneDepthSurface) { m_sceneDepthSurface->Release(); m_sceneDepthSurface = nullptr; }
 	if (m_sceneSurface) { m_sceneSurface->Release(); m_sceneSurface = nullptr; }
 	if (m_sceneTexture) { m_sceneTexture->Release(); m_sceneTexture = nullptr; }
 
@@ -220,7 +222,30 @@ bool W3DPostProcess::reacquireResources()
 	}
 	m_sceneTexture->GetSurfaceLevel(0, &m_sceneSurface);
 
-	// 2. Quarter-size Bloom ping-pong textures
+	// 2. Dedicated non-MSAA depth-stencil buffer matching scene resolution
+	D3DFORMAT depthFormat = D3DFMT_D24S8;
+	IDirect3DSurface8 *devDepth = nullptr;
+	if (SUCCEEDED(pDev->GetDepthStencilSurface(&devDepth)) && devDepth)
+	{
+		D3DSURFACE_DESC devDepthDesc;
+		devDepth->GetDesc(&devDepthDesc);
+		depthFormat = devDepthDesc.Format;
+		devDepth->Release();
+	}
+
+	hr = pDev->CreateDepthStencilSurface(m_sceneWidth, m_sceneHeight, depthFormat, D3DMULTISAMPLE_NONE, &m_sceneDepthSurface);
+	if (FAILED(hr))
+	{
+		hr = pDev->CreateDepthStencilSurface(m_sceneWidth, m_sceneHeight, D3DFMT_D16, D3DMULTISAMPLE_NONE, &m_sceneDepthSurface);
+		if (FAILED(hr))
+		{
+			fprintf(stderr, "[POST_PROCESS] Warning: Failed to create non-MSAA depth stencil surface (%dx%d, hr=0x%08x)\n",
+				m_sceneWidth, m_sceneHeight, hr);
+			m_sceneDepthSurface = nullptr;
+		}
+	}
+
+	// 3. Quarter-size Bloom ping-pong textures
 	for (int i = 0; i < 2; ++i)
 	{
 		hr = pDev->CreateTexture(m_bloomWidth, m_bloomHeight, 1, D3DUSAGE_RENDERTARGET,
@@ -235,7 +260,7 @@ bool W3DPostProcess::reacquireResources()
 		m_bloomTexture[i]->GetSurfaceLevel(0, &m_bloomSurface[i]);
 	}
 
-	// 3. Composite full-screen texture for chaining
+	// 4. Composite full-screen texture for chaining
 	hr = pDev->CreateTexture(m_sceneWidth, m_sceneHeight, 1, D3DUSAGE_RENDERTARGET,
 		D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_compositeTexture);
 	if (FAILED(hr))
@@ -297,8 +322,22 @@ bool W3DPostProcess::beginScene()
 		return false;
 	}
 
+	// Select depth surface: prefer dedicated non-MSAA scene depth surface, fallback to saved device depth buffer
+	IDirect3DSurface8 *depthToUse = m_sceneDepthSurface ? m_sceneDepthSurface : m_savedDepthBuffer;
+
+	D3DSURFACE_DESC depthDesc;
+	depthToUse->GetDesc(&depthDesc);
+	if (depthDesc.MultiSampleType != D3DMULTISAMPLE_NONE)
+	{
+		// Cannot pair multisampled depth buffer with non-multisampled scene target in D3D8
+		fprintf(stderr, "[POST_PROCESS] Multisampled depth buffer cannot be paired with non-MSAA render target, skipping post-processing\n");
+		if (m_savedRenderTarget) { m_savedRenderTarget->Release(); m_savedRenderTarget = nullptr; }
+		if (m_savedDepthBuffer) { m_savedDepthBuffer->Release(); m_savedDepthBuffer = nullptr; }
+		return false;
+	}
+
 	// Redirect rendering of the 3D world to our offscreen scene target
-	HRESULT hr = pDev->SetRenderTarget(m_sceneSurface, m_savedDepthBuffer);
+	HRESULT hr = pDev->SetRenderTarget(m_sceneSurface, depthToUse);
 	if (FAILED(hr))
 	{
 		fprintf(stderr, "[POST_PROCESS] SetRenderTarget to sceneSurface failed (hr=0x%08x)\n", hr);
