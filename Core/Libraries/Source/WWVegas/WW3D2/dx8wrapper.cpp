@@ -97,6 +97,7 @@
 #include "DbgHelpGuard.h"
 
 #include "shdlib.h"
+#include <vector>
 
 const int DEFAULT_RESOLUTION_WIDTH = 640;
 const int DEFAULT_RESOLUTION_HEIGHT = 480;
