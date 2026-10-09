@@ -994,6 +994,16 @@ static Bool parsePrefBool(OptionPreferences::const_iterator it, OptionPreference
 	return defaultVal;
 }
 
+Bool OptionPreferences::getAdvancedShadows(Bool defaultVal) const
+{
+	return parsePrefBool(find("AdvancedShadows"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getAdvancedLighting(Bool defaultVal) const
+{
+	return parsePrefBool(find("AdvancedLighting"), end(), defaultVal);
+}
+
 Bool OptionPreferences::getUseShadowVolumesForSkins(Bool defaultVal) const
 {
 	return parsePrefBool(find("UseShadowVolumesForSkins"), end(), defaultVal);
@@ -1057,6 +1067,16 @@ Bool OptionPreferences::getPostProcessHDR(Bool defaultVal) const
 Bool OptionPreferences::getPostProcessFXAA(Bool defaultVal) const
 {
 	return parsePrefBool(find("PostProcessFXAA"), end(), defaultVal);
+}
+
+void OptionPreferences::setAdvancedShadows(Bool val)
+{
+	(*this)["AdvancedShadows"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setAdvancedLighting(Bool val)
+{
+	(*this)["AdvancedLighting"] = val ? "yes" : "no";
 }
 
 void OptionPreferences::setUseShadowVolumesForSkins(Bool val)

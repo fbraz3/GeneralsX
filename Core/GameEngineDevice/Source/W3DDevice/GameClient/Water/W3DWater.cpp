@@ -1589,7 +1589,7 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 {
 	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
-	if (TheGlobalData && !TheGlobalData->m_waterReflections)
+	if (TheGlobalData && !TheGlobalData->isWaterReflections())
 		return;
 
 #ifdef EXTENDED_STATS
@@ -3132,7 +3132,7 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 {
 	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
-	if (TheGlobalData && !TheGlobalData->m_waterReflections)
+	if (TheGlobalData && !TheGlobalData->isWaterReflections())
 		return;
 
 	// GeneralsX @bugfix fbraz3 08/10/2026 Guard against missing RT or pixel shader (Reforged pattern)

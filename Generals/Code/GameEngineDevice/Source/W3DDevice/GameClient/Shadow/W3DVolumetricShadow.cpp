@@ -628,7 +628,7 @@ Int W3DShadowGeometry::initFromHLOD(RenderObjClass *robj)
 
 	Int i,j,k,newVertexCount;
 
-	if (!TheGlobalData || !TheGlobalData->m_useShadowVolumesForSkins)
+	if (!TheGlobalData || !TheGlobalData->isUseShadowVolumesForSkins())
 	{
 		for (int l = 0; l < hlod->Get_LOD_Count(); l++)
 		{
@@ -722,7 +722,7 @@ Int W3DShadowGeometry::initFromHLOD(RenderObjClass *robj)
 	// shared exactly like a rigid mesh's. These are taken from LOD 0 because that is the LOD
 	// updateVolumes() and RenderVolume() fetch the live mesh from, and Get_Deformed_Vertices() must be
 	// called on the same mesh the indices were built from.
-	if (TheGlobalData && TheGlobalData->m_useShadowVolumesForSkins)
+	if (TheGlobalData && TheGlobalData->isUseShadowVolumesForSkins())
 	{
 		for (i = 0; i < hlod->Get_Lod_Model_Count(0); i++)
 		{
@@ -823,7 +823,7 @@ Int W3DShadowGeometry::initFromMesh(RenderObjClass *robj)
 	geomMesh->m_numSourceVerts=geomMesh->m_numVerts;
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Support volumetric shadows for skinned meshes
 	geomMesh->m_isSkin=mm->Get_Flag(MeshGeometryClass::SKIN);
-	if (geomMesh->m_isSkin && (!TheGlobalData || !TheGlobalData->m_useShadowVolumesForSkins))
+	if (geomMesh->m_isSkin && (!TheGlobalData || !TheGlobalData->isUseShadowVolumesForSkins()))
 		return FALSE;
 	geomMesh->m_verts=mm->Get_Vertex_Array();
 	geomMesh->m_numPolygons=mm->Get_Polygon_Count();
@@ -4056,7 +4056,7 @@ W3DVolumetricShadow* W3DVolumetricShadowManager::addShadow(RenderObjClass *robj,
 		owner = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
 
 	Real sunElevation = shadowInfo->m_sizeX;
-	if (TheGlobalData && TheGlobalData->m_naturalSunElevation && owner && owner->isKindOf(KINDOF_AIRCRAFT) && (sunElevation > AIRCRAFT_MIN_SUN_ELEVATION || sunElevation == 0.0f))
+	if (TheGlobalData && TheGlobalData->isNaturalSunElevation() && owner && owner->isKindOf(KINDOF_AIRCRAFT) && (sunElevation > AIRCRAFT_MIN_SUN_ELEVATION || sunElevation == 0.0f))
 		sunElevation = AIRCRAFT_MIN_SUN_ELEVATION;
 
 	Real sunElevationAngleTan = 0;

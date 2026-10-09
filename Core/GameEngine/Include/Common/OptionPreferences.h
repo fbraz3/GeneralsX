@@ -139,6 +139,8 @@ public:
 	Int getSkirmishTickRate() const;
 
 	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options
+	Bool getAdvancedShadows(Bool defaultVal = TRUE) const;
+	Bool getAdvancedLighting(Bool defaultVal = TRUE) const;
 	Bool getUseShadowVolumesForSkins(Bool defaultVal = TRUE) const;
 	Bool getExtendedShadowFrustumCulling(Bool defaultVal = TRUE) const;
 	Bool getNaturalSunElevation(Bool defaultVal = TRUE) const;
@@ -153,6 +155,8 @@ public:
 	Bool getPostProcessHDR(Bool defaultVal = TRUE) const;
 	Bool getPostProcessFXAA(Bool defaultVal = TRUE) const;
 
+	void setAdvancedShadows(Bool val);
+	void setAdvancedLighting(Bool val);
 	void setUseShadowVolumesForSkins(Bool val);
 	void setExtendedShadowFrustumCulling(Bool val);
 	void setNaturalSunElevation(Bool val);

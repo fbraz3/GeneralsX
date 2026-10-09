@@ -323,7 +323,7 @@ public:
 	virtual void doFXObj(const Object* primary, const Object* /*secondary*/) const override
 	{
 		// GeneralsX @feature fbraz3 08/10/2026 Explosion dynamic light toggle via INI/Options
-		if (TheGlobalData && !TheGlobalData->m_explosionDynamicLights)
+		if (TheGlobalData && !TheGlobalData->isExplosionDynamicLights())
 			return;
 
 		if (primary)
@@ -344,7 +344,7 @@ public:
 	virtual void doFXPos(const Coord3D *primary, const Matrix3D* /*primaryMtx*/, const Real /*primarySpeed*/, const Coord3D * /*secondary*/, const Real /*overrideRadius*/ ) const override
 	{
 		// GeneralsX @feature fbraz3 08/10/2026 Explosion dynamic light toggle via INI/Options
-		if (TheGlobalData && !TheGlobalData->m_explosionDynamicLights)
+		if (TheGlobalData && !TheGlobalData->isExplosionDynamicLights())
 			return;
 
 		if (primary)

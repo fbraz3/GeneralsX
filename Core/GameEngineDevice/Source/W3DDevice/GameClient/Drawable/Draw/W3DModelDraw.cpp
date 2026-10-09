@@ -1889,7 +1889,7 @@ when the type was changed, so the caller can fall back if no volume geometry cou
 static Bool promoteSkinShadowToVolume(RenderObjClass *robj, Shadow::ShadowTypeInfo *shadowInfo)
 {
 	if (shadowInfo->m_type != SHADOW_DECAL ||
-			!TheGlobalData || !TheGlobalData->m_useShadowVolumes || !TheGlobalData->m_useShadowVolumesForSkins ||
+			!TheGlobalData || !TheGlobalData->m_useShadowVolumes || !TheGlobalData->isUseShadowVolumesForSkins() ||
 			!hasSkinnedGeometry(robj))
 		return FALSE;
 
@@ -1919,7 +1919,7 @@ static Bool wantsModelShadow(const ThingTemplate *tmplate)
 {
 	return tmplate->getShadowType() == SHADOW_DECAL &&
 			TheGlobalData &&
-			TheGlobalData->m_shadowsForProps &&
+			TheGlobalData->isShadowsForProps() &&
 			(TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes) &&
 			tmplate->isKindOf(KINDOF_SHRUBBERY) &&
 			tmplate->isKindOf(KINDOF_IMMOBILE);
@@ -1979,7 +1979,7 @@ static Bool fillShadowInfoFromTemplate(const ThingTemplate *tmplate, Shadow::Sha
 			return TRUE;
 		}
 
-		if (!prop && (!TheGlobalData || !TheGlobalData->m_shadowsForProjectiles || !tmplate->isKindOf(KINDOF_PROJECTILE)))
+		if (!prop && (!TheGlobalData || !TheGlobalData->isShadowsForProjectiles() || !tmplate->isKindOf(KINDOF_PROJECTILE)))
 			return FALSE;
 
 		// Most of these name no texture of their own, so ask for the round blob a sphere gets
@@ -3101,7 +3101,7 @@ Bool W3DModelDraw::headlightBeam(Vector3& origin, Vector3& direction, Real& reac
 void W3DModelDraw::updateHeadlightDynamicLight()
 {
 	if (m_hideHeadlights || !m_hasHeadlights || getDrawable() == nullptr || m_renderObject == nullptr ||
-		(TheGlobalData && !TheGlobalData->m_vehicleHeadlights))
+		(TheGlobalData && !TheGlobalData->isVehicleHeadlights()))
 	{
 		if (m_headlightDynamicLight)
 		{

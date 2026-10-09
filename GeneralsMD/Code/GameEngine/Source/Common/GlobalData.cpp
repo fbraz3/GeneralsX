@@ -129,6 +129,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
 	{ "ShadowsForProps",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProps ) },
 	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	{ "AdvancedShadows",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_advancedShadows ) },
+	{ "AdvancedLighting",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_advancedLighting ) },
 	{ "ExtendedShadowFrustumCulling",	INI::parseBool,				nullptr,			offsetof( GlobalData, m_extendedShadowFrustumCulling ) },
 	{ "NaturalSunElevation",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_naturalSunElevation ) },
 	{ "BridgeShadows",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_bridgeShadows ) },
@@ -706,6 +708,8 @@ GlobalData::GlobalData()
 	m_shadowsForProjectiles = TRUE;
 	m_shadowsForProps = TRUE;
 	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options defaults
+	m_advancedShadows = TRUE;
+	m_advancedLighting = TRUE;
 	m_extendedShadowFrustumCulling = TRUE;
 	m_naturalSunElevation = TRUE;
 	m_bridgeShadows = TRUE;
@@ -1287,6 +1291,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
 
 	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options overridden from Options.ini
+	TheWritableGlobalData->m_advancedShadows = optionPref.getAdvancedShadows(TheWritableGlobalData->m_advancedShadows);
+	TheWritableGlobalData->m_advancedLighting = optionPref.getAdvancedLighting(TheWritableGlobalData->m_advancedLighting);
 	TheWritableGlobalData->m_useShadowVolumesForSkins = optionPref.getUseShadowVolumesForSkins(TheWritableGlobalData->m_useShadowVolumesForSkins);
 	TheWritableGlobalData->m_extendedShadowFrustumCulling = optionPref.getExtendedShadowFrustumCulling(TheWritableGlobalData->m_extendedShadowFrustumCulling);
 	TheWritableGlobalData->m_naturalSunElevation = optionPref.getNaturalSunElevation(TheWritableGlobalData->m_naturalSunElevation);
