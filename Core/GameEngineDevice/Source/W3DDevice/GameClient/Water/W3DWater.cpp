@@ -1588,6 +1588,10 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 {
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
+	if (TheGlobalData && !TheGlobalData->m_waterReflections)
+		return;
+
 #ifdef EXTENDED_STATS
 	if (DX8Wrapper::stats.m_disableWater) {
 		return;
@@ -3127,6 +3131,10 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 {
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
+	if (TheGlobalData && !TheGlobalData->m_waterReflections)
+		return;
+
 	// GeneralsX @bugfix fbraz3 08/10/2026 Guard against missing RT or pixel shader (Reforged pattern)
 	if (!m_pReflectionTexture || !m_reflectionPixelShader)
 		return;	// the card refused a render target or a pixel shader

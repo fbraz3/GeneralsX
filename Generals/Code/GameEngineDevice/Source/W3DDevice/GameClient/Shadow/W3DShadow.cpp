@@ -61,6 +61,8 @@ const FrustumClass *shadowCameraFrustum;
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
 Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY )
 {
+	if (TheGlobalData && !TheGlobalData->m_extendedShadowFrustumCulling)
+		return TRUE;
 	const Real drop = WWMath::Max( body.Center.Z - groundZ + body.Radius, 0.0f );
 	const Vector3 downwind = body.Center + Vector3( runX, runY, -1.0f ) * drop;
 	for (Int side = 1; side <= 4; ++side)

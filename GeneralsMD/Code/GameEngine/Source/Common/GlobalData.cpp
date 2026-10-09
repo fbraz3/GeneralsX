@@ -128,6 +128,17 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "ShadowsForProjectiles",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProjectiles ) },
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
 	{ "ShadowsForProps",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProps ) },
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	{ "ExtendedShadowFrustumCulling",	INI::parseBool,				nullptr,			offsetof( GlobalData, m_extendedShadowFrustumCulling ) },
+	{ "NaturalSunElevation",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_naturalSunElevation ) },
+	{ "BridgeShadows",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_bridgeShadows ) },
+	{ "WaterReflections",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_waterReflections ) },
+	{ "ExplosionDynamicLights",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_explosionDynamicLights ) },
+	{ "VehicleHeadlights",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_vehicleHeadlights ) },
+	{ "EnablePostProcessing",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_enablePostProcessing ) },
+	{ "PostProcessBloom",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessBloom ) },
+	{ "PostProcessHDR",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessHDR ) },
+	{ "PostProcessFXAA",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessFXAA ) },
 	{ "UseShadowDecals",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowDecals ) },
 	{ "TextureReductionFactor",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_textureReductionFactor ) },
 	{ "UseBehindBuildingMarker",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_enableBehindBuildingMarkers ) },
@@ -694,6 +705,17 @@ GlobalData::GlobalData()
 	m_useShadowVolumesForSkins = TRUE;
 	m_shadowsForProjectiles = TRUE;
 	m_shadowsForProps = TRUE;
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options defaults
+	m_extendedShadowFrustumCulling = TRUE;
+	m_naturalSunElevation = TRUE;
+	m_bridgeShadows = TRUE;
+	m_waterReflections = TRUE;
+	m_explosionDynamicLights = TRUE;
+	m_vehicleHeadlights = TRUE;
+	m_enablePostProcessing = FALSE;
+	m_postProcessBloom = TRUE;
+	m_postProcessHDR = TRUE;
+	m_postProcessFXAA = TRUE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;
@@ -1263,6 +1285,21 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_gameWindowTransitionSpeedMultiplier = optionPref.getGameWindowTransitionSpeedMultiplier();
 	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
 	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
+
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options overridden from Options.ini
+	TheWritableGlobalData->m_useShadowVolumesForSkins = optionPref.getUseShadowVolumesForSkins(TheWritableGlobalData->m_useShadowVolumesForSkins);
+	TheWritableGlobalData->m_extendedShadowFrustumCulling = optionPref.getExtendedShadowFrustumCulling(TheWritableGlobalData->m_extendedShadowFrustumCulling);
+	TheWritableGlobalData->m_naturalSunElevation = optionPref.getNaturalSunElevation(TheWritableGlobalData->m_naturalSunElevation);
+	TheWritableGlobalData->m_shadowsForProjectiles = optionPref.getShadowsForProjectiles(TheWritableGlobalData->m_shadowsForProjectiles);
+	TheWritableGlobalData->m_shadowsForProps = optionPref.getShadowsForProps(TheWritableGlobalData->m_shadowsForProps);
+	TheWritableGlobalData->m_bridgeShadows = optionPref.getBridgeShadows(TheWritableGlobalData->m_bridgeShadows);
+	TheWritableGlobalData->m_waterReflections = optionPref.getWaterReflections(TheWritableGlobalData->m_waterReflections);
+	TheWritableGlobalData->m_explosionDynamicLights = optionPref.getExplosionDynamicLights(TheWritableGlobalData->m_explosionDynamicLights);
+	TheWritableGlobalData->m_vehicleHeadlights = optionPref.getVehicleHeadlights(TheWritableGlobalData->m_vehicleHeadlights);
+	TheWritableGlobalData->m_enablePostProcessing = optionPref.getEnablePostProcessing(TheWritableGlobalData->m_enablePostProcessing);
+	TheWritableGlobalData->m_postProcessBloom = optionPref.getPostProcessBloom(TheWritableGlobalData->m_postProcessBloom);
+	TheWritableGlobalData->m_postProcessHDR = optionPref.getPostProcessHDR(TheWritableGlobalData->m_postProcessHDR);
+	TheWritableGlobalData->m_postProcessFXAA = optionPref.getPostProcessFXAA(TheWritableGlobalData->m_postProcessFXAA);
 
 	TheWritableGlobalData->m_antiAliasLevel = optionPref.getAntiAliasing();
 	TheWritableGlobalData->m_textureFilteringMode = optionPref.getTextureFilterMode();

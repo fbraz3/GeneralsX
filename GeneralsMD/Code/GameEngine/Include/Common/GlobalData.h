@@ -162,6 +162,17 @@ public:
 	Bool m_shadowsForProjectiles;
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
 	Bool m_shadowsForProps;
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	Bool m_extendedShadowFrustumCulling;
+	Bool m_naturalSunElevation;
+	Bool m_bridgeShadows;
+	Bool m_waterReflections;
+	Bool m_explosionDynamicLights;
+	Bool m_vehicleHeadlights;
+	Bool m_enablePostProcessing;
+	Bool m_postProcessBloom;
+	Bool m_postProcessHDR;
+	Bool m_postProcessFXAA;
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;

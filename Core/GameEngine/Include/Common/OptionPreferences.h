@@ -137,4 +137,33 @@ public:
 	Real getGameWindowTransitionSpeedMultiplier() const;
 	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
 	Int getSkirmishTickRate() const;
+
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options
+	Bool getUseShadowVolumesForSkins(Bool defaultVal = TRUE) const;
+	Bool getExtendedShadowFrustumCulling(Bool defaultVal = TRUE) const;
+	Bool getNaturalSunElevation(Bool defaultVal = TRUE) const;
+	Bool getShadowsForProjectiles(Bool defaultVal = TRUE) const;
+	Bool getShadowsForProps(Bool defaultVal = TRUE) const;
+	Bool getBridgeShadows(Bool defaultVal = TRUE) const;
+	Bool getWaterReflections(Bool defaultVal = TRUE) const;
+	Bool getExplosionDynamicLights(Bool defaultVal = TRUE) const;
+	Bool getVehicleHeadlights(Bool defaultVal = TRUE) const;
+	Bool getEnablePostProcessing(Bool defaultVal = FALSE) const;
+	Bool getPostProcessBloom(Bool defaultVal = TRUE) const;
+	Bool getPostProcessHDR(Bool defaultVal = TRUE) const;
+	Bool getPostProcessFXAA(Bool defaultVal = TRUE) const;
+
+	void setUseShadowVolumesForSkins(Bool val);
+	void setExtendedShadowFrustumCulling(Bool val);
+	void setNaturalSunElevation(Bool val);
+	void setShadowsForProjectiles(Bool val);
+	void setShadowsForProps(Bool val);
+	void setBridgeShadows(Bool val);
+	void setWaterReflections(Bool val);
+	void setExplosionDynamicLights(Bool val);
+	void setVehicleHeadlights(Bool val);
+	void setEnablePostProcessing(Bool val);
+	void setPostProcessBloom(Bool val);
+	void setPostProcessHDR(Bool val);
+	void setPostProcessFXAA(Bool val);
 };

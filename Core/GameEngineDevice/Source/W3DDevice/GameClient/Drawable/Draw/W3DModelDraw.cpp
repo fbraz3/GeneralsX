@@ -3100,7 +3100,8 @@ Bool W3DModelDraw::headlightBeam(Vector3& origin, Vector3& direction, Real& reac
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::updateHeadlightDynamicLight()
 {
-	if (m_hideHeadlights || !m_hasHeadlights || getDrawable() == nullptr || m_renderObject == nullptr)
+	if (m_hideHeadlights || !m_hasHeadlights || getDrawable() == nullptr || m_renderObject == nullptr ||
+		(TheGlobalData && !TheGlobalData->m_vehicleHeadlights))
 	{
 		if (m_headlightDynamicLight)
 		{

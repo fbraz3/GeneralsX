@@ -1220,6 +1220,9 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 //=============================================================================
 void W3DBridgeBuffer::drawBridgeShadowCasters(void)
 {
+	if (TheGlobalData && !TheGlobalData->m_bridgeShadows) {
+		return;
+	}
 	if (m_curNumBridgeIndices == 0) {
 		return;
 	}

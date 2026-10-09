@@ -4179,7 +4179,7 @@ W3DVolumetricShadow* W3DVolumetricShadowManager::addShadow(RenderObjClass *robj,
 		owner = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
 
 	Real sunElevation = shadowInfo->m_sizeX;
-	if (owner && owner->isKindOf(KINDOF_AIRCRAFT) && (sunElevation > AIRCRAFT_MIN_SUN_ELEVATION || sunElevation == 0.0f))
+	if (TheGlobalData && TheGlobalData->m_naturalSunElevation && owner && owner->isKindOf(KINDOF_AIRCRAFT) && (sunElevation > AIRCRAFT_MIN_SUN_ELEVATION || sunElevation == 0.0f))
 		sunElevation = AIRCRAFT_MIN_SUN_ELEVATION;
 
 	Real sunElevationAngleTan = 0;
