@@ -188,6 +188,9 @@ void BaseHeightMapRenderObjClass::drawScorches()
 //=============================================================================
 BaseHeightMapRenderObjClass::~BaseHeightMapRenderObjClass()
 {
+	// GeneralsX @bugfix fbraz3 09/10/2026 Unregister cleanup hook so DX8Wrapper doesn't call ReleaseResources on destroyed object
+	DX8Wrapper::RemoveCleanupHook(this);
+
 	freeMapResources();
 
 	delete m_treeBuffer;

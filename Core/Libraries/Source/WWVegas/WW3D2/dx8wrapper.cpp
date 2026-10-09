@@ -500,6 +500,9 @@ void DX8Wrapper::AddCleanupHook(DX8_CleanupHook *pCleanupHook)
 
 void DX8Wrapper::RemoveCleanupHook(DX8_CleanupHook *pCleanupHook)
 {
+	if (m_pCleanupHook == pCleanupHook) {
+		m_pCleanupHook = nullptr;
+	}
 	for (auto it = s_cleanupHooks.begin(); it != s_cleanupHooks.end(); ++it) {
 		if (*it == pCleanupHook) {
 			s_cleanupHooks.erase(it);
@@ -726,6 +729,9 @@ void DX8Wrapper::Shutdown()
 		Set_Render_Target ((IDirect3DSurface8 *)nullptr);
 		Release_Device();
 	}
+
+	m_pCleanupHook = nullptr;
+	s_cleanupHooks.clear();
 
 	if (D3DInterface) {
 		D3DInterface->Release();

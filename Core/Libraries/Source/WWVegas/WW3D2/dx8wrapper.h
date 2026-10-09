@@ -287,6 +287,7 @@ public:
 	static void Shutdown();
 
 	static void SetCleanupHook(DX8_CleanupHook *pCleanupHook) {m_pCleanupHook = pCleanupHook;};
+	static DX8_CleanupHook *GetCleanupHook() { return m_pCleanupHook; }
 	// GeneralsX @feature fbraz3 09/10/2026 Support multiple cleanup hooks for subsystems like W3DPostProcess
 	static void AddCleanupHook(DX8_CleanupHook *pCleanupHook);
 	static void RemoveCleanupHook(DX8_CleanupHook *pCleanupHook);
