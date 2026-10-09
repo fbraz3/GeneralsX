@@ -184,6 +184,7 @@ public:
 	Bool isWaterReflections() const { return m_advancedShadows && m_waterReflections; }
 	Bool isExplosionDynamicLights() const { return m_advancedLighting && m_explosionDynamicLights; }
 	Bool isVehicleHeadlights() const { return m_advancedLighting && m_vehicleHeadlights; }
+	Bool isEnablePostProcessing() const { return m_enablePostProcessing && (m_postProcessBloom || m_postProcessHDR || m_postProcessFXAA); }
 	Bool isPostProcessBloom() const { return m_enablePostProcessing && m_postProcessBloom; }
 	Bool isPostProcessHDR() const { return m_enablePostProcessing && m_postProcessHDR; }
 	Bool isPostProcessFXAA() const { return m_enablePostProcessing && m_postProcessFXAA; }
