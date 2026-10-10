@@ -563,6 +563,25 @@ void GameEngine::init()
 		initSubsystem(ThePlayerTemplateStore,"ThePlayerTemplateStore", MSGNEW("GameEngineSubsystem") PlayerTemplateStore(), &xferCRC, "Data\\INI\\Default\\PlayerTemplate", "Data\\INI\\PlayerTemplate");
 		initSubsystem(TheParticleSystemManager,"TheParticleSystemManager", createParticleSystemManager(TheGlobalData->m_headless), nullptr);
 		initSubsystem(TheFXListStore,"TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, "Data\\INI\\Default\\FXList", "Data\\INI\\FXList");
+		// GeneralsX @feature fbraz3 08/10/2026 Load dynamic light pulses for explosions & superweapons without altering multiplayer CRC
+		if (TheFileSystem && TheFileSystem->doesFileExist("Data\\INI\\FXListGeneralsX.ini"))
+		{
+			try
+			{
+				INI iniGeneralsX;
+				iniGeneralsX.load(AsciiString("Data\\INI\\FXListGeneralsX.ini"), INI_LOAD_OVERWRITE, nullptr);
+			}
+			catch (const INIException& ex)
+			{
+				fprintf(stderr, "[INI] WARNING: Failed to load Data\\INI\\FXListGeneralsX.ini: %s\n", ex.mFailureMessage ? ex.mFailureMessage : "");
+				fflush(stderr);
+			}
+			catch (...)
+			{
+				fprintf(stderr, "[INI] WARNING: Unexpected exception loading Data\\INI\\FXListGeneralsX.ini\n");
+				fflush(stderr);
+			}
+		}
 		initSubsystem(TheWeaponStore,"TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, nullptr, "Data\\INI\\Weapon");
 		initSubsystem(TheObjectCreationListStore,"TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, "Data\\INI\\Default\\ObjectCreationList", "Data\\INI\\ObjectCreationList");
 		initSubsystem(TheLocomotorStore,"TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, nullptr, "Data\\INI\\Locomotor");

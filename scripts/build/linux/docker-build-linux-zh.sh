@@ -43,6 +43,13 @@ if ! docker image inspect "$DOCKER_IMAGE" &>/dev/null; then
     ./scripts/env/docker/docker-build-images.sh linux
 fi
 
+# GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Mount external realpath if build is a symlink outside PROJECT_ROOT
+BUILD_REAL="$(realpath "$PROJECT_ROOT/build" 2>/dev/null || true)"
+BUILD_MOUNT=()
+if [[ -n "$BUILD_REAL" && "$BUILD_REAL" != "$PROJECT_ROOT/build" && -d "$BUILD_REAL" ]]; then
+    BUILD_MOUNT=(-v "$BUILD_REAL:$BUILD_REAL:z")
+fi
+
 docker run --rm \
     --name "$CONTAINER_NAME" \
     --platform linux/amd64 \
@@ -50,6 +57,7 @@ docker run --rm \
     -e HOME=/tmp/generalsx-home \
     -e XDG_CACHE_HOME=/tmp/generalsx-cache \
     -v "$PROJECT_ROOT:/work:z" \
+    "${BUILD_MOUNT[@]}" \
     -v "$VCPKG_DIR:/opt/vcpkg:z" \
     -w /work \
     "$DOCKER_IMAGE" \

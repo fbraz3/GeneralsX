@@ -203,13 +203,28 @@ UnsignedInt HeightMapRenderObjClass::doTheDynamicLight(VERTEX_FORMAT *vb, VERTEX
 				double range, midRange;
 				pLight->Get_Far_Attenuation_Range(midRange, range);
 				Real dist = lightDirection.Length();
-				if (dist >= range) continue;
-				if (midRange < 0.1) continue;
-				factor = 1.0f - (dist - midRange) / (range - midRange);
-				factor = WWMath::Clamp(factor,0.0f,1.0f);
+				// GeneralsX @bugfix fbraz3 08/10/2026 Allow dynamic lights with zero or small inner radius
+				if (range <= 0.1 || range <= midRange) continue;
+				if (midRange < 0.0) midRange = 0.0;
+				if (dist <= midRange)
+				{
+					factor = 1.0f;
+				}
+				else
+				{
+					factor = 1.0f - (dist - midRange) / (range - midRange);
+					factor = WWMath::Clamp(factor, 0.0f, 1.0f);
+				}
 
 				// (gth) normalize here since we have the length
-				lightDirection /= dist;
+				if (dist > 0.0001f)
+				{
+					lightDirection /= dist;
+				}
+				else
+				{
+					lightDirection.Set(0.0f, 0.0f, 1.0f);
+				}
 			}
 			break;
 		case LightClass::DIRECTIONAL:
@@ -2024,7 +2039,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	}
 
 	Int pass;
- 	for (pass=0; pass<devicePasses; pass++) {
+	// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out (Reforged pattern)
+ 	for (pass=0; pass<devicePasses && !ShaderClass::Is_Backface_Culling_Inverted(); pass++) {
 #ifdef TIMING_TESTS
 #endif
 		if (!doMultiPassWireFrame)	//multi-pass wireframe doesn't use regular shaders.
@@ -2070,12 +2086,16 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		if (pass)	//shader was applied at least once?
  			W3DShaderManager::resetShader(st);
 
-		//Draw feathered shorelines
-		renderShoreLines(&rinfo.Camera);
+		// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out, and everything drawn onto it
+		if (!ShaderClass::Is_Backface_Culling_Inverted())
+		{
+			//Draw feathered shorelines
+			renderShoreLines(&rinfo.Camera);
 
-		//Do additional pass over any tiles that have 3 textures blended together.
-		if (TheGlobalData->m_use3WayTerrainBlends)
-			renderExtraBlendTiles();
+			//Do additional pass over any tiles that have 3 textures blended together.
+			if (TheGlobalData->m_use3WayTerrainBlends)
+				renderExtraBlendTiles();
+		}
 
 		Int yCoordMin = m_map->getDrawOrgY();
 		Int yCoordMax = m_y+m_map->getDrawOrgY()-1;
@@ -2104,7 +2124,10 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
 
-		drawScorches();
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip scorches during reflection pass (inverted culling)
+		if (!ShaderClass::Is_Backface_Culling_Inverted()) {
+			drawScorches();
+		}
 
 		DX8Wrapper::Set_Texture(0,nullptr);
 		DX8Wrapper::Set_Texture(1,nullptr);
@@ -2114,10 +2137,12 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 		m_bridgeBuffer->drawBridges(&rinfo.Camera, m_disableTextures, doCloud?m_stageTwoTexture:nullptr);
 
-		if (TheTerrainTracksRenderObjClassSystem)
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip terrain tracks during reflection pass (inverted culling)
+		if (TheTerrainTracksRenderObjClassSystem && !ShaderClass::Is_Backface_Culling_Inverted())
 			TheTerrainTracksRenderObjClassSystem->flush();
 
-		if (m_shroud && rinfo.Additional_Pass_Count())
+		// The water a reflection lands on is shrouded already; avoid double shroud in mirror
+		if (m_shroud && rinfo.Additional_Pass_Count() && !ShaderClass::Is_Backface_Culling_Inverted())
 		{
 			rinfo.Peek_Additional_Pass(0)->Install_Materials();
 			renderTerrainPass(&rinfo.Camera);
@@ -2133,7 +2158,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
   if ( m_waypointBuffer )
 	  m_waypointBuffer->drawWaypoints(rinfo);
 
-	m_bibBuffer->renderBibs();
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		m_bibBuffer->renderBibs();
 
 	// We do some custom blending, so tell the shader class to reset everything.
 	DX8Wrapper::Set_Texture(0,nullptr);

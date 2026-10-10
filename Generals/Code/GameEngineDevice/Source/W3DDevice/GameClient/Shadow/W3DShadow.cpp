@@ -49,12 +49,41 @@
 #include "WW3D2/statistics.h"
 #include "Common/Debug.h"
 #include "Common/PerfTimer.h"
+#include "WWMath/sphere.h"
+#include "WWMath/wwmath.h"
 
 #define SUN_DISTANCE_FROM_GROUND	10000.0f	//distance of sun (our only light source).
 
 // Global Variables and Functions /////////////////////////////////////////////
 W3DShadowManager *TheW3DShadowManager=nullptr;
 const FrustumClass *shadowCameraFrustum;
+
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
+Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY )
+{
+	if (TheGlobalData && !TheGlobalData->isExtendedShadowFrustumCulling())
+		return TRUE;
+	const Real drop = WWMath::Max( body.Center.Z - groundZ + body.Radius, 0.0f );
+	const Vector3 downwind = body.Center + Vector3( runX, runY, -1.0f ) * drop;
+	for (Int side = 1; side <= 4; ++side)
+	{
+		const PlaneClass &plane = view.Planes[ side ];
+		if (Vector3::Dot_Product( plane.N, body.Center ) - plane.D > body.Radius
+				&& Vector3::Dot_Product( plane.N, downwind ) - plane.D > body.Radius)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+Bool volumeShadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ )
+{
+	if (!TheW3DShadowManager)
+		return TRUE;
+	const Vector3 toLight = TheW3DShadowManager->getLightPosWorld( 0 ) - body.Center;
+	if (toLight.Z <= 0.01f * toLight.Length())
+		return TRUE;	// a light at the horizon throws every shadow across the whole map
+	return shadowCanReachView( view, body, groundZ, -toLight.X / toLight.Z, -toLight.Y / toLight.Z );
+}
 
 Vector3 LightPosWorld[ MAX_SHADOW_LIGHTS ] =
 {

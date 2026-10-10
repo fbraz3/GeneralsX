@@ -56,6 +56,7 @@
 #include "GameClient/Drawable.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
+#include "WWMath/wwmath.h"
 
 
 /** @todo: We're going to have a pool of a couple rendertargets to use
@@ -107,6 +108,11 @@ int	nShadowDecalPolysInBatch=0;
 int	nShadowDecalVertsInBatch=0;
 int SHADOW_DECAL_VERTEX_SIZE=32768;
 int SHADOW_DECAL_INDEX_SIZE=65536;
+
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Sun projection and stretch bounds for airborne decals
+#define DECAL_AIRBORNE_HEIGHT 1.0f
+#define DECAL_AIRBORNE_BLEND 10.0f
+#define DECAL_MAX_STRETCH 4.0f
 
 
 class W3DShadowTexture;	//forward reference
@@ -804,12 +810,22 @@ void testShadowDecal()
 }
 */
 
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Maintain off-screen aircraft and missile decal shadows
+// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Restrict off-screen evaluation to airborne casters to prevent queuing off-screen ground decals.
+static Bool isShownOffScreen(RenderObjClass *robj)
+{
+	if (!robj || !robj->Is_Not_Hidden_At_All() || robj->Get_User_Data() == nullptr)
+		return FALSE;
+	Drawable *draw = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
+	return draw && (draw->isKindOf(KINDOF_AIRCRAFT) || draw->isKindOf(KINDOF_PROJECTILE) || draw->isKindOf(KINDOF_PARACHUTE)) && !draw->isDrawableEffectivelyHidden() && !draw->getFullyObscuredByShroud();
+}
+
 #define BRIDGE_OFFSET_FACTOR 1.5f
 /**Decals have a low poly count so its better to render large numbers at once.  This system will queue them
 up until the buffers fill up.  It will then flush the buffer (draw decals) and be ready for new decals.  This
 is an optimized system that only uses the render objects bounding box to determine shadow visibility.
 */
-void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
+void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunCast)
 {
 	int i,j,k;
 	Vector3 hmapVertex,objPos;
@@ -858,9 +874,67 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		//Find size of heightmap sub-rectangle affected by shadow
 		//If user supplied size values, ignore bounding box
 
-		objPos.Z=0.0f;	//we don't care about object height since shadows project top-down
+		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Project airborne decals along the sun ray
+		// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Use parallel directional sun ray and restrict ray projection and stretching to airborne objects.
+		Bool sunCasts = FALSE;
+		Vector3 toSun(0.0f, 0.0f, 1.0f);
+		Real effectiveSunZ = 1.0f;
+		Real heightAboveGround = 0.0f;
+		Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
+		const Bool isAirborne = owner && (owner->isKindOf(KINDOF_AIRCRAFT) || owner->isKindOf(KINDOF_PROJECTILE) || owner->isKindOf(KINDOF_PARACHUTE));
+
+		if (layerHeight == 0.0f && TheW3DShadowManager != nullptr && TheTerrainLogic != nullptr)
+		{
+			heightAboveGround = objPos.Z - TheTerrainLogic->getGroundHeight(objPos.X, objPos.Y);
+			toSun = TheW3DShadowManager->getLightPosWorld(0);
+			toSun.Normalize();
+			effectiveSunZ = toSun.Z;
+			const Real MIN_SUN_HEIGHT = 0.01f;		// a sun on the horizon casts a shadow of infinite length
+			sunCasts = sunCast && toSun.Z > MIN_SUN_HEIGHT;	//a marker ring stays under its object
+			if (isAirborne && heightAboveGround > 0.0f && sunCasts)
+			{
+				if (owner->isKindOf(KINDOF_AIRCRAFT))
+				{
+					const Real sunHoriz = WWMath::SqrtOrigin(toSun.X * toSun.X + toSun.Y * toSun.Y);
+					const Real minSunZ = sunHoriz * WWMath::TanTrig(30.0f / 180.0f * PI);
+					if (effectiveSunZ < minSunZ)
+						effectiveSunZ = minSunZ;
+				}
+
+				const Real alongRay = heightAboveGround / effectiveSunZ;
+				objPos.X -= toSun.X * alongRay;
+				objPos.Y -= toSun.Y * alongRay;
+			}
+		}
+
+		objPos.Z=0.0f;	//the decal itself is flat on the terrain
 
 		uVector=objXform.Get_X_Vector();
+
+		Real stretch = 1.0f;
+		if (isAirborne && sunCasts && heightAboveGround > DECAL_AIRBORNE_HEIGHT)
+		{
+			const Real lift = WWMath::Min((heightAboveGround - DECAL_AIRBORNE_HEIGHT) / DECAL_AIRBORNE_BLEND, 1.0f);
+			const Real axisLength = uVector.Length();
+			const Real fullDown = (effectiveSunZ > 0.0001f) ? (uVector.Z / effectiveSunZ) : 0.0f;
+			Real down = lift * fullDown;
+			if (axisLength > 0.0001f && shadow->m_decalSizeX > 0.0001f && WWMath::Is_Valid_Float(shadow->m_decalSizeX) && WWMath::Is_Valid_Float(shadow->m_decalSizeY))
+			{
+				const Real projectedX = uVector.X - toSun.X * fullDown;
+				const Real projectedY = uVector.Y - toSun.Y * fullDown;
+				const Real ratio = WWMath::Sqrt(projectedX * projectedX + projectedY * projectedY) / axisLength;
+				//never narrower than the decal is wide, unless it was that already
+				const Real minStretch = WWMath::Min(1.0f, WWMath::Fabs(shadow->m_decalSizeY) / shadow->m_decalSizeX);
+				const Real capped = WWMath::Max(WWMath::Min(ratio, DECAL_MAX_STRETCH), minStretch);
+				stretch = 1.0f + lift * (capped - 1.0f);
+				const Real centreDown = (ratio > DECAL_MAX_STRETCH && ratio > 0.0001f) ? down * DECAL_MAX_STRETCH / ratio : down;
+				objPos.X -= toSun.X * centreDown * shadow->m_decalCenterU;
+				objPos.Y -= toSun.Y * centreDown * shadow->m_decalCenterU;
+			}
+			uVector.X -= toSun.X * down;
+			uVector.Y -= toSun.Y * down;
+			uVector.Z = 0.0f;
+		}
 
 		uVector.Z=0.0f;
 		vecLength=uVector.Length();
@@ -885,7 +959,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 
 		//Compute bounding box of projection
 		Vector3 boxCorners[4];	//top-left, top-right, bottom-right, bottom-left
-		dx = shadow->m_decalSizeX;
+		dx = shadow->m_decalSizeX * stretch;
 		dy = shadow->m_decalSizeY;
 		Vector3 left_x=-dx * (uVector * (0.5f + shadow->m_decalOffsetU));
 		Vector3 right_x = dx * (uVector * (0.5f - shadow->m_decalOffsetU));
@@ -910,7 +984,10 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 			min_y = MIN(min_y,boxCorners[bi].Y);
 		}
 
-		uVector *= shadow->m_oowDecalSizeX;
+		if (stretch > 0.0001f && WWMath::Is_Valid_Float(stretch))
+			uVector *= shadow->m_oowDecalSizeX / stretch;
+		else
+			uVector *= shadow->m_oowDecalSizeX;
 		vVector *= shadow->m_oowDecalSizeY;
 		uOffset = shadow->m_decalOffsetU + 0.5f;
 		vOffset = shadow->m_decalOffsetV + 0.5f;
@@ -965,10 +1042,21 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		dy=box.Extent.Y;
 
 		//Get terrain cell index for area with shadow
-		Int startX=REAL_TO_INT_FLOOR(((objPos.X+min_x)*mapScaleInv)) + borderSize;
-		Int endX=REAL_TO_INT_CEIL(((objPos.X+max_x)*mapScaleInv)) + borderSize;
-		Int	startY=REAL_TO_INT_FLOOR(((objPos.Y+min_y)*mapScaleInv)) + borderSize;
-		Int endY=REAL_TO_INT_CEIL(((objPos.Y+max_y)*mapScaleInv)) + borderSize;
+		Real rawMinX = (objPos.X + min_x) * mapScaleInv;
+		Real rawMaxX = (objPos.X + max_x) * mapScaleInv;
+		Real rawMinY = (objPos.Y + min_y) * mapScaleInv;
+		Real rawMaxY = (objPos.Y + max_y) * mapScaleInv;
+
+		if (!WWMath::Is_Valid_Float(rawMinX) || !WWMath::Is_Valid_Float(rawMaxX) ||
+		    !WWMath::Is_Valid_Float(rawMinY) || !WWMath::Is_Valid_Float(rawMaxY))
+		{
+			return;
+		}
+
+		Int startX=REAL_TO_INT_FLOOR(rawMinX) + borderSize;
+		Int endX=REAL_TO_INT_CEIL(rawMaxX) + borderSize;
+		Int	startY=REAL_TO_INT_FLOOR(rawMinY) + borderSize;
+		Int endY=REAL_TO_INT_CEIL(rawMaxY) + borderSize;
 
 		// GeneralsX @bugfix Copilot 11/05/2026 Use MAX/MIN portability macros for draw-window clipping.
 		startX = MAX(startX,m_drawStartX);
@@ -1362,10 +1450,10 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 						lastShadowType=shadow->m_type;
 					}
 					///@todo: may need to fix this if shadows are large enough to be seen while object is not visible
-					if (shadow->m_robj->Is_Really_Visible())
+					if (shadow->m_robj->Is_Really_Visible() || isShownOffScreen(shadow->m_robj))
 					{
 						//queueSimpleDecal(shadow);
-						queueDecal(shadow);	//only draw shadow if casting object is visible
+						queueDecal(shadow);	//only draw shadow if casting object is visible or casting onto screen
 						projectionCount++;
 					}
 					continue;
@@ -1480,7 +1568,7 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 				if (!(shadow->m_robj && !shadow->m_robj->Is_Really_Visible()))
 				{
 					//queueSimpleDecal(shadow);
-					queueDecal(shadow);	//only draw shadow if casting object is visible
+					queueDecal(shadow, FALSE);	//marker ring / crate glow: not moved by sun
 					projectionCount++;
 				}
 			}
@@ -1885,6 +1973,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 
 	shadow->m_decalOffsetU= decalOffsetX;
 	shadow->m_decalOffsetV= decalOffsetY;
+	shadow->m_decalCenterU= box.Center.X;
 
 	shadow->m_flags	= allowSunDirection;
 	if ((shadowType & SHADOW_DYNAMIC_PROJECTION) || (shadowInfo && shadowInfo->allowUpdates))
@@ -2017,6 +2106,7 @@ W3DProjectedShadow* W3DProjectedShadowManager::createDecalShadow(Shadow::ShadowT
 
 	shadow->m_decalOffsetU= decalOffsetX;
 	shadow->m_decalOffsetV= decalOffsetY;
+	shadow->m_decalCenterU= 0.0f;
 
 	shadow->m_flags	= 0;
 
@@ -2121,6 +2211,9 @@ W3DProjectedShadow::W3DProjectedShadow()
 	m_lastObjPosition.Set(0,0,0);
 	m_type = SHADOW_NONE;		/// type of projection
 	m_allowWorldAlign = FALSE;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+	m_decalOffsetU = 0.0f;
+	m_decalOffsetV = 0.0f;
+	m_decalCenterU = 0.0f;
 	m_isEnabled = TRUE;
 	m_isInvisibleEnabled = FALSE;
 	for (Int i=0; i<MAX_SHADOW_LIGHTS; i++)

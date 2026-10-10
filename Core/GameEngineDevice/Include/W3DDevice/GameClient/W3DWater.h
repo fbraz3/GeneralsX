@@ -50,6 +50,7 @@
 class PolygonTrigger;
 class WaterTracksRenderSystem;
 class Xfer;
+class ZTextureClass;
 /// Custom render object that draws mirrors, water, and skies.
 /**
 This render object handles drawing reflected W3D scenes.  It will only work
@@ -167,6 +168,14 @@ protected:
 	Real				m_fBumpFrame;	///<current animation frame
 	Real				m_fBumpScale;	///<scales bump map uv perturbation
 	TextureClass * m_pReflectionTexture;	///<render target for reflection
+	// GeneralsX @bugfix fbraz3 10/10/2026 Matching depth buffer for offscreen reflection render target
+	ZTextureClass * m_pReflectionZTexture;	///<depth stencil buffer for reflection render target
+	// GeneralsX @feature BenderAI 08/10/2026 Water reflection render target metadata and tracking
+	Real m_reflectionLevel;	///<height of the water plane the reflection texture was rendered for
+	Vector2 m_reflectionAreaMin;	///<lower left of the screen area the reflection texture covers, -1 to 1
+	Vector2 m_reflectionAreaMax;	///<upper right of the same area
+	Matrix3D m_reflectionCameraTransform;	///<where the camera stood when the reflection texture was last rendered
+	Bool m_reflectionReused;	///<the frame before this one kept the previous reflection texture
 	RenderObjClass	*m_skyBox;		///<box around level
 	WaterTracksRenderSystem *m_waterTrackSystem;	///<object responsible for rendering water wakes
 
@@ -209,6 +218,7 @@ protected:
 	DWORD	m_waterPixelShader;		///<D3D handle to pixel shader.
 	DWORD	m_riverWaterPixelShader;		///<D3D handle to pixel shader.
 	DWORD	m_trapezoidWaterPixelShader;	///<handle to D3D vertex shader
+	DWORD	m_reflectionPixelShader;	///<darkens water where the reflection texture holds something
 	TextureClass *m_waterSparklesTexture;
 	Real m_riverXOffset;
 	Real m_riverYOffset;
@@ -243,7 +253,8 @@ protected:
 	void renderSkyBody(Matrix3D *mat);	///<draw the sky body (sun, moon, etc.)
 	void renderWaterMesh();			///<draw the water surface mesh (deformed 3d mesh).
 	HRESULT initBumpMap(LPDIRECT3DTEXTURE8 *pTex, TextureClass *pBumpSource);	///<copies data into bump-map format.
-	void renderMirror(CameraClass *cam);	///< Draw reflected scene into texture
+	void renderMirror(CameraClass *cam, Real level);	///< Draw reflected scene into texture
+	void drawReflection(Int triangleCount, Int vertexCount);	///< Lay the reflection over the water just drawn
 	void drawSea(RenderInfoClass & rinfo);	///< Draw the surface of the water
 	///bounding box of frustum clipped polygon plane
 	Bool getClippedWaterPlane(CameraClass *cam, AABoxClass *box);

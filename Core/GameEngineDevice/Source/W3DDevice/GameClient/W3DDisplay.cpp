@@ -86,6 +86,7 @@ static void drawFramerateBar();
 #include "W3DDevice/GameClient/W3DWater.h"
 #include "W3DDevice/GameClient/W3DVideoBuffer.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
+#include "W3DDevice/GameClient/W3DPostProcess.h"
 #include "W3DDevice/GameClient/W3DDebugDisplay.h"
 #include "W3DDevice/GameClient/W3DProjectedShadow.h"
 #include "W3DDevice/GameClient/W3DScreenshot.h"
@@ -485,7 +486,14 @@ W3DDisplay::~W3DDisplay()
 	// shutdown
 	Debug_Statistics::Shutdown_Statistics();
 	if (!TheGlobalData->m_headless)
+	{
+		if (TheW3DPostProcess)
+		{
+			delete TheW3DPostProcess;
+			TheW3DPostProcess = nullptr;
+		}
 		W3DShaderManager::shutdown();
+	}
 	m_assetManager->Free_Assets();
 	delete m_assetManager;
 	if (!TheGlobalData->m_headless)
@@ -1144,6 +1152,9 @@ void W3DDisplay::init()
 		init3DScene();
 		W3DShaderManager::init();
 
+		TheW3DPostProcess = NEW W3DPostProcess;
+		TheW3DPostProcess->init();
+
 		// Create and initialize the debug display
 		m_nativeDebugDisplay = NEW W3DDebugDisplay();
 		m_debugDisplay = m_nativeDebugDisplay;
@@ -1186,6 +1197,11 @@ void W3DDisplay::reset()
 {
 
 	Display::reset();
+
+	if (TheW3DPostProcess)
+	{
+		TheW3DPostProcess->reset();
+	}
 
 	// Remove all render objects.
 
@@ -2195,7 +2211,8 @@ AGAIN:
 
 			TheParticleSystemManager->DRAW();
 
-			if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
+			// GeneralsX @feature fbraz3 08/10/2026 Update water render target for all water types (Reforged pattern)
+			if (TheWaterRenderObj)
 				TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());	//do a render into each texture
 
 			//Can't render into textures while rendering to screen so these textures need to be updated
@@ -2239,8 +2256,20 @@ AGAIN:
 				if (numRenderTargetPolygons || numRenderTargetVertices)
 					Debug_Statistics::Record_DX8_Polys_And_Vertices(numRenderTargetPolygons,numRenderTargetVertices,ShaderClass::_PresetOpaqueShader);
 
+				// GeneralsX @feature fbraz3 08/10/2026 Redirect 3D world rendering to post-processing pipeline
+				if (TheW3DPostProcess)
+				{
+					TheW3DPostProcess->beginScene();
+				}
+
 				// draw all views of the world
 				drawViews();
+
+				// GeneralsX @feature fbraz3 08/10/2026 Apply bloom, HDR tone curve, and FXAA before UI drawing
+				if (TheW3DPostProcess)
+				{
+					TheW3DPostProcess->endSceneAndApply();
+				}
 
 				// draw the user interface
 				TheInGameUI->DRAW();

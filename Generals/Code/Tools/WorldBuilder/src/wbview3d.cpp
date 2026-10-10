@@ -425,6 +425,9 @@ WbView3d::WbView3d() :
 // ----------------------------------------------------------------------------
 WbView3d::~WbView3d()
 {
+	// GeneralsX @bugfix fbraz3 09/10/2026 Unregister cleanup hook
+	DX8Wrapper::RemoveCleanupHook(this);
+
 	for (Int i=0; i<MAX_GLOBAL_LIGHTS; i++)
 	{
 		if (m_lightFeedbackMesh[i] != nullptr)

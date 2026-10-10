@@ -111,6 +111,13 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found; DXVK will use defaults."
 fi
 
+# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Data/INI"
+    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
 echo "  Deploying Fontconfig config & fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then

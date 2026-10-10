@@ -1208,4 +1208,36 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 	}
 }
 
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Bridge shadow caster rendering
+//=============================================================================
+// W3DBridgeBuffer::drawBridgeShadowCasters
+//=============================================================================
+/** The decks again, into the sun's depth map.  A deck that is not in the map lets the sun through
+		it, so a tank crossing a bridge shadowed the deck and the ground under the bridge as well.
+		The same shader as the frame's own draw, because its alpha test is what cuts the holes in a
+		truss, and the same textures for that alpha.  The enabled flags are the ones drawBridges set
+		on the frame before, which is what keeps a destroyed span out of the map. */
+//=============================================================================
+void W3DBridgeBuffer::drawBridgeShadowCasters(void)
+{
+	if (TheGlobalData && !TheGlobalData->isBridgeShadows()) {
+		return;
+	}
+	if (m_curNumBridgeIndices == 0) {
+		return;
+	}
 
+	// The vertices are in world space; the frame's terrain draw sets this before drawBridges.
+	DX8Wrapper::Set_Transform(D3DTS_WORLD, Matrix3D(1));
+	DX8Wrapper::Set_Material(m_vertexMaterial);
+	DX8Wrapper::Set_Index_Buffer(m_indexBridge,0);
+	DX8Wrapper::Set_Vertex_Buffer(m_vertexBridge);
+	DX8Wrapper::Set_Shader(detailAlphaShader);
+	DX8Wrapper::Set_Texture(1,nullptr);
+
+	for (Int curBridge=0; curBridge<m_numBridges; curBridge++) {
+		if (m_bridges[curBridge].isEnabled() && m_bridges[curBridge].isVisible()) {
+			m_bridges[curBridge].renderBridge(FALSE);
+		}
+	}
+}

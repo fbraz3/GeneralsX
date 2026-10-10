@@ -180,6 +180,13 @@ if [[ -f "${EXTRAS_WND_SRC}" ]]; then
     cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
 fi
 
+# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Data/INI"
+    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
 echo "  Deploying fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
