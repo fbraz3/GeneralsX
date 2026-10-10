@@ -707,17 +707,18 @@ void W3DProjectedShadowManager::flushDecals(W3DShadowTexture *texture, ShadowTyp
 	DX8Wrapper::Set_Texture(0,texture->getTexture());
 
 //	DX8Wrapper::Set_Shader(ShaderClass::_PresetOpaqueShader);	//good for debugging, draws without alpha
-	switch (type)
+	// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Support combined decal flags by replacing strict switch with bitwise checks.
+	if (type & SHADOW_ALPHA_DECAL)
 	{
-		case SHADOW_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
-			break;
-		case SHADOW_ALPHA_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetAlphaShader);
-			break;
-		case SHADOW_ADDITIVE_DECAL:
-			DX8Wrapper::Set_Shader(ShaderClass::_PresetAdditiveShader);
-			break;
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetAlphaShader);
+	}
+	else if (type & SHADOW_ADDITIVE_DECAL)
+	{
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetAdditiveShader);
+	}
+	else if (type & SHADOW_DECAL)
+	{
+		DX8Wrapper::Set_Shader(ShaderClass::_PresetMultiplicativeShader);
 	}
 
 //	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,0x60);
@@ -811,12 +812,13 @@ void testShadowDecal()
 */
 
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Maintain off-screen aircraft and missile decal shadows
+// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Restrict off-screen evaluation to airborne casters to prevent queuing off-screen ground decals.
 static Bool isShownOffScreen(RenderObjClass *robj)
 {
 	if (!robj || !robj->Is_Not_Hidden_At_All() || robj->Get_User_Data() == nullptr)
 		return FALSE;
 	Drawable *draw = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
-	return draw && !draw->isDrawableEffectivelyHidden() && !draw->getFullyObscuredByShroud();
+	return draw && (draw->isKindOf(KINDOF_AIRCRAFT) || draw->isKindOf(KINDOF_PROJECTILE) || draw->isKindOf(KINDOF_PARACHUTE)) && !draw->isDrawableEffectivelyHidden() && !draw->getFullyObscuredByShroud();
 }
 
 #define BRIDGE_OFFSET_FACTOR 1.5f
@@ -874,22 +876,25 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		//If user supplied size values, ignore bounding box
 
 		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Project airborne decals along the sun ray
+		// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Use parallel directional sun ray and restrict ray projection and stretching to airborne objects.
 		Bool sunCasts = FALSE;
 		Vector3 toSun(0.0f, 0.0f, 1.0f);
 		Real effectiveSunZ = 1.0f;
 		Real heightAboveGround = 0.0f;
+		Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
+		const Bool isAirborne = owner && (owner->isKindOf(KINDOF_AIRCRAFT) || owner->isKindOf(KINDOF_PROJECTILE) || owner->isKindOf(KINDOF_PARACHUTE));
+
 		if (layerHeight == 0.0f && TheW3DShadowManager != nullptr && TheTerrainLogic != nullptr)
 		{
 			heightAboveGround = objPos.Z - TheTerrainLogic->getGroundHeight(objPos.X, objPos.Y);
-			toSun = TheW3DShadowManager->getLightPosWorld(0) - objPos;
+			toSun = TheW3DShadowManager->getLightPosWorld(0);
 			toSun.Normalize();
 			effectiveSunZ = toSun.Z;
 			const Real MIN_SUN_HEIGHT = 0.01f;		// a sun on the horizon casts a shadow of infinite length
 			sunCasts = sunCast && toSun.Z > MIN_SUN_HEIGHT;	//a marker ring stays under its object
-			if (heightAboveGround > 0.0f && sunCasts)
+			if (isAirborne && heightAboveGround > 0.0f && sunCasts)
 			{
-				Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
-				if (owner && owner->isKindOf(KINDOF_AIRCRAFT))
+				if (owner->isKindOf(KINDOF_AIRCRAFT))
 				{
 					const Real sunHoriz = WWMath::SqrtOrigin(toSun.X * toSun.X + toSun.Y * toSun.Y);
 					const Real minSunZ = sunHoriz * WWMath::TanTrig(30.0f / 180.0f * PI);
@@ -908,7 +913,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		uVector=objXform.Get_X_Vector();
 
 		Real stretch = 1.0f;
-		if (sunCasts && heightAboveGround > DECAL_AIRBORNE_HEIGHT)
+		if (isAirborne && sunCasts && heightAboveGround > DECAL_AIRBORNE_HEIGHT)
 		{
 			const Real lift = WWMath::Min((heightAboveGround - DECAL_AIRBORNE_HEIGHT) / DECAL_AIRBORNE_BLEND, 1.0f);
 			const Real axisLength = uVector.Length();
@@ -1435,9 +1440,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 				if (shadow->m_type & SHADOW_DECAL)
 				{
 					if (lastShadowDecalTexture == nullptr)
-						lastShadowDecalTexture=m_shadowList->m_shadowTexture[0];
+						lastShadowDecalTexture=shadow->m_shadowTexture[0];
 					if (lastShadowType == SHADOW_NONE)
-						lastShadowType = m_shadowList->m_type;
+						lastShadowType = shadow->m_type;
 
 					if (shadow->m_shadowTexture[0] != lastShadowDecalTexture ||
 						shadow->m_type != lastShadowType)
@@ -1480,7 +1485,8 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 						aaBox.Translate(shadow->m_robj->Get_Position());	//translate bounding box to world space.
 				}
 
-				if (shadow->m_type == SHADOW_PROJECTION)
+				// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Support combined projection flags by checking bits.
+				if (shadow->m_type & SHADOW_PROJECTION)
 				{
 					//build inverse camera/view transforms needed for projection
 					shadow->updateProjectionParameters(rinfo.Camera.Get_Transform());
@@ -1549,9 +1555,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 			if (shadow->m_isEnabled && !shadow->m_isInvisibleEnabled)
 			{
 				if (lastShadowDecalTexture == nullptr)
-					lastShadowDecalTexture=m_decalList->m_shadowTexture[0];
+					lastShadowDecalTexture=shadow->m_shadowTexture[0];
 				if (lastShadowType == SHADOW_NONE)
-					lastShadowType = m_decalList->m_type;
+					lastShadowType = shadow->m_type;
 
 				if (shadow->m_shadowTexture[0] != lastShadowDecalTexture ||
 					shadow->m_type != lastShadowType)
@@ -1826,8 +1832,8 @@ W3DProjectedShadow* W3DProjectedShadowManager::addShadow(RenderObjClass *robj, S
 	if (shadowInfo)
 	{
 		//determine what kind of shadow is needed
-		// GeneralsX @bugfix BenderAI 21/03/2026 Accept combined decal flags (directional/dynamic) using bitmask checks.
-		if (shadowInfo->m_type & SHADOW_DECAL)
+		// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Accept combined decal/alpha/additive flags via bitmask checks.
+		if (shadowInfo->m_type & (SHADOW_DECAL | SHADOW_ALPHA_DECAL | SHADOW_ADDITIVE_DECAL))
 		{		//simple decal using the premade texture specified.
 				//can be always perpendicular to model's z-axis or projected
 				//onto world geometry.

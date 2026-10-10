@@ -811,12 +811,13 @@ void testShadowDecal()
 */
 
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Maintain off-screen aircraft and missile decal shadows
+// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Restrict off-screen evaluation to airborne casters to prevent queuing off-screen ground decals.
 static Bool isShownOffScreen(RenderObjClass *robj)
 {
 	if (!robj || !robj->Is_Not_Hidden_At_All() || robj->Get_User_Data() == nullptr)
 		return FALSE;
 	Drawable *draw = ((DrawableInfo *)robj->Get_User_Data())->m_drawable;
-	return draw && !draw->isDrawableEffectivelyHidden() && !draw->getFullyObscuredByShroud();
+	return draw && (draw->isKindOf(KINDOF_AIRCRAFT) || draw->isKindOf(KINDOF_PROJECTILE) || draw->isKindOf(KINDOF_PARACHUTE)) && !draw->isDrawableEffectivelyHidden() && !draw->getFullyObscuredByShroud();
 }
 
 #define BRIDGE_OFFSET_FACTOR 1.5f
@@ -874,22 +875,25 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		//If user supplied size values, ignore bounding box
 
 		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Project airborne decals along the sun ray
+		// GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Use parallel directional sun ray and restrict ray projection and stretching to airborne objects.
 		Bool sunCasts = FALSE;
 		Vector3 toSun(0.0f, 0.0f, 1.0f);
 		Real effectiveSunZ = 1.0f;
 		Real heightAboveGround = 0.0f;
+		Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
+		const Bool isAirborne = owner && (owner->isKindOf(KINDOF_AIRCRAFT) || owner->isKindOf(KINDOF_PROJECTILE) || owner->isKindOf(KINDOF_PARACHUTE));
+
 		if (layerHeight == 0.0f && TheW3DShadowManager != nullptr && TheTerrainLogic != nullptr)
 		{
 			heightAboveGround = objPos.Z - TheTerrainLogic->getGroundHeight(objPos.X, objPos.Y);
-			toSun = TheW3DShadowManager->getLightPosWorld(0) - objPos;
+			toSun = TheW3DShadowManager->getLightPosWorld(0);
 			toSun.Normalize();
 			effectiveSunZ = toSun.Z;
 			const Real MIN_SUN_HEIGHT = 0.01f;		// a sun on the horizon casts a shadow of infinite length
 			sunCasts = sunCast && toSun.Z > MIN_SUN_HEIGHT;	//a marker ring stays under its object
-			if (heightAboveGround > 0.0f && sunCasts)
+			if (isAirborne && heightAboveGround > 0.0f && sunCasts)
 			{
-				Drawable *owner = (robj && robj->Get_User_Data()) ? ((DrawableInfo *)robj->Get_User_Data())->m_drawable : nullptr;
-				if (owner && owner->isKindOf(KINDOF_AIRCRAFT))
+				if (owner->isKindOf(KINDOF_AIRCRAFT))
 				{
 					const Real sunHoriz = WWMath::SqrtOrigin(toSun.X * toSun.X + toSun.Y * toSun.Y);
 					const Real minSunZ = sunHoriz * WWMath::TanTrig(30.0f / 180.0f * PI);
@@ -908,7 +912,7 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 		uVector=objXform.Get_X_Vector();
 
 		Real stretch = 1.0f;
-		if (sunCasts && heightAboveGround > DECAL_AIRBORNE_HEIGHT)
+		if (isAirborne && sunCasts && heightAboveGround > DECAL_AIRBORNE_HEIGHT)
 		{
 			const Real lift = WWMath::Min((heightAboveGround - DECAL_AIRBORNE_HEIGHT) / DECAL_AIRBORNE_BLEND, 1.0f);
 			const Real axisLength = uVector.Length();
