@@ -50,6 +50,7 @@
 class PolygonTrigger;
 class WaterTracksRenderSystem;
 class Xfer;
+class ZTextureClass;
 /// Custom render object that draws mirrors, water, and skies.
 /**
 This render object handles drawing reflected W3D scenes.  It will only work
@@ -167,6 +168,8 @@ protected:
 	Real				m_fBumpFrame;	///<current animation frame
 	Real				m_fBumpScale;	///<scales bump map uv perturbation
 	TextureClass * m_pReflectionTexture;	///<render target for reflection
+	// GeneralsX @bugfix fbraz3 10/10/2026 Matching depth buffer for offscreen reflection render target
+	ZTextureClass * m_pReflectionZTexture;	///<depth stencil buffer for reflection render target
 	// GeneralsX @feature BenderAI 08/10/2026 Water reflection render target metadata and tracking
 	Real m_reflectionLevel;	///<height of the water plane the reflection texture was rendered for
 	Vector2 m_reflectionAreaMin;	///<lower left of the screen area the reflection texture covers, -1 to 1

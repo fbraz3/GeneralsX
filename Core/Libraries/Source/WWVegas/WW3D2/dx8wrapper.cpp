@@ -3701,23 +3701,34 @@ void DX8Wrapper::Create_Render_Target
 	DX8_Assert();
 	DX8_RECORD_DX8_CALLS();
 
-	// Use the current display format if format isn't specified
+	// GeneralsX @bugfix fbraz3 10/10/2026 Query display mode and device depth format when format isn't specified
 	if (format==WW3D_FORMAT_UNKNOWN)
 	{
-		*target=nullptr;
-		*depth_buffer=nullptr;
-		return;
-/*		D3DDISPLAYMODE mode;
+		D3DDISPLAYMODE mode;
 		DX8CALL(GetDisplayMode(&mode));
-		format=D3DFormat_To_WW3DFormat(mode.Format);*/
+		format=D3DFormat_To_WW3DFormat(mode.Format);
+	}
+	if (zformat==WW3D_ZFORMAT_UNKNOWN)
+	{
+		zformat = D3DFormat_To_WW3DZFormat(_PresentParameters.AutoDepthStencilFormat);
 	}
 
 	// If render target format isn't supported return null
 	if (!Get_Current_Caps()->Support_Render_To_Texture_Format(format) ||
 		 !Get_Current_Caps()->Support_Depth_Stencil_Format(zformat))
 	{
-		WWDEBUG_SAY(("DX8Wrapper - Render target with depth format is not supported"));
-		return;
+		// Fallback to D16 if the current auto depth-stencil format cannot be textured
+		if (Get_Current_Caps()->Support_Depth_Stencil_Format(WW3D_ZFORMAT_D16))
+		{
+			zformat = WW3D_ZFORMAT_D16;
+		}
+		else
+		{
+			WWDEBUG_SAY(("DX8Wrapper - Render target with depth format is not supported"));
+			*target = nullptr;
+			*depth_buffer = nullptr;
+			return;
+		}
 	}
 
 	//	Note: We're going to force the width and height to be powers of two and equal
@@ -3779,21 +3790,30 @@ void DX8Wrapper::Set_Render_Target_With_Z
 )
 {
 	WWASSERT(texture!=nullptr);
+	if (!texture) return;
 	IDirect3DSurface8 * d3d_surf = texture->Get_D3D_Surface_Level();
 	WWASSERT(d3d_surf != nullptr);
+	if (!d3d_surf) return;
 
 	IDirect3DSurface8* d3d_zbuf=nullptr;
 	if (ztexture!=nullptr)
 	{
-
 		d3d_zbuf=ztexture->Get_D3D_Surface_Level();
-		WWASSERT(d3d_zbuf!=nullptr);
-		Set_Render_Target(d3d_surf,d3d_zbuf);
-		d3d_zbuf->Release();
+		if (d3d_zbuf!=nullptr)
+		{
+			Set_Render_Target(d3d_surf,d3d_zbuf);
+			d3d_zbuf->Release();
+		}
+		else
+		{
+			// GeneralsX @bugfix fbraz3 10/10/2026 Do not attach mismatched default backbuffer depth buffer to custom offscreen RT
+			Set_Render_Target(d3d_surf,false);
+		}
 	}
 	else
 	{
-		Set_Render_Target(d3d_surf,true);
+		// GeneralsX @bugfix fbraz3 10/10/2026 Do not attach mismatched default backbuffer depth buffer to custom offscreen RT
+		Set_Render_Target(d3d_surf,false);
 	}
 	d3d_surf->Release();
 

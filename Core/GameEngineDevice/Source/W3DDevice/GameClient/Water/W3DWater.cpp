@@ -359,6 +359,7 @@ WaterRenderObjClass::WaterRenderObjClass()
 	m_waterType = WATER_TYPE_0_TRANSLUCENT;
 	m_tod=TIME_OF_DAY_AFTERNOON;
 	m_pReflectionTexture=nullptr;
+	m_pReflectionZTexture=nullptr;
 	m_reflectionLevel=0;
 	m_reflectionAreaMin.Set(-1.0f, -1.0f);
 	m_reflectionAreaMax.Set(1.0f, 1.0f);
@@ -835,6 +836,7 @@ void WaterRenderObjClass::ReleaseResources()
 	REF_PTR_RELEASE(m_indexBuffer);
 
 	REF_PTR_RELEASE(m_pReflectionTexture);
+	REF_PTR_RELEASE(m_pReflectionZTexture);
 	SAFE_RELEASE(m_vertexBufferD3D);
 	SAFE_RELEASE(m_indexBufferD3D);
 
@@ -933,13 +935,13 @@ void WaterRenderObjClass::ReAcquireResources()
 		if (FAILED(hr))
 			return;
 
-		// Create reflection texture
-		m_pReflectionTexture = DX8Wrapper::Create_Render_Target (SEA_REFLECTION_SIZE, SEA_REFLECTION_SIZE);
+		// Create reflection texture with matching depth buffer
+		DX8Wrapper::Create_Render_Target (SEA_REFLECTION_SIZE, SEA_REFLECTION_SIZE, WW3D_FORMAT_UNKNOWN, WW3D_ZFORMAT_UNKNOWN, &m_pReflectionTexture, &m_pReflectionZTexture);
 	}
 	else if (m_waterType == WATER_TYPE_0_TRANSLUCENT)
 	{
-		// GeneralsX @feature BenderAI 08/10/2026 Create 512x512 reflection render target for map rivers and lakes
-		m_pReflectionTexture = DX8Wrapper::Create_Render_Target (WATER_REFLECTION_SIZE, WATER_REFLECTION_SIZE);
+		// GeneralsX @feature BenderAI 08/10/2026 Create 512x512 reflection render target for map rivers and lakes with matching depth buffer
+		DX8Wrapper::Create_Render_Target (WATER_REFLECTION_SIZE, WATER_REFLECTION_SIZE, WW3D_FORMAT_UNKNOWN, WW3D_ZFORMAT_UNKNOWN, &m_pReflectionTexture, &m_pReflectionZTexture);
 	}
 
 	// GeneralsX @bugfix fbraz3 09/10/2026 Invalidate reflection reuse cache on device reset / resource reacquire
@@ -951,55 +953,13 @@ void WaterRenderObjClass::ReAcquireResources()
 
 	if (W3DShaderManager::getChipset() >= DC_GENERIC_PIXEL_SHADER_1_1)
 	{
-		// GeneralsX @bugfix BenderAI 13/02/2026 Runtime shader compilation Windows-only (stubbed on Linux)
-#ifdef _WIN32
-		// GeneralsX @bugfix BenderAI 13/02/2026 LPD3DXBUFFER instead of ID3DXBuffer for compat
-		LPD3DXBUFFER compiledShader;
-		const char *shader =
-			"ps.1.1\n \
-			tex t0 \n\
-			tex t1	\n\
-			tex t2	\n\
-			tex t3\n\
-			mul r0,v0,t0 ; blend vertex color into t0. \n\
-			mul r1, t1, t2 ; mul\n\
-			add r0.rgb, r0, t3\n\
-			+mul r0.a, r0, t3\n\
-			add r0.rgb, r0, r1\n";
-		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
-		if (hr==0) {
-			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_riverWaterPixelShader);
-			compiledShader->Release();
-		}
-		shader =
-			"ps.1.1\n \
-			tex t0 \n\
-			tex t1	\n\
-			texbem t2, t1 ; use t1 as env map adjustment on t2.\n\
-			mul r0,v0,t0 ; blend vertex color into t0. \n\
-			mul r1.rgb,t2,c0 ; reduce t2 (environment mapped reflection) by constant\n\
-			add r0.rgb, r0, r1";
-		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
-		if (hr==0) {
-			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_waterPixelShader);
-			compiledShader->Release();
-		}
-		shader =
-			"ps.1.1\n \
-			tex t0 ;get water texture\n\
-			tex t1 ;get white highlights on black background\n\
-			tex t2 ;get white highlights with more tiling\n\
-			tex t3	; get black shroud \n\
-			mul r0,v0,t0 ; blend vertex color and alpha into base texture. \n\
-			mad r0.rgb, t1, t2, r0	; blend sparkles and noise \n\
-			mul r0.rgb, r0, t3 ; blend in black shroud \n\
-			;\n";
-		hr = D3DXAssembleShader( shader, strlen(shader), 0, nullptr, &compiledShader, nullptr);
-		if (hr==0) {
-			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
-			compiledShader->Release();
-		}
-#endif // _WIN32 - Runtime shader compilation
+		// GeneralsX @bugfix fbraz3 10/10/2026 macOS Parity: Do not compile legacy 2002 runtime pixel shaders
+		// (m_riverWaterPixelShader, m_waterPixelShader, m_trapezoidWaterPixelShader).
+		// The macOS fixed-function pipeline with _PresetAlphaShader and precompiled m_reflectionPixelShader
+		// is the reference standard and prevents destination-alpha soft edge and depth corruption on Windows.
+		m_riverWaterPixelShader = 0;
+		m_waterPixelShader = 0;
+		m_trapezoidWaterPixelShader = 0;
 		// GeneralsX @feature fbraz3 08/10/2026 Precompiled ps.1.1 bytecode for water reflection shader (Reforged pattern)
 		if (!m_reflectionPixelShader)
 		{
@@ -1613,7 +1573,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 	Matrix3D reflectedTransform(rRight,rUp,rN,rPos);
 
 
-	DX8Wrapper::Set_Render_Target_With_Z((TextureClass*)m_pReflectionTexture);
+	DX8Wrapper::Set_Render_Target_With_Z((TextureClass*)m_pReflectionTexture, m_pReflectionZTexture);
 
 	// Clear the backbuffer
 	// The sea's cloud plane fills its background; map water has no such plane, so its target is
@@ -3107,6 +3067,9 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 	drawReflection(rectangleCount*2, (rectangleCount+1)*2);
 
 	DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, cull);
+	DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	ShaderClass::Invalidate();
 
 
 }
@@ -3570,6 +3533,7 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 	}
 
 	if (m_riverWaterPixelShader) DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
+	if (m_trapezoidWaterPixelShader) DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
 	//Restore alpha blend to default values since we may have changed them to feather edges.
 	if (!TheWaterTransparency->m_additiveBlend)
 	{	DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
@@ -3588,7 +3552,7 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 			//shroud was applied in stage3 of main pass so just need to restore state here.
 			W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
 			DX8Wrapper::_Get_D3D_Device8()->SetTexture(3,nullptr);	//free possible reference to shroud texture
-			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_ZFUNC, D3DCMP_EQUAL);
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
 		else
 		{
@@ -3600,8 +3564,8 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 			//write to the zbuffer.  Change to LESSEQUAL.
 			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 			DX8Wrapper::Draw_Triangles(	0,rectangleCount*2, 0,	(rectangleCount+1)*2);
-			DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_ZFUNC, D3DCMP_EQUAL);
 			W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 		}
 	}
 
@@ -3609,6 +3573,9 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 	drawReflection(rectangleCount*2, (rectangleCount+1)*2);
 
 	DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, cull);
+	DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(0);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	ShaderClass::Invalidate();
 }
 
 
