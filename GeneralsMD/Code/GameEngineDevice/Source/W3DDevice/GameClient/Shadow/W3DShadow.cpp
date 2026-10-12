@@ -144,10 +144,13 @@ W3DShadowManager::W3DShadowManager()
 
 	TheW3DVolumetricShadowManager = NEW W3DVolumetricShadowManager;
 	TheProjectedShadowManager = TheW3DProjectedShadowManager = NEW W3DProjectedShadowManager;
+	// GeneralsX @bugfix fbraz3 12/10/2026 Register cleanup hook for device resets
+	DX8Wrapper::AddCleanupHook(this);
 }
 
 W3DShadowManager::~W3DShadowManager()
 {
+	DX8Wrapper::RemoveCleanupHook(this);
 	delete TheW3DVolumetricShadowManager;
 	TheW3DVolumetricShadowManager = nullptr;
 	delete TheW3DProjectedShadowManager;
@@ -185,16 +188,12 @@ void W3DShadowManager::Reset()
 		TheW3DProjectedShadowManager->reset();
 }
 
-Bool W3DShadowManager::ReAcquireResources()
+void W3DShadowManager::ReAcquireResources()
 {
-	Bool result = TRUE;
-
-	if (TheW3DVolumetricShadowManager && !TheW3DVolumetricShadowManager->ReAcquireResources())
-		result = FALSE;
-	if (TheW3DProjectedShadowManager && !TheW3DProjectedShadowManager->ReAcquireResources())
-		result = FALSE;
-
-	return result;
+	if (TheW3DVolumetricShadowManager)
+		TheW3DVolumetricShadowManager->ReAcquireResources();
+	if (TheW3DProjectedShadowManager)
+		TheW3DProjectedShadowManager->ReAcquireResources();
 }
 
 void W3DShadowManager::ReleaseResources()

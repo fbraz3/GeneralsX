@@ -26,11 +26,13 @@
 
 #include "WWMath/matrix4.h"
 #include "GameClient/Shadow.h"
+#include "WW3D2/dx8wrapper.h"
 
 class Drawable;	//forward reference
 
 // ShadowManager -------------------------------------------------------------
-class W3DShadowManager
+// GeneralsX @bugfix fbraz3 12/10/2026 Register W3DShadowManager as DX8_CleanupHook to release/reacquire D3D resources across resets
+class W3DShadowManager : public DX8_CleanupHook
 {
 
 public:
@@ -57,8 +59,8 @@ public:
 
 	// rendering
 	void RenderShadows();
-	void ReleaseResources();
-	Bool ReAcquireResources();
+	virtual void ReleaseResources() override;
+	virtual void ReAcquireResources() override;
 
 protected:
 

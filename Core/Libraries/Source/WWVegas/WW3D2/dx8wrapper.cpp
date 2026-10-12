@@ -1019,6 +1019,12 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 			Set_Vertex_Buffer (nullptr,i);
 		}
 		Set_Index_Buffer (nullptr, 0);
+		// GeneralsX @bugfix fbraz3 12/10/2026 Ensure default render targets are restored and custom RTs unbound before reset
+		Set_Render_Target(static_cast<IDirect3DSurface8*>(nullptr));
+
+		// GeneralsX @bugfix fbraz3 12/10/2026 Release pillarbox offscreen surfaces before resetting device
+		Pillarbox_Cleanup();
+
 		if (m_pCleanupHook) {
 			m_pCleanupHook->ReleaseResources();
 		}
@@ -1054,6 +1060,8 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 			for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
 				if (s_cleanupHooks[i]) s_cleanupHooks[i]->ReAcquireResources();
 			}
+			// GeneralsX @bugfix fbraz3 12/10/2026 Re-setup pillarbox if backbuffer differs from game resolution
+			Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
 		}
 		Invalidate_Cached_Render_States();
 		Set_Default_Global_Render_States();
