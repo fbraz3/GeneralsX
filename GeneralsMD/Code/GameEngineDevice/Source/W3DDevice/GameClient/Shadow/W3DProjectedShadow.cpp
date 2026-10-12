@@ -506,6 +506,35 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 
 		Int numPolys = (endX - startX)*(endY - startY)*2;	//2 triangles per cell
 
+		// GeneralsX @bugfix Mr. Meeseeks 12/10/2026 Save and restore render states to prevent D3D blend and stencil state leaks causing black screen
+		DWORD prevAlphaTest = FALSE;
+		DWORD prevStencilEnable = FALSE;
+		DWORD prevStencilPass = D3DSTENCILOP_KEEP;
+		DWORD prevStencilFail = D3DSTENCILOP_KEEP;
+		DWORD prevStencilZFail = D3DSTENCILOP_KEEP;
+		DWORD prevStencilFunc = D3DCMP_ALWAYS;
+		DWORD prevStencilRef = 0;
+		DWORD prevStencilMask = 0xffffffff;
+		DWORD prevStencilWriteMask = 0xffffffff;
+		DWORD prevLighting = TRUE;
+		DWORD prevSrcBlend = D3DBLEND_ONE;
+		DWORD prevDestBlend = D3DBLEND_ZERO;
+		DWORD prevAlphaBlend = FALSE;
+
+		m_pDev->GetRenderState(D3DRS_ALPHATESTENABLE, &prevAlphaTest);
+		m_pDev->GetRenderState(D3DRS_STENCILENABLE, &prevStencilEnable);
+		m_pDev->GetRenderState(D3DRS_STENCILPASS, &prevStencilPass);
+		m_pDev->GetRenderState(D3DRS_STENCILFAIL, &prevStencilFail);
+		m_pDev->GetRenderState(D3DRS_STENCILZFAIL, &prevStencilZFail);
+		m_pDev->GetRenderState(D3DRS_STENCILFUNC, &prevStencilFunc);
+		m_pDev->GetRenderState(D3DRS_STENCILREF, &prevStencilRef);
+		m_pDev->GetRenderState(D3DRS_STENCILMASK, &prevStencilMask);
+		m_pDev->GetRenderState(D3DRS_STENCILWRITEMASK, &prevStencilWriteMask);
+		m_pDev->GetRenderState(D3DRS_LIGHTING, &prevLighting);
+		m_pDev->GetRenderState(D3DRS_SRCBLEND, &prevSrcBlend);
+		m_pDev->GetRenderState(D3DRS_DESTBLEND, &prevDestBlend);
+		m_pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &prevAlphaBlend);
+
 		m_pDev->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);	//should reject background pixels
 		m_pDev->SetRenderState( D3DRS_STENCILENABLE, TRUE );
 		m_pDev->SetRenderState( D3DRS_STENCILFUNC,     D3DCMP_ALWAYS );
@@ -516,11 +545,10 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		m_pDev->SetRenderState( D3DRS_STENCILFAIL,  D3DSTENCILOP_KEEP );
 		m_pDev->SetRenderState( D3DRS_STENCILPASS,  D3DSTENCILOP_INCR );
 
-//    m_pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );	//useful to see bounds
+		m_pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 		m_pDev->SetRenderState( D3DRS_LIGHTING, FALSE);
 		m_pDev->SetRenderState( D3DRS_SRCBLEND,  D3DBLEND_DESTCOLOR);
 		m_pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_ZERO );
-
 
 		if (DX8Wrapper::_Is_Triangle_Draw_Enabled())
 		{
@@ -528,10 +556,22 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 			m_pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,numVerts,nShadowStartBatchIndex,numPolys);
 		}
 
-		m_pDev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);	//should reject background pixels
-		m_pDev->SetRenderState( D3DRS_STENCILENABLE, FALSE );
-//    m_pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		m_pDev->SetRenderState( D3DRS_LIGHTING, TRUE);
+		m_pDev->SetRenderState(D3DRS_ALPHATESTENABLE, prevAlphaTest);
+		m_pDev->SetRenderState(D3DRS_STENCILENABLE, prevStencilEnable);
+		m_pDev->SetRenderState(D3DRS_STENCILPASS, prevStencilPass);
+		m_pDev->SetRenderState(D3DRS_STENCILFAIL, prevStencilFail);
+		m_pDev->SetRenderState(D3DRS_STENCILZFAIL, prevStencilZFail);
+		m_pDev->SetRenderState(D3DRS_STENCILFUNC, prevStencilFunc);
+		m_pDev->SetRenderState(D3DRS_STENCILREF, prevStencilRef);
+		m_pDev->SetRenderState(D3DRS_STENCILMASK, prevStencilMask);
+		m_pDev->SetRenderState(D3DRS_STENCILWRITEMASK, prevStencilWriteMask);
+		m_pDev->SetRenderState(D3DRS_SRCBLEND, prevSrcBlend);
+		m_pDev->SetRenderState(D3DRS_DESTBLEND, prevDestBlend);
+		m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, prevAlphaBlend);
+		m_pDev->SetRenderState(D3DRS_LIGHTING, prevLighting);
+
+		DX8Wrapper::Invalidate_Cached_Render_States();
+		ShaderClass::Invalidate();
 
 		nShadowVertsInBuf += numVerts;
 		nShadowStartBatchVertex=nShadowVertsInBuf;
@@ -1498,6 +1538,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 					if (renderProjectedTerrainShadow(shadow, aaBox))
 						projectionCount++;
 					projector->Peek_Material_Pass()->UnInstall_Materials();
+					// GeneralsX @bugfix Mr. Meeseeks 12/10/2026 Reset cached render states after projector material pass
+					DX8Wrapper::Invalidate_Cached_Render_States();
+					ShaderClass::Invalidate();
 
 					SimpleObjectIterator *iter;
 					Object *obj;
@@ -1576,6 +1619,9 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 		}
 
 		flushDecals(lastShadowDecalTexture,lastShadowType);	//make sure there are not any unrendered decals left over.
+		// GeneralsX @bugfix Mr. Meeseeks 12/10/2026 Ensure clean state machine exit from shadow rendering pass
+		DX8Wrapper::Invalidate_Cached_Render_States();
+		ShaderClass::Invalidate();
 	}
 	return projectionCount;
 }

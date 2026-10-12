@@ -3713,21 +3713,23 @@ void DX8Wrapper::Create_Render_Target
 		zformat = D3DFormat_To_WW3DZFormat(_PresentParameters.AutoDepthStencilFormat);
 	}
 
-	// If render target format isn't supported return null
-	if (!Get_Current_Caps()->Support_Render_To_Texture_Format(format) ||
-		 !Get_Current_Caps()->Support_Depth_Stencil_Format(zformat))
+	// GeneralsX @bugfix Mr. Meeseeks 12/10/2026 If render target color format isn't supported return null
+	if (!Get_Current_Caps()->Support_Render_To_Texture_Format(format))
+	{
+		WWDEBUG_SAY(("DX8Wrapper - Render target format is not supported"));
+		*target = nullptr;
+		if (depth_buffer != nullptr) *depth_buffer = nullptr;
+		return;
+	}
+
+	bool can_create_depth = (depth_buffer != nullptr && Get_Current_Caps()->Support_Depth_Stencil_Format(zformat));
+	if (depth_buffer != nullptr && !can_create_depth)
 	{
 		// Fallback to D16 if the current auto depth-stencil format cannot be textured
 		if (Get_Current_Caps()->Support_Depth_Stencil_Format(WW3D_ZFORMAT_D16))
 		{
 			zformat = WW3D_ZFORMAT_D16;
-		}
-		else
-		{
-			WWDEBUG_SAY(("DX8Wrapper - Render target with depth format is not supported"));
-			*target = nullptr;
-			*depth_buffer = nullptr;
-			return;
+			can_create_depth = true;
 		}
 	}
 
@@ -3765,18 +3767,28 @@ void DX8Wrapper::Create_Render_Target
 
 	*target=tex;
 
-	// attempt to create the depth stencil buffer
-	*depth_buffer=NEW_REF
-	(
-		ZTextureClass,
-		(
-			width,
-			height,
-			zformat,
-			MIP_LEVELS_1,
-			TextureClass::POOL_DEFAULT
-		)
-	);
+	// GeneralsX @bugfix Mr. Meeseeks 12/10/2026 Attempt to create depth stencil buffer only if depth texturing is supported
+	if (depth_buffer != nullptr)
+	{
+		if (can_create_depth)
+		{
+			*depth_buffer=NEW_REF
+			(
+				ZTextureClass,
+				(
+					width,
+					height,
+					zformat,
+					MIP_LEVELS_1,
+					TextureClass::POOL_DEFAULT
+				)
+			);
+		}
+		else
+		{
+			*depth_buffer = nullptr;
+		}
+	}
 }
 
 /*!
@@ -4066,16 +4078,22 @@ void DX8Wrapper::Set_Render_Target
 		if (CurrentRenderTarget != nullptr)
 		{
 			CurrentRenderTarget->AddRef ();
-			CurrentDepthBuffer->AddRef();
+			if (CurrentDepthBuffer != nullptr)
+			{
+				CurrentDepthBuffer->AddRef();
+			}
 
 			//
 			//	Switch render targets
 			//
 			DX8CALL(SetRenderTarget (CurrentRenderTarget, CurrentDepthBuffer));
 		}
+		IsRenderToTexture = true;
 	}
-
-	IsRenderToTexture=true;
+	else
+	{
+		IsRenderToTexture = false;
+	}
 }
 
 
