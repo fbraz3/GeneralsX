@@ -387,6 +387,14 @@ bool W3DPostProcess::beginScene()
 	}
 	pDev->Clear(0, nullptr, clearFlags, clearColor, 1.0f, 0);
 
+	// GeneralsX @bugfix Mr. Meeseeks 13/10/2026 Restore depth test and write states for the 3D scene pass
+	pDev->SetRenderState(D3DRS_ZENABLE, TRUE);
+	pDev->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	pDev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZENABLE, TRUE);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZWRITEENABLE, TRUE);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+
 	m_isSceneActive = true;
 	return true;
 }

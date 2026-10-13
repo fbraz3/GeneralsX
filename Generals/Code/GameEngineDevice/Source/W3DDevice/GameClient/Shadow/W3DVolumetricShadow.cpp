@@ -3601,6 +3601,14 @@ void W3DVolumetricShadowManager::renderStencilShadows()
 	// turn off the stencil buffer
 	m_pDev->SetRenderState( D3DRS_STENCILENABLE, FALSE );
 
+	// GeneralsX @bugfix Mr. Meeseeks 13/10/2026 Restore depth buffer test and write states after stencil shadow pass
+	m_pDev->SetRenderState( D3DRS_ZENABLE, TRUE );
+	m_pDev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+	m_pDev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
+	DX8Wrapper::Set_DX8_Render_State( D3DRS_ZENABLE, TRUE );
+	DX8Wrapper::Set_DX8_Render_State( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+	DX8Wrapper::Set_DX8_Render_State( D3DRS_ZWRITEENABLE, TRUE );
+
 }
 
 void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
@@ -3816,7 +3824,15 @@ void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
 		m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE , FALSE);
 		m_pDev->SetRenderState(D3DRS_LIGHTING, FALSE);
 
+		// GeneralsX @bugfix Mr. Meeseeks 13/10/2026 Ensure depth write and testing are re-enabled and cache invalidated
+		m_pDev->SetRenderState(D3DRS_ZENABLE, TRUE);
+		m_pDev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+		m_pDev->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZENABLE, TRUE);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZWRITEENABLE, TRUE);
 		DX8Wrapper::Invalidate_Cached_Render_States();
+		ShaderClass::Invalidate();
 	}
 	else
 	if (forceStencilFill)
@@ -3834,7 +3850,19 @@ void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
 
 		renderStencilShadows();
 
+		// GeneralsX @bugfix Mr. Meeseeks 13/10/2026 Ensure depth write and testing are re-enabled and cache invalidated
+		LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
+		if (pDev)
+		{
+			pDev->SetRenderState(D3DRS_ZENABLE, TRUE);
+			pDev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+		}
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZENABLE, TRUE);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ZWRITEENABLE, TRUE);
 		DX8Wrapper::Invalidate_Cached_Render_States();
+		ShaderClass::Invalidate();
 	}
 
 }
