@@ -47,6 +47,11 @@ export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"  # Override with 'debug' if needed
 export DXVK_HUD="${DXVK_HUD:-0}"                 # Disabled by default; Generals has native FPS counter
 
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${GAME_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${GAME_DIR}/dxvk.conf"
+fi
+
 # GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD (LLVM 20.x crash workaround)
 # libvulkan_lvp.so (LLVMpipe) crashes during static initialization with LLVM 20.x.
 # Filter hardware-only ICDs via VK_DRIVER_FILES to prevent loading the crashing library.

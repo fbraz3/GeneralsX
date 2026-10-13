@@ -179,6 +179,11 @@ fi
 # DXVK HUD is disabled by default because Generals has a native FPS counter.
 export DXVK_HUD="${DXVK_HUD:-0}"
 
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${SCRIPT_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${SCRIPT_DIR}/dxvk.conf"
+fi
+
 # Auto-detect base Generals install path
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
     export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"

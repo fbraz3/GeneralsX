@@ -287,6 +287,14 @@ int main(int argc, char* argv[])
 			// Set DXVK WSI driver before loading Vulkan
 			setenv("DXVK_WSI_DRIVER", "SDL3", 1);
 
+			// GeneralsX @bugfix fbraz3 12/10/2026 Set default DXVK configuration fallback for D3D8 device resets
+			// In D3D8, swapchain resets (such as fullscreen transitions and window resizing)
+			// do not require exhaustive destruction of all D3DPOOL_DEFAULT subresources.
+			// Set countLosableResources=False and forceSamplerTypeSpecConstants=False if not explicitly configured.
+			if (!getenv("DXVK_CONFIG")) {
+				setenv("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False", 0);
+			}
+
 			// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
 			// libvulkan_lvp.so crashes during static initialization with LLVM 20.x when the Vulkan
 			// loader enumerates all ICDs. Restrict to hardware ICDs first.
