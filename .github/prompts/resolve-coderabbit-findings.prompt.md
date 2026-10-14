@@ -32,10 +32,12 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
 
 ### Step 1: Gather PR Context & CodeRabbit Comments
 1. In agent sandbox environments where a dummy token is present (`GITHUB_TOKEN=github_pat_antigravitydummytoken`), prepend `env -u GITHUB_TOKEN -u GH_TOKEN` to `gh` commands to bypass it and use stored credentials. In environments with valid tokens (e.g. CI), preserve the environment variables.
-2. Normalize the input to obtain the integer PR number:
+2. Normalize the input to obtain the integer PR number and optional review ID:
    ```bash
    PR_INPUT="<PR_NUMBER_OR_BRANCH_OR_URL>"
    PR_NUMBER="$(env -u GITHUB_TOKEN -u GH_TOKEN gh pr view "$PR_INPUT" --json number --jq .number)"
+   # If PR_INPUT points to a specific review URL (e.g. #pullrequestreview-5513674979):
+   REVIEW_ID="$(echo "$PR_INPUT" | sed -n 's/.*pullrequestreview-\([0-9]*\).*/\1/p')"
    ```
 3. Checkout the PR branch locally:
    ```bash
@@ -51,10 +53,14 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
    env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/issues/"$PR_NUMBER"/comments \
      | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]")] | last | .body'
    ```
-6. Inspect CodeRabbit reviews for **Outside diff range comments** (paginating all pages with `--slurp`):
+6. Inspect CodeRabbit reviews for **Outside diff range comments** (or query a specific `$REVIEW_ID` directly if provided):
    ```bash
-   env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
-     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
+   if [ -n "$REVIEW_ID" ]; then
+     env -u GITHUB_TOKEN -u GH_TOKEN gh api repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews/"$REVIEW_ID" --jq .body
+   else
+     env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
+       | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
+   fi
    ```
    *(Note: GitHub prevents inline review comments outside git diff hunks; CodeRabbit posts these findings in the review body under `> **⚠️ Outside diff range comments`).*
 7. Inspect CodeRabbit reviews for **Suppressed / Additional comments** (`<summary>🔇 Additional comments:`):

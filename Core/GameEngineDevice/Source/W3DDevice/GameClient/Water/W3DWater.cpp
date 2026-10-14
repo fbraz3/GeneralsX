@@ -365,6 +365,7 @@ WaterRenderObjClass::WaterRenderObjClass()
 	m_reflectionAreaMax.Set(1.0f, 1.0f);
 	m_reflectionCameraTransform.Make_Identity();
 	m_reflectionReused=FALSE;
+	m_reflectionTextureValid=FALSE;
 	m_skyBox=nullptr;
 	m_vertexBufferD3D=nullptr;
 	m_indexBufferD3D=nullptr;
@@ -867,6 +868,7 @@ void WaterRenderObjClass::ReleaseResources()
 	m_trapezoidWaterPixelShader=0;
 	m_riverWaterPixelShader=0;
 	m_reflectionPixelShader=0;
+	m_reflectionTextureValid=FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -946,6 +948,7 @@ void WaterRenderObjClass::ReAcquireResources()
 
 	// GeneralsX @bugfix fbraz3 09/10/2026 Invalidate reflection reuse cache on device reset / resource reacquire
 	m_reflectionReused = FALSE;
+	m_reflectionTextureValid = FALSE;
 	memset(&m_reflectionCameraTransform, 0, sizeof(Matrix3D));
 
 	if (m_waterTrackSystem)
@@ -1471,7 +1474,7 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 	// frame old lines up with it exactly and only what moved in it is a frame late.  Such a frame
 	// keeps the last texture, and the one after it draws a new one.
 	const Bool cameraMoved = memcmp(&cam->Get_Transform(), &m_reflectionCameraTransform, sizeof(Matrix3D)) != 0;
-	if (!cameraMoved && !m_reflectionReused)
+	if (!cameraMoved && !m_reflectionReused && m_reflectionTextureValid)
 	{
 		m_reflectionReused = TRUE;
 		return;
@@ -1635,6 +1638,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 
 	// Change the rendertarget back to the main backbuffer
 	DX8Wrapper::Set_Render_Target((IDirect3DSurface8 *)nullptr);
+	m_reflectionTextureValid = TRUE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3112,7 +3116,7 @@ void WaterRenderObjClass::drawReflection(Int triangleCount, Int vertexCount)
 		return;
 
 	// GeneralsX @bugfix fbraz3 08/10/2026 Guard against missing RT or pixel shader (Reforged pattern)
-	if (!m_pReflectionTexture || !m_reflectionPixelShader)
+	if (!m_pReflectionTexture || !m_reflectionPixelShader || !m_reflectionTextureValid)
 		return;	// the card refused a render target or a pixel shader
 
 	// multiplied into the water, so it keeps the colour it was drawn with and the shroud already on it

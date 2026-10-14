@@ -176,6 +176,8 @@ protected:
 	Vector2 m_reflectionAreaMax;	///<upper right of the same area
 	Matrix3D m_reflectionCameraTransform;	///<where the camera stood when the reflection texture was last rendered
 	Bool m_reflectionReused;	///<the frame before this one kept the previous reflection texture
+	// GeneralsX @bugfix fbraz3 14/10/2026 Track whether reflection texture contains a rendered frame
+	Bool m_reflectionTextureValid;
 	RenderObjClass	*m_skyBox;		///<box around level
 	WaterTracksRenderSystem *m_waterTrackSystem;	///<object responsible for rendering water wakes
 
