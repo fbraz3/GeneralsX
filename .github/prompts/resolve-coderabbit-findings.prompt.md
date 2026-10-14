@@ -56,7 +56,7 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
 6. Inspect CodeRabbit reviews for **Outside diff range comments** (or query a specific `$REVIEW_ID` directly if provided):
    ```bash
    if [ -n "$REVIEW_ID" ]; then
-     env -u GITHUB_TOKEN -u GH_TOKEN gh api repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews/"$REVIEW_ID" --jq .body
+     env -u GITHUB_TOKEN -u GH_TOKEN gh api repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews/"$REVIEW_ID" --jq 'if .user.login == "coderabbitai[bot]" then .body else error("review is not authored by coderabbitai[bot]") end'
    else
      env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
        | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
