@@ -1060,8 +1060,6 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 			for (size_t i = 0; i < s_cleanupHooks.size(); ++i) {
 				if (s_cleanupHooks[i]) s_cleanupHooks[i]->ReAcquireResources();
 			}
-			// GeneralsX @bugfix fbraz3 12/10/2026 Re-setup pillarbox if backbuffer differs from game resolution
-			Pillarbox_Setup(ResolutionWidth, ResolutionHeight);
 		}
 		Invalidate_Cached_Render_States();
 		Set_Default_Global_Render_States();

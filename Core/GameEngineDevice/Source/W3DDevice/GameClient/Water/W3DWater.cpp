@@ -1464,7 +1464,7 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 	}
 
 	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options for translucent water
-	if (m_waterType != WATER_TYPE_0_TRANSLUCENT || !m_pReflectionTexture || (TheGlobalData && !TheGlobalData->isWaterReflections()))
+	if (m_waterType != WATER_TYPE_0_TRANSLUCENT || !m_pReflectionTexture || !m_pReflectionZTexture || (TheGlobalData && !TheGlobalData->isWaterReflections()))
 		return;
 
 	// A camera that has not moved looks at the same water from the same place, so a reflection one
@@ -1544,6 +1544,10 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 		return;
 	}
 #endif
+	// GeneralsX @bugfix fbraz3 14/10/2026 Guard reflection pass when depth target is unavailable
+	if (!m_pReflectionTexture || !m_pReflectionZTexture) {
+		return;
+	}
 	Matrix3D	OldCameraMatrix=cam->Get_Transform();
 	Matrix4x4	FullMatrix4(cam->Get_Transform());	//copy 3x4 matrix into a 4x4
 	Vector3		WaterNormal(0,0,1);	//normal of plane used for reflection

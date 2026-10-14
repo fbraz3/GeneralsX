@@ -57,7 +57,7 @@ docker run --rm \
     -e HOME=/tmp/generalsx-home \
     -e XDG_CACHE_HOME=/tmp/generalsx-cache \
     -v "$PROJECT_ROOT:/work:z" \
-    "${BUILD_MOUNT[@]}" \
+    ${BUILD_MOUNT[@]+"${BUILD_MOUNT[@]}"} \
     -v "$VCPKG_DIR:/opt/vcpkg:z" \
     -w /work \
     "$DOCKER_IMAGE" \
