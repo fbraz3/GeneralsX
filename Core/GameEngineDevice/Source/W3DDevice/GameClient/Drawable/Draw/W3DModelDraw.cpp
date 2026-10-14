@@ -54,10 +54,12 @@
 #include "GameLogic/FPUControl.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
+#include "W3DDevice/GameClient/BaseHeightMap.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DScene.h"
+#include "W3DDevice/GameClient/W3DDynamicLight.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
@@ -1727,12 +1729,15 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	int i;
 	m_animationMode = RenderObjClass::ANIM_MODE_LOOP;
 	m_hideHeadlights = true;
+	m_hasHeadlights = false;
+	m_headlightDynamicLight = nullptr;
 	m_pauseAnimation = false;
 	m_curState = nullptr;
 	m_hexColor = 0;
 	m_renderObject = nullptr;
 	m_shadow = nullptr;
 	m_shadowEnabled = TRUE;
+	m_hasModelShadow = FALSE;
 	m_terrainDecal = nullptr;
 	m_trackRenderObject = nullptr;
 	m_whichAnimInCurState = -1;
@@ -1849,30 +1854,187 @@ void W3DModelDraw::setHidden(Bool hidden)
 /**Free all data used by this model's shadow.  This is used to dynamically enable/disable shadows by the options screen*/
 void W3DModelDraw::releaseShadows()	///< frees all shadow resources used by this module - used by Options screen.
 {
+	unregisterModelShadow();
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
 }
 
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned mesh shadow promotion and projectile decal shadows
+/** Does this model contain any skinned (bone-deformed) geometry? Infantry and other animated
+characters do; vehicles and structures are built from rigid sub-meshes. Only LOD 0 is checked - that
+is the LOD the shadow system fetches its live meshes from. */
+static Bool hasSkinnedGeometry(RenderObjClass *robj)
+{
+	if (robj == nullptr || robj->Class_ID() != RenderObjClass::CLASSID_HLOD)
+		return FALSE;
+
+	HLodClass *hlod = (HLodClass *)robj;
+
+	for (Int i = 0; i < hlod->Get_Lod_Model_Count(0); i++)
+	{
+		RenderObjClass *lodModel = hlod->Peek_Lod_Model(0, i);
+
+		if (lodModel && lodModel->Class_ID() == RenderObjClass::CLASSID_MESH &&
+				((MeshClass *)lodModel)->Peek_Model()->Get_Flag(MeshGeometryClass::SKIN))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/** Infantry ship with a flat blob decal because the old shadow system refused to build a volume out
+of a skinned mesh. It can now, so give them a real cast shadow that follows the pose. Returns TRUE
+when the type was changed, so the caller can fall back if no volume geometry could be built. */
+static Bool promoteSkinShadowToVolume(RenderObjClass *robj, Shadow::ShadowTypeInfo *shadowInfo)
+{
+	if (shadowInfo->m_type != SHADOW_DECAL ||
+			!TheGlobalData || !TheGlobalData->m_useShadowVolumes || !TheGlobalData->isUseShadowVolumesForSkins() ||
+			!hasSkinnedGeometry(robj))
+		return FALSE;
+
+	shadowInfo->m_type = SHADOW_VOLUME;
+	// m_sizeX is the decal's width for a decal but the sun's elevation angle for a volume -
+	// feeding the decal size through would clamp the shadow to a nonsense length.
+	shadowInfo->m_sizeX = 0.0f;
+	shadowInfo->m_sizeY = 0.0f;
+	return TRUE;
+}
+
+/** Fill in the shadow this template asks for. A template that asks for nothing still gets one if it
+is a projectile: a missile or a bomb with no shadow slides over the ground with nothing tying it to
+the terrain. There can be dozens in the air at once, so it is always the cheap projected blob and
+never a volume; a zero decal size makes addShadow take the size from the model's own bounding box.
+Returns FALSE when this drawable gets no shadow at all. */
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Object-tree model shadow casting via W3DTreeBuffer
+/** Maps place trees in two ways: the map's own terrain data puts thousands of them into the tree
+	buffer, batched together and drawn in one go.  A map designer who wanted one tree somewhere by
+	itself dropped an object there instead: a palm in the desert, an oak in a town, a shrub in a yard.
+	Those are full game objects, and Golden Oasis has 278 palms placed that way.  The code that lays a
+	tree's triangles on the ground has nothing of theirs to lay, and all they ever had was the round
+	decal their template asks for.  The tree buffer takes their meshes over instead.
+
+	The test is the template's own words: shrubbery, fixed in place, asking for a decal. */
+static Bool wantsModelShadow(const ThingTemplate *tmplate)
+{
+	return tmplate->getShadowType() == SHADOW_DECAL &&
+			TheGlobalData &&
+			TheGlobalData->isShadowsForProps() &&
+			(TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes) &&
+			tmplate->isKindOf(KINDOF_SHRUBBERY) &&
+			tmplate->isKindOf(KINDOF_IMMOBILE);
+}
+
+/** Hand this model's shadow to the tree buffer, and say whether it took it. */
+Bool W3DModelDraw::registerModelShadow(void)
+{
+	unregisterModelShadow();
+
+	Drawable *draw = getDrawable();
+	if (draw == nullptr || m_renderObject == nullptr || TheTerrainRenderObject == nullptr)
+		return FALSE;
+
+	const ThingTemplate *tmplate = draw->getTemplate();
+	if (tmplate == nullptr || !wantsModelShadow(tmplate))
+		return FALSE;
+
+	m_hasModelShadow = TheTerrainRenderObject->addModelShadow(draw->getID(), m_renderObject);
+	return m_hasModelShadow;
+}
+
+/** Take it back: the model is changing, or the drawable is going away. */
+void W3DModelDraw::unregisterModelShadow(void)
+{
+	if (!m_hasModelShadow)
+		return;
+	m_hasModelShadow = FALSE;
+	Drawable *draw = getDrawable();
+	if (draw && TheTerrainRenderObject)
+		TheTerrainRenderObject->removeModelShadow(draw->getID());
+}
+
+/** Fill in the shadow this template asks for. A template that asks for nothing still gets one if it
+is a projectile: a missile or a bomb with no shadow slides over the ground with nothing tying it to
+the terrain. There can be dozens in the air at once, so it is always the cheap projected blob and
+never a volume; a zero decal size makes addShadow take the size from the model's own bounding box.
+Props with no shadows (fences, rubbish, shrubbery) get volume shadows (or decal fallback).
+Returns FALSE when this drawable gets no shadow at all. */
+static Bool fillShadowInfoFromTemplate(const ThingTemplate *tmplate, Shadow::ShadowTypeInfo *shadowInfo, Bool allowPropVolume = TRUE)
+{
+	if (tmplate->getShadowType() == SHADOW_NONE)
+	{
+		const Bool prop = TheGlobalData && TheGlobalData->m_shadowsForProps && tmplate->isKindOf(KINDOF_IMMOBILE) &&
+							!tmplate->isKindOf(KINDOF_PROJECTILE);
+
+		if (prop && allowPropVolume && TheGlobalData->m_useShadowVolumes)
+		{
+			shadowInfo->m_ShadowName[0] = 0;
+			shadowInfo->allowUpdates = FALSE;
+			shadowInfo->allowWorldAlign = TRUE;
+			shadowInfo->m_type = SHADOW_VOLUME;
+			shadowInfo->m_sizeX = 0.0f;
+			shadowInfo->m_sizeY = 0.0f;
+			shadowInfo->m_offsetX = 0.0f;
+			shadowInfo->m_offsetY = 0.0f;
+			return TRUE;
+		}
+
+		if (!prop && (!TheGlobalData || !TheGlobalData->isShadowsForProjectiles() || !tmplate->isKindOf(KINDOF_PROJECTILE)))
+			return FALSE;
+
+		// Most of these name no texture of their own, so ask for the round blob a sphere gets
+		strlcpy(shadowInfo->m_ShadowName, tmplate->getShadowTextureName().isEmpty() ? "shadow" : tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo->m_ShadowName));
+		shadowInfo->allowUpdates = FALSE;
+		shadowInfo->allowWorldAlign = TRUE;
+		shadowInfo->m_type = SHADOW_DECAL;
+		shadowInfo->m_sizeX = 0.0f;
+		shadowInfo->m_sizeY = 0.0f;
+		shadowInfo->m_offsetX = 0.0f;
+		shadowInfo->m_offsetY = 0.0f;
+		return TRUE;
+	}
+
+	strlcpy(shadowInfo->m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo->m_ShadowName));
+	DEBUG_ASSERTCRASH(shadowInfo->m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
+	shadowInfo->allowUpdates = FALSE;
+	shadowInfo->allowWorldAlign = TRUE;
+	shadowInfo->m_type = (ShadowType)tmplate->getShadowType();
+	shadowInfo->m_sizeX = tmplate->getShadowSizeX();
+	shadowInfo->m_sizeY = tmplate->getShadowSizeY();
+	shadowInfo->m_offsetX = tmplate->getShadowOffsetX();
+	shadowInfo->m_offsetY = tmplate->getShadowOffsetY();
+	return TRUE;
+}
+
 /** Create shadow resources if not already present. This is used to dynamically enable/disable shadows by the options screen*/
 void W3DModelDraw::allocateShadows()
 {
-	const ThingTemplate *tmplate=getDrawable()->getTemplate();
+	Drawable *draw = getDrawable();
+	const ThingTemplate *tmplate = draw ? draw->getTemplate() : nullptr;
+	if (!tmplate)
+		return;
 
-	//Check if we don't already have a shadow but need one for this type of model.
-	if (m_shadow == nullptr && m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
+	// Check if we don't already have a shadow but need one for this type of model.
+	// A tree the buffer casts for us wants no decal of its own under it.
+	Shadow::ShadowTypeInfo shadowInfo;
+	if (!registerModelShadow() &&
+			m_shadow == nullptr && m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 	{
-		Shadow::ShadowTypeInfo shadowInfo;
-		strlcpy(shadowInfo.m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo.m_ShadowName));
-		DEBUG_ASSERTCRASH(shadowInfo.m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
-		shadowInfo.allowUpdates			= FALSE;		//shadow image will never update
-		shadowInfo.allowWorldAlign	= TRUE;	//shadow image will wrap around world objects
-		shadowInfo.m_type						= (ShadowType)tmplate->getShadowType();
-		shadowInfo.m_sizeX					= tmplate->getShadowSizeX();
-		shadowInfo.m_sizeY					= tmplate->getShadowSizeY();
-		shadowInfo.m_offsetX				= tmplate->getShadowOffsetX();
-		shadowInfo.m_offsetY				= tmplate->getShadowOffsetY();
-  		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo);
+		// a projectile's decal is ours rather than the template's - never trade it for a volume
+		Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
+								promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
+		// a prop we handed a volume the template never asked for falls back the same way
+		if (tmplate->getShadowType() == SHADOW_NONE && shadowInfo.m_type == SHADOW_VOLUME)
+			promotedToVolume = TRUE;
+
+		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+
+		if (m_shadow == nullptr && promotedToVolume)
+		{	// no usable shadow geometry in this model - fall back to the decal the template asked for
+			fillShadowInfoFromTemplate(tmplate, &shadowInfo, FALSE);
+			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+		}
+
 		if (m_shadow)
 		{	m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
@@ -2113,6 +2275,8 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
                                           // IT REPOSITIONS PARTICLESYSTEMS TO TSTAY IN SYNC WITH ANIMATED BONES
 
   handleClientRecoil();
+
+  updateHeadlightDynamicLight();
 
 }
 
@@ -2785,6 +2949,7 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 	m_pauseAnimation = false;
 
 	// changing geometry, so we need to remove shadow if present
+	unregisterModelShadow();
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
@@ -2792,6 +2957,12 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 	if(m_terrainDecal)
 		m_terrainDecal->release();
 	m_terrainDecal = nullptr;
+
+	if (m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(false);
+		m_headlightDynamicLight = nullptr;
+	}
 
 	// remove existing render object from the scene
 	if (m_renderObject)
@@ -2842,8 +3013,10 @@ void W3DModelDraw::hideGarrisonFlags(Bool hide)
 
 //-------------------------------------------------------------------------------------------------
 /** Hides all subobjects which are headlights.  Used to disable lights on models during the day.*/
+// GeneralsX @feature fbraz3 08/10/2026 Vehicle headlight dynamic light support
 void W3DModelDraw::hideAllHeadlights(Bool hide)
 {
+	m_hasHeadlights = false;
 	if (m_renderObject)
 	{
 		for (Int subObj = 0; subObj < m_renderObject->Get_Num_Sub_Objects(); subObj++)
@@ -2852,9 +3025,145 @@ void W3DModelDraw::hideAllHeadlights(Bool hide)
 			if (strstr(test->Get_Name(),"HEADLIGHT"))
 			{
 				test->Set_Hidden(hide);
+				m_hasHeadlights = true;
 			}
 			test->Release_Ref();
 		}
+	}
+	if (hide && m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(false);
+		m_headlightDynamicLight = nullptr;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Where this model's headlights shine from and which way, out of its visible HEADLIGHT beam meshes:
+ * the beam starts at the mesh's pivot and runs along whichever of its own axes reaches furthest
+ * from it, +Y on 84 of the 95 beams in W3DZH.big and +X on the Avenger and the train. The origin
+ * is the middle of the mesh across that axis, so a mesh holding both lamps puts one light between
+ * them. Several meshes are averaged into one light. FALSE when no beam is showing. */
+Bool W3DModelDraw::headlightBeam(Vector3& origin, Vector3& direction, Real& reach) const
+{
+	origin.Set(0.0f, 0.0f, 0.0f);
+	direction.Set(0.0f, 0.0f, 0.0f);
+	reach = 0.0f;
+	if (m_renderObject == nullptr)
+		return false;
+
+	Int beams = 0;
+	for (Int subObj = 0; subObj < m_renderObject->Get_Num_Sub_Objects(); subObj++)
+	{
+		RenderObjClass* test = m_renderObject->Get_Sub_Object(subObj);
+		if (!test->Is_Hidden() && strstr(test->Get_Name(), "HEADLIGHT"))
+		{
+			AABoxClass box;
+			test->Get_Obj_Space_Bounding_Box(box);
+			const Vector3 lo = box.Center - box.Extent;
+			const Vector3 hi = box.Center + box.Extent;
+			Int axis = 0;
+			Real length = 0.0f;
+			Real sign = 1.0f;
+			for (Int a = 0; a < 3; ++a)
+			{
+				if (hi[a] > length) { length = hi[a]; axis = a; sign = 1.0f; }
+				if (-lo[a] > length) { length = -lo[a]; axis = a; sign = -1.0f; }
+			}
+			// a lamp lens a unit long lights nothing
+			if (length > 5.0f)
+			{
+				Vector3 start = box.Center;
+				start[axis] = (sign > 0.0f) ? lo[axis] : hi[axis];
+				Vector3 local(0.0f, 0.0f, 0.0f);
+				local[axis] = sign;
+				const Matrix3D& tm = test->Get_Transform();
+				Vector3 worldStart, worldWay;
+				Matrix3D::Transform_Vector(tm, start, &worldStart);
+				Matrix3D::Rotate_Vector(tm, local, &worldWay);
+				origin += worldStart;
+				direction += worldWay;
+				if (length > reach)
+					reach = length;
+				++beams;
+			}
+		}
+		test->Release_Ref();
+	}
+	if (beams == 0 || direction.Length2() < 1e-6f)
+		return false;
+
+	origin /= (Real)beams;
+	direction.Normalize();
+	return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+void W3DModelDraw::updateHeadlightDynamicLight()
+{
+	if (m_hideHeadlights || !m_hasHeadlights || getDrawable() == nullptr || m_renderObject == nullptr ||
+		(TheGlobalData && !TheGlobalData->isVehicleHeadlights()))
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	if (getDrawable()->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud)
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	Vector3 origin, direction;
+	Real reach = 0.0f;
+	if (!headlightBeam(origin, direction, reach))
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+
+	direction.Z = 0.0f;
+	if (direction.Length2() < 1e-4f)
+	{
+		if (m_headlightDynamicLight)
+		{
+			m_headlightDynamicLight->setEnabled(false);
+			m_headlightDynamicLight = nullptr;
+		}
+		return;
+	}
+	direction.Normalize();
+	direction.Z = -0.2f; // tilt down 11 degrees towards ground
+	direction.Normalize();
+
+	Real clampedReach = WWMath::Clamp(reach * 2.5f, 60.0f, 180.0f);
+	Vector3 lightPos = origin + direction * (clampedReach * 0.45f);
+	lightPos.Z += 6.0f;
+
+	if (m_headlightDynamicLight == nullptr && W3DDisplay::m_3DScene != nullptr)
+	{
+		m_headlightDynamicLight = W3DDisplay::m_3DScene->getADynamicLight();
+	}
+
+	if (m_headlightDynamicLight)
+	{
+		m_headlightDynamicLight->setEnabled(true);
+		m_headlightDynamicLight->Set_Ambient(Vector3(0.35f, 0.33f, 0.28f));
+		m_headlightDynamicLight->Set_Diffuse(Vector3(0.95f, 0.90f, 0.75f));
+		m_headlightDynamicLight->Set_Far_Attenuation_Range(clampedReach * 0.2f, clampedReach);
+		m_headlightDynamicLight->Set_Position(lightPos);
+		m_headlightDynamicLight->Set_Flag(LightClass::FAR_ATTENUATION, true);
 	}
 }
 
@@ -3060,21 +3369,27 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		}
 
 		// set up shadows
-		if (m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
+		Shadow::ShadowTypeInfo shadowInfo;
+		// a tree the buffer casts for us wants no decal of its own under it
+		if (!registerModelShadow() &&
+				m_renderObject && TheW3DShadowManager && fillShadowInfoFromTemplate(tmplate, &shadowInfo))
 		{
-			Shadow::ShadowTypeInfo shadowInfo;
-			strlcpy(shadowInfo.m_ShadowName, tmplate->getShadowTextureName().str(), ARRAY_SIZE(shadowInfo.m_ShadowName));
-			DEBUG_ASSERTCRASH(shadowInfo.m_ShadowName[0] != '\0', ("this should be validated in ThingTemplate now"));
-			shadowInfo.allowUpdates			= FALSE;		//shadow image will never update
-			shadowInfo.allowWorldAlign	= TRUE;	//shadow image will wrap around world objects
-			shadowInfo.m_type						= (ShadowType)tmplate->getShadowType();
-			shadowInfo.m_sizeX					= tmplate->getShadowSizeX();
-			shadowInfo.m_sizeY					= tmplate->getShadowSizeY();
-			shadowInfo.m_offsetX				= tmplate->getShadowOffsetX();
-			shadowInfo.m_offsetY				= tmplate->getShadowOffsetY();
+			// a projectile's decal is ours rather than the template's - never trade it for a volume
+			Bool promotedToVolume = tmplate->getShadowType() != SHADOW_NONE &&
+									promoteSkinShadowToVolume(m_renderObject, &shadowInfo);
+			// a prop we handed a volume the template never asked for falls back the same way
+			if (tmplate->getShadowType() == SHADOW_NONE && shadowInfo.m_type == SHADOW_VOLUME)
+				promotedToVolume = TRUE;
 
 			DEBUG_ASSERTCRASH(m_shadow == nullptr, ("m_shadow is not null"));
 			m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+
+			if (m_shadow == nullptr && promotedToVolume)
+			{	// no usable shadow geometry in this model - fall back to the decal the template asked for
+				fillShadowInfoFromTemplate(tmplate, &shadowInfo, FALSE);
+				m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo, draw);
+			}
+
 			if (m_shadow)
 			{	m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 				m_shadow->enableShadowRender(m_shadowEnabled);

@@ -15,7 +15,7 @@ GAMESPY_LIB="${BUILD_DIR}/libgamespy.so"
 FFMPEG_LIB_DIR="/usr/lib/x86_64-linux-gnu"
 FFMPEG_DEP_LIB_DIR="/lib/x86_64-linux-gnu"
 BINARY_SRC="${BUILD_DIR}/Generals/GeneralsX"
-DXVK_CONF_SRC="${PROJECT_ROOT}/Generals/Run/dxvk.conf"
+DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
 OUTPUT_TARBALL="${PROJECT_ROOT}/GeneralsX-linux-x86_64.tar.gz"
 
 copy_ldd_deps() {
@@ -177,6 +177,11 @@ if [[ -f "${SCRIPT_DIR}/libsage_patch.so" && "${SAGE_PATCH_DISABLED:-0}" != "1" 
 fi
 # DXVK HUD is disabled by default because Generals has a native FPS counter.
 export DXVK_HUD="${DXVK_HUD:-0}"
+
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${SCRIPT_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${SCRIPT_DIR}/dxvk.conf"
+fi
 
 # Auto-detect base Generals install path
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then

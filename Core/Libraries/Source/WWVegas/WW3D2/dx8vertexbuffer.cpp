@@ -47,12 +47,21 @@
 #include "WWDebug/wwmemlog.h"
 #include <d3dx8core.h>
 
-#define DEFAULT_VB_SIZE 5000
+// GeneralsX @performance Olcay Seygan / Ilyas Akin 08/10/2026 Expand shared dynamic vertex buffer to 65535.
+// The shared dynamic buffer is made at the most a 16-bit vertex count can name, once. Every time
+// it fills, the next lock is a DISCARD, and on modern DXVK/Vulkan each DISCARD forces buffer renaming.
+// At EA's 5000 it filled ~50 times/frame in large battles, wasting 8-12ms waiting for GPU synchronization.
+// At 65535 it discards only ~5-7 times/frame, avoiding mid-match growth and GPU pipeline stalls.
+#define DEFAULT_VB_SIZE 65535
 
 static bool _DynamicSortingVertexArrayInUse=false;
-//static VertexFormatXYZNDUV2* _DynamicSortingVertexArray=nullptr;
 static SortingVertexBufferClass* _DynamicSortingVertexArray=nullptr;
 static unsigned short _DynamicSortingVertexArraySize=0;
+
+// GeneralsX @performance Olcay Seygan / Ilyas Akin 08/10/2026 Pool retired sorting arrays to eliminate new[] / memset stalls
+static const unsigned short SORTING_VERTEX_ARRAY_SIZE=65535;
+static const int MAX_RETIRED_SORTING_VERTEX_ARRAYS=16;
+static SortingVertexBufferClass* _RetiredSortingVertexArrays[MAX_RETIRED_SORTING_VERTEX_ARRAYS];
 static unsigned short _DynamicSortingVertexArrayOffset=0;
 
 static bool _DynamicDX8VertexBufferInUse=false;
@@ -756,6 +765,9 @@ void DynamicVBAccessClass::_Deinit()
 
 	WWASSERT ((_DynamicSortingVertexArray == nullptr) || (_DynamicSortingVertexArray->Num_Refs() == 1));
 	REF_PTR_RELEASE(_DynamicSortingVertexArray);
+	for (int i=0;i<MAX_RETIRED_SORTING_VERTEX_ARRAYS;++i) {
+		REF_PTR_RELEASE(_RetiredSortingVertexArrays[i]);
+	}
 	WWASSERT(!_DynamicSortingVertexArrayInUse);
 	_DynamicSortingVertexArrayInUse=false;
 	_DynamicSortingVertexArraySize=0;
@@ -807,14 +819,32 @@ void DynamicVBAccessClass::Allocate_Sorting_Dynamic_Buffer()
 
 	unsigned new_vertex_count=_DynamicSortingVertexArrayOffset+VertexCount;
 	WWASSERT(new_vertex_count<65536);
-	if (new_vertex_count>_DynamicSortingVertexArraySize) {
-		REF_PTR_RELEASE(_DynamicSortingVertexArray);
-		_DynamicSortingVertexArraySize=new_vertex_count;
-		if (_DynamicSortingVertexArraySize<DEFAULT_VB_SIZE) _DynamicSortingVertexArraySize=DEFAULT_VB_SIZE;
+	if (_DynamicSortingVertexArray && new_vertex_count>_DynamicSortingVertexArraySize) {
+		int slot=0;
+		while (slot<MAX_RETIRED_SORTING_VERTEX_ARRAYS && _RetiredSortingVertexArrays[slot]) {
+			++slot;
+		}
+		if (slot<MAX_RETIRED_SORTING_VERTEX_ARRAYS) {
+			_RetiredSortingVertexArrays[slot]=_DynamicSortingVertexArray;
+			_DynamicSortingVertexArray=nullptr;
+		}
+		else {
+			REF_PTR_RELEASE(_DynamicSortingVertexArray);
+		}
 	}
 
 	if (!_DynamicSortingVertexArray) {
-		_DynamicSortingVertexArray=NEW_REF(SortingVertexBufferClass,(_DynamicSortingVertexArraySize));
+		for (int i=0;i<MAX_RETIRED_SORTING_VERTEX_ARRAYS;++i) {
+			if (_RetiredSortingVertexArrays[i] && _RetiredSortingVertexArrays[i]->Num_Refs()==1) {
+				_DynamicSortingVertexArray=_RetiredSortingVertexArrays[i];
+				_RetiredSortingVertexArrays[i]=nullptr;
+				break;
+			}
+		}
+		if (!_DynamicSortingVertexArray) {
+			_DynamicSortingVertexArray=NEW_REF(SortingVertexBufferClass,(SORTING_VERTEX_ARRAY_SIZE));
+		}
+		_DynamicSortingVertexArraySize=SORTING_VERTEX_ARRAY_SIZE;
 		_DynamicSortingVertexArrayOffset=0;
 	}
 

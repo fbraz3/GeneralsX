@@ -228,6 +228,9 @@ export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 export DXVK_HUD="${DXVK_HUD:-0}"
+if [[ -f "${APPDIR}/usr/share/generalsxzh/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${APPDIR}/usr/share/generalsxzh/dxvk.conf"
+fi
 
 has_big_files() {
     local dir="$1"

@@ -155,6 +155,40 @@ public:
 	Bool m_useWaterPlane;
 	Bool m_useCloudPlane;
 	Bool m_useShadowVolumes;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Also cast volume shadows off skinned meshes
+	Bool m_useShadowVolumesForSkins;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
+	Bool m_shadowsForProjectiles;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
+	Bool m_shadowsForProps;
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	Bool m_advancedShadows;
+	Bool m_advancedLighting;
+	Bool m_extendedShadowFrustumCulling;
+	Bool m_naturalSunElevation;
+	Bool m_bridgeShadows;
+	Bool m_waterReflections;
+	Bool m_explosionDynamicLights;
+	Bool m_vehicleHeadlights;
+	Bool m_enablePostProcessing;
+	Bool m_postProcessBloom;
+	Bool m_postProcessHDR;
+	Bool m_postProcessFXAA;
+
+	Bool isUseShadowVolumesForSkins() const { return m_advancedShadows && m_useShadowVolumesForSkins; }
+	Bool isShadowsForProjectiles() const { return m_advancedShadows && m_shadowsForProjectiles; }
+	Bool isShadowsForProps() const { return m_advancedShadows && m_shadowsForProps; }
+	Bool isExtendedShadowFrustumCulling() const { return m_advancedShadows && m_extendedShadowFrustumCulling; }
+	Bool isNaturalSunElevation() const { return m_advancedShadows && m_naturalSunElevation; }
+	Bool isBridgeShadows() const { return m_advancedShadows && m_bridgeShadows; }
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
+	Bool isWaterReflections() const { return m_waterReflections; }
+	Bool isExplosionDynamicLights() const { return m_advancedLighting && m_explosionDynamicLights; }
+	Bool isVehicleHeadlights() const { return m_advancedLighting && m_vehicleHeadlights; }
+	Bool isEnablePostProcessing() const { return m_enablePostProcessing && (m_postProcessBloom || m_postProcessHDR || m_postProcessFXAA); }
+	Bool isPostProcessBloom() const { return m_enablePostProcessing && m_postProcessBloom; }
+	Bool isPostProcessHDR() const { return m_enablePostProcessing && m_postProcessHDR; }
+	Bool isPostProcessFXAA() const { return m_enablePostProcessing && m_postProcessFXAA; }
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;

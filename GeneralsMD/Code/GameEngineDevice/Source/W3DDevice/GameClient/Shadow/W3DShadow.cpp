@@ -49,12 +49,41 @@
 #include "WW3D2/statistics.h"
 #include "Common/Debug.h"
 #include "Common/PerfTimer.h"
+#include "WWMath/sphere.h"
+#include "WWMath/wwmath.h"
 
 #define SUN_DISTANCE_FROM_GROUND	10000.0f	//distance of sun (our only light source).
 
 // Global Variables and Functions /////////////////////////////////////////////
 W3DShadowManager *TheW3DShadowManager=nullptr;
 const FrustumClass *shadowCameraFrustum;
+
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
+Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY )
+{
+	if (TheGlobalData && !TheGlobalData->isExtendedShadowFrustumCulling())
+		return TRUE;
+	const Real drop = WWMath::Max( body.Center.Z - groundZ + body.Radius, 0.0f );
+	const Vector3 downwind = body.Center + Vector3( runX, runY, -1.0f ) * drop;
+	for (Int side = 1; side <= 4; ++side)
+	{
+		const PlaneClass &plane = view.Planes[ side ];
+		if (Vector3::Dot_Product( plane.N, body.Center ) - plane.D > body.Radius
+				&& Vector3::Dot_Product( plane.N, downwind ) - plane.D > body.Radius)
+			return FALSE;
+	}
+	return TRUE;
+}
+
+Bool volumeShadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ )
+{
+	if (!TheW3DShadowManager)
+		return TRUE;
+	const Vector3 toLight = TheW3DShadowManager->getLightPosWorld( 0 ) - body.Center;
+	if (toLight.Z <= 0.01f * toLight.Length())
+		return TRUE;	// a light at the horizon throws every shadow across the whole map
+	return shadowCanReachView( view, body, groundZ, -toLight.X / toLight.Z, -toLight.Y / toLight.Z );
+}
 
 Vector3 LightPosWorld[ MAX_SHADOW_LIGHTS ] =
 {
@@ -115,10 +144,13 @@ W3DShadowManager::W3DShadowManager()
 
 	TheW3DVolumetricShadowManager = NEW W3DVolumetricShadowManager;
 	TheProjectedShadowManager = TheW3DProjectedShadowManager = NEW W3DProjectedShadowManager;
+	// GeneralsX @bugfix fbraz3 12/10/2026 Register cleanup hook for device resets
+	DX8Wrapper::AddCleanupHook(this);
 }
 
 W3DShadowManager::~W3DShadowManager()
 {
+	DX8Wrapper::RemoveCleanupHook(this);
 	delete TheW3DVolumetricShadowManager;
 	TheW3DVolumetricShadowManager = nullptr;
 	delete TheW3DProjectedShadowManager;
@@ -156,16 +188,12 @@ void W3DShadowManager::Reset()
 		TheW3DProjectedShadowManager->reset();
 }
 
-Bool W3DShadowManager::ReAcquireResources()
+void W3DShadowManager::ReAcquireResources()
 {
-	Bool result = TRUE;
-
-	if (TheW3DVolumetricShadowManager && !TheW3DVolumetricShadowManager->ReAcquireResources())
-		result = FALSE;
-	if (TheW3DProjectedShadowManager && !TheW3DProjectedShadowManager->ReAcquireResources())
-		result = FALSE;
-
-	return result;
+	if (TheW3DVolumetricShadowManager)
+		TheW3DVolumetricShadowManager->ReAcquireResources();
+	if (TheW3DProjectedShadowManager)
+		TheW3DProjectedShadowManager->ReAcquireResources();
 }
 
 void W3DShadowManager::ReleaseResources()

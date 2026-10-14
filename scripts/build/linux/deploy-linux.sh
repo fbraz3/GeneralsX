@@ -149,12 +149,26 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsX" 2>/dev/null || {
     echo "    Libraries will need LD_LIBRARY_PATH or manual RPATH setting"
 }
 
+# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Data/INI"
+    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
 echo "  Deploying fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
     cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/"
     cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/"
     cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RUNTIME_DIR}/fonts/"
+fi
+
+# GeneralsX @bugfix fbraz3 12/10/2026 Deploy dxvk.conf for DXVK D3D8 device reset and shader settings
+echo "  Deploying dxvk.conf..."
+DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
+if [[ -f "${DXVK_CONF_SRC}" ]]; then
+    cp -v "${DXVK_CONF_SRC}" "${RUNTIME_DIR}/dxvk.conf"
 fi
 
 # Copy run wrapper script
@@ -173,6 +187,13 @@ export LD_LIBRARY_PATH="${SCRIPT_DIR}:${LD_LIBRARY_PATH:-}"
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 export DXVK_HUD="${DXVK_HUD:-0}"
+
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${SCRIPT_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${SCRIPT_DIR}/dxvk.conf"
+fi
+EOF
+cat >> "${RUNTIME_DIR}/run.sh" << 'EOF'
 
 # GeneralsX @feature felipebraz 25/02/2026 Auto-detect base Generals install path
 # Set CNC_GENERALS_INSTALLPATH if not already set and ../Generals/ exists
@@ -245,7 +266,8 @@ echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.so*"
 echo "   Vulkan:     system loader (not deployed by this script)"
 echo "   MoltenVK:   n/a on Linux"
 echo "   VK ICD:     system JSONs (/usr/share/vulkan/icd.d or /etc/vulkan/icd.d)"
-echo "   DXVK conf:  not deployed (DXVK defaults/environment)"
+echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
+
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 # GeneralsX @tweak BenderAI 28/04/2026 Keep Linux deploy run instructions aligned across Generals and Zero Hour scripts.

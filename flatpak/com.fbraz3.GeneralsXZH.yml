@@ -141,6 +141,11 @@ modules:
         export DXVK_WSI_DRIVER="SDL3"
         export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 
+        # GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to installed config file
+        if [[ -f /app/share/generalsxzh/dxvk.conf && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+          export DXVK_CONFIG_FILE="/app/share/generalsxzh/dxvk.conf"
+        fi
+
         # SagePatch (optional QoL: F11 screenshot, Scroll Lock cursor lock,
         # Ctrl+PgUp/Dn brightness, Ctrl+1..5 window snap). Loaded via LD_PRELOAD
         # only if the .so is present in /app/lib.

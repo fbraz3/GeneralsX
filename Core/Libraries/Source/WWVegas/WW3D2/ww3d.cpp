@@ -878,6 +878,11 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	// Notify D3D that we are beginning to render the frame
 	Get_Render_Backend()->Begin_Scene();
 
+	// GeneralsX @bugfix Mr. Meeseeks 13/10/2026 Reset baseline depth test and write render states at the start of frame
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZENABLE, TRUE);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZWRITEENABLE, TRUE);
+	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+
 	return WW3D_ERROR_OK;
 }
 

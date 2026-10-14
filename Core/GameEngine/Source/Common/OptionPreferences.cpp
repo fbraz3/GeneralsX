@@ -981,3 +981,167 @@ Int OptionPreferences::getSkirmishTickRate() const
 	return clamp(5, rate, 120);
 }
 
+// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options helpers
+static Bool parsePrefBool(OptionPreferences::const_iterator it, OptionPreferences::const_iterator endIt, Bool defaultVal)
+{
+	if (it == endIt)
+		return defaultVal;
+	AsciiString str = it->second;
+	if (str.compareNoCase("yes") == 0 || str.compareNoCase("true") == 0 || str.compareNoCase("1") == 0)
+		return TRUE;
+	if (str.compareNoCase("no") == 0 || str.compareNoCase("false") == 0 || str.compareNoCase("0") == 0)
+		return FALSE;
+	return defaultVal;
+}
+
+Bool OptionPreferences::getAdvancedShadows(Bool defaultVal) const
+{
+	return parsePrefBool(find("AdvancedShadows"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getAdvancedLighting(Bool defaultVal) const
+{
+	return parsePrefBool(find("AdvancedLighting"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getUseShadowVolumesForSkins(Bool defaultVal) const
+{
+	return parsePrefBool(find("UseShadowVolumesForSkins"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getExtendedShadowFrustumCulling(Bool defaultVal) const
+{
+	return parsePrefBool(find("ExtendedShadowFrustumCulling"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getNaturalSunElevation(Bool defaultVal) const
+{
+	return parsePrefBool(find("NaturalSunElevation"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getShadowsForProjectiles(Bool defaultVal) const
+{
+	return parsePrefBool(find("ShadowsForProjectiles"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getShadowsForProps(Bool defaultVal) const
+{
+	return parsePrefBool(find("ShadowsForProps"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getBridgeShadows(Bool defaultVal) const
+{
+	return parsePrefBool(find("BridgeShadows"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getWaterReflections(Bool defaultVal) const
+{
+	return parsePrefBool(find("WaterReflections"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getExplosionDynamicLights(Bool defaultVal) const
+{
+	return parsePrefBool(find("ExplosionDynamicLights"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getVehicleHeadlights(Bool defaultVal) const
+{
+	return parsePrefBool(find("VehicleHeadlights"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getEnablePostProcessing(Bool defaultVal) const
+{
+	return parsePrefBool(find("EnablePostProcessing"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getPostProcessBloom(Bool defaultVal) const
+{
+	return parsePrefBool(find("PostProcessBloom"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getPostProcessHDR(Bool defaultVal) const
+{
+	return parsePrefBool(find("PostProcessHDR"), end(), defaultVal);
+}
+
+Bool OptionPreferences::getPostProcessFXAA(Bool defaultVal) const
+{
+	return parsePrefBool(find("PostProcessFXAA"), end(), defaultVal);
+}
+
+void OptionPreferences::setAdvancedShadows(Bool val)
+{
+	(*this)["AdvancedShadows"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setAdvancedLighting(Bool val)
+{
+	(*this)["AdvancedLighting"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setUseShadowVolumesForSkins(Bool val)
+{
+	(*this)["UseShadowVolumesForSkins"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setExtendedShadowFrustumCulling(Bool val)
+{
+	(*this)["ExtendedShadowFrustumCulling"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setNaturalSunElevation(Bool val)
+{
+	(*this)["NaturalSunElevation"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setShadowsForProjectiles(Bool val)
+{
+	(*this)["ShadowsForProjectiles"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setShadowsForProps(Bool val)
+{
+	(*this)["ShadowsForProps"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setBridgeShadows(Bool val)
+{
+	(*this)["BridgeShadows"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setWaterReflections(Bool val)
+{
+	(*this)["WaterReflections"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setExplosionDynamicLights(Bool val)
+{
+	(*this)["ExplosionDynamicLights"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setVehicleHeadlights(Bool val)
+{
+	(*this)["VehicleHeadlights"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setEnablePostProcessing(Bool val)
+{
+	(*this)["EnablePostProcessing"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setPostProcessBloom(Bool val)
+{
+	(*this)["PostProcessBloom"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setPostProcessHDR(Bool val)
+{
+	(*this)["PostProcessHDR"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setPostProcessFXAA(Bool val)
+{
+	(*this)["PostProcessFXAA"] = val ? "yes" : "no";
+}
+
+
