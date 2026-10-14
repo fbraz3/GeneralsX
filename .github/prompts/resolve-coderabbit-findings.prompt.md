@@ -57,7 +57,12 @@ Execute a targeted triage, fix, and rebuttal cycle for all review comments poste
      | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | last | .body'
    ```
    *(Note: GitHub prevents inline review comments outside git diff hunks; CodeRabbit posts these findings in the review body under `> **⚠️ Outside diff range comments`).*
-7. Check for already answered/resolved threads to avoid duplicate replies.
+7. Inspect CodeRabbit reviews for **Suppressed / Additional comments** (`<summary>🔇 Additional comments:`):
+   ```bash
+   env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate --slurp repos/fbraz3/GeneralsX/pulls/"$PR_NUMBER"/reviews \
+     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Additional comments")))] | last | .body'
+   ```
+8. Check for already answered/resolved threads to avoid duplicate replies.
 
 ### Step 2: Analyze & Categorize Findings
 Group every finding into one of two categories:
@@ -77,6 +82,12 @@ When CodeRabbit flags issues located outside the pull request's diff hunks, it n
 1. **Extract & Inspect**: Parse the target file, line numbers, and issue description from the collapsible review body details.
 2. **Treat with Equal Priority**: Apply the same scrutiny and fixes as inline comments. Security/SAST warnings (e.g. template-injection in surrounding workflow steps) frequently appear outside the immediate PR diff hunk.
 3. **Resolution & Reporting**: Since GitHub does not provide an inline thread to reply to outside-diff comments, document the resolution in the commit message, deliverables breakdown table, and PR discussion summary.
+
+### Step 2.3: Triage Suppressed / Additional Comments
+CodeRabbit collates low-confidence, informational, or suppressed findings inside a collapsible `<details><summary>🔇 Additional comments: N</summary>...` block in the review body.
+1. **Filter Noise**: Ignore entries containing solely `LGTM!` (which represent standard positive confirmations).
+2. **Evaluate Non-LGTM Observations**: Inspect remaining observations flagged under `Functional Correctness`, `Maintainability & Code Quality`, or `Unverified finding`.
+3. **Assess Engine Impact**: If an informational note reveals a real determinism hazard (e.g. `memcmp` on struct with padding used in simulation math), memory leak, or performance regression, elevate it to actionable and apply a fix. If verified safe with no runtime hazard (e.g. visual caching only, as explicitly confirmed by the tool), document or safely discard.
 
 ### Step 3: Implement Fixes for Valid Findings
 1. Apply the necessary code modifications cleanly.

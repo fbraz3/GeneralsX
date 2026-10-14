@@ -658,6 +658,15 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
+#ifndef _WIN32
+		// GeneralsX @bugfix fbraz3 12/10/2026 Set default DXVK configuration fallback for D3D8 device resets
+		// In D3D8, swapchain resets (such as fullscreen transitions and window resizing)
+		// do not require exhaustive destruction of all D3DPOOL_DEFAULT subresources.
+		// Set countLosableResources=False and forceSamplerTypeSpecConstants=False if not explicitly configured.
+		if (!getenv("DXVK_CONFIG")) {
+			setenv("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False", 0);
+		}
+#endif
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
