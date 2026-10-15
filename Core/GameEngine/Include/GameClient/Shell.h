@@ -129,7 +129,7 @@ public:
 	void hide( Bool hide );																	///< show/hide all shell layouts
 
 	// pseudo-stack operations for manipulating layouts
-	void push( AsciiString filename, Bool shutdownImmediate = FALSE );	///< load new screen on top, optionally doing an immediate shutdown
+	Bool push( AsciiString filename, Bool shutdownImmediate = FALSE );	///< load new screen on top, optionally doing an immediate shutdown
 	void pop();																				///< pop top layout
 	void popImmediate();															///< pop now
 	void showShell( Bool runInit = TRUE );									///< init the top of stack
@@ -168,7 +168,7 @@ protected:
 	void linkScreen( WindowLayout *screen );								///< link screen to list
 	void unlinkScreen( WindowLayout *screen );							///< remove screen from list
 
-	void doPush( AsciiString layoutFile );									///< workhorse for push action
+	Bool doPush( AsciiString layoutFile );									///< workhorse for push action
 	void doPop( Bool impendingPush );												///< workhorse for pop action
 
 	enum { MAX_SHELL_STACK = 16 };													///< max simultaneous shell screens
