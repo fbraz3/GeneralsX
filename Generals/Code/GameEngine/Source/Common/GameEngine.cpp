@@ -403,6 +403,10 @@ void GameEngine::init()
 		// GeneralsX @feature BenderAI 18/02/2026 Add asset loading diagnostics
 		fprintf(stderr, "INFO: GameEngine::init() - ArchiveFileSystem initialized\n");
 
+		// Mods must be mounted before GameData.ini is loaded, or the mod's GameData.ini is ignored.
+		CommandLine::parseCommandLineForModInit();
+		TheArchiveFileSystem->loadMods();
+
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
 		fprintf(stderr, "INFO: GameEngine::init() - About to initialize TheWritableGlobalData\n");
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
@@ -504,8 +508,6 @@ void GameEngine::init()
 
 		// special-case: parse command-line parameters after loading global data
 		CommandLine::parseCommandLineForEngineInit();
-
-		TheArchiveFileSystem->loadMods();
 
 		// doesn't require resets so just create a single instance here.
 		TheGameLODManager = MSGNEW("GameEngineSubsystem") GameLODManager;

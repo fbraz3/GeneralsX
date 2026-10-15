@@ -1205,7 +1205,14 @@ static CommandLineParam paramsForStartup[] =
 	{ "-useCwd", parseUseCwd },
 };
 
-// These Params are parsed during Engine Init before INI data is loaded
+// Parsed on its own, before GameData.ini is loaded, so the mod's archives are mounted
+// in time for its GameData.ini to override the retail one.
+static CommandLineParam paramsForModInit[] =
+{
+	{ "-mod", parseMod },
+};
+
+// These Params are parsed during Engine Init after GameData.ini is loaded
 static CommandLineParam paramsForEngineInit[] =
 {
 	{ "-nologo", parseNoLogo }, // TheSuperHackers @tweak Is now available in Release builds.
@@ -1217,7 +1224,6 @@ static CommandLineParam paramsForEngineInit[] =
 	{ "-particleEdit", parseParticleEdit },
 	{ "-scriptDebug", parseScriptDebug },
 	{ "-playStats", parsePlayStats },
-	{ "-mod", parseMod },
 	{ "-noshaders", parseNoShaders },
 	{ "-quickstart", parseQuickStart },
 	{ "-useWaveEditor", parseUseWaveEditor },
@@ -1472,6 +1478,19 @@ void CommandLine::parseCommandLineForStartup()
 	if (!rts::WorkingDirectory::hasSetWorkingDirectory())
 		rts::WorkingDirectory::setExecutableWorkingDirectory();
 #endif
+}
+
+void CommandLine::parseCommandLineForModInit()
+{
+	createGlobalData();
+
+	DEBUG_ASSERTCRASH(TheGlobalData->m_commandLineData.m_hasParsedCommandLineForStartup,
+		("parseCommandLineForStartup is expected to be called before parseCommandLineForModInit\n"));
+	DEBUG_ASSERTCRASH(!TheGlobalData->m_commandLineData.m_hasParsedCommandLineForEngineInit,
+		("parseCommandLineForModInit is expected to be called before parseCommandLineForEngineInit\n"));
+
+	parseCommandLine(paramsForModInit, ARRAY_SIZE(paramsForModInit),
+		TheWritableGlobalData->m_commandLineData.m_parsedArguments);
 }
 
 void CommandLine::parseCommandLineForEngineInit()
