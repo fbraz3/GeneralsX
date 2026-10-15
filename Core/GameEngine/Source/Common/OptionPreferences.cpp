@@ -945,6 +945,20 @@ Real OptionPreferences::getTerrainDrawDistanceScale() const
 	return val;
 }
 
+void OptionPreferences::setMaxCameraHeight(Real val)
+{
+	AsciiString s;
+	s.format("%.1f", val);
+	(*this)["MaxCameraHeight"] = s;
+}
+
+void OptionPreferences::setTerrainDrawDistanceScale(Real val)
+{
+	AsciiString s;
+	s.format("%.2f", val);
+	(*this)["TerrainDrawDistanceScale"] = s;
+}
+
 Real OptionPreferences::getGameWindowTransitionSpeedMultiplier() const
 {
 	OptionPreferences::const_iterator it = find("GameWindowTransitionSpeedMultiplier");

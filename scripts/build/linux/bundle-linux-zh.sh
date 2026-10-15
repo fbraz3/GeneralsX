@@ -152,6 +152,16 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail"
 fi
 
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+if [[ ! -f "${GENERALSX_BIG}" ]]; then
+    python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+fi
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${BUNDLE_DIR}/generalsx.big"
+fi
+
 # Run wrapper
 echo "  + run.sh"
 cat > "${BUNDLE_DIR}/run.sh" << 'WRAPPER'

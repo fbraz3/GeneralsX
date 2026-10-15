@@ -147,6 +147,7 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 	{ NAMEKEY_INVALID, "GameInfoWindowSystem",               (void*)GameInfoWindowSystem },
 	{ NAMEKEY_INVALID, "ScoreScreenSystem",                  (void*)ScoreScreenSystem },
 	{ NAMEKEY_INVALID, "DownloadMenuSystem",                 (void*)DownloadMenuSystem },
+	{ NAMEKEY_INVALID, "GeneralsXMenuSystem",                (void*)GeneralsXMenuSystem },
 
 	{ NAMEKEY_INVALID, nullptr,                              nullptr }
 
@@ -217,6 +218,7 @@ static FunctionLexicon::TableEntry gameWinInputTable[] =
 	{ NAMEKEY_INVALID, "GeneralsExpPointsInput",            (void*)GeneralsExpPointsInput },
 
 	{ NAMEKEY_INVALID, "DownloadMenuInput",                 (void*)DownloadMenuInput },
+	{ NAMEKEY_INVALID, "GeneralsXMenuInput",                 (void*)GeneralsXMenuInput },
 
 	{ NAMEKEY_INVALID, "IMECandidateWindowInput",           (void*)IMECandidateWindowInput },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
@@ -278,6 +280,7 @@ static FunctionLexicon::TableEntry winLayoutInitTable[] =
 	{ NAMEKEY_INVALID, "GameInfoWindowInit",            (void*)GameInfoWindowInit },
 	{ NAMEKEY_INVALID, "ScoreScreenInit",               (void*)ScoreScreenInit },
 	{ NAMEKEY_INVALID, "DownloadMenuInit",              (void*)DownloadMenuInit },
+	{ NAMEKEY_INVALID, "GeneralsXMenuInit",             (void*)GeneralsXMenuInit },
 	{ NAMEKEY_INVALID, "DifficultySelectInit",          (void*)DifficultySelectInit },
 	{ NAMEKEY_INVALID, "PopupReplayInit",               (void*)PopupReplayInit },
 
@@ -319,6 +322,7 @@ static FunctionLexicon::TableEntry winLayoutUpdateTable[] =
 	{ NAMEKEY_INVALID, "NetworkDirectConnectUpdate",      (void*)NetworkDirectConnectUpdate },
 	{ NAMEKEY_INVALID, "ScoreScreenUpdate",               (void*)ScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "DownloadMenuUpdate",              (void*)DownloadMenuUpdate },
+	{ NAMEKEY_INVALID, "GeneralsXMenuUpdate",              (void*)GeneralsXMenuUpdate },
 	{ NAMEKEY_INVALID, "PopupReplayUpdate",               (void*)PopupReplayUpdate },
 	{ NAMEKEY_INVALID, nullptr,                           nullptr }
 
@@ -359,6 +363,7 @@ static FunctionLexicon::TableEntry winLayoutShutdownTable[] =
 	{ NAMEKEY_INVALID, "NetworkDirectConnectShutdown",      (void*)NetworkDirectConnectShutdown },
 	{ NAMEKEY_INVALID, "ScoreScreenShutdown",               (void*)ScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "DownloadMenuShutdown",              (void*)DownloadMenuShutdown },
+	{ NAMEKEY_INVALID, "GeneralsXMenuShutdown",             (void*)GeneralsXMenuShutdown },
 	{ NAMEKEY_INVALID, "PopupReplayShutdown",               (void*)PopupReplayShutdown },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
 

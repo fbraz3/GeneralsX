@@ -343,6 +343,16 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+if [[ ! -f "${GENERALSX_BIG}" ]]; then
+    python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+fi
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${RESOURCES_DIR}/generalsx.big"
+fi
+
 # GeneralsX @feature felipebraz 26/09/2026 Bundle universal fonts into application resources.
 mkdir -p "${RESOURCES_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
