@@ -151,9 +151,7 @@ patchelf --set-rpath '$ORIGIN' "${RUNTIME_DIR}/GeneralsX" 2>/dev/null || {
 
 # GeneralsX @feature fbraz3 14/10/2026 Deploy generalsx.big archive
 GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
-if [[ ! -f "${GENERALSX_BIG}" ]]; then
-    python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
-fi
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
 if [[ -f "${GENERALSX_BIG}" ]]; then
     echo "  Deploying generalsx.big..."
     cp -v "${GENERALSX_BIG}" "${RUNTIME_DIR}/generalsx.big"

@@ -163,10 +163,13 @@ def unpack_big(big_path: str, output_dir: str) -> None:
                 path_chars.extend(b)
             entries.append((offset, size, path_chars.decode("latin1")))
 
+        out_root = os.path.realpath(output_dir)
         for offset, size, rel_path in entries:
             # Normalize to current OS path separators
             norm_rel_path = rel_path.replace("\\", os.sep).replace("/", os.sep)
-            dest_path = os.path.join(output_dir, norm_rel_path)
+            dest_path = os.path.realpath(os.path.join(out_root, norm_rel_path))
+            if os.path.commonpath([out_root, dest_path]) != out_root:
+                raise ValueError(f"Unsafe path in archive: {rel_path}")
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
             f.seek(offset)
             data = f.read(size)

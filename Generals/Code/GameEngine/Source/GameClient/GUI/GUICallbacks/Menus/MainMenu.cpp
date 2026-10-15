@@ -53,6 +53,7 @@
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetStaticText.h"
+#include "GameClient/GadgetPushButton.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/WindowVideoManager.h"
 #include "GameClient/CampaignManager.h"
