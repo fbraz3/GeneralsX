@@ -762,6 +762,13 @@ Bool StdBIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString fi
 			it++;
 			continue;
 		}
+
+		// GeneralsX @bugfix felipebraz 15/10/2026 Never mount base-game INI.big in Zero Hour: INIZH.big is self-contained
+		// and base INI files carry Generals-only enum values (e.g. DamageType = FLESHY_SNIPER) that crash the INI parser.
+		if (it->endsWithNoCase("/INI.big") || it->endsWithNoCase("\\INI.big") || it->compareNoCase("INI.big") == 0) {
+			it++;
+			continue;
+		}
 #endif
 
 		if (isGeneralsXArchiveFilename(*it)) {
