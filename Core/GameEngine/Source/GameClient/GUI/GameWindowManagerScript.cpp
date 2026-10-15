@@ -2779,6 +2779,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	inFile = TheFileSystem->openFile(filepath, File::READ);
 	if (inFile == nullptr)
 	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for layout file load failure
 		fprintf(stderr, "[ERROR] WinCreateFromScript: Cannot access file '%s' (filepath='%s')\n", filename, filepath);
 		fflush(stderr);
 		DEBUG_LOG(( "WinCreateFromScript: Cannot access file '%s'.", filename ));
@@ -2800,6 +2801,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 
 		if( parseLayoutBlock( inFile, buffer, version, &scriptInfo ) == FALSE )
 		{
+			// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for layout parse failure
 			fprintf(stderr, "[ERROR] WinCreateFromScript: Error parsing layout block in '%s'\n", filename);
 			fflush(stderr);
 			DEBUG_LOG(( "WinCreateFromScript: Error parsing layout block" ));
@@ -2933,6 +2935,7 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	// return the first window created
 	if (firstWindow == nullptr)
 	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for empty window creation
 		fprintf(stderr, "[ERROR] WinCreateFromScript: No windows created from '%s'\n", filename);
 		fflush(stderr);
 	}

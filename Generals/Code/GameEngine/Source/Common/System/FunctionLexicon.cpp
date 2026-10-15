@@ -147,6 +147,7 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 	{ NAMEKEY_INVALID, "GameInfoWindowSystem",               (void*)GameInfoWindowSystem },
 	{ NAMEKEY_INVALID, "ScoreScreenSystem",                  (void*)ScoreScreenSystem },
 	{ NAMEKEY_INVALID, "DownloadMenuSystem",                 (void*)DownloadMenuSystem },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu window callbacks
 	{ NAMEKEY_INVALID, "GeneralsXMenuSystem",                (void*)GeneralsXMenuSystem },
 
 	{ NAMEKEY_INVALID, nullptr,                              nullptr }

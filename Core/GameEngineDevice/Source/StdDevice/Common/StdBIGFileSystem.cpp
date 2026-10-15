@@ -557,14 +557,14 @@ void StdBIGFileSystem::init() {
 	// with the binary must still be mounted with highest precedence.
 	AsciiString exeDirectory;
 	if (getExecutableDirectory(exeDirectory) && exeDirectory.isNotEmpty() && !equalsIgnoreCase(exeDirectory.str(), primaryAssetsDirectory.str())) {
-		if (loadBigFilesFromDirectory(exeDirectory, "*.big", TRUE, TRUE)) {
+		if (loadBigFilesFromDirectory(exeDirectory, "generalsx*.big", TRUE, TRUE)) {
 			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from exe directory: %s\n", exeDirectory.str());
 			fflush(stderr);
 		}
 #if defined(__APPLE__)
 		AsciiString resourcesDir = exeDirectory;
 		resourcesDir.concat("/../Resources");
-		if (loadBigFilesFromDirectory(resourcesDir, "*.big", TRUE, TRUE)) {
+		if (loadBigFilesFromDirectory(resourcesDir, "generalsx*.big", TRUE, TRUE)) {
 			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from bundle resources: %s\n", resourcesDir.str());
 			fflush(stderr);
 		}
@@ -572,7 +572,7 @@ void StdBIGFileSystem::init() {
 	}
 
 	if (primaryAssetsDirectory.isNotEmpty() && !equalsIgnoreCase(".", primaryAssetsDirectory.str())) {
-		loadBigFilesFromDirectory(".", "*.big", TRUE, TRUE);
+		loadBigFilesFromDirectory(".", "generalsx*.big", TRUE, TRUE);
 	}
 }
 

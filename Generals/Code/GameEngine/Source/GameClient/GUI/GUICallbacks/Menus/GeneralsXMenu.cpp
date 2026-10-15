@@ -116,10 +116,9 @@ static void saveOptions()
 	if (sliderMaxCameraHeight)
 	{
 		Int val = GadgetSliderGetPosition(sliderMaxCameraHeight);
-		if (val >= 300 && val <= 1000)
+		if (val >= 100 && val <= 1000)
 		{
 			TheWritableGlobalData->m_maxCameraHeight = (Real)val;
-			TheWritableGlobalData->m_enforceMaxCameraHeight = FALSE;
 			pref->setMaxCameraHeight((Real)val);
 		}
 	}
@@ -208,7 +207,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	if (sliderMaxCameraHeight)
 	{
 		Int maxCam = (Int)(TheGlobalData->m_maxCameraHeight + 0.5f);
-		if (maxCam < 300) maxCam = 300;
+		if (maxCam < 100) maxCam = 100;
 		if (maxCam > 1000) maxCam = 1000;
 		GadgetSliderSetPosition(sliderMaxCameraHeight, maxCam);
 	}

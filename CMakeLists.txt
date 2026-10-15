@@ -153,7 +153,7 @@ endif()
 # GeneralsX @feature fbraz3 14/10/2026 Build generalsx.big archive from assets/generalsx-big
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 set(GENERALSX_BIG_OUTPUT "${CMAKE_BINARY_DIR}/generalsx.big")
-file(GLOB_RECURSE GENERALSX_BIG_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/assets/generalsx-big/*")
+file(GLOB_RECURSE GENERALSX_BIG_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets/generalsx-big/*")
 add_custom_command(
     OUTPUT "${GENERALSX_BIG_OUTPUT}"
     COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/scripts/tooling/build_big.py" pack "${CMAKE_CURRENT_SOURCE_DIR}/assets/generalsx-big" "${GENERALSX_BIG_OUTPUT}"

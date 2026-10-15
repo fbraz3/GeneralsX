@@ -106,7 +106,7 @@ modules:
       - install -Dm644 flatpak/com.fbraz3.GeneralsX.metainfo.xml /app/share/metainfo/com.fbraz3.GeneralsX.metainfo.xml
       - install -Dm644 flatpak/generalsx_icon_512.png /app/share/icons/hicolor/512x512/apps/com.fbraz3.GeneralsX.png
       - install -Dm644 resources/dxvk/dxvk.conf /app/share/generalsx/dxvk.conf
-      - if [ -f build-flatpak/generalsx.big ]; then install -Dm644 build-flatpak/generalsx.big /app/share/generalsx/generalsx.big; fi
+      - if [ -f build-flatpak/generalsx.big ]; then install -Dm644 build-flatpak/generalsx.big /app/bin/generalsx.big; fi
       - install -d /app/share/fonts
       - if [ -d assets/fonts ]; then cp assets/fonts/*.ttf assets/fonts/LICENSE.liberation assets/fonts/LICENSE.fontawesome /app/share/fonts/; fi
       - install -d /app/lib

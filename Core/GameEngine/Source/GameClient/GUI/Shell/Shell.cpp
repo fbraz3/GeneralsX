@@ -714,7 +714,20 @@ void Shell::doPush( AsciiString layoutFile )
 	fprintf(stderr, "DEBUG: winCreateLayout returned: %p\n", newScreen);
 	fflush(stderr);
 	
-	DEBUG_ASSERTCRASH( newScreen != nullptr, ("Shell unable to load pending push layout") );
+	if (newScreen == nullptr)
+	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Restore current layout if pending push layout failed to load
+		fprintf(stderr, "[ERROR] Shell::doPush: Failed to create layout '%s', restoring previous screen\n", layoutFile.str());
+		fflush(stderr);
+		WindowLayout *currentTop = top();
+		if (currentTop)
+		{
+			currentTop->runInit(nullptr);
+			currentTop->hide(FALSE);
+			currentTop->bringForward();
+		}
+		return;
+	}
 
 	// link screen to the top
 	linkScreen( newScreen );

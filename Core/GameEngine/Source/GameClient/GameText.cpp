@@ -1500,7 +1500,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_spTitle(L"OPÇÕES DE CÂMERA & VISÃO (SAGEPATCH)");
+			static UnicodeString s_spTitle(L"CAMERA & VISION OPTIONS (SAGEPATCH)");
 			return s_spTitle;
 		}
 
@@ -1508,7 +1508,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_drawDist(L"DISTÂNCIA DE VISÃO");
+			static UnicodeString s_drawDist(L"TERRAIN DRAW DISTANCE");
 			return s_drawDist;
 		}
 
@@ -1516,7 +1516,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_zoomOut(L"ZOOM MÁXIMO DA CÂMERA (ZOOM OUT)");
+			static UnicodeString s_zoomOut(L"MAXIMUM CAMERA HEIGHT (ZOOM OUT)");
 			return s_zoomOut;
 		}
 
@@ -1524,7 +1524,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_gfxTitle(L"OPÇÕES DE ILUMINAÇÃO & GRÁFICOS");
+			static UnicodeString s_gfxTitle(L"LIGHTING & GRAPHICS OPTIONS");
 			return s_gfxTitle;
 		}
 
@@ -1532,7 +1532,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_advShadows(L"Sombras Avançadas (Skins, Projéteis, Props, Pontes)");
+			static UnicodeString s_advShadows(L"Advanced Shadows (Skins, Projectiles, Props, Bridges)");
 			return s_advShadows;
 		}
 
@@ -1540,7 +1540,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_advLighting(L"Iluminação Dinâmica (Explosões, Faróis de Veículos)");
+			static UnicodeString s_advLighting(L"Dynamic Lighting (Explosions, Vehicle Headlights)");
 			return s_advLighting;
 		}
 
@@ -1548,7 +1548,7 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 		{
 			if ( exists )
 				*exists = TRUE;
-			static UnicodeString s_postProc(L"Pós-Processamento (Efeitos Bloom e HDR)");
+			static UnicodeString s_postProc(L"Post-Processing (Bloom & HDR Effects)");
 			return s_postProc;
 		}
 

@@ -945,6 +945,7 @@ Real OptionPreferences::getTerrainDrawDistanceScale() const
 	return val;
 }
 
+// GeneralsX @feature fbraz3 14/10/2026 Camera height and terrain draw distance preference setters
 void OptionPreferences::setMaxCameraHeight(Real val)
 {
 	AsciiString s;
