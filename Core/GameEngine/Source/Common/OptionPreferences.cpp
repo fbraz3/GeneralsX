@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <cmath>
+
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
 #include "Common/GameLOD.h"
@@ -889,16 +891,24 @@ Bool OptionPreferences::getShowMoneyPerMinute() const
 	return FALSE;
 }
 
+// GeneralsX @bugfix fbraz3 15/10/2026 Guard against non-finite values for cross-platform determinism
 Real OptionPreferences::getMaxCameraHeight() const
 {
 	OptionPreferences::const_iterator it = find("MaxCameraHeight");
 	if (it == end())
-		return TheGlobalData->m_maxCameraHeight;
+	{
+		Real fallback = TheGlobalData ? TheGlobalData->m_maxCameraHeight : 300.0f;
+		if (!std::isfinite(fallback) || fallback < 100.0f)
+			fallback = 100.0f;
+		else if (fallback > 1000.0f)
+			fallback = 1000.0f;
+		return fallback;
+	}
 
 	Real val = (Real)atof(it->second.str());
-	if (val < 100.0f)
+	if (!std::isfinite(val) || val < 100.0f)
 		val = 100.0f;
-	if (val > 1000.0f)
+	else if (val > 1000.0f)
 		val = 1000.0f;
 	return val;
 }
@@ -907,12 +917,19 @@ Real OptionPreferences::getMinCameraHeight() const
 {
 	OptionPreferences::const_iterator it = find("MinCameraHeight");
 	if (it == end())
-		return TheGlobalData->m_minCameraHeight;
+	{
+		Real fallback = TheGlobalData ? TheGlobalData->m_minCameraHeight : 50.0f;
+		if (!std::isfinite(fallback) || fallback < 50.0f)
+			fallback = 50.0f;
+		else if (fallback > 300.0f)
+			fallback = 300.0f;
+		return fallback;
+	}
 
 	Real val = (Real)atof(it->second.str());
-	if (val < 50.0f)
+	if (!std::isfinite(val) || val < 50.0f)
 		val = 50.0f;
-	if (val > 300.0f)
+	else if (val > 300.0f)
 		val = 300.0f;
 	return val;
 }
@@ -921,12 +938,19 @@ Real OptionPreferences::getCameraPitch() const
 {
 	OptionPreferences::const_iterator it = find("CameraPitch");
 	if (it == end())
-		return TheGlobalData->m_cameraPitch;
+	{
+		Real fallback = TheGlobalData ? TheGlobalData->m_cameraPitch : 37.5f;
+		if (!std::isfinite(fallback) || fallback < 20.0f)
+			fallback = 20.0f;
+		else if (fallback > 60.0f)
+			fallback = 60.0f;
+		return fallback;
+	}
 
 	Real val = (Real)atof(it->second.str());
-	if (val < 20.0f)
+	if (!std::isfinite(val) || val < 20.0f)
 		val = 20.0f;
-	if (val > 60.0f)
+	else if (val > 60.0f)
 		val = 60.0f;
 	return val;
 }
@@ -935,12 +959,19 @@ Real OptionPreferences::getTerrainDrawDistanceScale() const
 {
 	OptionPreferences::const_iterator it = find("TerrainDrawDistanceScale");
 	if (it == end())
-		return TheGlobalData->m_terrainDrawDistanceScale;
+	{
+		Real fallback = TheGlobalData ? TheGlobalData->m_terrainDrawDistanceScale : 1.0f;
+		if (!std::isfinite(fallback) || fallback < 1.0f)
+			fallback = 1.0f;
+		else if (fallback > 2.0f)
+			fallback = 2.0f;
+		return fallback;
+	}
 
 	Real val = (Real)atof(it->second.str());
-	if (val < 1.0f)
+	if (!std::isfinite(val) || val < 1.0f)
 		val = 1.0f;
-	if (val > 2.0f)
+	else if (val > 2.0f)
 		val = 2.0f;
 	return val;
 }
@@ -948,6 +979,10 @@ Real OptionPreferences::getTerrainDrawDistanceScale() const
 // GeneralsX @feature fbraz3 14/10/2026 Camera height preference setter
 void OptionPreferences::setMaxCameraHeight(Real val)
 {
+	if (!std::isfinite(val) || val < 100.0f)
+		val = 100.0f;
+	else if (val > 1000.0f)
+		val = 1000.0f;
 	AsciiString s;
 	s.format("%.1f", val);
 	(*this)["MaxCameraHeight"] = s;
@@ -956,6 +991,10 @@ void OptionPreferences::setMaxCameraHeight(Real val)
 // GeneralsX @feature fbraz3 14/10/2026 Terrain draw distance scale preference setter
 void OptionPreferences::setTerrainDrawDistanceScale(Real val)
 {
+	if (!std::isfinite(val) || val < 1.0f)
+		val = 1.0f;
+	else if (val > 2.0f)
+		val = 2.0f;
 	AsciiString s;
 	s.format("%.2f", val);
 	(*this)["TerrainDrawDistanceScale"] = s;

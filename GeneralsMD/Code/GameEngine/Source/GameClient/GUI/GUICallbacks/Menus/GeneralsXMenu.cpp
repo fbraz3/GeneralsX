@@ -22,6 +22,8 @@
 
 #include "PreRTS.h"
 
+#include <cmath>
+
 #include "Common/GlobalData.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/OptionPreferences.h"
@@ -198,7 +200,14 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	// Populate controls from current engine / preferences values
 	if (sliderDrawDistance)
 	{
-		Int drawDist = (Int)(TheGlobalData->m_terrainDrawDistanceScale * 100.0f + 0.5f);
+		// GeneralsX @bugfix fbraz3 15/10/2026 Clamp finite Real before casting to Int for determinism
+		Real rawDist = TheGlobalData->m_terrainDrawDistanceScale;
+		if (!std::isfinite(rawDist) || rawDist < 1.0f)
+			rawDist = 1.0f;
+		else if (rawDist > 2.0f)
+			rawDist = 2.0f;
+
+		Int drawDist = (Int)(rawDist * 100.0f + 0.5f);
 		if (drawDist < 100) drawDist = 100;
 		if (drawDist > 200) drawDist = 200;
 		GadgetSliderSetPosition(sliderDrawDistance, drawDist);
@@ -206,7 +215,14 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 
 	if (sliderMaxCameraHeight)
 	{
-		Int maxCam = (Int)(TheGlobalData->m_maxCameraHeight + 0.5f);
+		// GeneralsX @bugfix fbraz3 15/10/2026 Clamp finite Real before casting to Int for determinism
+		Real rawCam = TheGlobalData->m_maxCameraHeight;
+		if (!std::isfinite(rawCam) || rawCam < 100.0f)
+			rawCam = 100.0f;
+		else if (rawCam > 1000.0f)
+			rawCam = 1000.0f;
+
+		Int maxCam = (Int)(rawCam + 0.5f);
 		if (maxCam < 100) maxCam = 100;
 		if (maxCam > 1000) maxCam = 1000;
 		GadgetSliderSetPosition(sliderMaxCameraHeight, maxCam);
