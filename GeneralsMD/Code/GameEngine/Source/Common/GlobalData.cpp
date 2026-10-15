@@ -32,8 +32,6 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#include <cmath>
-
 #include "WW3D2/ww3d.h"
 #include "WW3D2/texturefilter.h"
 
@@ -1292,14 +1290,14 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	// GeneralsX @feature fbraz3 14/10/2026 Camera height and terrain draw distance overridden from Options.ini
 	// GeneralsX @bugfix fbraz3 15/10/2026 Validate finite Real before assigning to GlobalData
 	Real maxCam = optionPref.getMaxCameraHeight();
-	if (!std::isfinite(maxCam) || maxCam < 100.0f)
+	if (!isFinite(maxCam) || maxCam < 100.0f)
 		maxCam = 100.0f;
 	else if (maxCam > 1000.0f)
 		maxCam = 1000.0f;
 	TheWritableGlobalData->m_maxCameraHeight = maxCam;
 
 	Real drawDist = optionPref.getTerrainDrawDistanceScale();
-	if (!std::isfinite(drawDist) || drawDist < 1.0f)
+	if (!isFinite(drawDist) || drawDist < 1.0f)
 		drawDist = 1.0f;
 	else if (drawDist > 2.0f)
 		drawDist = 2.0f;

@@ -22,8 +22,6 @@
 
 #include "PreRTS.h"
 
-#include <cmath>
-
 #include "Common/GlobalData.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/OptionPreferences.h"
@@ -202,7 +200,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	{
 		// GeneralsX @bugfix fbraz3 15/10/2026 Clamp finite Real before casting to Int for determinism
 		Real rawDist = TheGlobalData->m_terrainDrawDistanceScale;
-		if (!std::isfinite(rawDist) || rawDist < 1.0f)
+		if (!isFinite(rawDist) || rawDist < 1.0f)
 			rawDist = 1.0f;
 		else if (rawDist > 2.0f)
 			rawDist = 2.0f;
@@ -217,7 +215,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	{
 		// GeneralsX @bugfix fbraz3 15/10/2026 Clamp finite Real before casting to Int for determinism
 		Real rawCam = TheGlobalData->m_maxCameraHeight;
-		if (!std::isfinite(rawCam) || rawCam < 100.0f)
+		if (!isFinite(rawCam) || rawCam < 100.0f)
 			rawCam = 100.0f;
 		else if (rawCam > 1000.0f)
 			rawCam = 1000.0f;

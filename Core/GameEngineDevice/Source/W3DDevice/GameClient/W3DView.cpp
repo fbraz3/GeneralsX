@@ -34,7 +34,6 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
-#include <cmath>
 #include "GameLogic/FPUControl.h"
 #include <windows.h>
 
@@ -3796,7 +3795,7 @@ void W3DView::updateTerrain()
 	{
 		// GeneralsX @bugfix fbraz3 15/10/2026 Guard terrainScale against non-finite values before casting
 		Real terrainScale = TheGlobalData->m_terrainDrawDistanceScale;
-		if (!std::isfinite(terrainScale) || terrainScale < 1.0f)
+		if (!isFinite(terrainScale) || terrainScale < 1.0f)
 			terrainScale = 1.0f;
 		else if (terrainScale > 2.0f)
 			terrainScale = 2.0f;
