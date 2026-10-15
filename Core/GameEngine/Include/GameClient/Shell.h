@@ -168,7 +168,7 @@ protected:
 	void linkScreen( WindowLayout *screen );								///< link screen to list
 	void unlinkScreen( WindowLayout *screen );							///< remove screen from list
 
-	Bool doPush( AsciiString layoutFile );									///< workhorse for push action
+	Bool doPush( AsciiString layoutFile, Bool restoreTopOnFail = FALSE );	///< workhorse for push action
 	void doPop( Bool impendingPush );												///< workhorse for pop action
 
 	enum { MAX_SHELL_STACK = 16 };													///< max simultaneous shell screens

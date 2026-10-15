@@ -1550,7 +1550,6 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (dontAllowTransitions)
 					break;
 				dontAllowTransitions = TRUE;
-				buttonPushed = TRUE;
 				TheShell->push( "Menus/GeneralsXMenu.wnd" );
 				dropDownWindows[DROPDOWN_MAIN]->winHide( FALSE );
 				TheTransitionHandler->reverse( "MainMenuDefaultMenu" );

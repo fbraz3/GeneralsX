@@ -713,7 +713,7 @@ void Shell::unlinkScreen( WindowLayout *screen )
 //-------------------------------------------------------------------------------------------------
 /** Actually do the work for a push */
 //-------------------------------------------------------------------------------------------------
-Bool Shell::doPush( AsciiString layoutFile )
+Bool Shell::doPush( AsciiString layoutFile, Bool restoreTopOnFail )
 {
 	// GeneralsX @feature BenderAI 18/02/2026 Debug logging - actually pushing layout
 	fprintf(stderr, "DEBUG: Shell::doPush() called with layoutFile='%s'\n", layoutFile.str());
@@ -732,15 +732,19 @@ Bool Shell::doPush( AsciiString layoutFile )
 	
 	if (newScreen == nullptr)
 	{
-		// GeneralsX @bugfix fbraz3 14/10/2026 Restore current layout if pending push layout failed to load
-		fprintf(stderr, "[ERROR] Shell::doPush: Failed to create layout '%s', restoring previous screen\n", layoutFile.str());
+		// GeneralsX @bugfix fbraz3 14/10/2026 Restore current layout if pending push layout failed to load and was shut down
+		fprintf(stderr, "[ERROR] Shell::doPush: Failed to create layout '%s'%s\n", layoutFile.str(),
+			restoreTopOnFail ? ", restoring previous screen" : "");
 		fflush(stderr);
-		WindowLayout *currentTop = top();
-		if (currentTop)
+		if (restoreTopOnFail)
 		{
-			currentTop->runInit(nullptr);
-			currentTop->hide(FALSE);
-			currentTop->bringForward();
+			WindowLayout *currentTop = top();
+			if (currentTop)
+			{
+				currentTop->runInit(nullptr);
+				currentTop->hide(FALSE);
+				currentTop->bringForward();
+			}
 		}
 		return FALSE;
 	}
@@ -822,8 +826,9 @@ void Shell::shutdownComplete( WindowLayout *screen, Bool impendingPush )
 		fprintf(stderr, "DEBUG: Shell::update() - Processing pending push: '%s'\n", m_pendingPushName.str());
 		fflush(stderr);
 
-		// do the push
-		doPush( m_pendingPushName );
+		// do the push - only restore top on failure if a prior screen was actually shut down
+		Bool screenWasShutDown = (screen != nullptr);
+		doPush( m_pendingPushName, screenWasShutDown );
 
 		// no more pending pushy for you!
 		m_pendingPush = FALSE;
