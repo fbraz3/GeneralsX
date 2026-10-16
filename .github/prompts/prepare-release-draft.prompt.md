@@ -62,7 +62,7 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```bash
    # Pair each commit SHA with its resolved GitHub login or fallback author name:
    for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
-     LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty' 2>/dev/null || true)
+     LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty')
      if [ -n "$LOGIN" ]; then
        echo "${SHA}|${LOGIN}|github"
      else
@@ -71,7 +71,7 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
      fi
    done
    ```
-   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. Derive unique contributors while maintaining the SHA-to-login association so acknowledgements can link to either PRs or specific commits.
+   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. Do not swallow or mask `gh api` errors with `|| true` or `2>/dev/null`; allow API errors (such as rate limits or network issues) to surface so they can be retried. Use the plain-name fallback strictly when the API call succeeds and returns an empty author login (indicating an unlinked Git author). Derive unique contributors while maintaining the SHA-to-login association so acknowledgements can link to either PRs or specific commits.
 3. Evaluate the result:
    - **External Contributors Present**:
      - Prepare a warm, appreciative, and celebratory acknowledgment under `### ❤️ Contributor Acknowledgements` in `# What's New`.
