@@ -80,8 +80,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameLogic/W3DGameLogic.h
     Include/W3DDevice/GameLogic/W3DGhostObject.h
     Include/W3DDevice/GameLogic/W3DTerrainLogic.h
-#    Include/Win32Device/Common/Win32BIGFile.h
-#    Include/Win32Device/Common/Win32BIGFileSystem.h
 #    Include/Win32Device/Common/Win32GameEngine.h
 #    Include/Win32Device/Common/Win32LocalFile.h
 #    Include/Win32Device/Common/Win32LocalFileSystem.h
@@ -242,7 +240,6 @@ target_link_libraries(z_gameenginedevice PRIVATE
     corei_gameenginedevice_private
     zi_always
     zi_main
-    stb
 )
 
 target_link_libraries(z_gameenginedevice PUBLIC

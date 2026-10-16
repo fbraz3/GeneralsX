@@ -30,6 +30,8 @@ option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)"
 # brightness, camera/scroll INI overrides). Compiles to a separate shared lib
 # that is loaded via DYLD_INSERT_LIBRARIES (macOS) / LD_PRELOAD (Linux) at runtime.
 option(RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS/Linux, requires SDL3)" ON)
+cmake_dependent_option(RTS_BUILD_OPTION_TESTS "Build the unit tests." OFF "NOT IS_VS6_BUILD" OFF)
+cmake_dependent_option(RTS_BUILD_OPTION_BENCHMARKS "Build the benchmarks." OFF "NOT IS_VS6_BUILD" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -51,6 +53,8 @@ add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
 add_feature_info(MiniAudioAudio SAGE_USE_MINIAUDIO "Using MiniAudio for audio (Linux/macOS)")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
+add_feature_info(Tests RTS_BUILD_OPTION_TESTS "Building the unit tests")
+add_feature_info(Benchmarks RTS_BUILD_OPTION_BENCHMARKS "Building the benchmarks")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 
@@ -74,16 +78,22 @@ if(RTS_BUILD_GENERALS)
     add_feature_info(GeneralsDocs RTS_BUILD_GENERALS_DOCS "Build Generals Documentation")
 endif()
 
+
 if(NOT IS_VS6_BUILD)
     # Because we set CMAKE_CXX_STANDARD_REQUIRED and CMAKE_CXX_EXTENSIONS in the compilers.cmake this should be enforced.
-    target_compile_features(core_config INTERFACE cxx_std_20)
+    target_compile_features(deps_config INTERFACE cxx_std_20)
 endif()
 
 if(IS_VS6_BUILD AND RTS_BUILD_OPTION_VC6_FULL_DEBUG)
-    target_compile_options(core_config INTERFACE ${RTS_FLAGS} /Zi)
+    target_compile_options(deps_config INTERFACE ${RTS_FLAGS} /Zi)
 else()
-    target_compile_options(core_config INTERFACE ${RTS_FLAGS})
+    target_compile_options(deps_config INTERFACE ${RTS_FLAGS})
 endif()
+
+if(UNIX)
+    target_compile_definitions(deps_config INTERFACE _UNIX)
+endif()
+
 
 # This disables a lot of warnings steering developers to use windows only functions/function names.
 if(MSVC)
@@ -97,7 +107,6 @@ if(UNIX)
     target_compile_definitions(core_config INTERFACE 
         HAVE_STRLCPY HAVE_STRLCAT HAVE_WCSLCPY HAVE_WCSLCAT)
 endif()
-
 if(RTS_BUILD_OPTION_DEBUG)
     target_compile_definitions(core_config INTERFACE RTS_DEBUG WWDEBUG DEBUG)
 else()
@@ -107,7 +116,6 @@ endif()
 if(RTS_BUILD_OPTION_PROFILE)
     target_compile_definitions(core_config INTERFACE RTS_PROFILE_LEGACY)
 endif()
-
 # Define a dummy Tracy target when the build option is disabled.
 if(RTS_BUILD_OPTION_PROFILE_TRACY)
     include(cmake/tracy.cmake)

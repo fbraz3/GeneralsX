@@ -339,7 +339,7 @@ void CTeamsDialog::UpdateTeamsList()
 	for (Int i=0; i<numTeams; i++)
 	{
 		TeamsInfo *ti = m_sides.getTeamInfo(i);
-		if (ti->getDict()->getAsciiString(TheKey_teamOwner) == playerNameForUI(m_sides, which).str())
+		if (ti->getDict()->getAsciiString(TheKey_teamOwner) == m_sides.getSideInfo(which)->getDict()->getAsciiString(TheKey_playerName))
 		{
 			Bool exists;
 			AsciiString teamName = teamNameForUI(m_sides, i);

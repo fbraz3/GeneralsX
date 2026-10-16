@@ -151,9 +151,9 @@ public:
 	Bool					getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance = 0) const; ///< see FileSystem.h
 	Bool					getFileInfo(const AsciiString& filename, FileInfo *fileInfo, FileInstance instance, ArchiveFilter filter) const;
 
-	virtual Bool	loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite = FALSE) = 0;
+	virtual Bool	loadArchiveFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite = FALSE) = 0;
 
-	void loadMods();
+	virtual void loadMods() = 0;
 
 	// GeneralsX @bugfix felipebraz 02/10/2026 Check if a file is provided by an overriding mod archive (!*.big or script files)
 	Bool					hasModArchiveOverride(const Char *filename) const;

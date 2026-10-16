@@ -1283,53 +1283,38 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 // ------------------------------------------------------------------------------------------------
 /** Embed the pristine map into the xfer stream */
 // ------------------------------------------------------------------------------------------------
-static void copyFromBigToDir( const AsciiString& infile, const AsciiString& outfile )
+static Bool copyFromBigToDir( const AsciiString& infile, const AsciiString& outfile )
 {
-	// open the map file
-
 	File *file = TheFileSystem->openFile( infile.str(), File::READ | File::BINARY );
 	if( file == nullptr )
 	{
 		DEBUG_CRASH(( "copyFromBigToDir - Error opening source file '%s'", infile.str() ));
-		throw SC_INVALID_DATA;
+		return FALSE;
 	}
 
-	// how big is the map file
-	Int fileSize = file->seek( 0, File::END );
-
-
-	// rewind to beginning of file
+	const Int fileSize = file->seek( 0, File::END );
 	file->seek( 0, File::START );
 
-	// allocate buffer big enough to hold the entire map file
 	char *buffer = NEW char[ fileSize ];
-	if( buffer == nullptr )
-	{
-		DEBUG_CRASH(( "copyFromBigToDir - Unable to allocate buffer for file '%s'", infile.str() ));
-		throw SC_INVALID_DATA;
-	}
-
-	// copy the file to the buffer
-	if( file->read( buffer, fileSize ) < fileSize )
-	{
-		DEBUG_CRASH(( "copyFromBigToDir - Error reading from file '%s'", infile.str() ));
-		throw SC_INVALID_DATA;
-	}
-	// close the BIG file
+	const Bool readOk = file->read( buffer, fileSize ) == fileSize;
 	file->close();
+	DEBUG_ASSERTCRASH( readOk, ( "copyFromBigToDir - Error reading from file '%s'", infile.str() ) );
 
-	File *filenew = TheFileSystem->openFile( outfile.str(), File::WRITE | File::CREATE | File::BINARY );
-
-	if( !filenew || filenew->write(buffer, fileSize) < fileSize)
+	Bool writeOk = FALSE;
+	if( readOk )
 	{
-		DEBUG_CRASH(( "copyFromBigToDir - Error writing to file '%s'", outfile.str() ));
-		throw SC_INVALID_DATA;
+		File *filenew = TheFileSystem->openFile( outfile.str(), File::WRITE | File::CREATE | File::BINARY );
+		if( filenew != nullptr )
+		{
+			writeOk = filenew->write( buffer, fileSize ) == fileSize;
+			filenew->close();
+		}
+		DEBUG_ASSERTCRASH( writeOk, ( "copyFromBigToDir - Error writing to file '%s'", outfile.str() ) );
 	}
 
-	filenew->close();
-
-	// delete the buffer
 	delete [] buffer;
+
+	return writeOk;
 }
 
 Image *getMapPreviewImage( AsciiString mapName )
@@ -1377,16 +1362,7 @@ Image *getMapPreviewImage( AsciiString mapName )
 
 		mapPreviewDir.concat(name);
 
-		Bool success = false;
-		try
-		{
-			copyFromBigToDir(tgaName, mapPreviewDir);
-			success = true;
-		}
-		catch (...)
-		{
-			success = false;	// no rethrow
-		}
+		const Bool success = copyFromBigToDir(tgaName, mapPreviewDir);
 
 		if (success)
 		{

@@ -196,6 +196,8 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     portHostOrder, m_lastError); */
     status=GetStatus();
     //CERR("Bind failure (" << status << ") IP " << IP << " PORT " << Port )
+    closesocket(fd);
+    fd=0;
     return(status);
   }
 

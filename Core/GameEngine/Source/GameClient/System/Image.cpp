@@ -254,8 +254,10 @@ void ImageCollection::load( Int textureSize )
 		// GeneralsX @bugfix copilot 12/03/2026 Use platform-correct separators for user data mapped image paths.
 #ifdef _WIN32
 		userDataPath.format("%sINI\\MappedImages\\*.ini",TheGlobalData->getPath_UserData().str());
-		if(FindFirstFile(userDataPath.str(), &findData) !=INVALID_HANDLE_VALUE)
+		HANDLE findHandle = FindFirstFile(userDataPath.str(), &findData);
+		if(findHandle != INVALID_HANDLE_VALUE)
 		{
+			FindClose(findHandle);
 			userDataPath.format("%sINI\\MappedImages",TheGlobalData->getPath_UserData().str());
 			ini.loadDirectory(userDataPath, INI_LOAD_OVERWRITE, nullptr );
 		}

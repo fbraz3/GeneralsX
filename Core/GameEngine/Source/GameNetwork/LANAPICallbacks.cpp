@@ -246,6 +246,7 @@ void LANAPI::OnGameStart()
 			DEBUG_LOG(("After transfer, we didn't really have the map.  Bailing..."));
 			OnPlayerLeave(m_name);
 			removeGame(m_currentGame);
+			delete m_currentGame;
 			m_currentGame = nullptr;
 			m_inLobby = TRUE;
 
