@@ -26,9 +26,9 @@ This workflow runs Linux, macOS, and Windows builds for Zero Hour and Generals b
    - `macOS-GeneralsXZH.zip`
    - `Windows-GeneralsX.zip`
    - `Windows-GeneralsXZH.zip`
-8. Generates release notes with install instructions, community ports, and local PR changelog.
+8. Generates release notes with install instructions, community ports, draft contributor acknowledgements placeholder, and local PR changelog.
 9. If `release_mode=Dry Run`, uploads a preview artifact `${version}-notes.txt` and avoids pushing tags or creating releases.
-10. If `release_mode=Draft` (default), creates a draft GitHub release with attached assets so it can be reviewed and polished via `.github/prompts/prepare-release-draft.prompt.md`.
+10. If `release_mode=Draft` (default), creates a draft GitHub release with attached assets so it can be reviewed and polished via `.github/prompts/prepare-release-draft.prompt.md` (which populates `### ❤️ Contributor Acknowledgements` if external contributors are present or omits the section if there are none).
 11. If `release_mode=New Release`, publishes the GitHub release immediately.
 
 ## Notes Format

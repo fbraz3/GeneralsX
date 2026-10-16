@@ -15,8 +15,9 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 1. **Keep Draft Unreleased**: Ensure the release remains strictly in **draft** mode (`--draft`) throughout the entire process. Never publish or remove the draft flag unless explicitly requested by the user.
 2. **Visual & Structural Excellence**: Follow the established `GeneralsX` release style (rich markdown, thematic emojis, clear categorized sections, community port links, and full PR changelog).
 3. **Natural Contributor Attribution**: Ensure authors are properly credited on specific features and PR links (`[#PR](...) by @author`), and include their GitHub handles in the changelog.
-4. **Custom Highlights & User Intent**: Incorporate any custom announcements, milestones, notices, or specific contributor welcomes provided by the user in the prompt arguments or request.
-5. **Accuracy & Clarity**: Accurately describe technical improvements (determinism, platform backends, graphics/audio parity, upstream syncs) in an accessible yet precise manner.
+4. **External Contributor Recognition**: Automatically detect external contributors (authors other than the core maintainer `@fbraz3` or automated bots). When external contributors are present in the release range, generate a dedicated and warm `### ❤️ Contributor Acknowledgements` section within `# What's New` thanking them by `@handle` and highlighting their contributions with PR links. If no external contributors participated in the release, omit this section entirely (remove any empty placeholders from CI).
+5. **Custom Highlights & User Intent**: Incorporate any custom announcements, milestones, notices, or specific contributor welcomes provided by the user in the prompt arguments or request.
+6. **Accuracy & Clarity**: Accurately describe technical improvements (determinism, platform backends, graphics/audio parity, upstream syncs) in an accessible yet precise manner.
 
 ---
 
@@ -54,12 +55,43 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```
 4. Check recent worklog entries in `docs/WORKLOG/YYYY-MM-DIARY.md` and active planning documents in `docs/WORKDIR/` for additional context.
 
-### Step 3: Check for Special Highlights & Custom Announcements
+### Step 3: Identify External Contributors
+1. Extract unique authors from the PR list collected in Step 2:
+   - Identify author logins excluding the core maintainer (`fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
+2. Resolve each commit author in `$PREVIOUS_TAG..$TARGET_TAG` to a GitHub login while pairing with commit SHAs, ensuring direct or non-PR commits are accurately attributed without losing commit context:
+   ```bash
+   # Pair each commit SHA with its resolved GitHub login or fallback author name:
+   for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
+     LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty')
+     if [ -n "$LOGIN" ]; then
+       echo "${SHA}|${LOGIN}|github"
+     else
+       NAME=$(git log -1 --format="%an" "$SHA")
+       echo "${SHA}|${NAME}|git"
+     fi
+   done
+   ```
+   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. Do not swallow or mask `gh api` errors with `|| true` or `2>/dev/null`; allow API errors (such as rate limits or network issues) to surface so they can be retried. Use the plain-name fallback strictly when the API call succeeds and returns an empty author login (indicating an unlinked Git author). Derive unique contributors while maintaining the SHA-to-login association so acknowledgements can link to either PRs or specific commits.
+3. Evaluate the result:
+   - **External Contributors Present**:
+     - Prepare a warm, appreciative, and celebratory acknowledgment under `### ❤️ Contributor Acknowledgements` in `# What's New`.
+     - Thank each contributor using their linked handle `**[@username](https://github.com/username)**` when GitHub resolved their login, or their plain display name `**Author Name**` (without `@` prefix) when unlinked. Detail what they improved or fixed, referencing their PR (`[#PR](https://github.com/fbraz3/GeneralsX/pull/PR)`) or commit (`[commit](https://github.com/fbraz3/GeneralsX/commit/SHA)`).
+     - Example format:
+       ```markdown
+       ### ❤️ Contributor Acknowledgements
+       A special thank you to our community contributors who made this release possible:
+       * **[@contributor](https://github.com/contributor)** for configuring mouse wheel zoom speed ([#344](https://github.com/fbraz3/GeneralsX/pull/344))!
+       * **Contributor Name** for fixing build script permissions ([commit](https://github.com/fbraz3/GeneralsX/commit/SHA))!
+       ```
+   - **No External Contributors**:
+     - Completely omit the `### ❤️ Contributor Acknowledgements` section from the release notes. Do NOT leave an empty header or placeholder in the final draft.
+
+### Step 4: Check for Special Highlights & Custom Announcements
 1. Review the user prompt and arguments for any special highlights, major announcements, contributor welcomes, or important notices requested.
 2. If the user mentioned a specific highlight (e.g., welcoming a new collaborator, a new rendering backend, or a major tournament milestone), craft a dedicated top callout section (`### 🌟 <Highlight Title>`).
 3. If no special highlight was requested, proceed directly with standard categorized sections.
 
-### Step 4: Structure Release Notes
+### Step 5: Structure Release Notes
 Organize the release notes following the official GeneralsX template:
 
 ```markdown
@@ -104,6 +136,11 @@ Zero Hour includes built-in online lobbies via **GeneralsOnline (NGMP)**. Player
 ### 🚀 Platform, Packaging & CI (macOS, Linux, Windows)
 - ...
 
+### ❤️ Contributor Acknowledgements (Include ONLY if external contributors exist in this release; omit entirely if none)
+A special thank you to our community contributors who made this release possible:
+* **[@contributor](https://github.com/contributor)** for <contribution summary> ([#PR](https://github.com/fbraz3/GeneralsX/pull/PR))!
+* **<Author Name>** for <direct commit summary> ([commit](https://github.com/fbraz3/GeneralsX/commit/SHA))!
+
 ---
 
 ## 📱 Ecosystem & Community Ports
@@ -122,7 +159,7 @@ If you enjoy GeneralsX, check out these community ports powered by the engine:
 **Full Changelog**: https://github.com/fbraz3/GeneralsX/compare/<PREVIOUS_TAG>...<TARGET_TAG>
 ```
 
-### Step 5: Update the Release Draft
+### Step 6: Update the Release Draft
 1. Save the generated release notes into a temporary markdown file:
    ```bash
    NOTES_FILE="/tmp/release_notes_${TARGET_TAG}.md"
