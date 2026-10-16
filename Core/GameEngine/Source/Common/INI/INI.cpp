@@ -1671,111 +1671,87 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 #if USE_STD_FROM_CHARS_PARSING
 
 template <typename Type>
-Type scanType(std::string_view token)
+Type scanType(const char* tokenString)
 {
-        DEBUG_ASSERTCRASH(!token.empty(), ("token is not expected to be empty"));
+	std::string_view token(tokenString);
+	DEBUG_ASSERTCRASH(!token.empty(), ("token is not expected to be empty"));
 
-        // Unlike sscanf, std::from_chars cannot parse "+".
-        // Consume the plus symbol to accommodate custom ini files that have numbers prefixed with a plus.
-        if (!token.empty() && token[0] == '+')
-        {
-                token.remove_prefix(1);
-        }
+	// Unlike sscanf, std::from_chars cannot parse "+".
+	// Skip it for from_chars while preserving the original token for the fallback.
+	const size_t tokenOffset = (token[0] == '+');
+	if (tokenOffset && token.size() > 1 && token[1] == '-')
+		throw INI_INVALID_DATA;
 
-        if constexpr (std::is_floating_point_v<Type>)
-        {
-                // GeneralsX @bugfix BenderAI 07/04/2026 Apple SDKs in our deployment target do not expose std::from_chars for floats.
-                #if defined(__APPLE__)
-                const std::string tokenString(token);
-                char *end = nullptr;
-                errno = 0;
-                const double result = std::strtod(tokenString.c_str(), &end);
+	if constexpr (std::is_floating_point_v<Type>)
+	{
+#if defined(__APPLE__)
+		const std::string tokenStr(token.data() + tokenOffset, token.size() - tokenOffset);
+		char *end = nullptr;
+		errno = 0;
+		const double result = std::strtod(tokenStr.c_str(), &end);
 
-                if (end == tokenString.c_str())
-                {
-                        throw INI_INVALID_DATA;
-                }
+		if (end == tokenStr.c_str())
+		{
+			throw INI_INVALID_DATA;
+		}
 
-                if (!std::isfinite(result) && errno != ERANGE)
-                {
-                        throw INI_INVALID_DATA;
-                }
+		if (!std::isfinite(result) && errno != ERANGE)
+		{
+			throw INI_INVALID_DATA;
+		}
 
-                const double maxValue = static_cast<double>(std::numeric_limits<Type>::max());
-                if (result > maxValue)
-                {
-                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
-                                static_cast<int>(token.size()), token.data());
-                        fflush(stderr);
-                        return std::numeric_limits<Type>::max();
-                }
-                if (result < -maxValue)
-                {
-                        fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
-                                static_cast<int>(token.size()), token.data());
-                        fflush(stderr);
-                        return -std::numeric_limits<Type>::max();
-                }
+		const double maxValue = static_cast<double>(std::numeric_limits<Type>::max());
+		if (result > maxValue)
+		{
+			fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+				static_cast<int>(token.size()), token.data());
+			fflush(stderr);
+			return std::numeric_limits<Type>::max();
+		}
+		if (result < -maxValue)
+		{
+			fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
+				static_cast<int>(token.size()), token.data());
+			fflush(stderr);
+			return -std::numeric_limits<Type>::max();
+		}
 
-                return static_cast<Type>(result);
-                #else
-                Type result{};
-                const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+		return static_cast<Type>(result);
+#else
+		Type result{};
+		const auto [ptr, ec] = std::from_chars(token.data() + tokenOffset, token.data() + token.size(), result);
 
-                if (ec != std::errc{})
-                {
-                        if (ec == std::errc::result_out_of_range)
-                        {
-                                const std::string tokenString(token);
-                                char *end = nullptr;
-                                errno = 0;
-                                const double widened = std::strtod(tokenString.c_str(), &end);
-                                const double maxValue =
-                                        static_cast<double>(std::numeric_limits<Type>::max());
+		if (ec != std::errc{})
+		{
+			if (ec == std::errc::result_out_of_range)
+			{
+				char* end;
+				const Type value = std::strtof(tokenString, &end);
+				if (end == tokenString)
+					throw INI_INVALID_DATA;
+				return value;
+			}
 
-                                if (end != tokenString.c_str() &&
-                                    !std::isfinite(widened) && errno != ERANGE)
-                                {
-                                        throw INI_INVALID_DATA;
-                                }
+			fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
+				static_cast<int>(token.size()), token.data(),
+				"invalid number");
+			fflush(stderr);
+			throw INI_INVALID_DATA;
+		}
 
-                                if (end != tokenString.c_str() &&
-                                    widened >= -maxValue && widened <= maxValue)
-                                {
-                                        return static_cast<Type>(widened);
-                                }
+		if (!std::isfinite(result))
+		{
+			throw INI_INVALID_DATA;
+		}
 
-                                fprintf(stderr, "[INI] Numeric token '%.*s' out of range, saturating to limit\n",
-                                        static_cast<int>(token.size()), token.data());
-                                fflush(stderr);
-                                if (!token.empty() && token[0] == '-')
-                                {
-                                        return -std::numeric_limits<Type>::max();
-                                }
-                                return std::numeric_limits<Type>::max();
-                        }
-
-                        // GeneralsX @bugfix Copilot 20/09/2026 Keep numeric conversion failures visible in release builds.
-                        fprintf(stderr, "[INI] Cannot parse numeric token '%.*s': %s\n",
-                                static_cast<int>(token.size()), token.data(),
-                                "invalid number");
-                        fflush(stderr);
-                        throw INI_INVALID_DATA;
-                }
-
-                if (!std::isfinite(result))
-                {
-                        throw INI_INVALID_DATA;
-                }
-
-                return result;
-                #endif
-        }
-        else
-        {
+		return result;
+#endif
+	}
+	else
+	{
 		// TheSuperHackers @info std::from_chars cannot parse "-1" as uint32 so the result needs to be int64 for integers.
 		std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
-		const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+		const auto [ptr, ec] = std::from_chars(token.data() + tokenOffset, token.data() + token.size(), result);
 
 		if (ec != std::errc{})
 		{
@@ -1786,7 +1762,7 @@ Type scanType(std::string_view token)
 					static_cast<int>(token.size()), token.data());
 				fflush(stderr);
 
-				if (!token.empty() && token[0] == '-')
+				if (!token.empty() && token[tokenOffset] == '-')
 				{
 					return std::numeric_limits<Type>::min();
 				}
@@ -1835,7 +1811,7 @@ Type scanType(std::string_view token)
 		}
 
 		return static_cast<Type>(result);
-        }
+	}
 }
 
 #endif

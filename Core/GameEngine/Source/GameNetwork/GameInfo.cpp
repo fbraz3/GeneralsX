@@ -298,6 +298,14 @@ GameInfo::GameInfo()
 	reset();
 }
 
+GameInfo::~GameInfo()
+{
+	if (TheGameInfo == this)
+	{
+		TheGameInfo = nullptr;
+	}
+}
+
 void GameInfo::init()
 {
 	reset();

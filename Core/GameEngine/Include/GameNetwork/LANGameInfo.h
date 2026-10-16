@@ -79,6 +79,7 @@ private:
 
 public:
 	LANGameInfo();
+	virtual ~LANGameInfo() override {}
 	void setSlot( Int slotNum, LANGameSlot slotInfo );	///< Set the slot state (human, open, AI, etc)
 	LANGameSlot* getLANSlot( Int slotNum );							///< Get the slot
 	const LANGameSlot* getConstLANSlot( Int slotNum ) const;							///< Get the slot

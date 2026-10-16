@@ -96,6 +96,7 @@
 #include "WW3D2/light.h"
 #include "WW3D2/predlod.h"
 #include "WW3D2/ww3d.h"
+#include "WW3D2/Renderer.h"
 
 #include "W3DDevice/GameClient/CameraShakeSystem.h"
 
@@ -104,10 +105,6 @@ Real TheW3DFrameLengthInMsec = MSEC_PER_LOGICFRAME_REAL; // default is 33msec/fr
 static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much to overscan in the 3D screen region
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
-
-//=================================================================================================
-inline Real minf(Real a, Real b) { if (a < b) return a; else return b; }
-inline Real maxf(Real a, Real b) { if (a > b) return a; else return b; }
 
 //-------------------------------------------------------------------------------------------------
 // Normalizes angle to +- PI.
@@ -629,7 +626,7 @@ void W3DView::clipCameraIntoAreaConstraints()
 Bool W3DView::isWithinCameraAreaConstraints() const
 {
 	const Coord3D &pos = getPosition();
-	return m_cameraAreaConstraints.isInRegion(pos.x, pos.y);
+	return m_cameraAreaConstraints.containsWithin(pos.x, pos.y);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1927,7 +1924,7 @@ void W3DView::draw()
 		//The pass that rendered into a texture may have left the z-buffer in a weird state
 		//so clear it before rendering normal scene.
 		///@todo: Don't clear z-buffer unless shader uses z-bias or anything else that would cause <= z to fail on normal render.
-		DX8Wrapper::Clear(false, true, Vector3(0.0f,0.0f,0.0f), TheWaterTransparency->m_minWaterOpacity);	// Clear z but not color
+		Renderer::Clear(false, true, Vector3(0.0f,0.0f,0.0f), TheWaterTransparency->m_minWaterOpacity);	// Clear z but not color
 		W3DDisplay::m_3DScene->setCustomPassMode(SCENE_PASS_DEFAULT);
 		W3DDisplay::m_3DScene->doRender( m_3DCamera );
 		Coord2D deltaScroll;
@@ -3500,10 +3497,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 		setPosition(pos);
 		// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 		// the scripted action can occur.
-		m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, pos.x);
-		m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, pos.x);
-		m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, pos.y);
-		m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, pos.y);
+		m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, pos.x);
+		m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, pos.x);
+		m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, pos.y);
+		m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, pos.y);
 		return;
 	}
 
@@ -3607,10 +3604,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 	setPosition(result);
 	// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 	// the scripted action can occur.
-	m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, result.x);
-	m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, result.x);
-	m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, result.y);
-	m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, result.y);
+	m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, result.x);
+	m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, result.x);
+	m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, result.y);
+	m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, result.y);
 
 }
 

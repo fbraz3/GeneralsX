@@ -39,6 +39,10 @@
 #define PRESERVE_NO_XP_FROM_FLAME_KILLS (0) // The fix for this unfavorable behavior was approved by the Game Design Committee.
 #endif
 
+#ifndef PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS
+#define PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS (1)
+#endif
+
 #ifndef PRESERVE_NO_XP_FROM_OCL_KILLS
 #define PRESERVE_NO_XP_FROM_OCL_KILLS (1)
 #endif
@@ -96,6 +100,26 @@
 #ifndef PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_DAMAGE
 #define PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_DAMAGE (0) // The fix for this unfavorable behavior was approved by the Game Design Committee.
 #endif
+
+// Whether to preserve the 1.41x speed discrepancy between straight and diagonal movements of all objects that move via a Locomotor.
+// Set this to 0 when world objects need to move at consistent speed in all directions.
+#ifndef PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY
+#define PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY (1)
+#endif
+
+// Whether to preserve the harmonic mean of the straight and diagonal speeds of the original forward speed discrepancy bug.
+// The locomotor speeds from the INI files are effectively scaled up a bit so that on average the world objects travel at comparable speeds.
+// Set this to 0 when speeds are set correctly by INI settings (recommended).
+#ifndef PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE
+#define PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE (1)
+#endif
+
+// Whether to preserve the 1.41x speed discrepancy between straight and diagonal movements of all objects during cinematics.
+// Is mostly relevant for the original campaign missions.
+#ifndef PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY_IN_CINEMATICS
+#define PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY_IN_CINEMATICS (1)
+#endif
+
 
 // Note: Retail compatibility must not be broken before this project officially does.
 // Use RETAIL_COMPATIBLE_CRC, RETAIL_COMPATIBLE_DATA and RETAIL_COMPATIBLE_XFER_SAVE to guard breaking changes.
@@ -177,6 +201,11 @@
 #define PRIORITIZE_TEXTURES_BY_SIZE (1)
 #endif
 
+// Enable drawing particles as a terrain-conforming overlay.
+#ifndef ENABLE_TERRAIN_CONFORMING_PARTICLES
+#define ENABLE_TERRAIN_CONFORMING_PARTICLES (1)
+#endif
+
 // Enable obsolete code. This mainly refers to code that existed in Generals but was removed in GeneralsMD.
 // Disable and remove this when Generals and GeneralsMD are merged.
 #if RTS_GENERALS
@@ -202,3 +231,19 @@
 #define DEFAULT_DISPLAY_BIT_DEPTH   32
 #define DEFAULT_DISPLAY_WIDTH      1024 // The standard resolution this game was designed for
 #define DEFAULT_DISPLAY_HEIGHT     768 // The standard resolution this game was designed for
+
+
+// NON-TWEAKABLE DEFINES ARE DOWN HERE
+
+// Whether the retail forward speed is used unconditionally, for every object at all times.
+#define USE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY() \
+	(PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY || RETAIL_COMPATIBLE_CRC)
+
+// Whether the forward speed is scaled to a former averaged value.
+#define USE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE() \
+	(PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE && !USE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY())
+
+// Whether the retail forward speed is used for the duration of a cinematic event.
+// Is only meaningful when the retail forward speed discrepancy is not preserved and the forward speed is scaled.
+#define USE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY_IN_CINEMATICS() \
+	(PRESERVE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY_IN_CINEMATICS && !USE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY() && USE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE())

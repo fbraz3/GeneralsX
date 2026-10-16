@@ -27,7 +27,7 @@
 // Profile module main code
 //////////////////////////////////////////////////////////////////////////////
 
-#include "profile.h"
+#include "profile/profile.h"
 #include "internal.h"
 #include <new>
 // GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux

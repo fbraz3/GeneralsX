@@ -68,13 +68,28 @@ endif()
 # On Linux: DXVK headers (for D3D8→Vulkan translation)
 include(cmake/dx8.cmake)
 
+# GeneralsX @build BenderAI 10/02/2026
+# Linux/macOS port: Make DXVK headers accessible globally so Core libraries
+# (Debug, WWLib, WWMath, etc.) can access platform compatibility and Windows base types
+if(UNIX)
+    if(APPLE)
+        include_directories(
+            ${dxvk_SOURCE_DIR}/include/native
+            ${dxvk_SOURCE_DIR}/include/native/windows
+            ${dxvk_SOURCE_DIR}/include/native/directx
+            ${dxvk_SOURCE_DIR}/include/vulkan
+        )
+    else()
+        include_directories(${dxvk_SOURCE_DIR}/include/dxvk)
+    endif()
+endif()
+
 # SDL3 windowing/input for Linux builds (Phase 1)
 # GeneralsX @build BenderAI 11/02/2026
 if(SAGE_USE_SDL3)
     include(cmake/sdl3.cmake)
 endif()
 
-# Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)
     include(cmake/stlport.cmake)
 else()
@@ -110,26 +125,18 @@ include(cmake/ngmp.cmake)
 # Self-guarded with if(SAGE_USE_DETERMINISTIC_MATH), so always safe to include.
 include(cmake/gamemath.cmake)
 
-if (IS_VS6_BUILD)
-    # The original max sdk does not compile against a modern compiler.
-    # If there is a desire to make this work, then a fixed max sdk needs to be created.
-    add_subdirectory(Dependencies/MaxSDK)
+
+if(RTS_BUILD_OPTION_TESTS)
+    # Must come before the subdirectories that add tests.
+    enable_testing()
+    include(cmake/googletest.cmake)
 endif()
 
-add_subdirectory(Dependencies/Precompiled)
-add_subdirectory(Dependencies/Utility)
-add_subdirectory(Dependencies/Bink)
-add_subdirectory(Dependencies/Miles)
-if (WIN32)
-    add_subdirectory(Dependencies/DbgHelp)
-    add_subdirectory(Dependencies/Usp10)
-else()
-    add_library(deps_dbghelp INTERFACE)
-    target_include_directories(deps_dbghelp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp)
-    target_sources(deps_dbghelp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DbgHelp/DbgHelpGuard.cpp)
-    add_library(deps_usp10 INTERFACE)
-    target_include_directories(deps_usp10 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Usp10)
+if(RTS_BUILD_OPTION_BENCHMARKS)
+    include(cmake/googlebenchmark.cmake)
 endif()
+
+add_subdirectory(Dependencies)
 
 add_subdirectory(resources)
 
@@ -163,6 +170,14 @@ if(RTS_BUILD_GENERALS)
     if(TARGET sage_patch)
         add_dependencies(g_generals sage_patch)
     endif()
+endif()
+
+if(RTS_BUILD_OPTION_TESTS)
+    add_subdirectory(Tests)
+endif()
+
+if(RTS_BUILD_OPTION_BENCHMARKS)
+    add_subdirectory(Benchmarks)
 endif()
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")

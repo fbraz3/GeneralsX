@@ -96,6 +96,7 @@ private:
 
 public:
 	GameSpyStagingRoom();
+	virtual ~GameSpyStagingRoom() override {}
 	virtual void reset() override;
 
 	void cleanUpSlotPointers();

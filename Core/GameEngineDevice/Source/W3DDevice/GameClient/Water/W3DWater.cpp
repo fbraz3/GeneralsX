@@ -43,6 +43,7 @@
 #include "WW3D2/camera.h"
 #include "WW3D2/scene.h"
 #include "WW3D2/dx8wrapper.h"
+#include "WW3D2/Renderer.h"
 #include "WW3D2/light.h"
 #include "d3dx8math.h"
 // GeneralsX @bugfix BenderAI 13/02/2026 Include d3dx8core.h for LPD3DXBUFFER
@@ -122,9 +123,6 @@ typedef VertexFormatXYZNDUV2 MaterMeshVertexFormat;
 #define WATER_MESH_FVF	DX8_FVF_XYZDUV2
 typedef VertexFormatXYZDUV2 MaterMeshVertexFormat;
 #endif
-
-// Converts a FLOAT to a DWORD for use in SetRenderState() calls
-static inline DWORD F2DW( FLOAT f ) { return *((DWORD*)&f); }
 
 #define DRAW_WATER_WAKES
 /// @todo: Fix clipping of objects that intersect the mirror surface
@@ -1832,7 +1830,7 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 					rinfo.Camera.Apply();	//force an update of all the camera dependent parameters like frustum clip planes
 
 					//clear the z-buffer to remove changes made by objects inside mirror
-					DX8Wrapper::Clear(false,true,Vector3(0.1f,0.1f,0.1f));
+					Renderer::Clear(false,true,Vector3(0.1f,0.1f,0.1f));
 				}
 			#endif
 
@@ -2879,10 +2877,17 @@ void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 	static Bool doWobble = true;
 
 	if (m_disableRiver) return;
-	m_drawingRiver = true;
 
 	//allocate 2 triangles per side with 3 indices per triangle
-	DynamicIBAccessClass ib_access(BUFFER_TYPE_DYNAMIC_DX8,(rectangleCount+1)*2*3);
+	const Int indexCount = (rectangleCount+1)*2*3;
+	// TheSuperHackers @bugfix arcticdolphin 12/10/2026 Skip rivers that do not fit the 16 bit dynamic buffers.
+	DEBUG_ASSERTCRASH(indexCount <= DynamicIBAccessClass::MAX_INDEX_COUNT, ("River has too many points to draw"));
+	if (indexCount > DynamicIBAccessClass::MAX_INDEX_COUNT)
+		return;
+
+	m_drawingRiver = true;
+
+	DynamicIBAccessClass ib_access(BUFFER_TYPE_DYNAMIC_DX8,indexCount);
 	{
 		DynamicIBAccessClass::WriteLockClass lockib(&ib_access);
  		UnsignedShort *curIb = lockib.Get_Index_Array();

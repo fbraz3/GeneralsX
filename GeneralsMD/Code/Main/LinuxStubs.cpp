@@ -29,8 +29,8 @@
 #ifndef _WIN32
 
 #include <cstdio>
-#include "../../../Core/Libraries/Include/Lib/BaseType.h"
-#include "../../../Core/GameEngine/Include/Common/AsciiString.h"
+#include "Lib/BaseType.h"
+#include "Common/AsciiString.h"
 
 // P2: OSDisplay functions (cursor, warning dialogs)
 

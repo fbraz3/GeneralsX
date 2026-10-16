@@ -45,6 +45,7 @@ public:
 		for (Int i = 0; i< MAX_SLOTS; ++i)
 			setSlotPointer(i, &m_ReplaySlot[i]);
 	}
+	virtual ~ReplayGameInfo() override {}
 
 	virtual void reset() override
 	{

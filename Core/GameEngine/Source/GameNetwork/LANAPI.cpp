@@ -811,6 +811,7 @@ void LANAPI::RequestGameLeave()
 		// Exit out immediately if we're hosting
 		OnPlayerLeave(m_name);
 		removeGame(m_currentGame);
+		delete m_currentGame;
 		m_currentGame = nullptr;
 		m_inLobby = true;
 	}

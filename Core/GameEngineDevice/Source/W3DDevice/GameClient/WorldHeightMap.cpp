@@ -52,6 +52,7 @@
 #include "W3DDevice/GameClient/W3DShadow.h"
 
 #include "Common/file.h"
+#include "Utility/stringex.h"
 
 
 #define K_OBSOLETE_HEIGHT_MAP_VERSION 8
@@ -537,6 +538,27 @@ WorldHeightMap::WorldHeightMap(ChunkInputStream *pStrm, Bool logicalDataOnly):
 	setupAlphaTiles();
 }
 
+Bool WorldHeightMap::isTerrainFlat(const IRegion2D& bounds) const
+{
+	DEBUG_ASSERTCRASH(getLogicalBounds().contains(bounds), ("WorldHeightMap::isTerrainFlat must use a region contained by the logical map bounds."));
+
+	const Int width = bounds.width();
+	const Int height = bounds.height();
+	if (width <= 0 || height <= 0)
+		return true;
+
+	const UnsignedByte* firstRow = m_data + (bounds.lo.y + m_borderSize) * m_width + bounds.lo.x + m_borderSize;
+	const UnsignedByte referenceHeight = firstRow[0];
+	for (Int j = 0; j < height; j++)
+	{
+		const UnsignedByte* row = firstRow + j * m_width;
+		if (memcchr(row, referenceHeight, width) != nullptr)
+			return false;
+	}
+
+	return true;
+}
+
 /** Optimized version of method to get triangle flip state of a terrain cell.  Use this
 *	instead of getAlphaUVData() whenever possible.
 */
@@ -827,6 +849,24 @@ Bool WorldHeightMap::ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *
 	return (file.parse(userData));
 }
 
+Bool WorldHeightMap::isValidMapSize(Int width, Int height, Int borderSize)
+{
+	if (width <= 0 || width > MAX_MAP_DIMENSION)
+		return false;
+	if (height <= 0 || height > MAX_MAP_DIMENSION)
+		return false;
+	if (width * height > MAX_MAP_AREA)
+		return false;
+	if (borderSize < 0 || borderSize > (width - 1) / 2 || borderSize > (height - 1) / 2)
+		return false;
+	return true;
+}
+
+static Bool isValidHeightDataSize(DataChunkInput &file, Int dataSize, Int width, Int height)
+{
+	return dataSize > 0 && dataSize == width * height && (UnsignedInt)dataSize <= file.getChunkDataSizeLeft();
+}
+
 /**
 * WorldHeightMap::ParseHeightMapData - read a height map chunk.
 * Format is the newer CHUNKY format.
@@ -857,6 +897,10 @@ Bool WorldHeightMap::ParseHeightMapData(DataChunkInput &file, DataChunkInfo *inf
 		m_borderSize = 0;
 	}
 
+	if (!isValidMapSize(m_width, m_height, m_borderSize)) {
+		throw ERROR_CORRUPT_FILE_FORMAT;
+	}
+
 	if (info->version >= K_HEIGHT_MAP_VERSION_4) {
 		Int numBorders = file.readInt();
 		m_boundaries.resize(numBorders);
@@ -871,10 +915,11 @@ Bool WorldHeightMap::ParseHeightMapData(DataChunkInput &file, DataChunkInfo *inf
 	}
 
 	m_dataSize = file.readInt();
-	m_data = MSGNEW("WorldHeightMap_ParseHeightMapData") UnsignedByte[m_dataSize];
-	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
+	if (!isValidHeightDataSize(file, m_dataSize, m_width, m_height)) {
 		throw ERROR_CORRUPT_FILE_FORMAT	;
 	}
+
+	m_data = MSGNEW("WorldHeightMap_ParseHeightMapData") UnsignedByte[m_dataSize];
 
 	Int numBytesX = (m_width+7)/8;	//how many bytes to fit all bitflags
 	Int numBytesY = m_height;
@@ -931,6 +976,10 @@ Bool WorldHeightMap::ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, vo
 		m_borderSize = 0;
 	}
 
+	if (!isValidMapSize(m_width, m_height, m_borderSize)) {
+		throw ERROR_CORRUPT_FILE_FORMAT;
+	}
+
 	if (info->version >= K_HEIGHT_MAP_VERSION_4) {
 		Int numBorders = file.readInt();
 		m_boundaries.resize(numBorders);
@@ -945,10 +994,11 @@ Bool WorldHeightMap::ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, vo
 	}
 
 	m_dataSize = file.readInt();
-	m_data = MSGNEW("WorldHeightMap_ParseSizeOnly") UnsignedByte[m_dataSize];
-	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
+	if (!isValidHeightDataSize(file, m_dataSize, m_width, m_height)) {
 		throw ERROR_CORRUPT_FILE_FORMAT	;
 	}
+
+	m_data = MSGNEW("WorldHeightMap_ParseSizeOnly") UnsignedByte[m_dataSize];
 	file.readArrayOfBytes((char *)m_data, m_dataSize);
 	// Resize me.
 	if (info->version == K_HEIGHT_MAP_VERSION_1) {
@@ -1075,6 +1125,7 @@ Bool WorldHeightMap::ParseBlendTileData(DataChunkInput &file, DataChunkInfo *inf
 					m_cellCliffState[j*m_flipStateWidth + i] = data[j*byteWidth + i];
 				}
 			}
+			delete[] data;
 		} else {
 			file.readArrayOfBytes((char*)m_cellCliffState, m_height*m_flipStateWidth);
 		}
