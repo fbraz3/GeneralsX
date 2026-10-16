@@ -407,6 +407,9 @@ jobs:
               echo "### 🚀 Platform, Packaging & CI (macOS, Linux, Windows)"
               echo "- *add build, packaging, and CI updates*"
               echo ""
+              # GeneralsX @feat Meeseeks 16/10/2026 Contributor acknowledgements section placeholder for release drafts.
+              echo "### ❤️ Contributor Acknowledgements"
+              echo ""
               echo "---"
               echo ""
             fi
