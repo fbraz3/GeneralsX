@@ -2586,6 +2586,10 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 				if( !candObj || candObj->isEffectivelyDead() )
 					continue;
 
+				// Tactical ground indicator picking only applies to local player's airborne units
+				if( ThePlayerList && ThePlayerList->getLocalPlayer() && candObj->getControllingPlayer() != ThePlayerList->getLocalPlayer() )
+					continue;
+
 				if( !forceAttack && !candObj->isSelectable() )
 					continue;
 

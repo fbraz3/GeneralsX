@@ -43,6 +43,8 @@
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
 #include "Common/ThingTemplate.h"
+#include "Common/Player.h"
+#include "Common/PlayerList.h"
 #include "Common/GameLOD.h"
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
@@ -3201,6 +3203,21 @@ void W3DModelDraw::updateAirGroundIndicator()
 			m_airGroundIndicator = nullptr;
 		}
 		return;
+	}
+
+	// Tactical ground indicator is exclusive to the local human player's airborne units
+	const Object *obj = draw->getObject();
+	if (ThePlayerList && ThePlayerList->getLocalPlayer())
+	{
+		if (obj == nullptr || obj->getControllingPlayer() != ThePlayerList->getLocalPlayer())
+		{
+			if (m_airGroundIndicator)
+			{
+				m_airGroundIndicator->release();
+				m_airGroundIndicator = nullptr;
+			}
+			return;
+		}
 	}
 
 	if (draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
