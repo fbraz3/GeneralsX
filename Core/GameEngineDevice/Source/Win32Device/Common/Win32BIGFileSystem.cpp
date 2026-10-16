@@ -551,14 +551,14 @@ void Win32BIGFileSystem::init() {
 	// with the binary must still be mounted with highest precedence.
 	AsciiString exeDirectory;
 	if (getExecutableDirectory(exeDirectory) && exeDirectory.isNotEmpty() && !equalsIgnoreCase(exeDirectory.str(), primaryAssetsDirectory.str())) {
-		if (loadBigFilesFromDirectory(exeDirectory, "generalsx*.big", TRUE, TRUE)) {
+		if (loadBigFilesFromDirectory(exeDirectory, "*.big", TRUE, TRUE)) {
 			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from exe directory: %s\n", exeDirectory.str());
 			fflush(stderr);
 		}
 #if defined(__APPLE__)
 		AsciiString resourcesDir = exeDirectory;
 		resourcesDir.concat("/../Resources");
-		if (loadBigFilesFromDirectory(resourcesDir, "generalsx*.big", TRUE, TRUE)) {
+		if (loadBigFilesFromDirectory(resourcesDir, "*.big", TRUE, TRUE)) {
 			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from bundle resources: %s\n", resourcesDir.str());
 			fflush(stderr);
 		}
@@ -566,7 +566,7 @@ void Win32BIGFileSystem::init() {
 	}
 
 	if (primaryAssetsDirectory.isNotEmpty() && !equalsIgnoreCase(".", primaryAssetsDirectory.str())) {
-		loadBigFilesFromDirectory(".", "generalsx*.big", TRUE, TRUE);
+		loadBigFilesFromDirectory(".", "*.big", TRUE, TRUE);
 	}
 }
 
@@ -757,12 +757,6 @@ Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString 
 			continue;
 		}
 
-		// GeneralsX @bugfix felipebraz 15/10/2026 Never mount base-game INI.big in Zero Hour: INIZH.big is self-contained
-		// and base INI files carry Generals-only enum values (e.g. DamageType = FLESHY_SNIPER) that crash the INI parser.
-		if (it->endsWithNoCase("/INI.big") || it->endsWithNoCase("\\INI.big") || it->compareNoCase("INI.big") == 0) {
-			it++;
-			continue;
-		}
 #endif
 
 		if (isGeneralsXArchiveFilename(*it)) {
