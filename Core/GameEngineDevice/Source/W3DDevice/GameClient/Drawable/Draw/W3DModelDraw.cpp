@@ -3207,6 +3207,16 @@ void W3DModelDraw::updateAirGroundIndicator()
 
 	// Tactical ground indicator is exclusive to the local human player's airborne units
 	const Object *obj = draw->getObject();
+	if (obj && obj->isEffectivelyDead())
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
 	if (ThePlayerList && ThePlayerList->getLocalPlayer())
 	{
 		if (obj == nullptr || obj->getControllingPlayer() != ThePlayerList->getLocalPlayer())
@@ -3228,10 +3238,7 @@ void W3DModelDraw::updateAirGroundIndicator()
 	}
 
 	Real heightAboveGround = draw->getHeightAboveTerrain();
-	const Real MIN_AIR_HEIGHT = 15.0f;
-	const Real BLEND_AIR_HEIGHT = 35.0f;
-
-	if (heightAboveGround < MIN_AIR_HEIGHT)
+	if (!WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < MIN_AIR_GROUND_INDICATOR_HEIGHT)
 	{
 		if (m_airGroundIndicator)
 			m_airGroundIndicator->enableShadowRender(FALSE);
@@ -3275,14 +3282,15 @@ void W3DModelDraw::updateAirGroundIndicator()
 		m_airGroundIndicator->enableShadowRender(TRUE);
 		m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
 
-		Real liftFactor = WWMath::Clamp((heightAboveGround - MIN_AIR_HEIGHT) / BLEND_AIR_HEIGHT, 0.0f, 1.0f);
+		Real rawLift = (heightAboveGround - MIN_AIR_GROUND_INDICATOR_HEIGHT) / BLEND_AIR_GROUND_INDICATOR_HEIGHT;
+		Real liftFactor = WWMath::Is_Valid_Float(rawLift) ? WWMath::Clamp(rawLift, 0.0f, 1.0f) : 0.0f;
 
 		Bool isSelected = draw->isSelected();
-		Int baseOpacity = isSelected ? 180 : 75; // ~70% when selected, ~30% subtle in normal flight
-		Int opacity = (Int)(baseOpacity * liftFactor);
+		Real baseOpacity = isSelected ? 180.0f : 75.0f; // ~70% when selected, ~30% subtle in normal flight
+		Real rawOpacity = baseOpacity * liftFactor;
+		Int opacity = WWMath::Is_Valid_Float(rawOpacity) ? (Int)WWMath::Clamp(rawOpacity, 0.0f, 255.0f) : 0;
 
 		Color playerColor = 0x00FFFFFF;
-		const Object *obj = draw->getObject();
 		if (obj)
 		{
 			Color c = obj->getIndicatorColor();

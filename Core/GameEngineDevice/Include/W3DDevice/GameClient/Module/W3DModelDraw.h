@@ -345,6 +345,10 @@ class W3DModelDraw : public DrawModule, public ObjectDrawInterface
 
 public:
 
+	// Tactical ground indicator altitude thresholds
+	static constexpr Real MIN_AIR_GROUND_INDICATOR_HEIGHT = 15.0f;
+	static constexpr Real BLEND_AIR_GROUND_INDICATOR_HEIGHT = 35.0f;
+
 	W3DModelDraw( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 

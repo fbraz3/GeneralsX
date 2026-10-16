@@ -2594,7 +2594,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 					continue;
 
 				Real heightAboveGround = cand->getHeightAboveTerrain();
-				if( heightAboveGround < 10.0f )
+				if( !WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < W3DModelDraw::MIN_AIR_GROUND_INDICATOR_HEIGHT )
 					continue;
 
 				const ThingTemplate *tmplate = cand->getTemplate();
@@ -2608,11 +2608,14 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 
 				Real radius = size * 0.5f;
 				const Coord3D *pos = cand->getPosition();
+				if( pos == nullptr )
+					continue;
+
 				Real dx = terrainPos.x - pos->x;
 				Real dy = terrainPos.y - pos->y;
 				Real distSq = dx * dx + dy * dy;
 
-				if( distSq <= radius * radius && distSq < bestDistSq )
+				if( WWMath::Is_Valid_Float(distSq) && distSq <= radius * radius && distSq < bestDistSq )
 				{
 					bestDistSq = distSq;
 					bestAirDraw = cand;
