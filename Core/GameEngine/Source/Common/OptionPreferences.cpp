@@ -1069,6 +1069,12 @@ Bool OptionPreferences::getPostProcessFXAA(Bool defaultVal) const
 	return parsePrefBool(find("PostProcessFXAA"), end(), defaultVal);
 }
 
+// GeneralsX @feature Mr. Meeseeks 16/10/2026 Option to toggle air unit ground indicator
+Bool OptionPreferences::getAirUnitGroundIndicator(Bool defaultVal) const
+{
+	return parsePrefBool(find("AirUnitGroundIndicator"), end(), defaultVal);
+}
+
 void OptionPreferences::setAdvancedShadows(Bool val)
 {
 	(*this)["AdvancedShadows"] = val ? "yes" : "no";
@@ -1142,6 +1148,11 @@ void OptionPreferences::setPostProcessHDR(Bool val)
 void OptionPreferences::setPostProcessFXAA(Bool val)
 {
 	(*this)["PostProcessFXAA"] = val ? "yes" : "no";
+}
+
+void OptionPreferences::setAirUnitGroundIndicator(Bool val)
+{
+	(*this)["AirUnitGroundIndicator"] = val ? "yes" : "no";
 }
 
 

@@ -1609,7 +1609,7 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 					lastShadowType=shadow->m_type;
 				}
 				///@todo: may need to fix this if shadows are large enough to be seen while object is not visible
-				if (!(shadow->m_robj && !shadow->m_robj->Is_Really_Visible()))
+				if (shadow->m_robj == nullptr || shadow->m_robj->Is_Really_Visible() || isShownOffScreen(shadow->m_robj))
 				{
 					//queueSimpleDecal(shadow);
 					queueDecal(shadow, FALSE);	//marker ring / crate glow: not moved by sun

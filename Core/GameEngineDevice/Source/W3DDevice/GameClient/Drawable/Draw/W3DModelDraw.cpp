@@ -1739,6 +1739,7 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	m_shadowEnabled = TRUE;
 	m_hasModelShadow = FALSE;
 	m_terrainDecal = nullptr;
+	m_airGroundIndicator = nullptr;
 	m_trackRenderObject = nullptr;
 	m_whichAnimInCurState = -1;
 	m_nextState = nullptr;
@@ -1843,6 +1844,9 @@ void W3DModelDraw::setHidden(Bool hidden)
 	if (m_terrainDecal)
 		m_terrainDecal->enableShadowRender(!hidden);
 
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->enableShadowRender(!hidden);
+
 	if (m_trackRenderObject && hidden)
 	{	const Coord3D* pos = getDrawable()->getPosition();
 		m_trackRenderObject->addCapEdgeToTrack(pos->x,pos->y);
@@ -1858,6 +1862,9 @@ void W3DModelDraw::releaseShadows()	///< frees all shadow resources used by this
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->release();
+	m_airGroundIndicator = nullptr;
 }
 
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned mesh shadow promotion and projectile decal shadows
@@ -2040,6 +2047,12 @@ void W3DModelDraw::allocateShadows()
 			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
 				m_shadow->enableShadowRender(FALSE);
 		}
+
+		if (m_airGroundIndicator)
+		{	m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
+			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
+				m_airGroundIndicator->enableShadowRender(FALSE);
+		}
 	}
 }
 
@@ -2113,6 +2126,8 @@ void W3DModelDraw::setFullyObscuredByShroud(Bool fullyObscured)
 			m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 		if (m_terrainDecal)
 			m_terrainDecal->enableShadowInvisible(m_fullyObscuredByShroud);
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
 
 		doStartOrStopParticleSys();
 	}
@@ -2277,6 +2292,7 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
   handleClientRecoil();
 
   updateHeadlightDynamicLight();
+  updateAirGroundIndicator();
 
 }
 
@@ -2958,6 +2974,10 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 		m_terrainDecal->release();
 	m_terrainDecal = nullptr;
 
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->release();
+	m_airGroundIndicator = nullptr;
+
 	if (m_headlightDynamicLight)
 	{
 		m_headlightDynamicLight->setEnabled(false);
@@ -3164,6 +3184,97 @@ void W3DModelDraw::updateHeadlightDynamicLight()
 		m_headlightDynamicLight->Set_Far_Attenuation_Range(clampedReach * 0.2f, clampedReach);
 		m_headlightDynamicLight->Set_Position(lightPos);
 		m_headlightDynamicLight->Set_Flag(LightClass::FAR_ATTENUATION, true);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+void W3DModelDraw::updateAirGroundIndicator()
+{
+	Drawable *draw = getDrawable();
+	if (draw == nullptr || m_renderObject == nullptr || !draw->isKindOf(KINDOF_AIRCRAFT) ||
+		(TheGlobalData && !TheGlobalData->isAirUnitGroundIndicator()))
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
+	if (draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
+	{
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowRender(FALSE);
+		return;
+	}
+
+	Real heightAboveGround = draw->getHeightAboveTerrain();
+	const Real MIN_AIR_HEIGHT = 15.0f;
+	const Real BLEND_AIR_HEIGHT = 35.0f;
+
+	if (heightAboveGround < MIN_AIR_HEIGHT)
+	{
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowRender(FALSE);
+		return;
+	}
+
+	if (m_airGroundIndicator == nullptr && TheProjectedShadowManager != nullptr)
+	{
+		Shadow::ShadowTypeInfo indicatorInfo;
+		indicatorInfo.allowUpdates = FALSE;
+		indicatorInfo.allowWorldAlign = TRUE;
+		indicatorInfo.m_type = SHADOW_ALPHA_DECAL;
+		strlcpy(indicatorInfo.m_ShadowName, "extargeteralpha", ARRAY_SIZE(indicatorInfo.m_ShadowName));
+
+		const ThingTemplate *tmplate = draw->getTemplate();
+		Real size = 0.0f;
+		if (tmplate)
+		{
+			size = tmplate->getShadowSizeX();
+			if (size <= 0.0f)
+				size = tmplate->getShadowSizeY();
+		}
+		if (size <= 0.0f)
+		{
+			SphereClass sphere;
+			m_renderObject->Get_Obj_Space_Bounding_Sphere(sphere);
+			size = sphere.Radius * 1.5f;
+		}
+		if (size < 25.0f) size = 25.0f;
+
+		indicatorInfo.m_sizeX = size;
+		indicatorInfo.m_sizeY = size;
+		indicatorInfo.m_offsetX = 0.0f;
+		indicatorInfo.m_offsetY = 0.0f;
+
+		m_airGroundIndicator = TheProjectedShadowManager->addDecal(m_renderObject, &indicatorInfo);
+	}
+
+	if (m_airGroundIndicator)
+	{
+		m_airGroundIndicator->enableShadowRender(TRUE);
+		m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
+
+		Real liftFactor = WWMath::Clamp((heightAboveGround - MIN_AIR_HEIGHT) / BLEND_AIR_HEIGHT, 0.0f, 1.0f);
+
+		Bool isSelected = draw->isSelected();
+		Int baseOpacity = isSelected ? 180 : 75; // ~70% when selected, ~30% subtle in normal flight
+		Int opacity = (Int)(baseOpacity * liftFactor);
+
+		Color playerColor = 0x00FFFFFF;
+		const Object *obj = draw->getObject();
+		if (obj)
+		{
+			Color c = obj->getIndicatorColor();
+			if ((c & 0x00FFFFFF) != 0)
+				playerColor = c;
+		}
+
+		m_airGroundIndicator->setColor(playerColor);
+		m_airGroundIndicator->setOpacity(opacity);
 	}
 }
 

@@ -2568,6 +2568,58 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	if (drawInfo)
 		draw=drawInfo->m_drawable;
 
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Allow picking airborne units by clicking their tactical ground indicator ring.
+	if( draw == nullptr && TheGlobalData && TheGlobalData->isAirUnitGroundIndicator() && TheGameClient != nullptr )
+	{
+		Coord3D terrainPos;
+		if( screenToTerrain( screen, &terrainPos ) )
+		{
+			Real bestDistSq = 1e9f;
+			Drawable *bestAirDraw = nullptr;
+
+			for( Drawable *cand = TheGameClient->getDrawableList(); cand; cand = cand->getNextDrawable() )
+			{
+				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
+					continue;
+
+				const Object *candObj = cand->getObject();
+				if( !candObj || candObj->isEffectivelyDead() )
+					continue;
+
+				if( !forceAttack && !candObj->isSelectable() )
+					continue;
+
+				Real heightAboveGround = cand->getHeightAboveTerrain();
+				if( heightAboveGround < 10.0f )
+					continue;
+
+				const ThingTemplate *tmplate = cand->getTemplate();
+				Real size = tmplate ? tmplate->getShadowSizeX() : 0.0f;
+				if( size <= 0.0f && tmplate )
+					size = tmplate->getShadowSizeY();
+				if( size <= 0.0f )
+					size = 50.0f;
+				if( size < 25.0f )
+					size = 25.0f;
+
+				Real radius = size * 0.5f;
+				const Coord3D *pos = cand->getPosition();
+				Real dx = terrainPos.x - pos->x;
+				Real dy = terrainPos.y - pos->y;
+				Real distSq = dx * dx + dy * dy;
+
+				if( distSq <= radius * radius && distSq < bestDistSq )
+				{
+					bestDistSq = distSq;
+					bestAirDraw = cand;
+				}
+			}
+
+			if( bestAirDraw != nullptr )
+				draw = bestAirDraw;
+		}
+	}
+
 	return draw;
 
 }

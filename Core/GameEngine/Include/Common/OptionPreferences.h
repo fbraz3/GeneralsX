@@ -154,6 +154,8 @@ public:
 	Bool getPostProcessBloom(Bool defaultVal = TRUE) const;
 	Bool getPostProcessHDR(Bool defaultVal = TRUE) const;
 	Bool getPostProcessFXAA(Bool defaultVal = FALSE) const;
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Option to toggle air unit ground indicator
+	Bool getAirUnitGroundIndicator(Bool defaultVal = TRUE) const;
 
 	void setAdvancedShadows(Bool val);
 	void setAdvancedLighting(Bool val);
@@ -170,4 +172,5 @@ public:
 	void setPostProcessBloom(Bool val);
 	void setPostProcessHDR(Bool val);
 	void setPostProcessFXAA(Bool val);
+	void setAirUnitGroundIndicator(Bool val);
 };
