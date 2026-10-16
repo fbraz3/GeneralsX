@@ -58,23 +58,30 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 ### Step 3: Identify External Contributors
 1. Extract unique authors from the PR list collected in Step 2:
    - Identify author logins excluding the core maintainer (`fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
-2. Resolve each commit author in `$PREVIOUS_TAG..$TARGET_TAG` to a GitHub login before filtering, ensuring direct or non-PR commits are accurately attributed:
+2. Resolve each commit author in `$PREVIOUS_TAG..$TARGET_TAG` to a GitHub login while pairing with commit SHAs, ensuring direct or non-PR commits are accurately attributed without losing commit context:
    ```bash
-   # Query GitHub commit author logins for commits in the range:
+   # Pair each commit SHA with its resolved GitHub login or fallback author name:
    for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
-     env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty'
-   done | sort -u
+     LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty' 2>/dev/null || true)
+     if [ -n "$LOGIN" ]; then
+       echo "${SHA}|${LOGIN}|github"
+     else
+       NAME=$(git log -1 --format="%an" "$SHA")
+       echo "${SHA}|${NAME}|git"
+     fi
+   done
    ```
-   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. If a commit has no associated GitHub login, fall back to the Git commit author name as plain text (without an `@` prefix) rather than constructing an invalid handle.
+   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. Derive unique contributors while maintaining the SHA-to-login association so acknowledgements can link to either PRs or specific commits.
 3. Evaluate the result:
    - **External Contributors Present**:
      - Prepare a warm, appreciative, and celebratory acknowledgment under `### ❤️ Contributor Acknowledgements` in `# What's New`.
-     - Thank each contributor by their `@username` (with link `[@user](https://github.com/user)`), detailing what they improved or fixed, referencing their PR (`[#PR](https://github.com/fbraz3/GeneralsX/pull/PR)`) or commit.
+     - Thank each contributor using their linked handle `**[@username](https://github.com/username)**` when GitHub resolved their login, or their plain display name `**Author Name**` (without `@` prefix) when unlinked. Detail what they improved or fixed, referencing their PR (`[#PR](https://github.com/fbraz3/GeneralsX/pull/PR)`) or commit (`[commit](https://github.com/fbraz3/GeneralsX/commit/SHA)`).
      - Example format:
        ```markdown
        ### ❤️ Contributor Acknowledgements
        A special thank you to our community contributors who made this release possible:
        * **[@contributor](https://github.com/contributor)** for configuring mouse wheel zoom speed ([#344](https://github.com/fbraz3/GeneralsX/pull/344))!
+       * **Contributor Name** for fixing build script permissions ([commit](https://github.com/fbraz3/GeneralsX/commit/SHA))!
        ```
    - **No External Contributors**:
      - Completely omit the `### ❤️ Contributor Acknowledgements` section from the release notes. Do NOT leave an empty header or placeholder in the final draft.
@@ -132,6 +139,7 @@ Zero Hour includes built-in online lobbies via **GeneralsOnline (NGMP)**. Player
 ### ❤️ Contributor Acknowledgements (Include ONLY if external contributors exist in this release; omit entirely if none)
 A special thank you to our community contributors who made this release possible:
 * **[@contributor](https://github.com/contributor)** for <contribution summary> ([#PR](https://github.com/fbraz3/GeneralsX/pull/PR))!
+* **<Author Name>** for <direct commit summary> ([commit](https://github.com/fbraz3/GeneralsX/commit/SHA))!
 
 ---
 
