@@ -24,6 +24,7 @@
 #include "GameLogic/Pathfinder/Path.h"
 #include "GameLogic/Pathfinder/PathNode.h"
 #include "GameLogic/TerrainLogic.h"
+#include "WWMath/wwmath.h"
 
 //-----------------------------------------------------------------------------------
 Path::Path():
@@ -693,7 +694,7 @@ void Path::computePointOnPath(
 		// compute distance of point from this path segment
 		Real toDistSqr = sqr(toPos.x) + sqr(toPos.y);
 		Real offsetDistSq = toDistSqr - sqr(alongPathDist);
-		Real offsetDist = (offsetDistSq <= 0.0) ? 0.0 : sqrt(offsetDistSq);
+		Real offsetDist = (offsetDistSq <= 0.0) ? 0.0f : (Real)WWMath::SqrtfOrigin(offsetDistSq);
 
 		// If we are basically on the path, return the next path node as the movement goal.
 		// However, the farther off the path we get, the movement goal becomes closer to our

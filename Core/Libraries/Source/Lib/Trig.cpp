@@ -107,7 +107,7 @@ Real ASin(Real x)
 double Sqrt(double x)
 {
 #ifdef USE_DETERMINISTIC_MATH
-	return gm_sqrt(x);
+	return (double)gm_sqrtf((float)x);
 #else
 	return sqrt(x);
 #endif

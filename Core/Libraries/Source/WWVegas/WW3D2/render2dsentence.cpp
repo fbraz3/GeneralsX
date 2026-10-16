@@ -1334,7 +1334,9 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 #endif
 	}
 
-	WWASSERT( retval->Value == glyph );
+	if ( retval != nullptr ) {
+		WWASSERT( retval->Value == glyph );
+	}
 	return retval;
 }
 
@@ -1510,7 +1512,7 @@ FontCharsClass::Update_Current_Buffer (int char_width)
 		//	into a full sized second block.
 		//
 		const int shift = 2 - min( 2, BufferList.Count() );
-		const int length = max( GlyphBlockBytes >> shift, GlyphCellBytes );
+		const int length = max( max( GlyphBlockBytes >> shift, GlyphCellBytes ), char_len );
 		WWASSERT( char_len <= length );
 
 		BufferList.Add( FontCharsBuffer( length, W3DNEWARRAY uint8[length] ) );
@@ -1664,48 +1666,6 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
-//	Update_Current_Buffer
-//
-////////////////////////////////////////////////////////////////////////////////////
-void
-FontCharsClass::Update_Current_Buffer (int char_width)
-{
-	const int char_len = char_width * CharHeight;
-
-	//
-	//	Check to see if we need to allocate a new buffer
-	//
-	bool needs_new_buffer = (BufferList.Count () == 0);
-	if (needs_new_buffer == false) {
-
-		//
-		//	Would we extend past this buffer?
-		//
-		if ( (CurrPixelOffset + char_len) > BufferList[BufferList.Count () - 1].Length ) {
-			needs_new_buffer = true;
-		}
-	}
-
-	//
-	//	Do we need to create a new surface?
-	//
-	if (needs_new_buffer)
-	{
-		//
-		//	TheSuperHackers @fix Ceil the block size to the char size to make it fit.
-		//	TheSuperHackers @tweak Ramp the first blocks up to the full size, because a font whose
-		//	working set is a handful of glyphs would otherwise pay for a whole block of them.
-		//	Halving rather than one small first block is what keeps such a font from being pushed
-		//	into a full sized second block.
-		//
-		const int shift = 2 - min( 2, BufferList.Count() );
-		const int length = max( GlyphBlockBytes >> shift, GlyphCellBytes );
-		WWASSERT( char_len <= length );
-
-		BufferList.Add( FontCharsBuffer( length, W3DNEWARRAY uint8[length] ) );
-		CurrPixelOffset = 0;
-	}
-}
 //	Create_GDI_Font
 //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2254,6 +2214,32 @@ FontCharsClass::Create_Freetype_Font (const char *font_name)
 	PixelOverlap = (-font_height) / 8;
 	if ( PixelOverlap < 0 ) PixelOverlap = 0;
 	if ( PixelOverlap > 4 ) PixelOverlap = 4;
+
+	//
+	//	The scratch bitmap must hold the widest glyph, the overlap column that Store_Freetype_Char
+	//	appends to it and the one pixel it shifts by.
+	//
+	int max_char_width = 0;
+	if ( FTFace->size != nullptr ) {
+		max_char_width = FTFace->size->metrics.max_advance >> 6;
+	}
+	GlyphBitmapWidth = max_char_width + PixelOverlap + 1;
+
+	const int max_glyph_extent = PointSize * 4 + 8;
+	const int min_glyph_width = PointSize * 2;
+
+	GlyphBitmapWidth = clamp (min_glyph_width, GlyphBitmapWidth, max_glyph_extent);
+	GlyphBitmapHeight = CharHeight = clamp (1, CharHeight, max_glyph_extent);
+
+	//
+	//	Size the glyph cache blocks from the widest glyph this font can produce,
+	//	so that a block always holds a whole number of glyphs and the space abandoned when one does not
+	//	fit is at most one glyph. A block always fits at least one glyph, however large the font is.
+	//
+	GlyphCellBytes = GlyphBitmapWidth * GlyphBitmapHeight;
+	GlyphBlockBytes = GlyphCellBytes * GLYPH_BLOCK_TARGET_CELLS;
+	GlyphBlockBytes = clamp ((int)GLYPH_BLOCK_MIN_BYTES, GlyphBlockBytes, (int)GLYPH_BLOCK_MAX_BYTES);
+	GlyphBlockBytes = max (GlyphBlockBytes, GlyphCellBytes);
 
 	return true;
 }
