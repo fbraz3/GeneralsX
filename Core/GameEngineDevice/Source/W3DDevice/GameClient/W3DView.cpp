@@ -3793,7 +3793,13 @@ void W3DView::updateTerrain()
 
 	if (getDesiredTerrainDrawSize(drawSize))
 	{
-		const Real terrainScale = TheGlobalData->m_terrainDrawDistanceScale;
+		// GeneralsX @bugfix fbraz3 15/10/2026 Guard terrainScale against non-finite values before casting
+		Real terrainScale = TheGlobalData->m_terrainDrawDistanceScale;
+		if (!isFinite(terrainScale) || terrainScale < 1.0f)
+			terrainScale = 1.0f;
+		else if (terrainScale > 2.0f)
+			terrainScale = 2.0f;
+
 		if (terrainScale != 1.0f)
 		{
 			drawSize.x = static_cast<Int>(drawSize.x * terrainScale);

@@ -111,11 +111,19 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found; DXVK will use defaults."
 fi
 
-# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
-FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
-if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
-    mkdir -p "${RUNTIME_DIR}/Data/INI"
-    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+# GeneralsX @feature fbraz3 14/10/2026 Deploy generalsx.big archive
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    echo "  Deploying generalsx.big..."
+    cp -v "${GENERALSX_BIG}" "${RUNTIME_DIR}/generalsx.big"
+    if [[ -d "${HOME}/GeneralsX/data/Generals" ]]; then
+        cp -v "${GENERALSX_BIG}" "${HOME}/GeneralsX/data/Generals/generalsx.big"
+    fi
+fi
+rm -f "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+if [[ -d "${HOME}/GeneralsX/data/Generals" ]]; then
+    rm -f "${HOME}/GeneralsX/data/Generals/Data/INI/FXListGeneralsX.ini"
 fi
 
 echo "  Deploying Fontconfig config & fonts..."

@@ -1476,6 +1476,81 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 
 	if( lookUp == nullptr )
 	{
+		// GeneralsX @feature fbraz3 14/10/2026 Fallback strings for GeneralsX GUI
+		if ( stricmp(label, "GUI:GeneralsXOptions") == 0 ||
+		     stricmp(label, "GUI:GeneralsX") == 0 ||
+		     stricmp(label, "GeneralsX Options") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_gxOptions(L"GENERALSX");
+			return s_gxOptions;
+		}
+
+		if ( stricmp(label, "GUI:GeneralsXTitle") == 0 ||
+		     stricmp(label, "GeneralsX Title") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_gxTitle(L"GENERALSX OPTIONS");
+			return s_gxTitle;
+		}
+
+		if ( stricmp(label, "GUI:SagePatchOptions") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_spTitle(L"CAMERA & VISION OPTIONS (SAGEPATCH)");
+			return s_spTitle;
+		}
+
+		if ( stricmp(label, "GUI:DrawDistance") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_drawDist(L"TERRAIN DRAW DISTANCE");
+			return s_drawDist;
+		}
+
+		if ( stricmp(label, "GUI:MaxCameraHeight") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_zoomOut(L"MAXIMUM CAMERA HEIGHT (ZOOM OUT)");
+			return s_zoomOut;
+		}
+
+		if ( stricmp(label, "GUI:EnhancedGraphics") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_gfxTitle(L"LIGHTING & GRAPHICS OPTIONS");
+			return s_gfxTitle;
+		}
+
+		if ( stricmp(label, "GUI:AdvancedShadows") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_advShadows(L"Advanced Shadows (Skins, Projectiles, Props, Bridges)");
+			return s_advShadows;
+		}
+
+		if ( stricmp(label, "GUI:AdvancedLighting") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_advLighting(L"Dynamic Lighting (Explosions, Vehicle Headlights)");
+			return s_advLighting;
+		}
+
+		if ( stricmp(label, "GUI:EnablePostProcessing") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_postProc(L"Post-Processing (Bloom & HDR Effects)");
+			return s_postProc;
+		}
 
 		// string not found
 		if( exists )

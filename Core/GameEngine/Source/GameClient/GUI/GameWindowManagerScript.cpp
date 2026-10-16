@@ -1354,32 +1354,48 @@ static Bool parseDrawData( const char *token, WinInstanceData *instData,
 			c = strtok( nullptr, seps );  // label
 		first = FALSE;
 
+		// GeneralsX @bugfix fbraz3 14/10/2026 Guard against premature end of tokens in draw data parsing
+		if( !c )
+			break;
+
 		c = strtok( nullptr, seps );  // value
+		if( !c )
+			break;
 		if( strcmp( c, "NoImage" ) != 0 )
 			drawData->image = TheMappedImageCollection->findImageByName( AsciiString( c ) );
 		else
 			drawData->image = nullptr;
 		// COLOR: R G B A
 		c = strtok( nullptr, seps );  // label
+		if( !c ) break;
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, r );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, g );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, b );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, a );
 		drawData->color = GameMakeColor( r, g, b, a );
 
 		// BORDERCOLOR: R G B A
 		c = strtok( nullptr, seps );  // label
+		if( !c ) break;
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, r );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, g );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, b );
 		c = strtok( nullptr, seps );  // value
+		if( !c ) break;
 		scanUnsignedInt( c, a );
 		drawData->borderColor = GameMakeColor( r, g, b, a );
 
@@ -2763,6 +2779,9 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 	inFile = TheFileSystem->openFile(filepath, File::READ);
 	if (inFile == nullptr)
 	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for layout file load failure
+		fprintf(stderr, "[ERROR] WinCreateFromScript: Cannot access file '%s' (filepath='%s')\n", filename, filepath);
+		fflush(stderr);
 		DEBUG_LOG(( "WinCreateFromScript: Cannot access file '%s'.", filename ));
 		return nullptr;
 	}
@@ -2782,7 +2801,9 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 
 		if( parseLayoutBlock( inFile, buffer, version, &scriptInfo ) == FALSE )
 		{
-
+			// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for layout parse failure
+			fprintf(stderr, "[ERROR] WinCreateFromScript: Error parsing layout block in '%s'\n", filename);
+			fflush(stderr);
 			DEBUG_LOG(( "WinCreateFromScript: Error parsing layout block" ));
 			return nullptr;
 
@@ -2912,6 +2933,12 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 		*info = scriptInfo;
 
 	// return the first window created
+	if (firstWindow == nullptr)
+	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Diagnostic console logging for empty window creation
+		fprintf(stderr, "[ERROR] WinCreateFromScript: No windows created from '%s'\n", filename);
+		fflush(stderr);
+	}
 	return firstWindow;
 
 }

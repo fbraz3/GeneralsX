@@ -134,6 +134,9 @@ public:
 	Real getMinCameraHeight() const;
 	Real getCameraPitch() const;
 	Real getTerrainDrawDistanceScale() const;
+	// GeneralsX @feature fbraz3 14/10/2026 Camera height and terrain draw distance preference setters
+	void setMaxCameraHeight(Real val);
+	void setTerrainDrawDistanceScale(Real val);
 	Real getGameWindowTransitionSpeedMultiplier() const;
 	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
 	Int getSkirmishTickRate() const;

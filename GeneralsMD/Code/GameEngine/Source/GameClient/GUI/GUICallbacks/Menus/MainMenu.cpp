@@ -54,6 +54,7 @@
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetStaticText.h"
+#include "GameClient/GadgetPushButton.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/WindowVideoManager.h"
 #include "GameClient/CampaignManager.h"
@@ -122,6 +123,8 @@ static NameKeyType buttonCustomMissionID = NAMEKEY_INVALID;
 static NameKeyType onlineID = NAMEKEY_INVALID;
 static NameKeyType networkID = NAMEKEY_INVALID;
 static NameKeyType optionsID = NAMEKEY_INVALID;
+// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu button
+static NameKeyType generalsxID = NAMEKEY_INVALID;
 static NameKeyType exitID = NAMEKEY_INVALID;
 static NameKeyType motdID = NAMEKEY_INVALID;
 static NameKeyType worldBuilderID = NAMEKEY_INVALID;
@@ -521,6 +524,8 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
 	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
 	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu button
+	generalsxID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGeneralsX" );
 	exitID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonExit" );
 	motdID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMOTD" );
 	worldBuilderID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonWorldBuilder" );
@@ -569,6 +574,20 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonLoadReplay = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonLoadReplayID );
 	buttonLoad = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonLoadID );
 	buttonCredits = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCreditsID );
+	GameWindow *btnGX = TheWindowManager->winGetWindowFromId( parentMainMenu, generalsxID );
+	if (btnGX)
+	{
+		UnicodeString ustr = TheGameText->fetch("GUI:GeneralsXOptions");
+		GadgetButtonSetText(btnGX, ustr);
+
+		// GeneralsX @feature fbraz3 14/10/2026 Register ButtonGeneralsX in main menu transitions
+		if (TheTransitionHandler)
+		{
+			TheTransitionHandler->addWindowToGroup("MainMenuDefaultMenu", "MainMenu.wnd:ButtonGeneralsX", BUTTON_TRANSITION_FLASH, 11);
+			TheTransitionHandler->addWindowToGroup("MainMenuDefaultMenuLogoFade", "MainMenu.wnd:ButtonGeneralsX", BUTTON_TRANSITION_FLASH, 11);
+			TheTransitionHandler->addWindowToGroup("MainMenuDefaultMenuBack", "MainMenu.wnd:ButtonGeneralsX", TRANSITION_FLASH, 0);
+		}
+	}
 
 	buttonEasy = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonEasyID );
 	buttonMedium = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonMediumID );
@@ -1676,6 +1695,16 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				optLayout->runInit();
 				optLayout->hide(FALSE);
 				optLayout->bringForward();
+			}
+			// GeneralsX @feature fbraz3 14/10/2026 Open GeneralsX options menu
+			else if ( controlID == generalsxID )
+			{
+				if (dontAllowTransitions)
+					break;
+				dontAllowTransitions = TRUE;
+				TheShell->push( "Menus/GeneralsXMenu.wnd" );
+				dropDownWindows[DROPDOWN_MAIN]->winHide( FALSE );
+				TheTransitionHandler->reverse( "MainMenuDefaultMenu" );
 			}
 			else if( controlID == worldBuilderID )
 			{

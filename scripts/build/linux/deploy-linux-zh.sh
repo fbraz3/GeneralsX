@@ -172,20 +172,14 @@ if [[ -f "${SAGE_PATCH_LIB}" ]]; then
     cp -v "${SAGE_PATCH_LIB}" "${RUNTIME_DIR}/"
 fi
 
-# GeneralsX @build BenderAI 08/06/2026 Deploy ExtrasMenu.wnd so the engine can
-# load it via TheFileSystem (local files override BIG archives).
-EXTRAS_WND_SRC="${PROJECT_ROOT}/GeneralsZH/Data/Window/Menus/ExtrasMenu.wnd"
-if [[ -f "${EXTRAS_WND_SRC}" ]]; then
-    mkdir -p "${RUNTIME_DIR}/Window/Menus"
-    cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
+# GeneralsX @feature fbraz3 14/10/2026 Deploy generalsx.big archive
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    echo "  Deploying generalsx.big..."
+    cp -v "${GENERALSX_BIG}" "${RUNTIME_DIR}/generalsx.big"
 fi
-
-# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
-FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
-if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
-    mkdir -p "${RUNTIME_DIR}/Data/INI"
-    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
-fi
+rm -f "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
 
 echo "  Deploying fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"

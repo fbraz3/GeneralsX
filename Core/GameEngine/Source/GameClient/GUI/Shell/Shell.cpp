@@ -276,9 +276,19 @@ void Shell::recreateWindowLayouts()
 	for (; screenIndex < screenCount; ++screenIndex)
 	{
 		const ScreenInfo& screenInfo = screenStackInfos[screenIndex];
-		push(screenInfo.filename);
+		if (!push(screenInfo.filename, TRUE))
+		{
+			// GeneralsX @bugfix fbraz3 15/10/2026 Abort reconstruction if layout creation failed
+			fprintf(stderr, "[ERROR] Shell::recreateWindowLayouts: Failed to push layout '%s', stopping stack reconstruction\n", screenInfo.filename.str());
+			fflush(stderr);
+			break;
+		}
 
 		WindowLayout* layout = getScreenLayout(screenIndex);
+		if (layout == nullptr)
+		{
+			break;
+		}
 		layout->hide(screenInfo.isHidden);
 	}
 }
@@ -336,7 +346,7 @@ void Shell::hide( Bool hide )
 //-------------------------------------------------------------------------------------------------
 /** Push layout onto shell */
 //-------------------------------------------------------------------------------------------------
-void Shell::push( AsciiString filename, Bool shutdownImmediate )
+Bool Shell::push( AsciiString filename, Bool shutdownImmediate )
 {
 	// GeneralsX @feature BenderAI 18/02/2026 Debug logging for shell push
 	fprintf(stderr, "DEBUG: Shell::push() called with filename='%s'\n", filename.str());
@@ -344,7 +354,7 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 
 	// sanity
 	if( filename.isEmpty() )
-		return;
+		return FALSE;
 	if(TheGameSpyInfo)
 			GameSpyCloseAllOverlays();
 
@@ -365,7 +375,7 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 								filename.str(), MAX_SHELL_STACK ));
 		fprintf(stderr, "DEBUG: Shell::push() failed - max stack reached\n");
 		fflush(stderr);
-		return;
+		return FALSE;
 
 	}
 
@@ -402,6 +412,12 @@ void Shell::push( AsciiString filename, Bool shutdownImmediate )
 //	if (TheIMEManager)
 //		TheIMEManager->detach();
 
+	// GeneralsX @bugfix fbraz3 15/10/2026 Check if the requested layout was pushed or is still pending
+	WindowLayout *newTop = top();
+	if (newTop && newTop->getFilename().compareNoCase(filename) == 0)
+		return TRUE;
+
+	return m_pendingPush;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -697,7 +713,7 @@ void Shell::unlinkScreen( WindowLayout *screen )
 //-------------------------------------------------------------------------------------------------
 /** Actually do the work for a push */
 //-------------------------------------------------------------------------------------------------
-void Shell::doPush( AsciiString layoutFile )
+Bool Shell::doPush( AsciiString layoutFile, Bool restoreTopOnFail )
 {
 	// GeneralsX @feature BenderAI 18/02/2026 Debug logging - actually pushing layout
 	fprintf(stderr, "DEBUG: Shell::doPush() called with layoutFile='%s'\n", layoutFile.str());
@@ -714,7 +730,24 @@ void Shell::doPush( AsciiString layoutFile )
 	fprintf(stderr, "DEBUG: winCreateLayout returned: %p\n", newScreen);
 	fflush(stderr);
 	
-	DEBUG_ASSERTCRASH( newScreen != nullptr, ("Shell unable to load pending push layout") );
+	if (newScreen == nullptr)
+	{
+		// GeneralsX @bugfix fbraz3 14/10/2026 Restore current layout if pending push layout failed to load and was shut down
+		fprintf(stderr, "[ERROR] Shell::doPush: Failed to create layout '%s'%s\n", layoutFile.str(),
+			restoreTopOnFail ? ", restoring previous screen" : "");
+		fflush(stderr);
+		if (restoreTopOnFail)
+		{
+			WindowLayout *currentTop = top();
+			if (currentTop)
+			{
+				currentTop->runInit(nullptr);
+				currentTop->hide(FALSE);
+				currentTop->bringForward();
+			}
+		}
+		return FALSE;
+	}
 
 	// link screen to the top
 	linkScreen( newScreen );
@@ -728,6 +761,7 @@ void Shell::doPush( AsciiString layoutFile )
 
 	fprintf(stderr, "DEBUG: Shell::doPush() completed successfully\n");
 	fflush(stderr);
+	return TRUE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -792,8 +826,9 @@ void Shell::shutdownComplete( WindowLayout *screen, Bool impendingPush )
 		fprintf(stderr, "DEBUG: Shell::update() - Processing pending push: '%s'\n", m_pendingPushName.str());
 		fflush(stderr);
 
-		// do the push
-		doPush( m_pendingPushName );
+		// do the push - only restore top on failure if a prior screen was actually shut down
+		Bool screenWasShutDown = (screen != nullptr);
+		doPush( m_pendingPushName, screenWasShutDown );
 
 		// no more pending pushy for you!
 		m_pendingPush = FALSE;

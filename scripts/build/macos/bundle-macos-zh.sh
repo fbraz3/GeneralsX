@@ -345,6 +345,14 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${RESOURCES_DIR}/generalsx.big"
+fi
+
 # GeneralsX @bugfix Copilot 24/03/2026 Bundle Fontconfig config so FreeType/Fontconfig font matching works in app launcher runtime.
 # GeneralsX @bugfix Copilot 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not break bundling under set -e.
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then

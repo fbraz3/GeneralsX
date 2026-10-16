@@ -87,6 +87,26 @@ static Bool isPatchArchiveFilename(const AsciiString& archivePath)
 #endif
 }
 
+// GeneralsX @feature fbraz3 14/10/2026 True if the archive is a GeneralsX system patch (e.g. generalsx.big).
+static Bool isGeneralsXArchiveFilename(const AsciiString& archivePath)
+{
+	const char* raw = archivePath.str();
+	const char* lastSlash = strrchr(raw, '/');
+	const char* lastBackslash = strrchr(raw, '\\');
+	const char* split = lastSlash;
+	if (split == nullptr || (lastBackslash != nullptr && lastBackslash > split)) {
+		split = lastBackslash;
+	}
+
+	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+
+#ifdef _WIN32
+	return _strnicmp(baseName, "generalsx", 9) == 0;
+#else
+	return strncasecmp(baseName, "generalsx", 9) == 0;
+#endif
+}
+
 static Bool equalsIgnoreCase(const char* lhs, const char* rhs)
 {
 	if (lhs == nullptr || rhs == nullptr) {
@@ -525,6 +545,29 @@ void Win32BIGFileSystem::init() {
 #if RTS_ZEROHOUR
     loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);
 #endif
+
+	// GeneralsX @feature fbraz3 14/10/2026 Always load generalsx*.big from the executable directory and cwd.
+	// When the asset root is external (e.g. CNC_GENERALS_ZH_PATH), the GeneralsX system archives co-located
+	// with the binary must still be mounted with highest precedence.
+	AsciiString exeDirectory;
+	if (getExecutableDirectory(exeDirectory) && exeDirectory.isNotEmpty() && !equalsIgnoreCase(exeDirectory.str(), primaryAssetsDirectory.str())) {
+		if (loadBigFilesFromDirectory(exeDirectory, "*.big", TRUE, TRUE)) {
+			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from exe directory: %s\n", exeDirectory.str());
+			fflush(stderr);
+		}
+#if defined(__APPLE__)
+		AsciiString resourcesDir = exeDirectory;
+		resourcesDir.concat("/../Resources");
+		if (loadBigFilesFromDirectory(resourcesDir, "*.big", TRUE, TRUE)) {
+			fprintf(stderr, "[ASSET_ROOT] Loaded GeneralsX archives from bundle resources: %s\n", resourcesDir.str());
+			fflush(stderr);
+		}
+#endif
+	}
+
+	if (primaryAssetsDirectory.isNotEmpty() && !equalsIgnoreCase(".", primaryAssetsDirectory.str())) {
+		loadBigFilesFromDirectory(".", "*.big", TRUE, TRUE);
+	}
 }
 
 void Win32BIGFileSystem::reset() {
@@ -699,6 +742,8 @@ Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString 
 	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 Patch*.big must win over same-named base archives
 	// within this root; allowPatchPrecedence=FALSE keeps a fallback root from outranking the primary one.
 	FilenameList patchFilenameList;
+	// GeneralsX @feature fbraz3 14/10/2026 generalsx.big has highest precedence over both base and patch archives.
+	FilenameList generalsxFilenameList;
 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
@@ -711,9 +756,12 @@ Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString 
 			it++;
 			continue;
 		}
+
 #endif
 
-		if (isPatchArchiveFilename(*it)) {
+		if (isGeneralsXArchiveFilename(*it)) {
+			generalsxFilenameList.insert(*it);
+		} else if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);
 		} else if (loadOneArchiveFile(*it, overwrite)) {
 			actuallyAdded = TRUE;
@@ -729,6 +777,17 @@ Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString 
 		}
 
 		patchIt++;
+	}
+
+	FilenameListIter gxIt = generalsxFilenameList.begin();
+	while (gxIt != generalsxFilenameList.end()) {
+		if (loadOneArchiveFile(*gxIt, allowPatchPrecedence ? TRUE : overwrite)) {
+			fprintf(stderr, "[BIG] Mounted GeneralsX archive: %s\n", gxIt->str());
+			fflush(stderr);
+			actuallyAdded = TRUE;
+		}
+
+		gxIt++;
 	}
 
 	return actuallyAdded;

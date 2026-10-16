@@ -18,6 +18,28 @@
 
 #pragma once
 
+#ifndef IS_FINITE_DEFINED
+#define IS_FINITE_DEFINED 1
+
+#if defined(_MSC_VER) && _MSC_VER < 1300
+#include <float.h>
+#else
+#include <cmath>
+#endif
+
+// GeneralsX @bugfix fbraz3 15/10/2026 Finite float check compatible with VC6 and modern C++
+template <typename T>
+inline bool isFinite(T val)
+{
+#if defined(_MSC_VER) && _MSC_VER < 1300
+	return _finite(static_cast<double>(val)) != 0;
+#else
+	return std::isfinite(val);
+#endif
+}
+
+#endif // IS_FINITE_DEFINED
+
 #if __cplusplus >= 201103L
 #include <type_traits>
 #endif
