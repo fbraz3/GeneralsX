@@ -56,16 +56,20 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 4. Check recent worklog entries in `docs/WORKLOG/YYYY-MM-DIARY.md` and active planning documents in `docs/WORKDIR/` for additional context.
 
 ### Step 3: Identify External Contributors
-1. Extract unique authors from the PR and commit list collected in Step 2:
-   - Identify authors excluding the core maintainer (`@fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
-2. Verify git commit authors in `$PREVIOUS_TAG..$TARGET_TAG` to ensure no non-PR external contributions are missed:
+1. Extract unique authors from the PR list collected in Step 2:
+   - Identify author logins excluding the core maintainer (`fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
+2. Resolve each commit author in `$PREVIOUS_TAG..$TARGET_TAG` to a GitHub login before filtering, ensuring direct or non-PR commits are accurately attributed:
    ```bash
-   git log --format="%an <%ae>" "$PREVIOUS_TAG..$TARGET_TAG" | sort -u
+   # Query GitHub commit author logins for commits in the range:
+   for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
+     env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty'
+   done | sort -u
    ```
+   Do not compare raw Git metadata (names or emails from `git log`) directly with GitHub handles. If a commit has no associated GitHub login, fall back to the Git commit author name as plain text (without an `@` prefix) rather than constructing an invalid handle.
 3. Evaluate the result:
    - **External Contributors Present**:
      - Prepare a warm, appreciative, and celebratory acknowledgment under `### ❤️ Contributor Acknowledgements` in `# What's New`.
-     - Thank each contributor by their `@username` (with link `[@user](https://github.com/user)`), detailing what they improved or fixed, referencing their PR (`[#PR](https://github.com/fbraz3/GeneralsX/pull/PR)`).
+     - Thank each contributor by their `@username` (with link `[@user](https://github.com/user)`), detailing what they improved or fixed, referencing their PR (`[#PR](https://github.com/fbraz3/GeneralsX/pull/PR)`) or commit.
      - Example format:
        ```markdown
        ### ❤️ Contributor Acknowledgements
