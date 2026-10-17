@@ -205,14 +205,13 @@ void MiniAudioManager::reset()
 	stopAllAudioImmediately();
 	// GeneralsX @bugfix coolswood 18/07/2026 Restart sound groups in reset() to fix silent audio after loadGame.
 	// stopAllAudioImmediately() releases individual PlayingAudio entries but does not touch the four
-	// ma_sound_group nodes. If a prior pauseAudio() had stopped them (e.g. via the ESC menu used to pick
-	// "Load"), they remain stopped across loadGame(). New sounds attach to the stopped groups via
-	// ma_sound_init_from_data_source() and are then silently reaped by processPlayingList() because
-	// ma_sound_is_playing() returns false — the user observes "no sound until ESC toggled", since the
-	// pause/unpause cycle finally calls resumeAudio() -> ma_sound_group_start(). Restart the groups here
-	// so audio works immediately after a save load. Guarded by the per-type *On flags: if the device
-	// never opened (openDevice bailed out), the groups were never ma_sound_group_init'd, so touching
-	// them would be unsafe.
+	// ma_sound_group nodes. pauseAudio() and stopAudio() used to stop these groups (e.g. via the ESC
+	// menu used to pick "Load"), so every new sound stayed silent after loadGame() until the game was
+	// paused and resumed again. They now pause or stop only the playing sounds and leave the groups
+	// running; resumeAudio() still starts the groups, so this call keeps audio working after a save
+	// load even if a group was stopped some other way. Guarded by the per-type *On flags: if the
+	// device never opened (openDevice bailed out), the groups were never ma_sound_group_init'd, so
+	// touching them would be unsafe.
 	if (m_soundOn || m_sound3DOn || m_speechOn || m_musicOn) {
 		resumeAudio(AudioAffect_All);
 	}
@@ -232,18 +231,34 @@ void MiniAudioManager::update()
 }
 
 //-------------------------------------------------------------------------------------------------
+// Returns true if the playing audio belongs to one of the audio types in 'which'.
+static Bool isAffectedBy(PlayingAudio *playing, AudioAffect which)
+{
+	if (!playing || !playing->m_audioEventRTS || !playing->m_audioEventRTS->getAudioEventInfo())
+		return FALSE;
+
+	switch (playing->m_audioEventRTS->getAudioEventInfo()->m_soundType)
+	{
+	case AT_Music:     return BitIsSet(which, AudioAffect_Music);
+	case AT_Streaming: return BitIsSet(which, AudioAffect_Speech);
+	default:
+		if (playing->m_type == PAT_3DSample)
+			return BitIsSet(which, AudioAffect_Sound3D);
+		return BitIsSet(which, AudioAffect_Sound);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 void MiniAudioManager::stopAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
-	if (BitIsSet(which, AudioAffect_Sound))
-		ma_sound_group_stop(&m_soundGroup);
-	if (BitIsSet(which, AudioAffect_Sound3D))
-		ma_sound_group_stop(&m_sound3DGroup);
-	if (BitIsSet(which, AudioAffect_Speech))
-		ma_sound_group_stop(&m_speechGroup);
-	if (BitIsSet(which, AudioAffect_Music))
-		ma_sound_group_stop(&m_musicGroup);
+	// Like the Miles backend, stop the sounds that are playing now. Stopping the whole sound group
+	// would also silence every sound started later.
+	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		if (isAffectedBy(*it, which))
+			(*it)->m_requestStop = true;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -251,14 +266,29 @@ void MiniAudioManager::pauseAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
-	if (BitIsSet(which, AudioAffect_Sound))
-		ma_sound_group_stop(&m_soundGroup);
-	if (BitIsSet(which, AudioAffect_Sound3D))
-		ma_sound_group_stop(&m_sound3DGroup);
-	if (BitIsSet(which, AudioAffect_Speech))
-		ma_sound_group_stop(&m_speechGroup);
-	if (BitIsSet(which, AudioAffect_Music))
-		ma_sound_group_stop(&m_musicGroup);
+	// Like the Miles backend, pause only the sounds that are playing now. Sounds started while the
+	// game is paused (for example the buttons of the pause menu) still play.
+	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		PlayingAudio *playing = *it;
+		if (!isAffectedBy(playing, which) || !playing->m_sound || playing->m_paused)
+			continue;
+		if (ma_sound_is_playing(playing->m_sound)) {
+			ma_sound_stop(playing->m_sound);
+			playing->m_paused = true;
+		}
+	}
+
+	// Get rid of PLAY audio requests when pausing audio, like the Miles backend.
+	for (auto ait = m_audioRequests.begin(); ait != m_audioRequests.end(); ) {
+		AudioRequest *req = (*ait);
+		if (req && req->m_request == AR_Play) {
+			deleteInstance(req);
+			ait = m_audioRequests.erase(ait);
+		}
+		else {
+			++ait;
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -266,6 +296,14 @@ void MiniAudioManager::resumeAudio(AudioAffect which)
 {
 	// GeneralsX @bugfix meerzulee 19/07/2026 FP env guard for audio entry point (see #215)
 	ScopedFPUGuard fpuGuard;
+	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		PlayingAudio *playing = *it;
+		if (!isAffectedBy(playing, which) || !playing->m_sound || !playing->m_paused)
+			continue;
+		ma_sound_start(playing->m_sound);
+		playing->m_paused = false;
+	}
+
 	if (BitIsSet(which, AudioAffect_Sound))
 		ma_sound_group_start(&m_soundGroup);
 	if (BitIsSet(which, AudioAffect_Sound3D))
@@ -466,6 +504,10 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 		if ((info->m_soundType == AT_Streaming) && event->getUninterruptible()) {
 			setDisallowSpeech(TRUE);
 		}
+		// Like the Miles backend (INFINITE_LOOP_COUNT), music tracks repeat until they are stopped.
+		if (info->m_soundType == AT_Music) {
+			ma_sound_set_looping(sound, MA_TRUE);
+		}
 		break;
 	}
 
@@ -616,6 +658,11 @@ void MiniAudioManager::releasePlayingAudio(PlayingAudio *release)
 
 	const AudioEventInfo *releaseInfo = release->m_audioEventRTS
 		? release->m_audioEventRTS->getAudioEventInfo() : nullptr;
+
+	// Like the other backends, allow speech again once the speech that disallowed it is gone.
+	// notifyOfAudioCompletion() is never called for finished sounds in this backend.
+	if (releaseInfo && releaseInfo->m_soundType == AT_Streaming && getDisallowSpeech())
+		setDisallowSpeech(FALSE);
 
 	if (releaseInfo && releaseInfo->m_soundType == AT_SoundEffect && release->m_sound) {
 		if (release->m_type == PAT_Sample) {
@@ -1068,7 +1115,12 @@ AudioEventRTS *MiniAudioManager::findLowestPrioritySound(AudioEventRTS *event)
 	AudioEventRTS *lowestPriorityEvent = NULL;
 	AudioPriority lowestPriority = AP_LOWEST;
 
+	// m_playingSounds also holds music and speech. Like the Miles backend, only replace
+	// sound effects of the same kind (2D or 3D) as the new sound.
+	const PlayingAudioType wantedType = event->isPositionalAudio() ? PAT_3DSample : PAT_Sample;
+
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		if ((*it)->m_type != wantedType) continue;
 		AudioEventRTS *itEvent = (*it)->m_audioEventRTS.Peek();
 		if (!itEvent) continue;
 		const AudioEventInfo *itInfo = itEvent->getAudioEventInfo();
@@ -1091,7 +1143,12 @@ Bool MiniAudioManager::isPlayingLowerPriority(AudioEventRTS *event) const
 	AudioPriority priority = event->getAudioEventInfo()->m_priority;
 	if (priority == AP_LOWEST) return false;
 
+	// m_playingSounds also holds music and speech. Like the Miles backend, only replace
+	// sound effects of the same kind (2D or 3D) as the new sound.
+	const PlayingAudioType wantedType = event->isPositionalAudio() ? PAT_3DSample : PAT_Sample;
+
 	for (auto it = m_playingSounds.begin(); it != m_playingSounds.end(); ++it) {
+		if ((*it)->m_type != wantedType) continue;
 		if (!(*it)->m_audioEventRTS) continue;
 		const AudioEventInfo *info = (*it)->m_audioEventRTS->getAudioEventInfo();
 		if (info && info->m_priority < priority) {
@@ -1205,8 +1262,8 @@ void MiniAudioManager::processPlayingList(void)
 			continue;
 		}
 
-		// Check if sound has finished playing
-		if (playing->m_sound && !ma_sound_is_playing(playing->m_sound)) {
+		// Check if sound has finished playing. Paused sounds are stopped but not finished.
+		if (playing->m_sound && !playing->m_paused && !ma_sound_is_playing(playing->m_sound)) {
 			it = m_playingSounds.erase(it);
 			releasePlayingAudio(playing);
 			continue;

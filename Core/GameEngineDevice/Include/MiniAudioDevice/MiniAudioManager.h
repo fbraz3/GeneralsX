@@ -46,6 +46,7 @@ struct PlayingAudio
 	PlayingAudioType m_type;
 	RefCountPtr<DynamicAudioEventRTS> m_audioEventRTS;
 	Bool m_requestStop;
+	Bool m_paused;
 	Int m_framesFaded;
 
 	PlayingAudio() :
@@ -54,6 +55,7 @@ struct PlayingAudio
 		m_type(PAT_INVALID),
 		m_audioEventRTS(NULL),
 		m_requestStop(false),
+		m_paused(false),
 		m_framesFaded(0)
 	{ }
 };
