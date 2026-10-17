@@ -3230,6 +3230,18 @@ void W3DModelDraw::updateAirGroundIndicator()
 		}
 	}
 
+	// GeneralsX @tweak felipebraz 16/10/2026 Restrict indicator to controllable combat/utility aircraft,
+	// excluding automated support planes (e.g. supply cargo planes, carpet bombers, airstrikes)
+	if (!draw->isSelectable() || !draw->isKindOf(KINDOF_SELECTABLE) || draw->isKindOf(KINDOF_IGNORED_IN_GUI))
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
 	if (draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
 	{
 		if (m_airGroundIndicator)
@@ -3267,7 +3279,9 @@ void W3DModelDraw::updateAirGroundIndicator()
 			m_renderObject->Get_Obj_Space_Bounding_Sphere(sphere);
 			size = sphere.Radius * 1.5f;
 		}
-		if (size < 25.0f) size = 25.0f;
+		// GeneralsX @tweak felipebraz 16/10/2026 Reduce indicator size by 20% for cleaner visual footprint
+		size *= 0.80f;
+		if (size < 20.0f) size = 20.0f;
 
 		indicatorInfo.m_sizeX = size;
 		indicatorInfo.m_sizeY = size;

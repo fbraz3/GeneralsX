@@ -2593,6 +2593,10 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 				if( !forceAttack && !candObj->isSelectable() )
 					continue;
 
+				// GeneralsX @tweak felipebraz 16/10/2026 Filter out unselectable and GUI-ignored aircraft
+				if( !cand->isKindOf(KINDOF_SELECTABLE) || cand->isKindOf(KINDOF_IGNORED_IN_GUI) )
+					continue;
+
 				Real heightAboveGround = cand->getHeightAboveTerrain();
 				if( !WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < W3DModelDraw::MIN_AIR_GROUND_INDICATOR_HEIGHT )
 					continue;
@@ -2603,8 +2607,10 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 					size = tmplate->getShadowSizeY();
 				if( size <= 0.0f )
 					size = 50.0f;
-				if( size < 25.0f )
-					size = 25.0f;
+				// GeneralsX @tweak felipebraz 16/10/2026 Match 20% reduced indicator size
+				size *= 0.80f;
+				if( size < 20.0f )
+					size = 20.0f;
 
 				Real radius = size * 0.5f;
 				const Coord3D *pos = cand->getPosition();
