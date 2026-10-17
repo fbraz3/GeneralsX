@@ -82,8 +82,7 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 				return assetRootPath;
 			}
 
-			#ifdef __linux__
-			// GeneralsX @bugfix BenderAI 11/05/2026 Linux: resolve case-insensitive paths from asset root.
+			// GeneralsX @bugfix BenderAI 11/05/2026 Resolve case-insensitive paths from asset root.
 			// Some cursor files are lowercase on disk (e.g. sccpointer.ani) while INI references mixed-case names.
 			// The existing case-insensitive traversal below only checks cwd, not the asset root fallback.
 			std::filesystem::path assetRootFixed = s_assetFallbackPath;
@@ -129,7 +128,6 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 					return assetRootFixed;
 				}
 			}
-			#endif
 		}
 		// Traverse path to try and match case-insensitively
 		std::filesystem::path parent = path.parent_path();
@@ -260,6 +258,22 @@ void StdLocalFileSystem::update()
 
 void StdLocalFileSystem::init()
 {
+#ifndef _WIN32
+	// GeneralsX @bugfix felipebraz 16/10/2026 Default asset root fallback from environment variables
+	if (s_assetFallbackPath.empty())
+	{
+#if RTS_ZEROHOUR
+		const char *env = getenv("CNC_GENERALS_ZH_PATH");
+		if (!env || !env[0]) env = getenv("CNC_GENERALS_PATH");
+#else
+		const char *env = getenv("CNC_GENERALS_PATH");
+#endif
+		if (env && env[0])
+		{
+			setAssetRootPath(AsciiString(env));
+		}
+	}
+#endif
 }
 
 void StdLocalFileSystem::reset()
@@ -433,6 +447,8 @@ void StdLocalFileSystem::setAssetRootPath(const AsciiString& path)
 	std::string p(path.str());
 	std::replace(p.begin(), p.end(), '\\', '/');
 	s_assetFallbackPath = std::filesystem::path(std::move(p));
+	fprintf(stderr, "[ASSET_ROOT] StdLocalFileSystem asset root fallback set to '%s'\n", s_assetFallbackPath.string().c_str());
+	fflush(stderr);
 	DEBUG_LOG(("StdLocalFileSystem::setAssetRootPath - asset fallback path set to '%s'", s_assetFallbackPath.string().c_str()));
 }
 #endif

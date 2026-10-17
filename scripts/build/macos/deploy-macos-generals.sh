@@ -118,6 +118,17 @@ if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
     cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
 fi
 
+# GeneralsX @bugfix felipebraz 16/10/2026 Symlink Data/Cursors into runtime dir if present in asset path
+GEN_ASSET_DIR="${CNC_GENERALS_PATH:-}"
+if [[ -z "${GEN_ASSET_DIR}" || ! -d "${GEN_ASSET_DIR}/Data/Cursors" ]]; then
+    GEN_ASSET_DIR="${HOME}/GeneralsX/data/Generals"
+fi
+if [[ -d "${GEN_ASSET_DIR}/Data/Cursors" && ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Data"
+    ln -sfn "${GEN_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
+    echo "  Symlinked Data/Cursors from ${GEN_ASSET_DIR}/Data/Cursors"
+fi
+
 echo "  Deploying Fontconfig config & fonts..."
 mkdir -p "${RUNTIME_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
