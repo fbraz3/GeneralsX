@@ -2579,7 +2579,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 
 			for( Drawable *cand = TheGameClient->getDrawableList(); cand; cand = cand->getNextDrawable() )
 			{
-				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
+				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->getStealthLook() != STEALTHLOOK_NONE || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
 					continue;
 
 				const Object *candObj = cand->getObject();

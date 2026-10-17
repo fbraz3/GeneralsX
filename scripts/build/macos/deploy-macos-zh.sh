@@ -173,10 +173,13 @@ ZH_ASSET_DIR="${CNC_GENERALS_ZH_PATH:-}"
 if [[ -z "${ZH_ASSET_DIR}" || ! -d "${ZH_ASSET_DIR}/Data/Cursors" ]]; then
     ZH_ASSET_DIR="${HOME}/GeneralsX/data/GeneralsZH"
 fi
-if [[ -d "${ZH_ASSET_DIR}/Data/Cursors" && ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
-    mkdir -p "${RUNTIME_DIR}/Data"
-    ln -sfn "${ZH_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
-    echo "  Symlinked Data/Cursors from ${ZH_ASSET_DIR}/Data/Cursors"
+if [[ -d "${ZH_ASSET_DIR}/Data/Cursors" ]]; then
+    ZH_ASSET_DIR="$(cd "${ZH_ASSET_DIR}" && pwd)"
+    if [[ ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
+        mkdir -p "${RUNTIME_DIR}/Data"
+        ln -sfn "${ZH_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
+        echo "  Symlinked Data/Cursors from ${ZH_ASSET_DIR}/Data/Cursors"
+    fi
 fi
 
 # GeneralsX @bugfix Copilot 24/03/2026 Deploy Fontconfig config into runtime dir so FreeType/Fontconfig can resolve fonts on macOS.

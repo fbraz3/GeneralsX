@@ -2049,12 +2049,6 @@ void W3DModelDraw::allocateShadows()
 			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
 				m_shadow->enableShadowRender(FALSE);
 		}
-
-		if (m_airGroundIndicator)
-		{	m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
-			if (m_renderObject->Is_Hidden() || !m_shadowEnabled)
-				m_airGroundIndicator->enableShadowRender(FALSE);
-		}
 	}
 }
 
@@ -3217,6 +3211,7 @@ void W3DModelDraw::updateAirGroundIndicator()
 		return;
 	}
 
+	// GeneralsX @feature felipebraz 16/10/2026 Restrict tactical ground indicator to aircraft controlled by the local player
 	if (ThePlayerList && ThePlayerList->getLocalPlayer())
 	{
 		if (obj == nullptr || obj->getControllingPlayer() != ThePlayerList->getLocalPlayer())
@@ -3242,7 +3237,7 @@ void W3DModelDraw::updateAirGroundIndicator()
 		return;
 	}
 
-	if (draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
+	if (draw->getStealthLook() != STEALTHLOOK_NONE || draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
 	{
 		if (m_airGroundIndicator)
 			m_airGroundIndicator->enableShadowRender(FALSE);

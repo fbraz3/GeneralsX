@@ -123,10 +123,13 @@ GEN_ASSET_DIR="${CNC_GENERALS_PATH:-}"
 if [[ -z "${GEN_ASSET_DIR}" || ! -d "${GEN_ASSET_DIR}/Data/Cursors" ]]; then
     GEN_ASSET_DIR="${HOME}/GeneralsX/data/Generals"
 fi
-if [[ -d "${GEN_ASSET_DIR}/Data/Cursors" && ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
-    mkdir -p "${RUNTIME_DIR}/Data"
-    ln -sfn "${GEN_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
-    echo "  Symlinked Data/Cursors from ${GEN_ASSET_DIR}/Data/Cursors"
+if [[ -d "${GEN_ASSET_DIR}/Data/Cursors" ]]; then
+    GEN_ASSET_DIR="$(cd "${GEN_ASSET_DIR}" && pwd)"
+    if [[ ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
+        mkdir -p "${RUNTIME_DIR}/Data"
+        ln -sfn "${GEN_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
+        echo "  Symlinked Data/Cursors from ${GEN_ASSET_DIR}/Data/Cursors"
+    fi
 fi
 
 echo "  Deploying Fontconfig config & fonts..."
