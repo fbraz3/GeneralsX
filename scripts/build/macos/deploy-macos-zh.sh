@@ -263,7 +263,7 @@ fi
 # Data/INI/Default/...) relative to the binary's cwd. Without this cd, anything
 # launched via absolute path (Finder, gtimeout, full-path invocation) misses
 # every loose INI / asset and only sees what is bundled inside the BIG files.
-cd "\${SCRIPT_DIR}"
+cd "\${SCRIPT_DIR}" || exit 1
 
 LOG_FILE="\${SCRIPT_DIR}/game.log"
 "./GeneralsXZH" "\$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "\${LOG_FILE}"

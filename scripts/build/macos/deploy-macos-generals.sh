@@ -167,6 +167,9 @@ if [[ -f "${SCRIPT_DIR}/MoltenVK_icd.json" ]]; then
     export VK_DRIVER_FILES="${SCRIPT_DIR}/MoltenVK_icd.json"
 fi
 
+# GeneralsX @bugfix felipebraz 17/10/2026 Run from runtime directory so local asset resolution (Data/Cursors, INIs) is authoritative
+cd "${SCRIPT_DIR}" || exit 1
+
 "${SCRIPT_DIR}/GeneralsX" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
 exit ${PIPESTATUS[0]}
 WRAPPER
