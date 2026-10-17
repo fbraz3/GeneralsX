@@ -3184,6 +3184,28 @@ void W3DModelDraw::updateHeadlightDynamicLight()
 }
 
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @feature felipebraz 17/10/2026 Unified sizing calculation for tactical ground indicator and picking
+Real W3DModelDraw::calculateAirGroundIndicatorSize(const ThingTemplate *tmplate)
+{
+	Real size = tmplate ? tmplate->getShadowSizeX() : 0.0f;
+	if (size <= 0.0f && tmplate)
+	{
+		size = tmplate->getShadowSizeY();
+	}
+	if (size <= 0.0f)
+	{
+		size = DEFAULT_AIR_GROUND_INDICATOR_SIZE;
+	}
+	// GeneralsX @tweak felipebraz 16/10/2026 Reduce indicator size by 20% for cleaner visual footprint
+	size *= 0.80f;
+	if (size < 20.0f)
+	{
+		size = 20.0f;
+	}
+	return size;
+}
+
+//-------------------------------------------------------------------------------------------------
 // GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
 void W3DModelDraw::updateAirGroundIndicator()
 {
@@ -3261,23 +3283,7 @@ void W3DModelDraw::updateAirGroundIndicator()
 		indicatorInfo.m_type = SHADOW_ALPHA_DECAL;
 		strlcpy(indicatorInfo.m_ShadowName, "extargeteralpha", ARRAY_SIZE(indicatorInfo.m_ShadowName));
 
-		const ThingTemplate *tmplate = draw->getTemplate();
-		Real size = 0.0f;
-		if (tmplate)
-		{
-			size = tmplate->getShadowSizeX();
-			if (size <= 0.0f)
-				size = tmplate->getShadowSizeY();
-		}
-		if (size <= 0.0f)
-		{
-			SphereClass sphere;
-			m_renderObject->Get_Obj_Space_Bounding_Sphere(sphere);
-			size = sphere.Radius * 1.5f;
-		}
-		// GeneralsX @tweak felipebraz 16/10/2026 Reduce indicator size by 20% for cleaner visual footprint
-		size *= 0.80f;
-		if (size < 20.0f) size = 20.0f;
+		Real size = calculateAirGroundIndicatorSize(draw->getTemplate());
 
 		indicatorInfo.m_sizeX = size;
 		indicatorInfo.m_sizeY = size;

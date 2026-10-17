@@ -57,6 +57,7 @@ public:
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
+class ThingTemplate;
 class RenderObjClass;
 class W3DDynamicLight;
 class Shadow;
@@ -345,9 +346,12 @@ class W3DModelDraw : public DrawModule, public ObjectDrawInterface
 
 public:
 
-	// Tactical ground indicator altitude thresholds
+	// Tactical ground indicator altitude thresholds and sizing
 	static constexpr Real MIN_AIR_GROUND_INDICATOR_HEIGHT = 15.0f;
 	static constexpr Real BLEND_AIR_GROUND_INDICATOR_HEIGHT = 35.0f;
+	static constexpr Real DEFAULT_AIR_GROUND_INDICATOR_SIZE = 50.0f;
+
+	static Real calculateAirGroundIndicatorSize(const ThingTemplate *tmplate);
 
 	W3DModelDraw( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration

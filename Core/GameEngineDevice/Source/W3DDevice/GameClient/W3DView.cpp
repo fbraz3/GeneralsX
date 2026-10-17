@@ -2602,16 +2602,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 				if( !WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < W3DModelDraw::MIN_AIR_GROUND_INDICATOR_HEIGHT )
 					continue;
 
-				const ThingTemplate *tmplate = cand->getTemplate();
-				Real size = tmplate ? tmplate->getShadowSizeX() : 0.0f;
-				if( size <= 0.0f && tmplate )
-					size = tmplate->getShadowSizeY();
-				if( size <= 0.0f )
-					size = 50.0f;
-				// GeneralsX @tweak felipebraz 16/10/2026 Match 20% reduced indicator size
-				size *= 0.80f;
-				if( size < 20.0f )
-					size = 20.0f;
+				Real size = W3DModelDraw::calculateAirGroundIndicatorSize(cand->getTemplate());
 
 				Real radius = size * 0.5f;
 				const Coord3D *pos = cand->getPosition();
