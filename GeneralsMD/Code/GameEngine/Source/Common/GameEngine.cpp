@@ -848,8 +848,12 @@ void GameEngine::init()
 			m_quitting = TRUE;
 		}
 
-		// load the initial shell screen
-		TheShell->push( "Menus/MainMenu.wnd" );
+		// GeneralsX @bugfix elmeriniemela 17/10/2026 Do not start the shell map during the intro.
+		// The main menu is not pushed here, as in the original code. MainMenuInit() calls
+		// showShellMap(TRUE), which would start the shell map (and its music and sounds)
+		// while the intro movies are still playing. GameClient::update() starts the shell map
+		// when the intro is done, and GameLogic::startNewGame() pushes the main menu once the
+		// shell map has loaded (or Shell::showShell() does it when the shell map is off).
 
 		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
