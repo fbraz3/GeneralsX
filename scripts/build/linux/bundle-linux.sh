@@ -26,6 +26,9 @@ copy_ldd_deps() {
         case "${dep}" in
             linux-vdso.so.1 | \
             /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /usr/lib/libc.so.* | /usr/lib/libm.so.* | /usr/lib/libpthread.so.* | /usr/lib/librt.so.* | /usr/lib/libdl.so.* | \
+            */libmvec.so.* | */libresolv.so.* | */libutil.so.* | */libanl.so.* | */libnsl.so.1 | */libnss_*.so.* | \
+            */libthread_db.so.* | */libBrokenLocale.so.* | */libc_malloc_debug.so.* | */libmemusage.so | */libpcprofile.so | \
             /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
             /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
             /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
