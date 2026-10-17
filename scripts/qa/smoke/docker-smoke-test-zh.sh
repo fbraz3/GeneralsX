@@ -64,6 +64,6 @@ docker run --rm \
 echo ""
 echo "✅ Smoke test complete. Log: $LOG_FILE"
 echo "ℹ️  Check log for:"
-echo "   - SDL3/OpenAL initialization messages"
+echo "   - SDL3/MiniAudio initialization messages"
 echo "   - Missing library errors (libdxvk_d3d8.so, etc.)"
 echo "   - Crash location (helps debug)"

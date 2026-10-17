@@ -34,7 +34,6 @@ RUN apt-get update -qq && \
         autoconf-archive \
         libtool \
         libltdl-dev \
-        libopenal-dev \
         libprotobuf-dev \
         protobuf-compiler \
         libasound2-dev \

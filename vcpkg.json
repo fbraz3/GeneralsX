@@ -14,11 +14,6 @@
       "platform": "!windows"
     },
     {
-      "name": "openal-soft",
-      "platform": "!windows",
-      "features": []
-    },
-    {
       "name": "curl",
       "features": ["ssl", "websockets"]
     },
