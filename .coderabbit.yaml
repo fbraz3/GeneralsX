@@ -6,7 +6,7 @@ enable_free_tier: true
 tone_instructions: >-
   Be direct, technical, and constructive. Focus on C++ engine architecture,
   cross-platform determinism (macOS/Linux), platform isolation (SDL3/DXVK),
-  audio parity (OpenAL/MiniAudio), performance, memory safety, and project conventions.
+  audio architecture (MiniAudio), performance, memory safety, and project conventions.
 
 reviews:
   profile: "chill"
@@ -76,10 +76,11 @@ reviews:
            with `fflush(stderr)` instead of `DEBUG_LOG` (which is compiled out in release builds).
         6. Memory Safety: Ensure correct memory allocation/deallocation pairs (`new`/`delete`, `new[]`/`delete[]`) and avoid leaks.
 
-    - path: "Core/GameEngineDevice/{Source,Include}/{OpenAL,MiniAudio}/**"
+    - path: "Core/GameEngineDevice/{Source,Include}/MiniAudio/**"
       instructions: >-
-        OpenAL / MiniAudio Parity: Cross-platform audio stack requires strict feature parity.
-        Any bugfix, enhancement, or behavioral fix applied to OpenAL must be mirrored in MiniAudio (and vice versa).
+        MiniAudio Subsystem: MiniAudio is the primary and stable cross-platform audio backend.
+        OpenAL is deprecated and no longer maintained. Ensure audio improvements, volume handling,
+        and streaming/spatial playback adhere to MiniAudio conventions.
 
     - path: "{**/GeneralsOnline/**,**/NextGenMP/**,cmake/ngmp.cmake}"
       instructions: >-
@@ -156,9 +157,9 @@ reviews:
       - name: "Cross-Platform Determinism"
         mode: "error"
         instructions: "Verify that simulation/game logic math uses WWMath deterministic functions (WWMath::Sqrt, WWMath::Sin, WWMath::Cos, WWMath::Atan2, WWMath::PowOrigin, etc.) and divisions are protected against NaN/Inf before integer casts."
-      - name: "OpenAL / MiniAudio Parity"
+      - name: "MiniAudio Backend Focus"
         mode: "warning"
-        instructions: "Verify if audio modifications in OpenAL are mirrored in MiniAudio to maintain backend parity."
+        instructions: "Verify that new audio features and bugfixes target MiniAudio as the primary cross-platform audio backend. OpenAL is deprecated and no longer maintained."
       - name: "Conventional Commit Standards"
         mode: "error"
         instructions: >-

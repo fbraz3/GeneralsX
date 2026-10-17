@@ -84,7 +84,8 @@ modules:
           -DRTS_CRASHDUMP_ENABLE=OFF \
           -DSAGE_USE_DX8=OFF \
           -DSAGE_USE_SDL3=ON \
-          -DSAGE_USE_OPENAL=ON \
+          -DSAGE_USE_OPENAL=OFF \
+          -DSAGE_USE_MINIAUDIO=ON \
           -DSAGE_USE_GLM=ON \
           -DSAGE_UPDATE_CHECK=ON \
           -DRTS_BUILD_OPTION_SAGE_PATCH=ON \
@@ -93,7 +94,7 @@ modules:
           -DFETCHCONTENT_SOURCE_DIR_DXVK=/run/build/generalsx/dxvk-src \
           -DFETCHCONTENT_SOURCE_DIR_SDL3=/run/build/generalsx/sdl3-src \
           -DFETCHCONTENT_SOURCE_DIR_SDL3_IMAGE=/run/build/generalsx/sdl3-image-src \
-          -DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/run/build/generalsx/openal-soft-src \
+          -DFETCHCONTENT_SOURCE_DIR_MINIAUDIO=/run/build/generalsx/miniaudio-src \
           -DFETCHCONTENT_SOURCE_DIR_GAMESPY=/run/build/generalsx/gamespy-src \
           -DFETCHCONTENT_SOURCE_DIR_LZHL=/run/build/generalsx/lzhl-src/CompLibHeader \
           -DFETCHCONTENT_SOURCE_DIR_GAMEMATH=/run/build/generalsx/gamemath-src \
@@ -113,7 +114,6 @@ modules:
       - cp -a /run/build/generalsx/dxvk-src/lib/libdxvk_d3d9.so* /app/lib/
       - if [ -d build-flatpak/_deps/sdl3-build ]; then cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/; fi
       - if [ -d build-flatpak/_deps/sdl3_image-build ]; then cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/; fi
-      - if [ -d build-flatpak/_deps/openal_soft-build ]; then cp -a build-flatpak/_deps/openal_soft-build/libopenal.so* /app/lib/; fi
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
       # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
       - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
@@ -228,11 +228,10 @@ modules:
         sha256: 2ceb75eab4235c2c7e93dafc3ef3268ad368ca5de40892bf8cffdd510f29d9d8
         dest: sdl3-image-src
         strip-components: 1
-      - type: archive
-        url: https://github.com/kcat/openal-soft/archive/refs/tags/1.24.2.tar.gz
-        sha256: 7efd383d70508587fbc146e4c508771a2235a5fc8ae05bf6fe721c20a348bd7c
-        dest: openal-soft-src
-        strip-components: 1
+      - type: git
+        url: https://github.com/mackron/miniaudio.git
+        branch: master
+        dest: miniaudio-src
       - type: archive
         url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz
         sha256: 9c1a2b2c8a6565e71bde5f18b6c1a7e0ac4d621023bd38004a421a5fef4212ac

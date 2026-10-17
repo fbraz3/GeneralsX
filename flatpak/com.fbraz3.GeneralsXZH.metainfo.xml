@@ -7,7 +7,7 @@
   <description>
     <p>
       GeneralsX is a native Linux, macOS, and Windows port of Command &amp; Conquer:
-      Generals Zero Hour using SDL3, DXVK, and OpenAL.
+      Generals Zero Hour using SDL3, DXVK, and MiniAudio.
     </p>
     <p>
       This Flatpak package expects original game assets to be available in user data paths.

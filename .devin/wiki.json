@@ -1,7 +1,7 @@
 {
   "repo_notes": [
     {
-      "content": "GeneralsX is a community-driven cross-platform port of Command & Conquer: Generals Zero Hour (2003) for Linux and macOS, modernizing a legacy Windows DirectX 8 + Miles Sound codebase to a modern 64-bit stack (SDL3 + DXVK + OpenAL/MiniAudio + FFmpeg). The primary target is GeneralsXZH (Zero Hour expansion in GeneralsMD/), with GeneralsX (base game in Generals/) as secondary. The codebase (~500k+ LOC) preserves retail gameplay and simulation determinism while modernizing the underlying platform layer.",
+      "content": "GeneralsX is a community-driven cross-platform port of Command & Conquer: Generals Zero Hour (2003) for Linux and macOS, modernizing a legacy Windows DirectX 8 + Miles Sound codebase to a modern 64-bit stack (SDL3 + DXVK + MiniAudio + FFmpeg). The primary target is GeneralsXZH (Zero Hour expansion in GeneralsMD/), with GeneralsX (base game in Generals/) as secondary. The codebase (~500k+ LOC) preserves retail gameplay and simulation determinism while modernizing the underlying platform layer.",
       "author": "GeneralsX Team"
     },
     {
@@ -17,7 +17,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Audio stack parity: GeneralsX maintains dual cross-platform modern audio backends — OpenAL and MiniAudio — replacing the legacy Miles Sound System. Any new audio features or bug fixes implemented in one backend must be replicated in the other to maintain strict feature parity.",
+      "content": "Audio stack: GeneralsX uses the modern, stable MiniAudio cross-platform audio backend, replacing the legacy Miles Sound System. The legacy OpenAL backend is deprecated and no longer maintained.",
       "author": "GeneralsX Team"
     },
     {
@@ -38,7 +38,7 @@
     },
     {
       "title": "Build System & Presets",
-      "purpose": "Document CMakePresets.json and primary presets: linux64-deploy, linux64-testing, macos-vulkan, mingw-w64-i686, vc6, and win32. Explain modular cmake/ configuration files (dx8.cmake, sdl3.cmake, openal.cmake, miniaudio.cmake, ngmp.cmake, FindFFmpeg.cmake) and Docker containerized build workflows.",
+      "purpose": "Document CMakePresets.json and primary presets: linux64-deploy, linux64-testing, macos-vulkan, mingw-w64-i686, vc6, and win32. Explain modular cmake/ configuration files (dx8.cmake, sdl3.cmake, miniaudio.cmake, openal.cmake [legacy], ngmp.cmake, FindFFmpeg.cmake) and Docker containerized build workflows.",
       "parent": "Project Overview"
     },
     {
@@ -62,8 +62,8 @@
       "parent": "Core Engine Architecture"
     },
     {
-      "title": "Audio Subsystem (OpenAL & MiniAudio)",
-      "purpose": "Document the modern cross-platform audio architectures replacing Miles Sound System: OpenAL and MiniAudio implementations. Detail the strict parity requirement between both backends, 3D sound positioning, audio threading, and FPU isolation.",
+      "title": "Audio Subsystem (MiniAudio)",
+      "purpose": "Document the modern cross-platform audio architecture replacing Miles Sound System: MiniAudio implementation. Detail audio playback, 3D sound positioning, audio threading, and FPU isolation.",
       "parent": "Core Engine Architecture"
     },
     {
@@ -83,7 +83,7 @@
     },
     {
       "title": "Cross-Platform Port Strategy",
-      "purpose": "Architectural strategy for porting the legacy 32-bit DirectX 8 Windows game to modern 64-bit Linux and macOS: SDL3 everywhere, DXVK everywhere, OpenAL/MiniAudio parity, single codebase maintainability, and clean separation between platform abstractions and game simulation.",
+      "purpose": "Architectural strategy for porting the legacy 32-bit DirectX 8 Windows game to modern 64-bit Linux and macOS: SDL3 everywhere, DXVK everywhere, MiniAudio audio backend, single codebase maintainability, and clean separation between platform abstractions and game simulation.",
       "parent": null
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "title": "Reference Repositories",
-      "purpose": "Document internal and external reference codebases: workspace references in ../references/ (GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for OpenAL/Win64).",
+      "purpose": "Document internal and external reference codebases: workspace references in ../references/ (GameClient, GameServer) and upstream/historical references (TheSuperHackers upstream baseline, fighter19-dxvk-port for DXVK/SDL3, jmarshall-win64-modern for legacy OpenAL/Win64).",
       "parent": "Cross-Platform Port Strategy"
     },
     {

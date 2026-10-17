@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-Current CI confidence is dominated by compile and link success. This catches build breakages, but it does not reliably catch startup crashes (for example, segfaults during SDL3/DXVK/OpenAL initialization).
+Current CI confidence is dominated by compile and link success. This catches build breakages, but it does not reliably catch startup crashes (for example, segfaults during SDL3/DXVK/MiniAudio initialization).
 
 Upstream replay-based validation is highly valuable, but replay checks alone do not guarantee runtime bootstrap safety in modern cross-platform paths.
 
@@ -57,7 +57,7 @@ Definition:
 
 Minimum checks by platform:
 - Linux: run deployment bundle with required shared libraries in place
-- macOS: run built app/binary with Vulkan/OpenAL environment configured in CI runner
+- macOS: run built app/binary with Vulkan/MiniAudio environment configured in CI runner
 
 ### Layer 3: Headless Replay Determinism (mandatory, scoped)
 

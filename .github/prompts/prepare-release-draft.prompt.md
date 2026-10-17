@@ -130,7 +130,7 @@ Zero Hour includes built-in online lobbies via **GeneralsOnline (NGMP)**. Player
 ### 🎨 Graphics & Visuals (DXVK / Vulkan)
 - ...
 
-### 🔊 Audio & Video Subsystems (MiniAudio / OpenAL / FFmpeg)
+### 🔊 Audio & Video Subsystems (MiniAudio / FFmpeg)
 - ...
 
 ### 🚀 Platform, Packaging & CI (macOS, Linux, Windows)

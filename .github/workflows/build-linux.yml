@@ -96,7 +96,6 @@ jobs:
             autoconf-archive \
             libtool \
             libltdl-dev \
-            libopenal-dev \
             libasound2-dev \
             libpulse-dev \
             libaudio-dev \
