@@ -46,6 +46,7 @@ struct PlayingAudio
 	PlayingAudioType m_type;
 	RefCountPtr<DynamicAudioEventRTS> m_audioEventRTS;
 	Bool m_requestStop;
+	// GeneralsX @bugfix elmeriniemela 17/10/2026 Paused by pauseAudio(), not finished.
 	Bool m_paused;
 	Int m_framesFaded;
 

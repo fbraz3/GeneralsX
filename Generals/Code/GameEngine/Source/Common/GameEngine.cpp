@@ -674,6 +674,7 @@ void GameEngine::init()
 			m_quitting = TRUE;
 		}
 
+		// GeneralsX @bugfix elmeriniemela 17/10/2026 Do not start the shell map during the intro.
 		// The main menu is not pushed here, as in the original code. MainMenuInit() calls
 		// showShellMap(TRUE), which would start the shell map (and its music and sounds)
 		// while the intro movies are still playing. GameClient::update() starts the shell map

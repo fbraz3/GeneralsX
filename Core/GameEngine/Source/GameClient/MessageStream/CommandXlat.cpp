@@ -5836,7 +5836,9 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		{
 			if (TheAudio->isMusicPlaying())
 			{
-				TheAudio->stopAudio(AudioAffect_Music);
+				// GeneralsX @bugfix elmeriniemela 17/10/2026 Pause instead of stop, so that resumeAudio() can
+				// restart the same track. stopAudio() releases the music in the audio backends.
+				TheAudio->pauseAudio(AudioAffect_Music);
 				TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE("GUI:DebugMusicOn", L"Music is OFF") );
 			} else
 			{
