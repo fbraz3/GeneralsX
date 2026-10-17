@@ -2579,6 +2579,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 
 			for( Drawable *cand = TheGameClient->getDrawableList(); cand; cand = cand->getNextDrawable() )
 			{
+				// GeneralsX @bugfix felipebraz 17/10/2026 Suppress tactical picking when aircraft is stealthed/cloaked
 				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->getStealthLook() != STEALTHLOOK_NONE || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
 					continue;
 
