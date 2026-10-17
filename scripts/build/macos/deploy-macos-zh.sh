@@ -175,8 +175,9 @@ if [[ -z "${ZH_ASSET_DIR}" || ! -d "${ZH_ASSET_DIR}/Data/Cursors" ]]; then
 fi
 if [[ -d "${ZH_ASSET_DIR}/Data/Cursors" ]]; then
     ZH_ASSET_DIR="$(cd "${ZH_ASSET_DIR}" && pwd)"
-    if [[ ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
-        mkdir -p "${RUNTIME_DIR}/Data"
+    mkdir -p "${RUNTIME_DIR}/Data"
+    # GeneralsX @bugfix felipebraz 17/10/2026 Refresh cursor symlink on deployment while preserving user-managed directory
+    if [[ -L "${RUNTIME_DIR}/Data/Cursors" || ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
         ln -sfn "${ZH_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
         echo "  Symlinked Data/Cursors from ${ZH_ASSET_DIR}/Data/Cursors"
     fi

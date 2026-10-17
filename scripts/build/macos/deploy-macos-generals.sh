@@ -125,8 +125,9 @@ if [[ -z "${GEN_ASSET_DIR}" || ! -d "${GEN_ASSET_DIR}/Data/Cursors" ]]; then
 fi
 if [[ -d "${GEN_ASSET_DIR}/Data/Cursors" ]]; then
     GEN_ASSET_DIR="$(cd "${GEN_ASSET_DIR}" && pwd)"
-    if [[ ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
-        mkdir -p "${RUNTIME_DIR}/Data"
+    mkdir -p "${RUNTIME_DIR}/Data"
+    # GeneralsX @bugfix felipebraz 17/10/2026 Refresh cursor symlink on deployment while preserving user-managed directory
+    if [[ -L "${RUNTIME_DIR}/Data/Cursors" || ! -e "${RUNTIME_DIR}/Data/Cursors" ]]; then
         ln -sfn "${GEN_ASSET_DIR}/Data/Cursors" "${RUNTIME_DIR}/Data/Cursors"
         echo "  Symlinked Data/Cursors from ${GEN_ASSET_DIR}/Data/Cursors"
     fi
