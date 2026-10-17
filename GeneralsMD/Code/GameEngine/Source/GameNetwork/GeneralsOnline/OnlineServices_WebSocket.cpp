@@ -44,6 +44,7 @@ bool NGMPWebSocket::connect(const std::string& wsUrl, const std::string& authTok
     // GeneralsX @bugfix fbraz3 05/09/2026 Enable SNI via CURLOPT_SSL_VERIFYHOST=2 to prevent handshake rejection on Cloudflare edge (macOS SecureTransport)
     curl_easy_setopt(m_curl, CURLOPT_SSL_VERIFYHOST, 2L);
     curl_easy_setopt(m_curl, CURLOPT_VERBOSE, isDev ? 1L : 0L);
+    curl_easy_setopt(m_curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
     if (headers) {
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
     }
