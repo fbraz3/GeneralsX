@@ -131,6 +131,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "PostProcessBloom",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessBloom ) },
 	{ "PostProcessHDR",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessHDR ) },
 	{ "PostProcessFXAA",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessFXAA ) },
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	{ "AirUnitGroundIndicator",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_airUnitGroundIndicator ) },
 	{ "UseShadowDecals",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowDecals ) },
 	{ "TextureReductionFactor",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_textureReductionFactor ) },
 	{ "UseBehindBuildingMarker",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_enableBehindBuildingMarkers ) },
@@ -709,6 +711,7 @@ GlobalData::GlobalData()
 	m_postProcessBloom = TRUE;
 	m_postProcessHDR = TRUE;
 	m_postProcessFXAA = FALSE;
+	m_airUnitGroundIndicator = TRUE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;
@@ -1293,6 +1296,7 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_postProcessBloom = optionPref.getPostProcessBloom(TheWritableGlobalData->m_postProcessBloom);
 	TheWritableGlobalData->m_postProcessHDR = optionPref.getPostProcessHDR(TheWritableGlobalData->m_postProcessHDR);
 	TheWritableGlobalData->m_postProcessFXAA = optionPref.getPostProcessFXAA(TheWritableGlobalData->m_postProcessFXAA);
+	TheWritableGlobalData->m_airUnitGroundIndicator = optionPref.getAirUnitGroundIndicator(TheWritableGlobalData->m_airUnitGroundIndicator);
 
 	TheWritableGlobalData->m_antiAliasLevel = optionPref.getAntiAliasing();
 	TheWritableGlobalData->m_textureFilteringMode = optionPref.getTextureFilterMode();

@@ -57,6 +57,7 @@ public:
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
+class ThingTemplate;
 class RenderObjClass;
 class W3DDynamicLight;
 class Shadow;
@@ -345,6 +346,13 @@ class W3DModelDraw : public DrawModule, public ObjectDrawInterface
 
 public:
 
+	// Tactical ground indicator altitude thresholds and sizing
+	static constexpr Real MIN_AIR_GROUND_INDICATOR_HEIGHT = 15.0f;
+	static constexpr Real BLEND_AIR_GROUND_INDICATOR_HEIGHT = 35.0f;
+	static constexpr Real DEFAULT_AIR_GROUND_INDICATOR_SIZE = 50.0f;
+
+	static Real calculateAirGroundIndicatorSize(const ThingTemplate *tmplate);
+
 	W3DModelDraw( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 
@@ -507,6 +515,8 @@ private:
 	RenderObjClass*								m_renderObject;										///< W3D Render object for this drawable
 	Shadow*												m_shadow;													///< Updates/Renders shadows of this object
 	Shadow*												m_terrainDecal;
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	Shadow*												m_airGroundIndicator;
 	TerrainTracksRenderObjClass*	m_trackRenderObject;							///< This is rendered under object
 	ParticleSystemIDVec						m_particleSystemIDs;							///< The ID numbers of the particle systems currently running.
 	std::vector<ModelConditionInfo::HideShowSubObjInfo>		m_subObjectVec;
@@ -529,6 +539,7 @@ private:
 	void hideAllHeadlights(Bool hide);
 	Bool headlightBeam(Vector3& origin, Vector3& direction, Real& reach) const;
 	void updateHeadlightDynamicLight();
+	void updateAirGroundIndicator();
 #if defined(RTS_DEBUG)	//art wants to see buildings without flags as a test.
 	void hideGarrisonFlags(Bool hide);
 #endif

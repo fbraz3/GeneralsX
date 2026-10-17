@@ -174,6 +174,8 @@ public:
 	Bool m_postProcessBloom;
 	Bool m_postProcessHDR;
 	Bool m_postProcessFXAA;
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	Bool m_airUnitGroundIndicator;
 
 	Bool isUseShadowVolumesForSkins() const { return m_advancedShadows && m_useShadowVolumesForSkins; }
 	Bool isShadowsForProjectiles() const { return m_advancedShadows && m_shadowsForProjectiles; }
@@ -189,6 +191,7 @@ public:
 	Bool isPostProcessBloom() const { return m_enablePostProcessing && m_postProcessBloom; }
 	Bool isPostProcessHDR() const { return m_enablePostProcessing && m_postProcessHDR; }
 	Bool isPostProcessFXAA() const { return m_enablePostProcessing && m_postProcessFXAA; }
+	Bool isAirUnitGroundIndicator() const { return m_airUnitGroundIndicator; }
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;

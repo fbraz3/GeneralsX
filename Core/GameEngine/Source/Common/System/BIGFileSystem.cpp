@@ -523,6 +523,13 @@ void BIGFileSystem::init() {
 	DEBUG_ASSERTCRASH(loadedPrimaryAssets, ("No BIG files were loaded for the primary game assets."));
 	(void)loadedPrimaryAssets;
 
+	// GeneralsX @bugfix felipebraz 16/10/2026 Propagate the resolved asset root to the local file system.
+	// On Linux/macOS the binary cwd and the game data directory (asset root) are separate. Loose files like
+	// Data/Cursors/*.ani and Data/Scripts/*.scb must be resolvable from the asset root, not just from cwd.
+	// When BIG loading succeeds from cwd, primaryAssetsDirectory is empty; passing it clears any stale
+	// fallback root previously set during initialization so the working directory remains authoritative.
+	TheLocalFileSystem->setAssetRootPath(primaryAssetsDirectory);
+
 #if RTS_ZEROHOUR
     loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);
 #endif

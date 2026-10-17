@@ -2568,6 +2568,63 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	if (drawInfo)
 		draw=drawInfo->m_drawable;
 
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Allow picking airborne units by clicking their tactical ground indicator ring.
+	if( draw == nullptr && TheGlobalData && TheGlobalData->isAirUnitGroundIndicator() && TheGameClient != nullptr )
+	{
+		Coord3D terrainPos;
+		if( screenToTerrain( screen, &terrainPos ) )
+		{
+			Real bestDistSq = 1e9f;
+			Drawable *bestAirDraw = nullptr;
+
+			for( Drawable *cand = TheGameClient->getDrawableList(); cand; cand = cand->getNextDrawable() )
+			{
+				// GeneralsX @bugfix felipebraz 17/10/2026 Suppress tactical picking when aircraft is stealthed/cloaked
+				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->getStealthLook() != STEALTHLOOK_NONE || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
+					continue;
+
+				const Object *candObj = cand->getObject();
+				if( !candObj || candObj->isEffectivelyDead() )
+					continue;
+
+				// Tactical ground indicator picking only applies to local player's airborne units
+				if( ThePlayerList && ThePlayerList->getLocalPlayer() && candObj->getControllingPlayer() != ThePlayerList->getLocalPlayer() )
+					continue;
+
+				if( !forceAttack && !candObj->isSelectable() )
+					continue;
+
+				// GeneralsX @tweak felipebraz 16/10/2026 Filter out unselectable and GUI-ignored aircraft
+				if( !cand->isKindOf(KINDOF_SELECTABLE) || cand->isKindOf(KINDOF_IGNORED_IN_GUI) )
+					continue;
+
+				Real heightAboveGround = cand->getHeightAboveTerrain();
+				if( !WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < W3DModelDraw::MIN_AIR_GROUND_INDICATOR_HEIGHT )
+					continue;
+
+				Real size = W3DModelDraw::calculateAirGroundIndicatorSize(cand->getTemplate());
+
+				Real radius = size * 0.5f;
+				const Coord3D *pos = cand->getPosition();
+				if( pos == nullptr )
+					continue;
+
+				Real dx = terrainPos.x - pos->x;
+				Real dy = terrainPos.y - pos->y;
+				Real distSq = dx * dx + dy * dy;
+
+				if( WWMath::Is_Valid_Float(distSq) && distSq <= radius * radius && distSq < bestDistSq )
+				{
+					bestDistSq = distSq;
+					bestAirDraw = cand;
+				}
+			}
+
+			if( bestAirDraw != nullptr )
+				draw = bestAirDraw;
+		}
+	}
+
 	return draw;
 
 }

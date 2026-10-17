@@ -43,6 +43,8 @@
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
 #include "Common/ThingTemplate.h"
+#include "Common/Player.h"
+#include "Common/PlayerList.h"
 #include "Common/GameLOD.h"
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
@@ -1739,6 +1741,7 @@ W3DModelDraw::W3DModelDraw(Thing *thing, const ModuleData* moduleData) : DrawMod
 	m_shadowEnabled = TRUE;
 	m_hasModelShadow = FALSE;
 	m_terrainDecal = nullptr;
+	m_airGroundIndicator = nullptr;
 	m_trackRenderObject = nullptr;
 	m_whichAnimInCurState = -1;
 	m_nextState = nullptr;
@@ -1843,6 +1846,9 @@ void W3DModelDraw::setHidden(Bool hidden)
 	if (m_terrainDecal)
 		m_terrainDecal->enableShadowRender(!hidden);
 
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->enableShadowRender(!hidden);
+
 	if (m_trackRenderObject && hidden)
 	{	const Coord3D* pos = getDrawable()->getPosition();
 		m_trackRenderObject->addCapEdgeToTrack(pos->x,pos->y);
@@ -1858,6 +1864,9 @@ void W3DModelDraw::releaseShadows()	///< frees all shadow resources used by this
 	if (m_shadow)
 		m_shadow->release();
 	m_shadow = nullptr;
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->release();
+	m_airGroundIndicator = nullptr;
 }
 
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Skinned mesh shadow promotion and projectile decal shadows
@@ -2113,6 +2122,8 @@ void W3DModelDraw::setFullyObscuredByShroud(Bool fullyObscured)
 			m_shadow->enableShadowInvisible(m_fullyObscuredByShroud);
 		if (m_terrainDecal)
 			m_terrainDecal->enableShadowInvisible(m_fullyObscuredByShroud);
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
 
 		doStartOrStopParticleSys();
 	}
@@ -2277,6 +2288,7 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
   handleClientRecoil();
 
   updateHeadlightDynamicLight();
+  updateAirGroundIndicator();
 
 }
 
@@ -2958,6 +2970,10 @@ void W3DModelDraw::nukeCurrentRender(Matrix3D* xform)
 		m_terrainDecal->release();
 	m_terrainDecal = nullptr;
 
+	if (m_airGroundIndicator)
+		m_airGroundIndicator->release();
+	m_airGroundIndicator = nullptr;
+
 	if (m_headlightDynamicLight)
 	{
 		m_headlightDynamicLight->setEnabled(false);
@@ -3164,6 +3180,142 @@ void W3DModelDraw::updateHeadlightDynamicLight()
 		m_headlightDynamicLight->Set_Far_Attenuation_Range(clampedReach * 0.2f, clampedReach);
 		m_headlightDynamicLight->Set_Position(lightPos);
 		m_headlightDynamicLight->Set_Flag(LightClass::FAR_ATTENUATION, true);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature felipebraz 17/10/2026 Unified sizing calculation for tactical ground indicator and picking
+Real W3DModelDraw::calculateAirGroundIndicatorSize(const ThingTemplate *tmplate)
+{
+	Real size = tmplate ? tmplate->getShadowSizeX() : 0.0f;
+	if (size <= 0.0f && tmplate)
+	{
+		size = tmplate->getShadowSizeY();
+	}
+	if (size <= 0.0f)
+	{
+		size = DEFAULT_AIR_GROUND_INDICATOR_SIZE;
+	}
+	// GeneralsX @tweak felipebraz 16/10/2026 Reduce indicator size by 20% for cleaner visual footprint
+	size *= 0.80f;
+	if (size < 20.0f)
+	{
+		size = 20.0f;
+	}
+	return size;
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+void W3DModelDraw::updateAirGroundIndicator()
+{
+	Drawable *draw = getDrawable();
+	if (draw == nullptr || m_renderObject == nullptr || !draw->isKindOf(KINDOF_AIRCRAFT) ||
+		(TheGlobalData && !TheGlobalData->isAirUnitGroundIndicator()))
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
+	// Tactical ground indicator is exclusive to the local human player's airborne units
+	const Object *obj = draw->getObject();
+	if (obj && obj->isEffectivelyDead())
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
+	// GeneralsX @feature felipebraz 16/10/2026 Restrict tactical ground indicator to aircraft controlled by the local player
+	if (ThePlayerList && ThePlayerList->getLocalPlayer())
+	{
+		if (obj == nullptr || obj->getControllingPlayer() != ThePlayerList->getLocalPlayer())
+		{
+			if (m_airGroundIndicator)
+			{
+				m_airGroundIndicator->release();
+				m_airGroundIndicator = nullptr;
+			}
+			return;
+		}
+	}
+
+	// GeneralsX @tweak felipebraz 16/10/2026 Restrict indicator to controllable combat/utility aircraft,
+	// excluding automated support planes (e.g. supply cargo planes, carpet bombers, airstrikes)
+	if (!draw->isSelectable() || !draw->isKindOf(KINDOF_SELECTABLE) || draw->isKindOf(KINDOF_IGNORED_IN_GUI))
+	{
+		if (m_airGroundIndicator)
+		{
+			m_airGroundIndicator->release();
+			m_airGroundIndicator = nullptr;
+		}
+		return;
+	}
+
+	// GeneralsX @bugfix felipebraz 17/10/2026 Suppress ground indicator when aircraft is stealthed/cloaked
+	if (draw->getStealthLook() != STEALTHLOOK_NONE || draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
+	{
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowRender(FALSE);
+		return;
+	}
+
+	Real heightAboveGround = draw->getHeightAboveTerrain();
+	if (!WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < MIN_AIR_GROUND_INDICATOR_HEIGHT)
+	{
+		if (m_airGroundIndicator)
+			m_airGroundIndicator->enableShadowRender(FALSE);
+		return;
+	}
+
+	if (m_airGroundIndicator == nullptr && TheProjectedShadowManager != nullptr)
+	{
+		Shadow::ShadowTypeInfo indicatorInfo;
+		indicatorInfo.allowUpdates = FALSE;
+		indicatorInfo.allowWorldAlign = TRUE;
+		indicatorInfo.m_type = SHADOW_ALPHA_DECAL;
+		strlcpy(indicatorInfo.m_ShadowName, "extargeteralpha", ARRAY_SIZE(indicatorInfo.m_ShadowName));
+
+		Real size = calculateAirGroundIndicatorSize(draw->getTemplate());
+
+		indicatorInfo.m_sizeX = size;
+		indicatorInfo.m_sizeY = size;
+		indicatorInfo.m_offsetX = 0.0f;
+		indicatorInfo.m_offsetY = 0.0f;
+
+		m_airGroundIndicator = TheProjectedShadowManager->addDecal(m_renderObject, &indicatorInfo);
+	}
+
+	if (m_airGroundIndicator)
+	{
+		m_airGroundIndicator->enableShadowRender(TRUE);
+		m_airGroundIndicator->enableShadowInvisible(m_fullyObscuredByShroud);
+
+		Real rawLift = (heightAboveGround - MIN_AIR_GROUND_INDICATOR_HEIGHT) / BLEND_AIR_GROUND_INDICATOR_HEIGHT;
+		Real liftFactor = WWMath::Is_Valid_Float(rawLift) ? WWMath::Clamp(rawLift, 0.0f, 1.0f) : 0.0f;
+
+		Bool isSelected = draw->isSelected();
+		Real baseOpacity = isSelected ? 180.0f : 75.0f; // ~70% when selected, ~30% subtle in normal flight
+		Real rawOpacity = baseOpacity * liftFactor;
+		Int opacity = WWMath::Is_Valid_Float(rawOpacity) ? (Int)WWMath::Clamp(rawOpacity, 0.0f, 255.0f) : 0;
+
+		Color playerColor = 0x00FFFFFF;
+		if (obj)
+		{
+			Color c = obj->getIndicatorColor();
+			if ((c & 0x00FFFFFF) != 0)
+				playerColor = c;
+		}
+
+		m_airGroundIndicator->setColor(playerColor);
+		m_airGroundIndicator->setOpacity(opacity);
 	}
 }
 
