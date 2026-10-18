@@ -241,14 +241,16 @@ fi
 # has its own crash at device-open time on PipeWire 1.4.x.
 # These env vars are read by openal-soft's static constructor at library load time,
 # so they must be set here in the launcher before the binary starts.
-# User can override by setting ALSOFT_DISABLE_CPU_EXTS or ALSOFT_DRIVERS explicitly.
-if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
-    export ALSOFT_DISABLE_CPU_EXTS="all"
-    echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
-fi
-if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
-    export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
-    echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+# Legacy OpenAL workaround (only applied if executable links to libopenal.so)
+if ldd "${SCRIPT_DIR}/GeneralsX" 2>/dev/null | grep -q 'libopenal\.so'; then
+    if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
+        export ALSOFT_DISABLE_CPU_EXTS="all"
+        echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
+    fi
+    if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
+        export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
+        echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+    fi
 fi
 
 # Run game with all arguments

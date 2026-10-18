@@ -96,7 +96,6 @@ jobs:
             autoconf-archive \
             libtool \
             libltdl-dev \
-            libopenal-dev \
             libasound2-dev \
             libpulse-dev \
             libaudio-dev \
@@ -257,8 +256,11 @@ jobs:
           find "build/${PRESET}/_deps/sdl3-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
           find "build/${PRESET}/_deps/sdl3_image-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
 
-          echo "  Copying OpenAL library..."
-          find "build/${PRESET}/_deps/openal_soft-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+          # Copy OpenAL library only if legacy OpenAL was built
+          if [ -d "build/${PRESET}/_deps/openal_soft-build" ]; then
+            echo "  Copying OpenAL library (legacy)..."
+            find "build/${PRESET}/_deps/openal_soft-build" -name "*.so*" -exec cp -v {} "${RUNTIME_DIR}/" \; 2>/dev/null || true
+          fi
 
           # GeneralsX @build GitHubCopilot 17/05/2026 Bundle FFmpeg runtime libs transitively so replay CI does not depend on host SONAME layout.
           echo "  Copying FFmpeg runtime libraries..."

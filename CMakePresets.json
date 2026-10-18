@@ -303,7 +303,7 @@
                 "SAGE_USE_OPENAL": "OFF",
                 "SAGE_USE_MINIAUDIO": "ON"
             },
-            "description": "Experimental: Linux build with miniaudio audio backend instead of OpenAL+FFmpeg. Single-header library for audio playback/capture."
+            "description": "Linux build with MiniAudio audio backend."
         }
     ],
     "buildPresets": [

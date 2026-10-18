@@ -401,7 +401,7 @@ jobs:
               echo "### 🎨 Graphics & Visuals (DXVK / Vulkan)"
               echo "- *add graphics and rendering updates*"
               echo ""
-              echo "### 🔊 Audio & Video Subsystems (MiniAudio / OpenAL / FFmpeg)"
+              echo "### 🔊 Audio & Video Subsystems (MiniAudio / FFmpeg)"
               echo "- *add sound and media updates*"
               echo ""
               echo "### 🚀 Platform, Packaging & CI (macOS, Linux, Windows)"

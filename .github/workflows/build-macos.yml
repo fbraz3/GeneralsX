@@ -134,11 +134,8 @@ jobs:
           # Without this, meson falls back to SDL2-only and DXVK_WSI_DRIVER=SDL3 fails at runtime.
           brew install sdl3
 
-          # NOTE: OpenAL Soft is intentionally NOT installed via Homebrew.
-          # It is fetched via CMake FetchContent in cmake/openal.cmake (v1.24.2).
-          # Installing Homebrew openal-soft was unreliable on Apple Silicon M-series:
-          # Intel Homebrew (/usr/local) installs x86_64-only binaries which fail to
-          # link against native arm64 builds. FetchContent compiles for the native arch.
+          # NOTE: Audio uses the MiniAudio backend (single-header, compiled directly with the project).
+          # OpenAL is deprecated/legacy and not used for macOS builds.
 
           # Verify all tools are available
           cmake --version | head -1

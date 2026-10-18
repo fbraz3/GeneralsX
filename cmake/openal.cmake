@@ -1,5 +1,7 @@
 # GeneralsX @build fbraz 24/02/2026
 # GeneralsX @bugfix fbraz 10/03/2026 Use FetchContent for ALL platforms (macOS, Linux, Windows)
+# NOTE: OpenAL backend is legacy/deprecated and retained for legacy builds.
+# MiniAudio is the primary and supported audio backend across all platforms.
 # OpenAL audio library via FetchContent (openal-soft v1.24.2)
 #
 # On Linux, openal-soft is managed via vcpkg (see vcpkg.json). The vcpkg build compiles

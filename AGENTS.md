@@ -18,7 +18,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
 | Windowing| SDL3              | Win32 API                    |
-| Audio   | MiniAudio (OpenAL legacy)| Miles Sound System           |
+| Audio   | MiniAudio           | Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
 | Platform| SDL3 + libc         | Win32 POSIX calls            |
 
@@ -28,7 +28,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 1. **Single codebase** – Linux and macOS build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **OpenAL / MiniAudio Parity** – Cross-platform audio stack. Implementations and bug fixes in one MUST be replicated in the other to maintain strict feature parity.
+4. **MiniAudio backend** – Cross-platform audio stack. MiniAudio is the primary and stable audio backend for all platforms (Linux, macOS). OpenAL is legacy/deprecated and no longer maintained.
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
@@ -55,13 +55,13 @@ To guarantee cross-play between macOS ARM64 and Linux x86_64 without SyncCrash d
     - `pow` -> `WWMath::PowOrigin`
 2. **NaN/Inf Integer Casting** – ARM64 casts `(Int)NaN` to `0`, while x86 casts it to `INT_MIN`. Any division by potentially zero (e.g. `val / maxHealth`) whose result might be cast to an integer or affect simulation flow MUST be guarded (`if (maxHealth > 0)`) or use `WWMath::Div_FixNaN` to avoid immediate CRC desyncs.
 3. **Double-Precision Isolation** – Do not allow implicit `double` promotion in transcendental/power math evaluations (e.g. `gm_sqrt`, `gm_pow`, `gm_atan`). x87 (24-bit mantissa) and NEON (53-bit mantissa) diverge by 1-ULP on double-precision. Ensure all `WWMath` wrappers explicitly accept/return `float` or internally downcast `double` to `float` prior to `gm_*f` execution to guarantee cross-platform bit-identical outputs.
-4. **FPU Environment State Leaks** – Audio drivers (OpenAL/MiniAudio) and OS callbacks aggressively alter hardware FPU registers (e.g., Flush-To-Zero, Rounding mode) for DSP performance. If this state leaks into the main thread, the simulation math diverges. **Always inject `ScopedFPUGuard`** at the boundaries of `GameLogic::update()`, audio thread callbacks, and mouse-picking logic (e.g., `View::pickDrawable()`).
+4. **FPU Environment State Leaks** – Audio drivers (MiniAudio) and OS callbacks aggressively alter hardware FPU registers (e.g., Flush-To-Zero, Rounding mode) for DSP performance. If this state leaks into the main thread, the simulation math diverges. **Always inject `ScopedFPUGuard`** at the boundaries of `GameLogic::update()`, audio thread callbacks, and mouse-picking logic (e.g., `View::pickDrawable()`).
 5. **FMA Contraction** – Fused Multiply-Add combines instructions with infinite intermediate precision, yielding different results on ARM64 vs x86_64. We strictly enforce `-ffp-contract=off` globally (and `/fp:precise` for MSVC). Never bypass this with `-ffast-math` or `/fp:fast`.
 6. **Deep CRC Memory Buffer Logging** – When a sync crash occurs and the root cause isn't obvious, the game automatically dumps a `Debug/deep_crc_YYYY-MM-DD-HH-MM-SS.bin` file containing a binary snapshot of the last 64 frames of state transfers. Use `scripts/qa/parse_deep_crc.py` to inspect these dumps and identify the exact object ID and state data that first diverged between players. Note: This requires the `RTS_BUILD_OPTION_DEEP_CRC=ON` CMake flag (which is enabled by default).
 
 ## Reference Repositories
 - **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
-- **jmarshall-win64-modern** – Audio reference (OpenAL implementation, Generals-only)
+- **jmarshall-win64-modern** – Audio reference (legacy OpenAL implementation, Generals-only)
 - **thesuperhackers-main** – Upstream baseline for regression checks
 
 ## Build Commands
@@ -131,7 +131,7 @@ Docker is the recommended build method on Linux hosts to ensure all toolchain re
 
 ## Backport Rules
 **Backport to Generals when:**
-- Change is platform/backend code (SDL3, DXVK, OpenAL/MiniAudio) or a general bugfix/improvement
+- Change is platform/backend code (SDL3, DXVK, MiniAudio) or a general bugfix/improvement
 - Change is in shared Core libraries
 - Change is low-risk and clearly applicable
 

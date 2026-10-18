@@ -4,12 +4,12 @@ applyTo: '**/*.{cpp,h,hpp,c}'
 
 ## Code Quality & Maintainability
 
-- **Scope discipline**: Focus on cross-platform port (SDL3, DXVK, OpenAL). Avoid unrelated refactors.
+- **Scope discipline**: Focus on cross-platform port (SDL3, DXVK, MiniAudio). Avoid unrelated refactors.
 - **Root cause**: Fix underlying issues, not symptoms. No lazy workarounds.
 - **Isolation**: Platform-specific code stays in platform layers (`Core/GameEngineDevice/`, `Core/Libraries/Source/Platform/`)
 - **Fallback paths**: Keep legacy Windows paths (DX8, Miles) intact behind `#ifdef` guards for VC6 baseline.
 - **Determinism**: Never break gameplay determinism. Rendering/audio changes must not affect logic.
-- **Audio Backporting**: All audio improvements or fixes must be implemented in OpenAL first, and subsequently backported to the MiniAudio implementation.
+- **Audio Architecture**: MiniAudio is the primary cross-platform audio backend across all platforms (Linux and macOS). OpenAL is legacy/deprecated and no longer maintained. All audio improvements and fixes should be implemented in MiniAudio.
 - **Generals Backporting**: All general bugfixes and improvements must be backported to the Generals base game.
 
 ## Code Style & Conventions
