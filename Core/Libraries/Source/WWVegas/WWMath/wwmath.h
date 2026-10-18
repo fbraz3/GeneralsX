@@ -40,6 +40,8 @@
 #include <math.h>
 #include <float.h>
 #include <assert.h>
+#include <Precompiled/stdint_adapter.h>	// VC6 has no <stdint.h>
+#include <string.h>
 
 // Include GameMath headers when deterministic math is enabled
 // Use __has_include because wwmath.h is transitively included by targets that may not link gamemath.
@@ -408,8 +410,11 @@ WWINLINE double WWMath::Inverse_Lerp(double a, double b, double v)
 
 WWINLINE bool WWMath::Is_Valid_Float(float x)
 {
-	unsigned long * plong = (unsigned long *)(&x);
-	unsigned long exponent = ((*plong) & 0x7F800000) >> (32-9);
+	// GeneralsX @bugfix elmeriniemela 18/10/2026 unsigned long is 8 bytes on 64-bit Linux, so reading the
+	// float through an unsigned long pointer read 4 bytes past it. Copy the 32 bits instead.
+	uint32_t bits;
+	memcpy(&bits, &x, sizeof(bits));
+	uint32_t exponent = (bits & 0x7F800000) >> (32-9);
 
 	// if exponent is 0xFF, this is a NAN
 	if (exponent == 0xFF) {
@@ -420,8 +425,11 @@ WWINLINE bool WWMath::Is_Valid_Float(float x)
 
 WWINLINE bool WWMath::Is_Valid_Double(double x)
 {
-	unsigned long * plong = (unsigned long *)(&x) + 1;
-	unsigned long exponent = ((*plong) & 0x7FF00000) >> (32-12);
+	// GeneralsX @bugfix elmeriniemela 18/10/2026 With an 8 byte unsigned long, "+ 1" pointed past the double.
+	// Copy the 64 bits and use the upper 32 bits, which hold the exponent.
+	uint64_t bits;
+	memcpy(&bits, &x, sizeof(bits));
+	uint32_t exponent = (uint32_t(bits >> 32) & 0x7FF00000) >> (32-12);
 
 	// if exponent is 0x7FF, this is a NAN
 	if (exponent == 0x7FF) {

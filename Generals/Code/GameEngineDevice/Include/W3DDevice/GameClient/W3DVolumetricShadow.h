@@ -145,7 +145,7 @@ class W3DVolumetricShadow	: public Shadow
 		void addSilhouetteEdge(Int meshIndex, PolyNeighbor *visible, PolyNeighbor *hidden );
 		void addNeighborlessEdges(Int meshIndex, PolyNeighbor *us );
 		void addSilhouetteIndices(Int meshIndex, Short edgeStart, Short edgeEnd );
-		Bool allocateSilhouette(Int meshIndex, Int numVertices );  // allocate memory for sil
+		Bool allocateSilhouette(Int meshIndex, Int numVertices, Int numPolygons );  // allocate memory for sil
 		void deleteSilhouette(Int meshIndex );  // resets and frees silhouette memory
 		void resetSilhouette( Int meshIndex );  // reset silhouette to empty
 
@@ -184,10 +184,12 @@ class W3DVolumetricShadow	: public Shadow
 		Short *m_silhouetteIndex[MAX_SHADOW_CASTER_MESHES];  // silhouette vertex index list, edges occur
 									 // as disjoint pairs.  The actual size of this
 									 // piece of memory must accommodate #vertices*2
-		Short m_numSilhouetteIndices[MAX_SHADOW_CASTER_MESHES];  // total number of edge indices in the index
+		// GeneralsX @bugfix elmeriniemela 18/10/2026 Int instead of Short: the silhouette of a mesh with more than
+		// 5461 polygons or 6553 vertices needs more than 32767 entries.
+		Int m_numSilhouetteIndices[MAX_SHADOW_CASTER_MESHES];  // total number of edge indices in the index
 									   // array, these are pairs and therefore
 									   // always a multiple of two
-		Short m_maxSilhouetteEntries[MAX_SHADOW_CASTER_MESHES];  // how big the silhouette index can hold max
+		Int m_maxSilhouetteEntries[MAX_SHADOW_CASTER_MESHES];  // how big the silhouette index can hold max
 
 		Int	  m_numIndicesPerMesh[MAX_SHADOW_CASTER_MESHES];	///<silhouette indices from each mesh.
 		UnsignedInt m_skinRebuiltOnFrame[ MAX_SHADOW_LIGHTS ][MAX_SHADOW_CASTER_MESHES];	///<render frame a skinned volume was last rebuilt on
