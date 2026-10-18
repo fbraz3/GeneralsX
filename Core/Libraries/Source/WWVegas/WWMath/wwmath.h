@@ -40,7 +40,7 @@
 #include <math.h>
 #include <float.h>
 #include <assert.h>
-#include <stdint.h>
+#include <Precompiled/stdint_adapter.h>	// VC6 has no <stdint.h>
 #include <string.h>
 
 // Include GameMath headers when deterministic math is enabled

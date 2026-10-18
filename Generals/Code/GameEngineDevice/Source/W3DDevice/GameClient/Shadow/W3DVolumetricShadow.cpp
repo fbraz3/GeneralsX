@@ -1774,7 +1774,9 @@ void W3DVolumetricShadow::SetGeometry( W3DShadowGeometry *geometry )
 	{
 		Int numNewEntries = 0;
 
-		if( geometry )
+		// GeneralsX @bugfix elmeriniemela 18/10/2026 Only meshes below getMeshCount() are set up; the
+		// counts of the other slots are not initialized.
+		if( geometry && i < geometry->getMeshCount() )
 			numNewEntries = silhouetteEntries( geometry->getMesh(i)->GetNumVertex(), geometry->getMesh(i)->GetNumPolygon() );
 
 		//
