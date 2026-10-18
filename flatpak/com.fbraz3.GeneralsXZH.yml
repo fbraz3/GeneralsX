@@ -238,7 +238,7 @@ modules:
         strip-components: 1
       - type: git
         url: https://github.com/mackron/miniaudio.git
-        branch: master
+        commit: 9634bedb5b5a2ca38c1ee7108a9358a4e233f14d
         dest: miniaudio-src
       - type: archive
         url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz

@@ -116,7 +116,7 @@ Provide a structured, technical review summary containing:
 1. **Merge Readiness Verdict**:
    - `READY TO MERGE`, `NEEDS MINOR REVISIONS`, or `BLOCKED / RISKY`.
 2. **Architecture & Safety Compliance**:
-   - Determinism assessment, platform isolation status, base-game parity check, and audio parity check.
+   - Determinism assessment, platform isolation status, base-game parity check, and MiniAudio backend assessment.
 3. **Opportunities for Improvement & Findings**:
    - Detailed list of edge cases, potential bottlenecks, or suggested refinements (excluding duplicates already flagged by CodeRabbit).
    - Any CodeRabbit false-positives identified and rebutted.

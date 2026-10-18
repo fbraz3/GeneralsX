@@ -73,8 +73,8 @@ fi
 # has its own crash at device-open time on PipeWire 1.4.x.
 # These env vars are read by openal-soft's static constructor at library load time,
 # so they must be set here in the launcher before the binary starts.
-# Legacy OpenAL workaround (only applied if libopenal.so is present in runtime)
-if compgen -G "${RUNTIME_DIR}/libopenal.so*" > /dev/null 2>&1; then
+# Legacy OpenAL workaround (only applied if executable links to libopenal.so)
+if ldd "${GAME_BINARY}" 2>/dev/null | grep -q 'libopenal\.so'; then
     if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
         export ALSOFT_DISABLE_CPU_EXTS="all"
         echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
