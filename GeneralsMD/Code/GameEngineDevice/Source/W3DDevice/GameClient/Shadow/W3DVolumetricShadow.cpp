@@ -1837,11 +1837,20 @@ W3DVolumetricShadow::~W3DVolumetricShadow()
 
 }
 
+// silhouetteEntries ==========================================================
+// GeneralsX @bugfix elmeriniemela 18/10/2026 Number of silhouette indices a mesh can need.
+// buildSilhouette() adds up to 3 edges (6 indices) per polygon, for example all edges of polygons
+// without neighbors, so "numVertices * 5" alone overflowed on meshes with many open edges. The
+// overflow also overflowed the shadow volume, which is sized from the silhouette, and corrupted
+// the heap next to it.
+// ============================================================================
+static Int silhouetteEntries( Int numVertices, Int numPolygons )
+{
+	return MAX( numVertices * 5, numPolygons * 6 );
+}
+
 void W3DVolumetricShadow::SetGeometry( W3DShadowGeometry *geometry )
 {
-
-	Short numPrevVertices = 0;
-	Short numNewVertices = 0;
 
 	//
 	// our geometry has changed, we need to allocate enough memory for the
@@ -1849,28 +1858,37 @@ void W3DVolumetricShadow::SetGeometry( W3DShadowGeometry *geometry )
 	// to accomoddate the new size if smaller
 	//
 
-	// if we had previous geometry how many vertices did it have
-
 	for (Int i=0; i<MAX_SHADOW_CASTER_MESHES; i++)
 	{
-		if( m_geometry )
-			numPrevVertices = m_geometry->getMesh(i)->GetNumVertex();
+		Int numNewEntries = 0;
 
-		// now many vertices does our new geometry have
 		if( geometry )
-			numNewVertices = geometry->getMesh(i)->GetNumVertex();
+			numNewEntries = silhouetteEntries( geometry->getMesh(i)->GetNumVertex(), geometry->getMesh(i)->GetNumPolygon() );
 
 		//
-		// TODO: Colin, may want to change this in the future
 		// if our new geometry requires more memory allocate it, if it requires
 		// less we'll leave it around for future switches in geometry
 		//
-		if( numNewVertices > numPrevVertices )
+		// GeneralsX @bugfix elmeriniemela 18/10/2026 Compare against the allocated silhouette size
+		// instead of the previous vertex count, and drop the shadow volumes of this mesh, which are
+		// sized from the silhouette. updateMeshVolume() allocates them again with the new size.
+		if( numNewEntries > m_maxSilhouetteEntries[i] )
 		{
 
 			deleteSilhouette(i);
-			if( allocateSilhouette(i, numNewVertices ) == FALSE )
+			if( allocateSilhouette(i, geometry->getMesh(i)->GetNumVertex(), geometry->getMesh(i)->GetNumPolygon() ) == FALSE )
 				return;
+
+			for( Int light = 0; light < MAX_SHADOW_LIGHTS; light++ )
+			{
+				if( m_shadowVolume[ light ][ i ] )
+				{
+					resetShadowVolume( light, i );
+					delete m_shadowVolume[ light ][ i ];
+					m_shadowVolume[ light ][ i ] = nullptr;
+					m_shadowVolumeCount[ i ]--;
+				}
+			}
 
 		}
 	}
@@ -3603,9 +3621,10 @@ void W3DVolumetricShadow::resetShadowVolume( Int volumeIndex, Int meshIndex )
 // accommodate that as a series of disjoint edge pairs, otherwise known
 // as numVertices * 2
 // ============================================================================
-Bool W3DVolumetricShadow::allocateSilhouette(Int meshIndex, Int numVertices )
+Bool W3DVolumetricShadow::allocateSilhouette(Int meshIndex, Int numVertices, Int numPolygons )
 {
-	Int numEntries = numVertices * 5;	///@todo: HACK, HACK... Should be 2!
+	// GeneralsX @bugfix elmeriniemela 18/10/2026 Size from vertices and polygons, see silhouetteEntries().
+	Int numEntries = silhouetteEntries( numVertices, numPolygons );
 
 	// sanity
 	assert( m_silhouetteIndex[meshIndex] == nullptr &&
