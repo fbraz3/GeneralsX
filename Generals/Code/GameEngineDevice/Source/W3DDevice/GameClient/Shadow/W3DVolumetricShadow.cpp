@@ -1857,9 +1857,9 @@ void W3DVolumetricShadow::Update()
    		if (fabs(pos.Z - groundHeight) >= AIRBORNE_UNIT_GROUND_DELTA)
    		{
  			Real extent = MAX_SHADOW_LENGTH_EXTRA_AIRBORNE_SCALE_FACTOR * m_robjExtent;
- 			if (WWMath::Fabs(pos.X - bcX) > (beX + extent) ||
- 				WWMath::Fabs(pos.Y - bcY) > (beY + extent) ||
- 				WWMath::Fabs(pos.Z - bcZ) > (beZ + extent))
+ 			if (WWMath::Fabsf_Legacy(pos.X - bcX) > (beX + extent) ||
+ 				WWMath::Fabsf_Legacy(pos.Y - bcY) > (beY + extent) ||
+ 				WWMath::Fabsf_Legacy(pos.Z - bcZ) > (beZ + extent))
 			{
 				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Check if shadow volume can reach view frustum
 				if (!volumeShadowCanReachView( *shadowCameraFrustum, m_robj->Get_Bounding_Sphere(), TheTerrainRenderObject->getMinHeight() ))
@@ -1875,9 +1875,9 @@ void W3DVolumetricShadow::Update()
 			//normal object that is not floating above ground so we don't need to extend the shadow lower than the object's
 			//base since it should be sitting directly at ground level.
 
- 			if (WWMath::Fabs(pos.X - bcX) > (beX + m_robjExtent) ||
- 				WWMath::Fabs(pos.Y - bcY) > (beY + m_robjExtent) ||
- 				WWMath::Fabs(pos.Z - bcZ) > (beZ + m_robjExtent))
+ 			if (WWMath::Fabsf_Legacy(pos.X - bcX) > (beX + m_robjExtent) ||
+ 				WWMath::Fabsf_Legacy(pos.Y - bcY) > (beY + m_robjExtent) ||
+ 				WWMath::Fabsf_Legacy(pos.Z - bcZ) > (beZ + m_robjExtent))
 			{
 				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Check if shadow volume can reach view frustum
 				if (!volumeShadowCanReachView( *shadowCameraFrustum, m_robj->Get_Bounding_Sphere(), TheTerrainRenderObject->getMinHeight() ))
@@ -4112,7 +4112,7 @@ W3DVolumetricShadow* W3DVolumetricShadowManager::addShadow(RenderObjClass *robj,
 	if (sunElevation)
 	{
 		//need to adjust sun elevation for this model in order to limit shadow length
-		sunElevationAngleTan = WWMath::TanTrig(sunElevation / 180.0f * PI);
+		sunElevationAngleTan=tan(sunElevation/180.0f*PI);
 	}
 	shadow->setShadowLengthScale(sunElevationAngleTan);
 

@@ -1302,8 +1302,8 @@ Bool AIUpdateInterface::blockedBy(Object *other)
 
 	// If we are near our final goal, don't get stuck.
 	if (goalCell.x>0 && goalCell.y>0) {
-		Real dx = fabs(goalPos.x-pos.x);
-		Real dy = fabs(goalPos.y-pos.y);
+		Real dx = WWMath::Fabs(goalPos.x-pos.x);
+		Real dy = WWMath::Fabs(goalPos.y-pos.y);
 		if (dx<PATHFIND_CELL_SIZE_F && dy<PATHFIND_CELL_SIZE_F) {
 			return FALSE; // If we're approaching our goal, ignore obstacles.
 		}
@@ -1418,7 +1418,7 @@ Bool AIUpdateInterface::needToRotate()
 		deltaAngle = ThePartitionManager->getRelativeAngle2D( getObject(), &info.posOnPath );
 	}
 
-	if (fabs(deltaAngle)>PI/30)
+	if (WWMath::Fabs(deltaAngle)>PI/30)
 	{
 		return TRUE;
 	}
@@ -2278,7 +2278,7 @@ UpdateSleepTime AIUpdateInterface::doLocomotor()
 							}
 							else
 							{
-								Real dist = WWMath::SqrtfOrigin(dSqr);
+								Real dist = WWMath::Sqrtf(dSqr);
 								if (dist<1) dist = 1;
 								pos.x += 2*PATHFIND_CELL_SIZE_F*dx/(dist*LOGICFRAMES_PER_SECOND);
 								pos.y += 2*PATHFIND_CELL_SIZE_F*dy/(dist*LOGICFRAMES_PER_SECOND);
@@ -2479,7 +2479,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 					dest = m_path->getLastNode()->getPosition();
 				}
 				Real distance = ThePartitionManager->getDistanceSquared( me, dest, FROM_CENTER_3D );
-				return WWMath::SqrtOrigin( distance );// Other paths return dots of normalized vectors, so one sqrt ain't so bad
+				return WWMath::Sqrt( distance );// Other paths return dots of normalized vectors, so one sqrt ain't so bad
 			}
 			else
 			{
@@ -2511,7 +2511,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 				{
 					if (sqr(dist) > distSqr)
 					{
-						return WWMath::SqrtOrigin(distSqr);
+						return WWMath::Sqrt(distSqr);
 					}
 					else
 					{
@@ -2520,7 +2520,7 @@ Real AIUpdateInterface::getLocomotorDistanceToGoal()
 				}
 
 				if (dist<PATHFIND_CELL_SIZE_F || sqr(dist) < distSqr)
-					return WWMath::SqrtfOrigin(distSqr);
+					return WWMath::Sqrtf(distSqr);
 				else
 					return dist;
 

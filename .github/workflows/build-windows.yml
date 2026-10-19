@@ -97,8 +97,7 @@ jobs:
             -DRTS_BUILD_ZEROHOUR_TOOLS=OFF `
             -DRTS_BUILD_GENERALS_TOOLS=OFF `
             -DRTS_BUILD_OPTION_SAGE_PATCH=OFF `
-            -DSAGE_USE_DX8=ON `
-            -DSAGE_USE_DETERMINISTIC_MATH=ON
+            -DSAGE_USE_DX8=ON
 
       - name: Save vcpkg binary cache
         if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}

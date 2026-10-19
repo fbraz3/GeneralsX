@@ -384,8 +384,8 @@ void WeaponTemplate::reset()
 
 	// No matter what we have now, we want to convert it to frames from msec.
 	// ShotDelay used to use parseDurationUnsignedInt, and we are expanding on that.
-	self->m_minDelayBetweenShots = WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)self->m_minDelayBetweenShots));
-	self->m_maxDelayBetweenShots = WWMath::Ceil(ConvertDurationFromMsecsToFrames((Real)self->m_maxDelayBetweenShots));
+	self->m_minDelayBetweenShots = WWMath::Ceilf(ConvertDurationFromMsecsToFrames((Real)self->m_minDelayBetweenShots));
+	self->m_maxDelayBetweenShots = WWMath::Ceilf(ConvertDurationFromMsecsToFrames((Real)self->m_maxDelayBetweenShots));
 
 }
 
@@ -856,7 +856,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		Real attackRangeSqr = sqr(getAttackRange(bonus));
 		if (distSqr > attackRangeSqr)
 		{
-			//DEBUG_ASSERTCRASH(distSqr < 5*5 || distSqr < attackRangeSqr*1.2f, ("*** victim is out of range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::SqrtfOrigin(distSqr),WWMath::SqrtfOrigin(attackRangeSqr)));
+			//DEBUG_ASSERTCRASH(distSqr < 5*5 || distSqr < attackRangeSqr*1.2f, ("*** victim is out of range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::Sqrtf(distSqr),WWMath::Sqrtf(attackRangeSqr)));
 
 			//-extraLogging
 			#if defined(RTS_DEBUG)
@@ -878,7 +878,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		if (distSqr < minAttackRangeSqr-0.5f && !isProjectileDetonation)
 #endif
 		{
-			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::SqrtfOrigin(distSqr),WWMath::SqrtfOrigin(minAttackRangeSqr)));
+			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::Sqrtf(distSqr),WWMath::Sqrtf(minAttackRangeSqr)));
 
 			//-extraLogging
 			#if defined(RTS_DEBUG)
@@ -904,7 +904,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 			targetPos.set( *victimPos );
 		}
 		Real reAngle = getWeaponRecoilAmount();
-		Real reDir = reAngle != 0.0f ? (WWMath::Atan2Origin(victimPos->y - sourcePos->y, victimPos->x - sourcePos->x)) : 0.0f;
+		Real reDir = reAngle != 0.0f ? (WWMath::Atan2(victimPos->y - sourcePos->y, victimPos->x - sourcePos->x)) : 0.0f;
 		VeterancyLevel v = sourceObj->getVeterancyLevel();
 		const FXList* fx = isProjectileDetonation ? getProjectileDetonateFX(v) : getFireFX(v);
 
@@ -961,7 +961,7 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		v.y = victimPos->y - sourcePos->y;
 		v.z = victimPos->z - sourcePos->z;
 		// don't round the result; we WANT a fractional-frame-delay in this case.
-		Real delayInFrames = WWMath::Div_FixNaN(v.length(), getWeaponSpeed());
+		Real delayInFrames = WWMath::Div_Safe(v.length(), getWeaponSpeed());
 
 		if( firingWeapon->isLaser() )
 		{
@@ -1951,11 +1951,11 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 		if (source->isAboveTerrain())
 		{
 			// Don't do a 180 degree turn.
-			Real angle = WWMath::Atan2Origin(-dir.y, -dir.x);
+			Real angle = WWMath::Atan2(-dir.y, -dir.x);
 			Real relAngle = source->getOrientation()- angle;
 			if (relAngle>2*PI) relAngle -= 2*PI;
 			if (relAngle<-2*PI) relAngle += 2*PI;
-			if (fabs(relAngle)<PI/2) {
+			if (WWMath::Fabs(relAngle)<PI/2) {
 				dir.x = -dir.x;
 				dir.y = -dir.y;
 				dir.z = -dir.z;
@@ -1964,7 +1964,7 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 
 		if (angleOffset != 0.0f)
 		{
-			Real angle = WWMath::Atan2Origin(dir.y, dir.x);
+			Real angle = WWMath::Atan2(dir.y, dir.x);
 			dir.x = (Real)Cos(angle + angleOffset);
 			dir.y = (Real)Sin(angle + angleOffset);
 		}
@@ -2011,7 +2011,7 @@ Bool Weapon::computeApproachTarget(const Object *source, const Object *target, c
 
 		if (angleOffset != 0.0f)
 		{
-			Real angle = WWMath::Atan2Origin(dir.y, dir.x);
+			Real angle = WWMath::Atan2(dir.y, dir.x);
 			dir.x = (Real)Cos(angle + angleOffset);
 			dir.y = (Real)Sin(angle + angleOffset);
 		}
@@ -2678,7 +2678,7 @@ Bool Weapon::isWithinTargetPitch(const Object *source, const Object *victim) con
 	const Coord3D* dst = victim->getPosition();
 
 	const Real ACCEPTABLE_DZ = 10.0f;
-	if (fabs(dst->z - src->z) < ACCEPTABLE_DZ)
+	if (WWMath::Fabs(dst->z - src->z) < ACCEPTABLE_DZ)
 		return true;	// always good enough if dz is small, regardless of pitch
 
 	Real minPitch, maxPitch;
