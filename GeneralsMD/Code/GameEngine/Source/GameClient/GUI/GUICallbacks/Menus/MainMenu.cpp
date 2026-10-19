@@ -170,6 +170,15 @@ static GameWindow *getUpdate = nullptr;
 #ifdef SAGE_UPDATE_CHECK
 static GameWindow *updateNotifyButton = nullptr;  // GeneralsX @feature BenderAI 21/04/2026 Dynamically created update notification button
 static AsciiString s_updateLatestTag;             // Tag of available update
+#if defined(SAGE_USE_NGMP)
+// GeneralsX @feature fbraz3 07/10/2026 Online flow update check gating and cancellation handling
+static Bool s_waitingUpdateCheckBeforeOnline = FALSE;
+static void cancelUpdateCheckBeforeOnline()
+{
+	s_waitingUpdateCheckBeforeOnline = FALSE;
+	ClearGSMessageBoxes();
+}
+#endif
 #endif
 static GameWindow *buttonTRAINING = nullptr;
 static GameWindow *buttonChallenge = nullptr;
@@ -739,6 +748,13 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 		TheWindowManager->winDestroy(updateNotifyButton);
 		updateNotifyButton = nullptr;
 	}
+#if defined(SAGE_USE_NGMP)
+	if (s_waitingUpdateCheckBeforeOnline)
+	{
+		s_waitingUpdateCheckBeforeOnline = FALSE;
+		ClearGSMessageBoxes();
+	}
+#endif
 #endif
 
 	CancelPatchCheckCallback();
@@ -964,6 +980,50 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			}
 		}
 	}
+
+#if defined(SAGE_USE_NGMP)
+	// GeneralsX @feature fbraz3 07/10/2026 Poll pending update check before transitioning to Online
+	if (s_waitingUpdateCheckBeforeOnline)
+	{
+		if (UpdateChecker::isDone())
+		{
+			s_waitingUpdateCheckBeforeOnline = FALSE;
+			ClearGSMessageBoxes();
+
+			if (UpdateChecker::hasUpdate())
+			{
+				UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
+				const char* tag = UpdateChecker::getLatestTag();
+				if (tag && tag[0] != '\0')
+				{
+					char buf[256];
+					snprintf(buf, sizeof(buf), "A newer version of GeneralsX (%s) is available. You must update before playing online.", tag);
+					msg = NGMP::UTF8ToUnicode(buf);
+				}
+				GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
+					const char* url = UpdateChecker::getReleasesUrl();
+					if (url)
+					{
+						NGMP::OpenURL(url);
+					}
+				});
+			}
+			else
+			{
+				dontAllowTransitions = TRUE;
+				buttonPushed = TRUE;
+				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
+				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
+				NGMP_OnlineServicesManager::getInstance().init();
+				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn())
+				{
+					NGMP_OnlineServicesManager::getInstance().beginLogin();
+				}
+				dropDown = DROPDOWN_NONE;
+			}
+		}
+	}
+#endif
 #endif
 
 	if (TheDownloadManager && !TheDownloadManager->isDone())
@@ -1612,23 +1672,33 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 					break;
 
 #if defined(SAGE_USE_NGMP) && defined(SAGE_UPDATE_CHECK)
-				// GeneralsX @feature GeneralsOnline - In production mode, require latest game version
-				if (!NGMP::IsDevelopment() && UpdateChecker::hasUpdate()) {
-					UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
-					const char* tag = UpdateChecker::getLatestTag();
-					if (tag && tag[0] != '\0') {
-						char buf[256];
-						snprintf(buf, sizeof(buf), "A newer version of GeneralsX (%s) is available. You must update before playing online.", tag);
-						msg = NGMP::UTF8ToUnicode(buf);
-					}
-					ClearGSMessageBoxes();
-					GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
-						const char* url = UpdateChecker::getReleasesUrl();
-						if (url) {
-							NGMP::OpenURL(url);
+				// GeneralsX @feature fbraz3 07/10/2026 Require latest game version and gate Online button until update check finishes
+				if (!NGMP::IsDevelopment()) {
+					if (UpdateChecker::hasUpdate()) {
+						UnicodeString msg(L"A newer version of GeneralsX is available. You must update before playing online.");
+						const char* tag = UpdateChecker::getLatestTag();
+						if (tag && tag[0] != '\0') {
+							char buf[256];
+							snprintf(buf, sizeof(buf), "A newer version of GeneralsX (%s) is available. You must update before playing online.", tag);
+							msg = NGMP::UTF8ToUnicode(buf);
 						}
-					});
-					break;
+						ClearGSMessageBoxes();
+						GSMessageBoxOk(UnicodeString(L"Update Required"), msg, []() {
+							const char* url = UpdateChecker::getReleasesUrl();
+							if (url) {
+								NGMP::OpenURL(url);
+							}
+						});
+						break;
+					}
+					else if (!UpdateChecker::isDone()) {
+						s_waitingUpdateCheckBeforeOnline = TRUE;
+						ClearGSMessageBoxes();
+						GSMessageBoxCancel(TheGameText->fetch("GUI:CheckingForPatches"),
+						                   TheGameText->fetch("GUI:CheckingForPatches"),
+						                   cancelUpdateCheckBeforeOnline);
+						break;
+					}
 				}
 #endif
 
