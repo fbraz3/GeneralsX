@@ -77,10 +77,13 @@ static void screenshotThreadFunc(ScreenshotThreadData* data)
 	// to keep the user data root folder tidy.
 	char pathname[_MAX_PATH];
 	strlcpy(pathname, data->userDataDirectory, ARRAY_SIZE(pathname));
-	strlcat(pathname, "Screenshots\\", ARRAY_SIZE(pathname));
+	// GeneralsX @bugfix tonalOrchestrator 20/10/2026 Use a POSIX path separator on non-Windows. The Windows
+	// separator created a file literally named Screenshots-backslash-sshot_*.png in the user data directory.
 #ifdef _WIN32
+	strlcat(pathname, "Screenshots\\", ARRAY_SIZE(pathname));
 	CreateDirectory(pathname, nullptr);
 #else
+	strlcat(pathname, "Screenshots/", ARRAY_SIZE(pathname));
 	std::error_code ec;
 	std::filesystem::create_directory(pathname, ec);
 #endif
