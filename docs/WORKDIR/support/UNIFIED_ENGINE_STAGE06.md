@@ -1,19 +1,18 @@
 # Unified Engine Stage 06: One Executable Scaffold (`echelon`)
 
 Date: 2026-10-23 (updated 24/10/2026)
-Status: dual-profile smoke exit 0 after Gate 6 Batches A–D + TERRAIN_DECAL + KindOf/W3D/AI + 05.7 dual-layout wave (vision/TunnelTracker/BodyModule/StickyBomb/OpenContain → GameProfile); mismatch checks on migration binaries;
-Gate 6 still open (CRC→GameProfile waves 1–11 green; fresh-tip promote branch `echelon/upstream-promote-20261024` @ `14e21aa83` dual/RR green — merge into plan tip next; then migration binaries OFF + fixture CRC parity; global `RETAIL_COMPATIBLE_CRC` stays 0)
+Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration binaries OFF, `smoke-echelon-gate6.sh` (dual/map/mod/LAN/save/RR/CRC fixtures) exit 0; CRC→GameProfile waves 1–11; `#3531` FileSystem path-key ported (GeneralsX mod-override kept); global `RETAIL_COMPATIBLE_CRC` stays 0. Remaining: macOS evidence; optional old-fixture CRC; `#3538` headless fonts
 
 ## Scope (this stage)
 
 | Done | Not done |
 |---|---|
-| CMake target `echelon` (`OUTPUT_NAME echelon`), option `RTS_BUILD_ECHELON` | Flip `RTS_BUILD_MIGRATION_BINARIES=OFF` (gates `g_generals` / `z_generals`) |
-| `RTS_UNIFIED_ENGINE=1` on echelon Main only | Single compiled engine library |
-| `GameProfile::selectForProcess(..., allowAnyProfile)` + `ECHELON_GAME` / `ECHELON_ASK_PROFILE` | Remaining `#if RTS_*` behind `RETAIL_COMPATIBLE_PATHFINDING=0` |
-| Links `z_gameengine` + NGMP as today | Promote rehearsal merge; dual-target removal |
-| Keep mismatch exit on GeneralsX / GeneralsXZH | Full upstream merge in isolated worktree |
-| Deploy + dual-profile smoke scripts | CRC-identical ZH/Generals `.rep` fixtures |
+| CMake target `echelon` (`OUTPUT_NAME echelon`), option `RTS_BUILD_ECHELON` | Single compiled engine library |
+| `RTS_UNIFIED_ENGINE=1` on echelon Main only | Remaining `#if RTS_*` behind `RETAIL_COMPATIBLE_PATHFINDING=0` |
+| `GameProfile::selectForProcess(..., allowAnyProfile)` + `ECHELON_GAME` / `ECHELON_ASK_PROFILE` | macOS `macos-vulkan` Gate 6 build/smoke evidence |
+| Links `z_gameengine` + NGMP as today | Optional older generalsx-replays CRC parity |
+| `RTS_BUILD_MIGRATION_BINARIES` default OFF | Optional ON for mismatch binaries |
+| Deploy + dual-profile / mod / LAN / gate6 smoke scripts | Interactive dual-instance LAN lobby UI |
 | AIPathfind pure Generals sites → `GameProfile` | |
 | Upstream rehearsal dry-run (15 mapped) | |
 | Batch A: maps / LoadScreen / transitions / KindOf / LAN / DelayedUpgrade modules | |
@@ -21,7 +20,7 @@ Gate 6 still open (CRC→GameProfile waves 1–11 green; fresh-tip promote branc
 | Batch C: GameInfo / ConnectionManager / Network / GameMemoryInit dual pool tables | |
 | Pre-main pool fix: unselected → ZH tables without locking profile (`libhwy` `new`) | |
 | Batch D: Object v7 status / WeaponSet damage-mask / Locomotor DecelerationPitchLimit | |
-| PathfindLayer / ZoneManager / ZoneBlock / AIPathfind: `RETAIL…` + `GameProfile` (flag still 0) | Remaining Core/MD `#if RETAIL_COMPATIBLE_CRC` → GameProfile (JetAI/AIPathfind/…) |
+| PathfindLayer / ZoneManager / ZoneBlock / AIPathfind: `RETAIL…` + `GameProfile` (flag still 0) | `#3538` headless font/display-string dummies |
 | 05.7 tunnel-contain helper → always-on + `GameProfile` call site | |
 | 05.7 Player/Object vision dual-layout + Generals-profile look/xfer | |
 | 05.7 TunnelTracker / BodyModule / StickyBomb / OpenContain → GameProfile | |
@@ -37,9 +36,11 @@ Gate 6 still open (CRC→GameProfile waves 1–11 green; fresh-tip promote branc
 | Isolated worktree + #3544/#3389 adaptations; ancestry `--deepen`; whole-tree merge @ `0fea59a33` | Promote merge + port remaining DIFF upstream fixes; dual-target removal |
 | `adapt_unified_engine_upstream.py` + `deploy-linux-echelon.sh` (ldd-first FFmpeg SONAME copy) | Dual migration target removal |
 | `smoke-echelon-replay.sh`: ZH fixture soft-pass CRC mismatch frame 100 (exit 2); cross-profile soft-pass (exit 3); self record→playback CRC-clean | External fixture CRC parity vs older generalsx-replays (still frame 100 after waves 1–11) |
-| `RTS_BUILD_MIGRATION_BINARIES` default OFF; `smoke-echelon-gate6.sh` acceptance battery | Optional ON for mismatch binaries |
+| `RTS_BUILD_MIGRATION_BINARIES` default OFF; `smoke-echelon-gate6.sh` acceptance battery | |
 | `-lanProbe` (startup CLI) + `smoke-echelon-lan.sh` dual-profile bind/RequestLocations exit 0 | Interactive dual-instance LAN lobby match |
 | `-skirmish` + `smoke-echelon-record-replay.sh` dual-profile record→playback CRC exit 0 | |
+| `smoke-echelon-mod-path.sh` dual-profile `-mod` exit 0; `deploy-linux-echelon.sh` restored | |
+| `#3531` `FileSystem::makePathKey` / `comparePath` + FilenameLess (mod-override kept) | |
 
 ## How to smoke
 
@@ -96,10 +97,10 @@ Deploy:
 
 ## Next (Gate 6 remaining)
 
-1. ~~Port remaining DIFF upstream fixes~~ — done for actionable ports (see Adapt notes below); remaining mapped DIFFs are intentional (WWMath Origin/Trig, `GameProfile`, Linux `wchar_t`, Steam map-select tweak, Core-local `FPUControl.h`). Consider promoting rehearsal merge after CRC=1 layout.
-2. Promote rehearsal merge when dual-profile still green; keep converting high-impact `#if RETAIL_COMPATIBLE_CRC` to GameProfile (do **not** flip global CRC=1 — breaks ZH fixed paths).
-3. `RTS_BUILD_MIGRATION_BINARIES` default **OFF** (echelon-only product binary); set ON to rebuild GeneralsX/GeneralsXZH mismatch checks.
-4. Optional: interactive lobby UI; reconcile older generalsx-replays fixtures CRC (frame 100).
+1. macOS: configure/build `macos-vulkan` + dual-profile smoke (CI `build-macos.yml` or native Mac host — deferred on Linux-only Gate 6 tip).
+2. Port `#3538` headless font/display-string dummies (keep WWMath pairing).
+3. Optional: interactive lobby UI; reconcile older generalsx-replays fixtures CRC (frame 100).
+4. Do **not** flip global `RETAIL_COMPATIBLE_CRC=1` — GameProfile paths cover dual retail rules.
 
 ## Adapt notes (24/10/2026)
 

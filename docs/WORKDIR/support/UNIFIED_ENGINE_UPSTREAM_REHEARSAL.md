@@ -177,8 +177,9 @@ python3 scripts/tooling/cpp/maintenance/adapt_unified_engine_upstream.py
 # 5) Only after green smokes: fast-forward or merge promote branch into plan tip
 ```
 
-Gate 6 acceptance still requires dual migration target removal after promote +
-fixture CRC parity review.
+Gate 6 Linux acceptance: promote FF'd into plan tip; migration binaries OFF;
+self CRC-clean fixtures green. Remaining: macOS evidence; optional old-fixture
+CRC; selective Core ports (`#3538`).
 
 
 ## Fresh-tip promote (2026-10-24)
@@ -194,7 +195,10 @@ fixture CRC parity review.
 | Resolution | GeneralsX-preferring ours; Core/Generals/GeneralsMD/cmake restored to tip after auto-merge API skew; WWMath upstream-name aliases kept |
 | Smoke | dual-profile + record→playback ZH/Generals exit 0 after promote restore |
 
-Do not reuse `0fea59a33`. Follow-up: selective Core upstream ports (filesystem case-fold #3531, headless font dummies #3538, etc.) without breaking WWMath pairing; merge promote into `echelon/unified-engine-plan` when ready; then `RTS_BUILD_MIGRATION_BINARIES=OFF`.
+Do not reuse `0fea59a33`. Promote merged; migration OFF. `#3531` FileSystem
+path-key ported onto plan tip (GeneralsX mod-archive override preserved).
+Follow-up: `#3538` headless font dummies without breaking WWMath pairing;
+macOS Gate 6 evidence.
 
 ## References
 

@@ -1,7 +1,7 @@
 # PLAN-023 Echelon Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Stage 06 Gate 6 acceptance battery green on Linux (`smoke-echelon-gate6.sh` exit 0); plan tip FF to promote `14e21aa83`; `RTS_BUILD_MIGRATION_BINARIES` default OFF; external generalsx-replays CRC soft-pass remains optional; selective Core upstream ports follow-up
+Status: Stage 06 Gate 6 Linux acceptance green (`smoke-echelon-gate6.sh` + mod-path); plan tip includes promote `14e21aa83` + migration binaries OFF; `#3531` path-key FileSystem ported (mod-override kept); external generalsx-replays CRC soft-pass optional; macOS `macos-vulkan` Gate 6 evidence still deferred (Linux host); selective Core ports continue (`#3538` headless font dummies)
 
 ## Product contract
 
@@ -189,9 +189,8 @@ headers are reconciled. Stage 05 gates Player/Object/Xfer serialization through
 profiles) while retaining `GeneralsX` / `GeneralsXZH` as migration checks; see
 [Stage 06 notes](../support/UNIFIED_ENGINE_STAGE06.md);
 [upstream rehearsal dry-run](../support/UNIFIED_ENGINE_UPSTREAM_REHEARSAL.md).
-Gate 6 remaining: merge promote branch `echelon/upstream-promote-20261024`
-(`14e21aa83`, dual/RR green) into plan tip; selective Core upstream ports;
-set `RTS_BUILD_MIGRATION_BINARIES=OFF` after acceptance; reconcile older
-`generalsx-replays` fixture CRC (soft-pass exit 2; self record→playback clean).
-Campaigns / skirmish / LAN / mods / saves / replays path-validated on both
-profiles via headless smokes; NGMP remains the online target.
+Gate 6 Linux path complete for campaigns / skirmish / LAN / mods / saves /
+replays (headless smokes + CRC-clean self fixtures); promote merged;
+`RTS_BUILD_MIGRATION_BINARIES` default OFF. Remaining: macOS build/smoke
+evidence; optional older `generalsx-replays` fixture CRC reconcile (soft-pass
+exit 2); selective Core ports (`#3538`). NGMP remains the online target.
