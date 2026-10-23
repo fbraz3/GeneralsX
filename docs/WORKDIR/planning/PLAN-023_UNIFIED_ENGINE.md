@@ -1,7 +1,7 @@
 # PLAN-023 Echelon Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Stage 06 Gate 6 Linux acceptance green (`smoke-echelon-gate6.sh` + mod-path); plan tip includes promote `14e21aa83` + migration binaries OFF; `#3531` path-key + `#3538` headless font/display-string dummies ported; external generalsx-replays CRC soft-pass optional; macOS `macos-vulkan` Gate 6 evidence still deferred (Linux host)
+Status: Stage 06 Gate 6 Linux acceptance green (tip re-verify `smoke-echelon-gate6.sh` exit 0); migration binaries default OFF; CI keeps them ON + builds `echelon`; `#3531`/`#3538` ported; completion audit NOT COMPLETE — macOS evidence MISSING (see `docs/WORKDIR/audit/PLAN023_GATE6_COMPLETION_AUDIT_2026-10-24.md`)
 
 ## Product contract
 
@@ -192,5 +192,7 @@ profiles) while retaining `GeneralsX` / `GeneralsXZH` as migration checks; see
 Gate 6 Linux path complete for campaigns / skirmish / LAN / mods / saves /
 replays (headless smokes + CRC-clean self fixtures); promote merged;
 `RTS_BUILD_MIGRATION_BINARIES` default OFF; `#3531`/`#3538` Core ports landed.
-Remaining: macOS build/smoke evidence; optional older `generalsx-replays`
-fixture CRC reconcile (soft-pass exit 2). NGMP remains the online target.
+Remaining (blocks completion): macOS `macos-vulkan` build + dual-profile smoke
+evidence — procedure `scripts/qa/smoke/smoke-echelon-macos-gate6.md` (push branch
+or Mac host). Optional: older `generalsx-replays` CRC soft-pass. NGMP remains
+the online target.
