@@ -196,9 +196,8 @@ CRC; selective Core ports (`#3538`).
 | Smoke | dual-profile + record→playback ZH/Generals exit 0 after promote restore |
 
 Do not reuse `0fea59a33`. Promote merged; migration OFF. `#3531` FileSystem
-path-key ported onto plan tip (GeneralsX mod-archive override preserved).
-Follow-up: `#3538` headless font dummies without breaking WWMath pairing;
-macOS Gate 6 evidence.
+path-key and `#3538` headless font/display-string dummies ported onto plan tip
+(GeneralsX mod-archive override preserved). Follow-up: macOS Gate 6 evidence.
 
 ## References
 

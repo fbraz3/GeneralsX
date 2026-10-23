@@ -254,7 +254,10 @@ void GameClient::init()
 	}
 
 	// create the display string factory
-	TheDisplayStringManager = createDisplayStringManager();
+	// GeneralsX @performance cheviiot 24/10/2026 Headless uses DisplayStringManagerDummy (#3538)
+	// Upstream reference: CryoTheRenegade, PR #3538
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3538
+	TheDisplayStringManager = TheGlobalData->m_headless ? NEW DisplayStringManagerDummy : createDisplayStringManager();
 	if( TheDisplayStringManager )	{
 		TheDisplayStringManager->init();
 		TheDisplayStringManager->setName("TheDisplayStringManager");
@@ -310,7 +313,7 @@ void GameClient::init()
 	}
 
 	// create the font library
-	TheFontLibrary = createFontLibrary();
+	TheFontLibrary = TheGlobalData->m_headless ? NEW FontLibraryDummy : createFontLibrary();
 	if( TheFontLibrary )
 		TheFontLibrary->init();
 

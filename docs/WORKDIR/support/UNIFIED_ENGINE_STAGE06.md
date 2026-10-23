@@ -1,7 +1,7 @@
 # Unified Engine Stage 06: One Executable Scaffold (`echelon`)
 
 Date: 2026-10-23 (updated 24/10/2026)
-Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration binaries OFF, `smoke-echelon-gate6.sh` (dual/map/mod/LAN/save/RR/CRC fixtures) exit 0; CRC→GameProfile waves 1–11; `#3531` FileSystem path-key ported (GeneralsX mod-override kept); global `RETAIL_COMPATIBLE_CRC` stays 0. Remaining: macOS evidence; optional old-fixture CRC; `#3538` headless fonts
+Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration binaries OFF, `smoke-echelon-gate6.sh` (dual/map/mod/LAN/save/RR/CRC fixtures) exit 0; CRC→GameProfile waves 1–11; `#3531` FileSystem path-key + `#3538` headless font dummies ported; global `RETAIL_COMPATIBLE_CRC` stays 0. Remaining: macOS evidence; optional old-fixture CRC
 
 ## Scope (this stage)
 
@@ -20,7 +20,8 @@ Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration 
 | Batch C: GameInfo / ConnectionManager / Network / GameMemoryInit dual pool tables | |
 | Pre-main pool fix: unselected → ZH tables without locking profile (`libhwy` `new`) | |
 | Batch D: Object v7 status / WeaponSet damage-mask / Locomotor DecelerationPitchLimit | |
-| PathfindLayer / ZoneManager / ZoneBlock / AIPathfind: `RETAIL…` + `GameProfile` (flag still 0) | `#3538` headless font/display-string dummies |
+| PathfindLayer / ZoneManager / ZoneBlock / AIPathfind: `RETAIL…` + `GameProfile` (flag still 0) | |
+| `#3531` path-key + `#3538` headless DisplayString/FontLibrary dummies | |
 | 05.7 tunnel-contain helper → always-on + `GameProfile` call site | |
 | 05.7 Player/Object vision dual-layout + Generals-profile look/xfer | |
 | 05.7 TunnelTracker / BodyModule / StickyBomb / OpenContain → GameProfile | |
@@ -98,9 +99,8 @@ Deploy:
 ## Next (Gate 6 remaining)
 
 1. macOS: configure/build `macos-vulkan` + dual-profile smoke (CI `build-macos.yml` or native Mac host — deferred on Linux-only Gate 6 tip).
-2. Port `#3538` headless font/display-string dummies (keep WWMath pairing).
-3. Optional: interactive lobby UI; reconcile older generalsx-replays fixtures CRC (frame 100).
-4. Do **not** flip global `RETAIL_COMPATIBLE_CRC=1` — GameProfile paths cover dual retail rules.
+2. Optional: interactive lobby UI; reconcile older generalsx-replays fixtures CRC (frame 100).
+3. Do **not** flip global `RETAIL_COMPATIBLE_CRC=1` — GameProfile paths cover dual retail rules.
 
 ## Adapt notes (24/10/2026)
 
