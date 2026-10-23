@@ -114,11 +114,12 @@ static WWINLINE float Fabs(float val)
 	return *(float*)&value;
 }
 
-	// GeneralsX @build cheviiot 24/10/2026 Upstream alias after promote; same bit-clear path as Fabs.
-	static WWINLINE float Fabsf_Legacy(float val)
-	{
-		return Fabs(val);
-	}
+	// GeneralsX @build cheviiot 24/10/2026 Upstream aliases after promote (map to GeneralsX WWMath).
+	static WWINLINE float Fabsf_Legacy(float val) { return Fabs(val); }
+	static WWINLINE float Fabsf(float val) { return Fabs(val); }
+	static WWINLINE float Floorf(float val) { return Floor(val); }
+	static WWINLINE float Ceilf(float val) { return Ceil(val); }
+	static WWINLINE float Sqrtf(float val) { return Sqrt(val); }
 
 static WWINLINE int Float_To_Int_Chop(const float& f);
 static WWINLINE int Float_To_Int_Floor(const float& f);

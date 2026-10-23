@@ -226,13 +226,12 @@ void W3DDebrisDraw::doDrawModule(const Matrix3D* transformMtx)
 		}
 		m_renderObject->Set_Transform(*transformMtx);
 
-		static const RenderObjClass::AnimMode TheAnimModes[] =
+		static const RenderObjClass::AnimMode TheAnimModes[STATECOUNT] =
 		{
 			RenderObjClass::ANIM_MODE_ONCE,
 			RenderObjClass::ANIM_MODE_LOOP,
 			RenderObjClass::ANIM_MODE_ONCE
 		};
-		static_assert(ARRAY_SIZE(TheAnimModes) == STATECOUNT, "Incorrect array size");
 
 		Int oldState = m_state;
 		Object* obj = getDrawable()->getObject();

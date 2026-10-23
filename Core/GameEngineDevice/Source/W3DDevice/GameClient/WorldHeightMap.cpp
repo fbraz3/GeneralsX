@@ -30,7 +30,6 @@
 
 #include "windows.h"
 #include "stdlib.h"
-#include <limits.h>
 #include "Common/STLTypedefs.h"
 
 #include "Common/DataChunk.h"
@@ -84,7 +83,6 @@ public:
 /* ********* MapObject class ****************************/
 /*static*/ MapObject *MapObject::TheMapObjectListPtr = nullptr;
 /*static*/ Dict MapObject::TheWorldDict;
-static Int s_nextTreeID = 1;
 
 MapObject::MapObject(Coord3D loc, AsciiString name, Real angle, Int flags, const Dict* props,
 										 const ThingTemplate *thingTemplate )
@@ -99,7 +97,6 @@ MapObject::MapObject(Coord3D loc, AsciiString name, Real angle, Int flags, const
 	m_renderObj = nullptr;
 	m_shadowObj = nullptr;
 	m_runtimeFlags = 0;
-	m_treeID = (DrawableID)s_nextTreeID++;
 	// Note - do NOT set TheKey_objectSelectable on creation - allow it to follow the .ini value unless specified by user action.  jba. [3/20/2003]
 	if (props)
 	{
@@ -852,37 +849,17 @@ Bool WorldHeightMap::ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *
 	return (file.parse(userData));
 }
 
-Bool WorldHeightMap::isValidTotalMapSize(Int width, Int height, Int borderSize)
+Bool WorldHeightMap::isValidMapSize(Int width, Int height, Int borderSize)
 {
 	if (width <= 0 || width > MAX_MAP_DIMENSION)
 		return false;
 	if (height <= 0 || height > MAX_MAP_DIMENSION)
 		return false;
-
-	if (borderSize < 0 ||
-		borderSize > (width - 1) / 2 ||
-		borderSize > (height - 1) / 2)
-		return false;
-
 	if (width * height > MAX_MAP_AREA)
 		return false;
-
+	if (borderSize < 0 || borderSize > (width - 1) / 2 || borderSize > (height - 1) / 2)
+		return false;
 	return true;
-}
-
-Bool WorldHeightMap::isValidPlayableMapSize(Int width, Int height, Int borderSize)
-{
-	if (width <= 0 || height <= 0 || borderSize < 0)
-		return false;
-
-	if (borderSize > (INT_MAX - width) / 2 ||
-		borderSize > (INT_MAX - height) / 2)
-		return false;
-
-	return isValidTotalMapSize(
-		width + 2 * borderSize,
-		height + 2 * borderSize,
-		borderSize);
 }
 
 static Bool isValidHeightDataSize(DataChunkInput &file, Int dataSize, Int width, Int height)
@@ -920,7 +897,7 @@ Bool WorldHeightMap::ParseHeightMapData(DataChunkInput &file, DataChunkInfo *inf
 		m_borderSize = 0;
 	}
 
-	if (!isValidTotalMapSize(m_width, m_height, m_borderSize)) {
+	if (!isValidMapSize(m_width, m_height, m_borderSize)) {
 		throw ERROR_CORRUPT_FILE_FORMAT;
 	}
 
@@ -999,7 +976,7 @@ Bool WorldHeightMap::ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, vo
 		m_borderSize = 0;
 	}
 
-	if (!isValidTotalMapSize(m_width, m_height, m_borderSize)) {
+	if (!isValidMapSize(m_width, m_height, m_borderSize)) {
 		throw ERROR_CORRUPT_FILE_FORMAT;
 	}
 
@@ -2287,7 +2264,9 @@ TextureClass *WorldHeightMap::getTerrainTexture()
 		REF_PTR_RELEASE(m_terrainTex);
 		m_terrainTex = MSGNEW("WorldHeightMap_getTerrainTexture") TerrainTextureClass(pow2Height);
 		m_terrainTexHeight = m_terrainTex->update(this);
-		DEBUG_LOG(("Base tex height %d", pow2Height));
+		char buf[64];
+		sprintf(buf, "Base tex height %d", pow2Height);
+		DEBUG_LOG((buf));
 		REF_PTR_RELEASE(m_alphaTerrainTex);
 		m_alphaTerrainTex = MSGNEW("WorldHeightMap_getTerrainTexture") AlphaTerrainTextureClass(m_terrainTex);
 

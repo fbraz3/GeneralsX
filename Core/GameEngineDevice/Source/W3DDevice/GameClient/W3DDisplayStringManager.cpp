@@ -34,6 +34,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/DisplayString.h"
 #include "GameClient/DrawGroupInfo.h"
+#include "GameClient/GlobalLanguage.h"
 #include "W3DDevice/GameClient/W3DDisplayStringManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,13 +116,44 @@ DisplayString *W3DDisplayStringManager::newDisplayString()
 	}
 
 	// assign a default font
-	setDefaultFont( newString );
+	if (TheGlobalLanguageData && TheGlobalLanguageData->m_defaultDisplayStringFont.name.isNotEmpty())
+	{
+		newString->setFont(TheFontLibrary->getFont(
+			TheGlobalLanguageData->m_defaultDisplayStringFont.name,
+			TheGlobalLanguageData->m_defaultDisplayStringFont.size,
+			TheGlobalLanguageData->m_defaultDisplayStringFont.bold) );
+	}
+	else
+		newString->setFont( TheFontLibrary->getFont( "Times New Roman", 12, FALSE ) );
 
 	// link string to list
 	link( newString );
 
 	// return our new string
 	return newString;
+
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Remove a display string from the master list and delete the data */
+//-------------------------------------------------------------------------------------------------
+void W3DDisplayStringManager::freeDisplayString( DisplayString *string )
+{
+
+	// sanity
+	if( string == nullptr )
+		return;
+
+	// unlink
+	unLink( string );
+
+	// if the string happens to fall where our current checkpoint was, set the checkpoint to null
+	if ( m_currentCheckpoint == string) {
+		m_currentCheckpoint = nullptr;
+	}
+
+	// free data
+	deleteInstance(string);
 
 }
 
