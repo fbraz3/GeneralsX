@@ -50,6 +50,7 @@
 #include "Common/BuildAssistant.h"
 #include "Common/CRCDebug.h"
 #include "Common/DisabledTypes.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/MessageStream.h"
@@ -319,6 +320,8 @@ Player::Player( Int playerIndex )
 	m_searchAndDestroyBattlePlans = 0;
 	m_tunnelSystem = nullptr;
 	m_playerTemplate = nullptr;
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: dual-layout Player vision (Generals retail).
+	m_visionSpiedMask = PLAYERMASK_NONE;
 	m_battlePlanBonuses = nullptr;
 	m_skillPointsModifier = 1.0f;
 	m_canBuildUnits = TRUE;
@@ -340,6 +343,7 @@ Player::Player( Int playerIndex )
 	for (i = 0; i < MAX_PLAYER_COUNT; ++i)
 	{
 		m_attackedBy[i] = false;
+		m_visionSpiedBy[i] = 0;
 	}
 	m_attackedFrame = 0;
 
@@ -707,9 +711,9 @@ void Player::update()
 				GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_ENABLE_RETALIATION_MODE );
 				if( msg )
 				{
-#if RETAIL_COMPATIBLE_CRC
-					msg->appendIntegerArgument( getPlayerIndex() );
-#endif
+					// GeneralsX @refactor cheviiot 24/10/2026 Retail appends playerIndex (was RETAIL_COMPATIBLE_CRC).
+					if (GameProfile::get().isGenerals())
+						msg->appendIntegerArgument( getPlayerIndex() );
 					msg->appendBooleanArgument( TheGlobalData->m_clientRetaliationModeEnabled );
 				}
 			}
@@ -987,7 +991,9 @@ void Player::initFromDict(const Dict* d)
 	for ( i = 0; i < MAX_PLAYER_COUNT; ++i ) // For now, it has been decided to just fix this one.  Dear god me must reset.
 	{
 		m_attackedBy[i] = false;
+		m_visionSpiedBy[i] = 0;
 	}
+	m_visionSpiedMask = PLAYERMASK_NONE;
 
 	Int c = d->getInt(TheKey_playerColor, &exists);
 	if (exists)
@@ -2136,32 +2142,34 @@ void Player::transferAssetsFromThat(Player *that)
 		return;
 	}
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 03/02/2026 Cancel any in-progress player upgrades 'that'
-	// player currently has in progress that 'this' player already has in progress or completed.
-	std::vector<const UpgradeTemplate*> upgradesToCancel;
-	for (Upgrade* upgrade = that->m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH-only upgrade transfer fix (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
 	{
-		const UpgradeTemplate* upgradeTemplate = upgrade->getTemplate();
-
-		if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION &&
-			upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER &&
-			(hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
+		// TheSuperHackers @bugfix Stubbjax 03/02/2026 Cancel any in-progress player upgrades 'that'
+		// player currently has in progress that 'this' player already has in progress or completed.
+		std::vector<const UpgradeTemplate*> upgradesToCancel;
+		for (Upgrade* upgrade = that->m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
 		{
-			upgradesToCancel.push_back(upgradeTemplate);
+			const UpgradeTemplate* upgradeTemplate = upgrade->getTemplate();
+
+			if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION &&
+				upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER &&
+				(hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
+			{
+				upgradesToCancel.push_back(upgradeTemplate);
+			}
 		}
-	}
 
-	for (std::vector<const UpgradeTemplate*>::iterator cancelIt = upgradesToCancel.begin(); cancelIt != upgradesToCancel.end(); ++cancelIt)
-	{
-		const UpgradeTemplate* upgradeTemplate = *cancelIt;
-		that->iterateObjects(cancelUpgradeInProduction, const_cast<UpgradeTemplate*>(upgradeTemplate));
-	}
+		for (std::vector<const UpgradeTemplate*>::iterator cancelIt = upgradesToCancel.begin(); cancelIt != upgradesToCancel.end(); ++cancelIt)
+		{
+			const UpgradeTemplate* upgradeTemplate = *cancelIt;
+			that->iterateObjects(cancelUpgradeInProduction, const_cast<UpgradeTemplate*>(upgradeTemplate));
+		}
 
-	// TheSuperHackers @bugfix Stubbjax 03/02/2026 Ensure the in-progress upgrade mask is copied from 'that'
-	// player to 'this' player to prevent duplicate player upgrades being purchased.
-	m_upgradesInProgress.set(that->m_upgradesInProgress);
-#endif
+		// TheSuperHackers @bugfix Stubbjax 03/02/2026 Ensure the in-progress upgrade mask is copied from 'that'
+		// player to 'this' player to prevent duplicate player upgrades being purchased.
+		m_upgradesInProgress.set(that->m_upgradesInProgress);
+	}
 
 	std::list<Object *> objsToTransfer;
 
@@ -2466,12 +2474,13 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 		return;
 
 	Int costToBuild = victim->getTemplate()->calcCostToBuild(victim->getControllingPlayer());
-#if RETAIL_COMPATIBLE_CRC
-	Int bounty = REAL_TO_INT_CEIL(costToBuild * m_cashBountyPercent);
-#else
-	// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
-	Int bounty = WWMath::Ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail CEIL vs ZH epsilon Ceil (was RETAIL_COMPATIBLE_CRC).
+	Int bounty;
+	if (GameProfile::get().isGenerals())
+		bounty = REAL_TO_INT_CEIL(costToBuild * m_cashBountyPercent);
+	else
+		// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
+		bounty = WWMath::Ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
 
 	if( bounty )
 	{
@@ -3683,16 +3692,20 @@ void Player::applyBattlePlanBonusesForPlayerObjects( const BattlePlanBonusesData
 	}
 
 	DUMPBATTLEPLANBONUSES(m_battlePlanBonuses, this, nullptr);
-#if RETAIL_COMPATIBLE_CRC
-	iterateObjects( localApplyBattlePlanBonusesToObject, const_cast<BattlePlanBonusesData *>(bonus) );
-#else
-	// TheSuperHackers @bugfix Stubbjax 05/02/2026 Apply all bonuses the player has rather than just the most recent.
-	BattlePlanBonusesData newBonus = *m_battlePlanBonuses;
-	newBonus.m_armorScalar = bonus->m_armorScalar;
-	newBonus.m_sightRangeScalar = bonus->m_sightRangeScalar;
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail applies latest-only; ZH merges all (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+	{
+		iterateObjects( localApplyBattlePlanBonusesToObject, const_cast<BattlePlanBonusesData *>(bonus) );
+	}
+	else
+	{
+		// TheSuperHackers @bugfix Stubbjax 05/02/2026 Apply all bonuses the player has rather than just the most recent.
+		BattlePlanBonusesData newBonus = *m_battlePlanBonuses;
+		newBonus.m_armorScalar = bonus->m_armorScalar;
+		newBonus.m_sightRangeScalar = bonus->m_sightRangeScalar;
 
-	iterateObjects(localApplyBattlePlanBonusesToObject, &newBonus);
-#endif
+		iterateObjects(localApplyBattlePlanBonusesToObject, &newBonus);
+	}
 }
 
 
@@ -3968,15 +3981,62 @@ static void iterator_setUnitsVisionSpied( Object *obj, void * voidData)
 		obj->setVisionSpied(data->setting, data->byWhom);
 }
 
+static void callHandleShroud( Object *obj, void * )
+{
+	if( obj )
+		obj->handlePartitionCellMaintenance();
+}
+
 // ------------------------------------------------------------------------------------------------
 void Player::setUnitsVisionSpied( Bool setting, KindOfMaskType whichUnits, PlayerIndex byWhom )
 {
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail = player-wide vision;
+	// ZH = per-Object KindOf filter (whichUnits ignored on Generals profile).
+	if( GameProfile::get().isGenerals() )
+	{
+		Bool needRefresh = FALSE;
+		if( setting )
+		{
+			m_visionSpiedBy[ byWhom ] = m_visionSpiedBy[ byWhom ] + 1;
+			if( m_visionSpiedBy[ byWhom ] == 1 )
+				needRefresh = TRUE;
+		}
+		else
+		{
+			m_visionSpiedBy[ byWhom ] = m_visionSpiedBy[ byWhom ] - 1;
+			if( m_visionSpiedBy[ byWhom ] == 0 )
+				needRefresh = TRUE;
+		}
+
+		if( needRefresh )
+		{
+			PlayerMaskType workingMask = 0;
+			for (Int i = 0; i < MAX_PLAYER_COUNT; ++i)
+			{
+				if( m_visionSpiedBy[i] > 0 )
+					BitSet( workingMask, ( 1 << i ) );
+				else
+					BitClear( workingMask, ( 1 << i ) );
+			}
+
+			m_visionSpiedMask = workingMask;
+			iterateObjects( callHandleShroud, nullptr );
+		}
+		return;
+	}
+
 	VisionSpiedStruct data;
 	data.setting = setting;
 	data.whichUnits = whichUnits;
 	data.byWhom = byWhom;
 	// Being spied is now a property of the unit, not us, since we can spy only a portion of the enemy.
 	iterateObjects( iterator_setUnitsVisionSpied, &data );
+}
+
+// ------------------------------------------------------------------------------------------------
+PlayerMaskType Player::getVisionSpiedMask() const
+{
+	return m_visionSpiedMask;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -4389,6 +4449,13 @@ void Player::xfer( Xfer *xfer )
 	}
 	// attacked by
 	xfer->xferUser( m_attackedBy, sizeof( Bool ) * MAX_PLAYER_COUNT );
+
+	// GeneralsX @feature cheviiot 24/10/2026 Player vision pair is Generals-only; ZH owns it on Object.
+	if( GameProfile::get().isGenerals() )
+	{
+		xfer->xferUser( m_visionSpiedBy, sizeof( Int ) * MAX_PLAYER_COUNT );
+		xfer->xferUser( &m_visionSpiedMask, sizeof( PlayerMaskType ) );
+	}
 
 	// cash bounty percent
 	xfer->xferReal( &m_cashBountyPercent );

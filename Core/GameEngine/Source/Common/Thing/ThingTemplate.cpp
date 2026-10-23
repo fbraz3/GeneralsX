@@ -41,6 +41,7 @@
 #include "Common/DamageFX.h"
 #include "Common/GameAudio.h"
 #include "Common/GameCommon.h"
+#include "Common/GameProfile.h"
 #include "Common/GlobalData.h"
 #include "Common/INI.h"
 #include "Common/MessageStream.h"
@@ -88,21 +89,23 @@ static void parseKindOfFromINI(INI* ini, void* instance, void *store, const void
 {
 	KindOfMaskType::parseFromINI(ini, instance, store, userData);
 
-#if RTS_GENERALS
-	KindOfMaskType* kindOf = reinterpret_cast<KindOfMaskType*>(store);
-
-	if (kindOf->test(KINDOF_AIRFIELD))
+	// GeneralsX @refactor cheviiot 24/10/2026 Generals KindOf remaps via GameProfile (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
 	{
-		// KINDOF_AIRFIELD became KINDOF_FS_AIRFIELD in Zero Hour.
-		kindOf->set(KINDOF_FS_AIRFIELD);
-	}
+		KindOfMaskType* kindOf = reinterpret_cast<KindOfMaskType*>(store);
 
-	if (kindOf->test(KINDOF_DRONE))
-	{
-		// KINDOF_DRONE was implicitly KINDOF_NO_SELECT in Generals.
-		kindOf->set(KINDOF_NO_SELECT);
+		if (kindOf->test(KINDOF_AIRFIELD))
+		{
+			// KINDOF_AIRFIELD became KINDOF_FS_AIRFIELD in Zero Hour.
+			kindOf->set(KINDOF_FS_AIRFIELD);
+		}
+
+		if (kindOf->test(KINDOF_DRONE))
+		{
+			// KINDOF_DRONE was implicitly KINDOF_NO_SELECT in Generals.
+			kindOf->set(KINDOF_NO_SELECT);
+		}
 	}
-#endif
 }
 
 /*
@@ -219,7 +222,8 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "SoundMoveStartDamaged",INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveStartDamaged]) },
 	{ "SoundMoveLoop",				INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveLoop]) },
 	{ "SoundMoveLoopDamaged",	INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveLoopDamaged]) },
-#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
+#if RETAIL_COMPATIBLE_DATA
+	// GeneralsX @refactor cheviiot 23/10/2026 Dual-profile INI fields (was #if RTS_GENERALS && RETAIL_COMPATIBLE_DATA).
 	{ "SoundDie",							INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDie]) },
 	{ "SoundDieFire",					INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDieFire ]) },
 	{ "SoundDieToxin",				INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDieToxin ]) },
@@ -463,15 +467,15 @@ Bool ModuleInfo::clearCopiedFromDefaultEntries(Int interfaceMask, const AsciiStr
 		{
       if ( it->inheritable )
 			{
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
-				if( it->m_moduleTag.compare("ModuleTag_DefaultAutoHealBehavior") == 0  && !fullTemplate->isTrainable() )
+				// GeneralsX @refactor cheviiot 24/10/2026 ZH AutoHeal inherit filter via GameProfile (was #if !(RTS_GENERALS && RETAIL_CRC)).
+				if( !GameProfile::get().isGenerals()
+					&& it->m_moduleTag.compare("ModuleTag_DefaultAutoHealBehavior") == 0  && !fullTemplate->isTrainable() )
 				{
 					// Don't inherit this module if it is entirely useless to us.
           it = m_info.erase( it );
 			    ret = true;
 				}
 				else
-#endif
 				{
 					++it;//skip to the next nugget, 'cause we inherit this one
 				}
@@ -1126,7 +1130,7 @@ void ThingTemplate::validateAudio()
 	AUDIO_TEST(SoundMoveStartDamaged)
 	AUDIO_TEST(SoundMoveLoop)
 	AUDIO_TEST(SoundMoveLoopDamaged)
-#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
+#if RETAIL_COMPATIBLE_DATA
 	AUDIO_TEST(SoundDie)
 	AUDIO_TEST(SoundDieFire)
 	AUDIO_TEST(SoundDieToxin)

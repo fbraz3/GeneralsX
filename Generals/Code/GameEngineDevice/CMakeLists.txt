@@ -164,7 +164,8 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/Water/wave.nvp
 #    Source/W3DDevice/GameClient/Water/wave.nvv
 #    Source/W3DDevice/GameClient/WorldHeightMap.cpp
-    Source/W3DDevice/GameLogic/W3DGameLogic.cpp
+    # GeneralsX @refactor cheviiot 23/10/2026 Compile the canonical Zero Hour source with Generals headers.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameLogic/W3DGameLogic.cpp
     Source/W3DDevice/GameLogic/W3DGhostObject.cpp
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
 )

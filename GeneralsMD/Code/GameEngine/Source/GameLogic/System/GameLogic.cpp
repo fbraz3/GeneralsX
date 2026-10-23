@@ -42,6 +42,7 @@
 #include "Common/CRCDebug.h"
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GameEngine.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
@@ -529,11 +530,14 @@ void GameLogic::reset()
 
 	// Clean up any water transparency overrides that were generated for this map.
 	WaterTransparencySetting *wt = (WaterTransparencySetting*) TheWaterTransparency.getNonOverloadedPointer();
-	TheWaterTransparency = (WaterTransparencySetting*) wt->deleteOverrides();
+	if (wt != nullptr)
+		TheWaterTransparency = (WaterTransparencySetting*) wt->deleteOverrides();
 
 	// Clean up any weather overrides that were generated for this map.
+	// GeneralsX @feature cheviiot 23/10/2026 WeatherSetting is null under Generals profile (no Weather INI).
 	WeatherSetting *ws = (WeatherSetting*) TheWeatherSetting.getNonOverloadedPointer();
-	TheWeatherSetting = (WeatherSetting*) ws->deleteOverrides();
+	if (ws != nullptr)
+		TheWeatherSetting = (WeatherSetting*) ws->deleteOverrides();
 
 	m_rankPointsToAddAtGameStart = 0;
 }
@@ -2670,11 +2674,13 @@ void GameLogic::processDestroyList()
 {
 	//USE_PERF_TIMER(processDestroyList)
 
-#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info Set m_classifyFenceZeroInit to true for the first object. It's set to false when this function exits.
-	// Pathfinder::classifyFence may be called indirectly from Object::~Object.
-	TheAI->pathfinder()->m_classifyFenceZeroInit = !m_objectsToDestroy.empty();
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Generals-profile fence zero-init (was RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+	{
+		// TheSuperHackers @info Set m_classifyFenceZeroInit to true for the first object. It's set to false when this function exits.
+		// Pathfinder::classifyFence may be called indirectly from Object::~Object.
+		TheAI->pathfinder()->setClassifyFenceZeroInit(!m_objectsToDestroy.empty());
+	}
 
 	for( ObjectPointerListIterator iterator = m_objectsToDestroy.begin(); iterator != m_objectsToDestroy.end(); iterator++ )
 	{
@@ -2735,9 +2741,8 @@ void GameLogic::processDestroyList()
 
 		Object::friend_deleteInstance(currentObject);//actual delete
 
-#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
-		TheAI->pathfinder()->m_classifyFenceZeroInit = false;
-#endif
+		if (GameProfile::get().isGenerals())
+			TheAI->pathfinder()->setClassifyFenceZeroInit(false);
 	}
 
 	m_objectsToDestroy.clear();//list full of bad pointers now, clear it.  If anyone's deletion resulted
@@ -4014,15 +4019,11 @@ void GameLogic::update()
 		{
 			UpdateModulePtr u = *it;
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
-#if RETAIL_COMPATIBLE_CRC
-			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
-#else
-			// TheSuperHackers @bugfix Stubbjax 15/03/2026 The disabled-types-to-process mask is now exclusive.
-			// Previously, if the disabled mask had any bits in common with the disabled-types-to-process mask,
-			// the update would be processed. Now, if any *other* bits are set in the disabled mask, the update
-			// is no longer processed.
-			if (u->getDisabledTypesToProcess().testForAll(dis))
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail intersection vs ZH exclusive disabled mask (was RETAIL_COMPATIBLE_CRC).
+			const Bool allowUpdate = GameProfile::get().isGenerals()
+				? (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
+				: u->getDisabledTypesToProcess().testForAll(dis);
+			if (allowUpdate)
 			{
 				USE_PERF_TIMER(GameLogic_update_normal)
 
@@ -4062,15 +4063,11 @@ void GameLogic::update()
 			UpdateSleepTime sleepLen = UPDATE_SLEEP_NONE;	// default, if it is disabled.
 
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
-#if RETAIL_COMPATIBLE_CRC
-			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
-#else
-			// TheSuperHackers @bugfix Stubbjax 15/03/2026 The disabled-types-to-process mask is now exclusive.
-			// Previously, if the disabled mask had any bits in common with the disabled-types-to-process mask,
-			// the update would be processed. Now, if any *other* bits are set in the disabled mask, the update
-			// is no longer processed.
-			if (u->getDisabledTypesToProcess().testForAll(dis))
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail intersection vs ZH exclusive disabled mask (was RETAIL_COMPATIBLE_CRC).
+			const Bool allowUpdate = GameProfile::get().isGenerals()
+				? (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
+				: u->getDisabledTypesToProcess().testForAll(dis);
+			if (allowUpdate)
 			{
 				USE_PERF_TIMER(GameLogic_update_sleepy)
 

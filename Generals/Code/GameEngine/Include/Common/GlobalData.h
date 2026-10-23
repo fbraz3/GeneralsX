@@ -125,6 +125,9 @@ public:
 	// Run game without graphics, input or audio.
 	Bool m_headless;
 
+	// GeneralsX @feature cheviiot 24/10/2026 Quit after N in-game logic frames (0 = disabled); for headless smoke.
+	Int m_quitAfterLogicFrames;
+
 	// GeneralsX @feature BenderAI 21/04/2026 Allow user to opt out of the in-game update checker
 	Bool m_checkForUpdates;
 
@@ -615,6 +618,11 @@ public:
 
 	AsciiString m_modDir;
 	AsciiString m_modBIG;
+
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6 smoke knobs (appended to avoid mid-class ABI churn).
+	Bool m_lanProbe;				///< Headless LAN bind/discovery probe; skip main loop when set.
+	Bool m_cliSkirmish;			///< CLI skirmish start (GAME_SKIRMISH) so Recorder writes a .rep.
+	Int m_saveAtLogicFrame;	///< Save once when in-game frame reaches N (0 = disabled).
 
 	// the trailing '\' is included!
 	AsciiString getPath_UserData() const;

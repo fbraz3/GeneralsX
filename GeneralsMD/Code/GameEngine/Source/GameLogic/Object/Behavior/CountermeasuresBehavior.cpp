@@ -31,6 +31,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
@@ -177,18 +178,15 @@ ObjectID CountermeasuresBehavior::calculateCountermeasureToDivertTo( const Objec
 				closestFlareDist = weaponToFlareDist;
 				closestFlare = obj;
 			}
-#if RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @info Original EA code did not work as intended and stopped on the first retrieved flare
-			// The non retail behaviour corrects the code to iterate through all flares in the volley
-			break;
-#else
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail stops at first flare; ZH counts volley (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals())
+				break;
 			++volleyFlaresCounted;
-#endif
 		}
 
-#if RETAIL_COMPATIBLE_CRC
-		++volleyFlaresCounted;
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail increments after loop body (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals())
+			++volleyFlaresCounted;
 	}
 
 	if( closestFlare )

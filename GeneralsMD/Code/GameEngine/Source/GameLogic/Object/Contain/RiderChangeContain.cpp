@@ -29,6 +29,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_LOCOMOTORSET_NAMES //Gain access to TheLocomotorSetNames[]
 
@@ -246,11 +247,9 @@ void RiderChangeContain::onContaining( Object *rider, Bool wasSelected )
 			//Transfer experience from the rider to the bike.
 			ExperienceTracker *riderTracker = rider->getExperienceTracker();
 			ExperienceTracker *bikeTracker = obj->getExperienceTracker();
-#if !RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @bugfix Stubbjax 15/12/2025 Copy trainable flag from the rider to prevent
-			// Workers and other untrainable riders from ranking up via the bike's experience tracker.
-			bikeTracker->setTrainable(riderTracker->isTrainable());
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 ZH copies trainable from rider (was !RETAIL_COMPATIBLE_CRC).
+			if (!GameProfile::get().isGenerals())
+				bikeTracker->setTrainable(riderTracker->isTrainable());
 			bikeTracker->setVeterancyLevel( riderTracker->getVeterancyLevel(), FALSE );
 			riderTracker->setExperienceAndLevel( 0, FALSE );
 

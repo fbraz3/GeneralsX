@@ -30,6 +30,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
 #include "GameLogic/Module/PoisonedBehavior.h"
@@ -159,10 +160,9 @@ void PoisonedBehavior::startPoisonedEffects( const DamageInfo *damageInfo )
 
 	// We are going to take the damage dealt by the original poisoner every so often for a while.
 	m_poisonDamageAmount = damageInfo->out.m_actualDamageDealt;
-#if !RETAIL_COMPATIBLE_CRC && !PRESERVE_NO_XP_FROM_POISON_KILLS
-	// TheSuperHackers @bugfix Stubbjax 03/09/2025 Allow poison damage to award xp to the poison source.
-	m_poisonSource = damageInfo->in.m_sourceID;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH awards poison XP to source (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && !PRESERVE_NO_XP_FROM_POISON_KILLS)
+		m_poisonSource = damageInfo->in.m_sourceID;
 
 	m_poisonOverallStopFrame = now + d->m_poisonDurationData;
 

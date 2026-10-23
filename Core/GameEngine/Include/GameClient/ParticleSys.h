@@ -852,11 +852,8 @@ public:
 	ParticleSystemTemplate *newTemplate( const AsciiString &name );
 
 	/// given a template, instantiate a particle system
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: always virtual (was RETAIL_COMPATIBLE_CRC-only).
 	virtual ParticleSystem *createParticleSystem( const ParticleSystemTemplate *sysTemplate, Bool createSlaves = TRUE );
-#else
-	ParticleSystem* createParticleSystem(const ParticleSystemTemplate* sysTemplate, Bool createSlaves = TRUE);
-#endif
 
 	/** given a template, instantiate a particle system.
 		if attachTo is not null, attach the particle system to the given object.
@@ -939,17 +936,12 @@ private:
 class ParticleSystemManagerDummy : public ParticleSystemManager
 {
 public:
-#if RETAIL_COMPATIBLE_CRC
-	// The creation of particle systems needs to be handled explicitly,
-	// because they're not destroyed in the update function anymore.
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail loads templates (CRC); ZH headless skips.
+	// Upstream: Dummy createParticleSystem for CRC=1; empty init/reset for CRC=0.
 	virtual ParticleSystem* createParticleSystem(const ParticleSystemTemplate* sysTemplate, Bool createSlaves = TRUE) override { return nullptr; }
 
-	// Must not overload init to keep loading the particle system templates,
-	// which are unfortunately needed to preserve the correct logic crc.
-#else
-	virtual void init() override {}
-	virtual void reset() override {}
-#endif
+	virtual void init() override;
+	virtual void reset() override;
 	virtual void update() override {}
 	virtual void draw() override {}
 

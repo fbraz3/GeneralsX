@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/KindOf.h"
@@ -50,9 +51,8 @@
 // ------------------------------------------------------------------------
 TunnelTracker::TunnelTracker()
 {
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always init dual-layout tunnel count.
 	m_tunnelCount = 0;
-#endif
 	m_containListSize = 0;
 	m_heroUnitsContained = 0;
 	m_curNemesisID = INVALID_ID;
@@ -232,9 +232,8 @@ void TunnelTracker::onTunnelCreated( const Object *newTunnel )
 	DEBUG_ASSERTCRASH(std::find(m_tunnelIDs.begin(), m_tunnelIDs.end(), newTunnel->getID()) == m_tunnelIDs.end(),
 		("TunnelTracker::onTunnelCreated - New tunnel was already added; this shouldn't happen"));
 
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always maintain dual-layout tunnel count.
 	m_tunnelCount++;
-#endif
 	m_tunnelIDs.push_back( newTunnel->getID() );
 	m_needsFullHealTimeUpdate = true;
 }
@@ -242,83 +241,85 @@ void TunnelTracker::onTunnelCreated( const Object *newTunnel )
 // ------------------------------------------------------------------------
 void TunnelTracker::onTunnelDestroyed( const Object *deadTunnel )
 {
-#if RETAIL_COMPATIBLE_CRC
-
-	DEBUG_ASSERTLOG(static_cast<Int>(m_tunnelCount) > 0 && m_tunnelCount == m_tunnelIDs.size(),
-		("TunnelTracker::onTunnelDestroyed - Tunnel count is unexpected"));
-
-	const size_t oldSize = m_tunnelIDs.size();
-	m_tunnelIDs.remove(deadTunnel->getID());
-
-	(void)oldSize;
-	DEBUG_ASSERTLOG(oldSize != m_tunnelIDs.size(),
-		("TunnelTracker::onTunnelDestroyed - Attempting to remove object '%s' that has never been tracked as a tunnel", deadTunnel->getName().str()));
-
-	m_tunnelCount--;
-
-	if( m_tunnelCount == 0 )
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail remove/cave-in vs ZH fixed path.
+	if( GameProfile::get().isGenerals() )
 	{
-		// Kill everyone in our contain list.  Cave in!
-		iterateContained( destroyObject, nullptr, FALSE );
-		m_containList.clear();
-		m_containListSize = 0;
-	}
-	else
-	{
-		// TheSuperHackers @bugfix Caball009 01/09/2026 Check if container is empty before accessing it.
-		// The tunnel count may diverge from the container size, because of bugs that cannot be fixed with
-		// retail compatibility enabled. Expected retail behavior: empty container access results in a nullptr.
-		Object *tunnel = m_tunnelIDs.empty() ? nullptr : TheGameLogic->findObjectByID( m_tunnelIDs.front() );
+		DEBUG_ASSERTLOG(static_cast<Int>(m_tunnelCount) > 0 && m_tunnelCount == m_tunnelIDs.size(),
+			("TunnelTracker::onTunnelDestroyed - Tunnel count is unexpected"));
 
-		// Otherwise, make sure nobody inside remembers the dead tunnel as the one they entered
-		// (scripts need to use so there must be something valid here)
-		for(ContainedItemsList::iterator it = m_containList.begin(); it != m_containList.end(); )
+		const size_t oldSize = m_tunnelIDs.size();
+		m_tunnelIDs.remove(deadTunnel->getID());
+
+		(void)oldSize;
+		DEBUG_ASSERTLOG(oldSize != m_tunnelIDs.size(),
+			("TunnelTracker::onTunnelDestroyed - Attempting to remove object '%s' that has never been tracked as a tunnel", deadTunnel->getName().str()));
+
+		m_tunnelCount--;
+
+		if( m_tunnelCount == 0 )
 		{
-			Object* obj = *it;
-			++it;
-			if( obj->getContainedBy() == deadTunnel )
-				obj->onContainedBy( tunnel );
+			// Kill everyone in our contain list.  Cave in!
+			iterateContained( destroyObject, nullptr, FALSE );
+			m_containList.clear();
+			m_containListSize = 0;
+		}
+		else
+		{
+			// TheSuperHackers @bugfix Caball009 01/09/2026 Check if container is empty before accessing it.
+			// The tunnel count may diverge from the container size, because of bugs that cannot be fixed with
+			// retail compatibility enabled. Expected retail behavior: empty container access results in a nullptr.
+			Object *tunnel = m_tunnelIDs.empty() ? nullptr : TheGameLogic->findObjectByID( m_tunnelIDs.front() );
+
+			// Otherwise, make sure nobody inside remembers the dead tunnel as the one they entered
+			// (scripts need to use so there must be something valid here)
+			for(ContainedItemsList::iterator it = m_containList.begin(); it != m_containList.end(); )
+			{
+				Object* obj = *it;
+				++it;
+				if( obj->getContainedBy() == deadTunnel )
+					obj->onContainedBy( tunnel );
+			}
 		}
 	}
-
-#else
-
-	const std::list<ObjectID>::iterator it = std::find(m_tunnelIDs.begin(), m_tunnelIDs.end(), deadTunnel->getID());
-	if (it != m_tunnelIDs.end())
-	{
-		m_tunnelIDs.erase(it);
-
-		m_needsFullHealTimeUpdate = true;
-	}
 	else
 	{
-		DEBUG_CRASH(("TunnelTracker::onTunnelDestroyed - Attempting to remove object '%s' that has never been tracked as a tunnel",
-			deadTunnel->getName().str()));
-	}
-
-	if( m_tunnelIDs.empty() )
-	{
-		// Kill everyone in our contain list.  Cave in!
-		iterateContained( destroyObject, nullptr, FALSE );
-		m_containList.clear();
-		m_containListSize = 0;
-	}
-	else
-	{
-		Object *validTunnel = TheGameLogic->findObjectByID( m_tunnelIDs.front() );
-
-		// Otherwise, make sure nobody inside remembers the dead tunnel as the one they entered
-		// (scripts need to use so there must be something valid here)
-		for(ContainedItemsList::iterator it = m_containList.begin(); it != m_containList.end(); )
+		const std::list<ObjectID>::iterator it = std::find(m_tunnelIDs.begin(), m_tunnelIDs.end(), deadTunnel->getID());
+		if (it != m_tunnelIDs.end())
 		{
-			Object* obj = *it;
-			++it;
-			if( obj->getContainedBy() == deadTunnel )
-				obj->onContainedBy( validTunnel );
+			m_tunnelIDs.erase(it);
+			if( m_tunnelCount > 0 )
+				m_tunnelCount--;
+			m_needsFullHealTimeUpdate = true;
+		}
+		else
+		{
+			DEBUG_CRASH(("TunnelTracker::onTunnelDestroyed - Attempting to remove object '%s' that has never been tracked as a tunnel",
+				deadTunnel->getName().str()));
+		}
+
+		if( m_tunnelIDs.empty() )
+		{
+			// Kill everyone in our contain list.  Cave in!
+			iterateContained( destroyObject, nullptr, FALSE );
+			m_containList.clear();
+			m_containListSize = 0;
+			m_tunnelCount = 0;
+		}
+		else
+		{
+			Object *validTunnel = TheGameLogic->findObjectByID( m_tunnelIDs.front() );
+
+			// Otherwise, make sure nobody inside remembers the dead tunnel as the one they entered
+			// (scripts need to use so there must be something valid here)
+			for(ContainedItemsList::iterator it = m_containList.begin(); it != m_containList.end(); )
+			{
+				Object* obj = *it;
+				++it;
+				if( obj->getContainedBy() == deadTunnel )
+					obj->onContainedBy( validTunnel );
+			}
 		}
 	}
-
-#endif // RETAIL_COMPATIBLE_CRC
 }
 
 // ------------------------------------------------------------------------
@@ -484,25 +485,15 @@ void TunnelTracker::xfer( Xfer *xfer )
 		m_needsFullHealTimeUpdate = true;
 	}
 
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: dual-layout always xfers/syncs m_tunnelCount.
 	if (version <= 1)
 	{
 		xfer->xferUnsignedInt(&m_tunnelCount);
 	}
-	else
+	else if (xfer->getXferMode() == XFER_LOAD)
 	{
-		if (xfer->getXferMode() == XFER_LOAD)
-		{
-			m_tunnelCount = m_tunnelIDs.size();
-		}
+		m_tunnelCount = m_tunnelIDs.size();
 	}
-#else
-	if (version <= 1)
-	{
-		UnsignedInt tunnelCount = m_tunnelIDs.size();
-		xfer->xferUnsignedInt(&tunnelCount);
-	}
-#endif
 
 }
 

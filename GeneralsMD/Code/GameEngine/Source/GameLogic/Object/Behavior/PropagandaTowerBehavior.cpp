@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
 #include "Common/Player.h"
@@ -206,12 +207,10 @@ UpdateSleepTime PropagandaTowerBehavior::update()
 		}
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	if (self->getContainedBy() && self->getContainedBy()->getContainedBy())
-#else
-	// TheSuperHackers @bugfix If our container or any parent containers are enclosing, we turn the heck off.
-	if (self->getEnclosingContainedBy())
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail double-contain vs ZH enclosing contain (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals()
+			? (self->getContainedBy() && self->getContainedBy()->getContainedBy())
+			: (self->getEnclosingContainedBy() != nullptr))
 	{
 		removeAllInfluence();
 		return UPDATE_SLEEP_NONE;

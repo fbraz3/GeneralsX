@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/RandomValue.h"
 #include "Common/crc.h"
 #include "Common/Debug.h"
@@ -266,16 +267,20 @@ Real GetGameClientRandomValueReal( Real lo, Real hi, const char *file, int line 
 //
 Int GetGameLogicRandomValue( int lo, int hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	const UnsignedInt delta = hi - lo + 1;
-	if (delta == 0)
-		return hi;
-#else
-	if (lo >= hi)
-		return hi;
-
-	const UnsignedInt delta = hi - lo + 1;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail unsigned wrap vs ZH lo>=hi guard.
+	UnsignedInt delta;
+	if( GameProfile::get().isGenerals() )
+	{
+		delta = hi - lo + 1;
+		if (delta == 0)
+			return hi;
+	}
+	else
+	{
+		if (lo >= hi)
+			return hi;
+		delta = hi - lo + 1;
+	}
 
 	const Int rval = ((Int)(randomValue(theGameLogicSeed) % delta)) + lo;
 
@@ -293,16 +298,20 @@ Int GetGameLogicRandomValue( int lo, int hi, const char *file, int line )
 //
 Real GetGameLogicRandomValueReal( Real lo, Real hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	const Real delta = hi - lo;
-	if (delta <= 0.0f)
-		return hi;
-#else
-	if (lo >= hi)
-		return hi;
-
-	const Real delta = hi - lo;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail delta<=0 vs ZH lo>=hi guard.
+	Real delta;
+	if( GameProfile::get().isGenerals() )
+	{
+		delta = hi - lo;
+		if (delta <= 0.0f)
+			return hi;
+	}
+	else
+	{
+		if (lo >= hi)
+			return hi;
+		delta = hi - lo;
+	}
 
 	const Real rval = ((Real)(randomValue(theGameLogicSeed)) * theMultFactor) * delta + lo;
 
@@ -323,9 +332,9 @@ Real GetGameLogicRandomValueReal( Real lo, Real hi, const char *file, int line )
 //
 Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	return GetGameLogicRandomValue(lo, hi, file, line);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail advances seed; ZH keeps snapshot.
+	if( GameProfile::get().isGenerals() )
+		return GetGameLogicRandomValue(lo, hi, file, line);
 
 	if (lo >= hi)
 		return hi;
@@ -353,9 +362,9 @@ Int GetGameLogicRandomValueUnchanged( int lo, int hi, const char *file, int line
 //
 Real GetGameLogicRandomValueRealUnchanged( Real lo, Real hi, const char *file, int line )
 {
-#if RETAIL_COMPATIBLE_CRC
-	return GetGameLogicRandomValueReal(lo, hi, file, line);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail advances seed; ZH keeps snapshot.
+	if( GameProfile::get().isGenerals() )
+		return GetGameLogicRandomValueReal(lo, hi, file, line);
 
 	if (lo >= hi)
 		return hi;
@@ -463,4 +472,25 @@ Real GameLogicRandomVariable::getValue() const
 			DEBUG_CRASH(("unsupported DistributionType in GameLogicRandomVariable::getValue"));
 			return 0.0f;
 	}
+}
+
+// GeneralsX @refactor cheviiot 24/10/2026 Adapt upstream RandomValueClass implementations.
+Int LogicRandomValueClass::GetRandomValueInt( Int lo, Int hi, const char *file, Int line ) const
+{
+	return GetGameLogicRandomValue(lo, hi, file, line);
+}
+
+Real LogicRandomValueClass::GetRandomValueReal( Real lo, Real hi, const char *file, Int line ) const
+{
+	return GetGameLogicRandomValueReal(lo, hi, file, line);
+}
+
+Int ClientRandomValueClass::GetRandomValueInt( Int lo, Int hi, const char *file, Int line ) const
+{
+	return GetGameClientRandomValue(lo, hi, file, line);
+}
+
+Real ClientRandomValueClass::GetRandomValueReal( Real lo, Real hi, const char *file, Int line ) const
+{
+	return GetGameClientRandomValueReal(lo, hi, file, line);
 }

@@ -49,7 +49,7 @@ SpecialPowerStore *TheSpecialPowerStore = nullptr;
 
 // Externs ////////////////////////////////////////////////////////////////////////////////////////
 template<>
-const char* const SpecialPowerMaskType::s_bitNameList[] =
+const char* SpecialPowerMaskType::s_bitNameList[] =
 {
 	"SPECIAL_INVALID",
 

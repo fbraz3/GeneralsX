@@ -208,9 +208,8 @@ public:
 	virtual Bool hasObjectsWantingToEnterOrExit() const override;
 
 	virtual void processDamageToContained(Real percentDamage) override; ///< Do our % damage to units now.
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always present (was RETAIL_COMPATIBLE_CRC-only).
 	void processDamageToContainedInternal(Object* const* objects, size_t size, Real percentDamage);
-#endif
 
 	virtual void enableLoadSounds( Bool enable ) override { m_loadSoundsEnabled = enable; }
 

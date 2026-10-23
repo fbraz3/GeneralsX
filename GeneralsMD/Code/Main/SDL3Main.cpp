@@ -45,6 +45,7 @@
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
 #include "Common/GameMemory.h"
+#include "Common/GameProfile.h"
 #include "Common/Debug.h"
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
@@ -252,7 +253,17 @@ int main(int argc, char* argv[])
 		TheDmaCriticalSection = &critSec3;
 		TheMemoryPoolCriticalSection = &critSec4;
 
-		// Initialize memory manager early (required by NEW operator)
+		// GeneralsX @feature cheviiot 23/10/2026 Select GameProfile before memory pools/assets (PLAN-023).
+		// RTS_UNIFIED_ENGINE: echelon binary may select generals|zh; GeneralsXZH stays ZH-only.
+#if defined(RTS_UNIFIED_ENGINE) && RTS_UNIFIED_ENGINE
+		if (!GameProfile::selectForProcess(argc, argv, TRUE)) {
+#else
+		if (!GameProfile::selectForProcess(argc, argv, FALSE)) {
+#endif
+			return 1;
+		}
+
+		// Initialize memory manager early (required by NEW operator); pools follow selected profile.
 		initMemoryManager();
 
 		// GeneralsX @bugfix BenderAI 14/02/2026 Initialize Version singleton

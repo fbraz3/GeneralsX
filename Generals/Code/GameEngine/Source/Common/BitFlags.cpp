@@ -38,7 +38,7 @@
 #include "GameLogic/ArmorSet.h"
 
 template<>
-const char* const ModelConditionFlags::s_bitNameList[] =
+const char* ModelConditionFlags::s_bitNameList[] =
 {
 	"TOPPLED",
 	"FRONTCRUSHED",
@@ -151,7 +151,7 @@ const char* const ModelConditionFlags::s_bitNameList[] =
 static_assert(ARRAY_SIZE(ModelConditionFlags::s_bitNameList) == ModelConditionFlags::NumBits + 1, "Incorrect array size");
 
 template<>
-const char* const ArmorSetFlags::s_bitNameList[] =
+const char* ArmorSetFlags::s_bitNameList[] =
 {
 	"VETERAN",
 	"ELITE",

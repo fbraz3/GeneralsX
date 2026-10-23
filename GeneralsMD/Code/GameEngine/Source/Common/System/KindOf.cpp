@@ -32,7 +32,7 @@
 #include "Common/BitFlagsIO.h"
 
 template<>
-const char* const KindOfMaskType::s_bitNameList[] =
+const char* KindOfMaskType::s_bitNameList[] =
 {
 	"OBSTACLE",
 	"SELECTABLE",
@@ -71,9 +71,8 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"HEAL_PAD",
 	"STEALTH_GARRISON",
 	"CASH_GENERATOR",
-#if RTS_GENERALS
+	// GeneralsX @feature cheviiot 23/10/2026 Always emit AIRFIELD name (see KindOf.h) for dual-profile INI.
 	"AIRFIELD",
-#endif
 	"DRAWABLE_ONLY",
 	"MP_COUNT_FOR_VICTORY",
 	"REBUILD_HOLE",

@@ -31,7 +31,7 @@
 #include "Common/BitFlagsIO.h"
 
 template<>
-const char* const DisabledMaskType::s_bitNameList[] =
+const char* DisabledMaskType::s_bitNameList[] =
 {
 	"DEFAULT",
 	"DISABLED_HACKED",

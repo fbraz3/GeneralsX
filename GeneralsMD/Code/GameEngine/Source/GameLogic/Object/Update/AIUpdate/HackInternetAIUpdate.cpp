@@ -27,6 +27,7 @@
 // Desc:   State machine that handles internet hacking (free cash)
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/Player.h"
 #include "Common/ThingFactory.h"
@@ -128,13 +129,11 @@ void HackInternetAIUpdate::aiDoCommand(const AICommandParms* parms)
 
 	const StateID currentState = getStateMachine()->getCurrentStateID();
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix andrew-2e128 / Mauller 14/07/2025 prevent hacking hackers packing and unpacking when commanded to hack the internet
-	if (parms->m_cmd == AICMD_HACK_INTERNET && ( currentState == HACK_INTERNET || currentState == UNPACKING ) )
-	{
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH ignores re-hack while hacking/unpacking (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals()
+			&& parms->m_cmd == AICMD_HACK_INTERNET
+			&& (currentState == HACK_INTERNET || currentState == UNPACKING))
 		return;
-	}
-#endif
 
 	//If our hacker is currently packing up his gear, we need to prevent him
 	//from moving until completed. In order to accomplish this, we'll detect,

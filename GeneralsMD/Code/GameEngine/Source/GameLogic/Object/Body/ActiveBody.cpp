@@ -29,6 +29,8 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+
+#include "Common/GameProfile.h"
 #include "Common/BitFlagsIO.h"
 #include "Common/CRCDebug.h"
 #include "Common/DamageFX.h"
@@ -1265,13 +1267,12 @@ void ActiveBody::internalAddSubdualDamage( Real delta )
 	const ActiveBodyModuleData *data = getActiveBodyModuleData();
 
 	m_currentSubdualDamage += delta;
-#if RETAIL_COMPATIBLE_CRC
-	m_currentSubdualDamage = min(m_currentSubdualDamage, data->m_subdualDamageCap);
-#else
-	// TheSuperHackers @bugfix Stubbjax 25/01/2026 Subdual damage can no longer go negative, which
-	// stops weak subdual damage + rapid healing from negatively stacking subdual damage over time.
-	m_currentSubdualDamage = clamp(0.0f, m_currentSubdualDamage, data->m_subdualDamageCap);
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail min vs ZH clamp (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		m_currentSubdualDamage = min(m_currentSubdualDamage, data->m_subdualDamageCap);
+	else
+		// TheSuperHackers @bugfix Stubbjax 25/01/2026 Subdual damage can no longer go negative.
+		m_currentSubdualDamage = clamp(0.0f, m_currentSubdualDamage, data->m_subdualDamageCap);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1328,40 +1329,33 @@ void ActiveBody::onSubdualChange( Bool isNowSubdued )
 //-------------------------------------------------------------------------------------------------
 Bool ActiveBody::isSubdued() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return m_maxHealth <= m_currentSubdualDamage;
-#else
-  // TheSuperHackers @info Projectiles don't receive the DISABLED_SUBDUED flag (or any flag for
-	// that matter) when jammed, so we have to check their subdual damage directly.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail health-only; ZH projectile/disabled (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return m_maxHealth <= m_currentSubdualDamage;
+	// TheSuperHackers @info Projectiles don't receive the DISABLED_SUBDUED flag when jammed.
 	if (getObject()->isKindOf(KINDOF_PROJECTILE))
 		return m_maxHealth <= m_currentSubdualDamage;
-
 	return getObject()->isDisabledByType(DISABLED_SUBDUED);
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const UnsignedInt *ActiveBody::getLastDamageTimestamp() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return &m_lastDamageTimestamp;
-#else
-	// TheSuperHackers @fix WebbontheWeb 03/10/2026 Avoid treating never-damaged sentinels as an attack timestamp.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always returns ptr; ZH nulls sentinel (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return &m_lastDamageTimestamp;
 	return m_lastDamageTimestamp != InvalidBodyTimestamp ? &m_lastDamageTimestamp : nullptr;
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const UnsignedInt *ActiveBody::getLastHealingTimestamp() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return &m_lastHealingTimestamp;
-#else
-	// TheSuperHackers @fix WebbontheWeb 04/10/2026 Avoid treating never-healed sentinels as a healing timestamp.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always returns ptr; ZH nulls sentinel (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return &m_lastHealingTimestamp;
 	return m_lastHealingTimestamp != InvalidBodyTimestamp ? &m_lastHealingTimestamp : nullptr;
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -44,6 +44,7 @@
 #include "Common/CriticalSection.h"
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
+#include "Common/GameProfile.h"
 #include "Common/GameSounds.h"
 #include "Common/Debug.h"
 #include "Common/GameMemory.h"
@@ -818,7 +819,16 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TheDmaCriticalSection = &critSec3;
 		TheMemoryPoolCriticalSection = &critSec4;
 
-		// initialize the memory manager early
+		// GeneralsX @feature cheviiot 23/10/2026 Select GameProfile before memory pools/assets (PLAN-023).
+#if defined(RTS_UNIFIED_ENGINE) && RTS_UNIFIED_ENGINE
+		if (!GameProfile::selectForProcess(__argc, __argv, TRUE)) {
+#else
+		if (!GameProfile::selectForProcess(__argc, __argv, FALSE)) {
+#endif
+			return 1;
+		}
+
+		// initialize the memory manager early; pools follow selected profile.
 		initMemoryManager();
 
 		CommandLine::parseCommandLineForStartup();

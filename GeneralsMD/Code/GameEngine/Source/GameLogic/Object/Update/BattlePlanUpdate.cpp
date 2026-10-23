@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_MAXHEALTHCHANGETYPE_NAMES						// for TheMaxHealthChangeTypeNames[]
 
@@ -251,11 +252,12 @@ void BattlePlanUpdate::onObjectCreated()
 //-------------------------------------------------------------------------------------------------
 void BattlePlanUpdate::onCapture(Player* oldOwner, Player* newOwner)
 {
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 04/11/2025 Transfer battle plan bonuses on capture.
-	oldOwner->changeBattlePlan(m_planAffectingArmy, -1, m_bonuses);
-	newOwner->changeBattlePlan(m_planAffectingArmy, 1, m_bonuses);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH transfers battle plan bonuses on capture (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
+	{
+		oldOwner->changeBattlePlan(m_planAffectingArmy, -1, m_bonuses);
+		newOwner->changeBattlePlan(m_planAffectingArmy, 1, m_bonuses);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -376,10 +378,9 @@ UpdateSleepTime BattlePlanUpdate::update()
 							{
 								//It's not centered, and not trying to center, so order it to center.
 								ai->aiIdle( CMD_FROM_AI );
-#if !RETAIL_COMPATIBLE_CRC
-								// TheSuperHackers @bugfix Stubbjax 19/02/2026 Prevent using the turret while it recenters.
-								enableTurret(false);
-#endif
+								// GeneralsX @refactor cheviiot 24/10/2026 ZH disables turret while recentering (was !RETAIL_COMPATIBLE_CRC).
+								if (!GameProfile::get().isGenerals())
+									enableTurret(false);
 								recenterTurret();
 								m_centeringTurret = true;
 							}

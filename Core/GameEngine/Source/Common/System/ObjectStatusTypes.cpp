@@ -33,7 +33,7 @@
 #include "Common/BitFlagsIO.h"
 
 template<>
-const char* const ObjectStatusMaskType::s_bitNameList[] =
+const char* ObjectStatusMaskType::s_bitNameList[] =
 {
 	"NONE",
 	"DESTROYED",

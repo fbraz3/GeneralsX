@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_WEAPONSLOTTYPE_NAMES
 #include "Common/Player.h"
@@ -69,10 +70,8 @@ AssistedTargetingUpdate::AssistedTargetingUpdate( Thing *thing, const ModuleData
 
 	m_laserFromAssisted = TheThingFactory->findTemplate(d->m_laserFromAssistedName);
 	m_laserToTarget = TheThingFactory->findTemplate(d->m_laserToTargetName);
-#if RTS_GENERALS || !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info Zero Hour needs the update to run once to avoid mismatches with retail.
+	// GeneralsX @refactor cheviiot 24/10/2026 Always sleep forever (was RTS_GENERALS || !RETAIL_COMPATIBLE_CRC; CRC stays 0).
 	setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------

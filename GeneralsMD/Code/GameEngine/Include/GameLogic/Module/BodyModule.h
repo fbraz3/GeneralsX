@@ -29,6 +29,7 @@
 
 #pragma once
 
+#include "Common/GameProfile.h"
 #include "Common/Module.h"
 #include "GameLogic/Damage.h"
 #include "GameLogic/ArmorSet.h"
@@ -230,21 +231,23 @@ public:
 	virtual const DamageInfo *getLastDamageInfo() const override { return nullptr; }	///< return info on last damage dealt to this object
 	virtual const UnsignedInt *getLastDamageTimestamp() const override	///< return frame of last damage, or nullptr if none
 	{
-#if RETAIL_COMPATIBLE_CRC
-		static const UnsignedInt timestamp = 0;
-		return &timestamp;
-#else
+		// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail returns static 0; ZH returns nullptr.
+		if( GameProfile::get().isGenerals() )
+		{
+			static const UnsignedInt timestamp = 0;
+			return &timestamp;
+		}
 		return nullptr;
-#endif
 	}
 	virtual const UnsignedInt *getLastHealingTimestamp() const override	///< return frame of last healing, or nullptr if none
 	{
-#if RETAIL_COMPATIBLE_CRC
-		static const UnsignedInt timestamp = 0;
-		return &timestamp;
-#else
+		// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail returns static 0; ZH returns nullptr.
+		if( GameProfile::get().isGenerals() )
+		{
+			static const UnsignedInt timestamp = 0;
+			return &timestamp;
+		}
 		return nullptr;
-#endif
 	}
 	virtual ObjectID getClearableLastAttacker() const override { return INVALID_ID; }
 	virtual void clearLastAttacker() override { }

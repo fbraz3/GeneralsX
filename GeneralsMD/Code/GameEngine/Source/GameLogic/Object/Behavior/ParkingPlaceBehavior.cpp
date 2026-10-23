@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include "Common/CRCDebug.h"
 #include "Common/Xfer.h"
 #include "Common/ThingTemplate.h"
@@ -521,10 +522,9 @@ Bool ParkingPlaceBehavior::reserveRunway(ObjectID id, Bool forLanding)
 	{
 		if (m_spaces[i].m_objectInSpace == id)
 		{
-#if !RETAIL_COMPATIBLE_CRC
-			if (postponeRunwayReservation(i, forLanding))
+			// GeneralsX @refactor cheviiot 24/10/2026 ZH may postpone runway reservation (was !RETAIL_COMPATIBLE_CRC).
+			if (!GameProfile::get().isGenerals() && postponeRunwayReservation(i, forLanding))
 				return false;
-#endif
 
 			runway = m_spaces[i].m_runway;
 			break;

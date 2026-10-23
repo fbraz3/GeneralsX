@@ -34,6 +34,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/ActionManager.h"
 #include "Common/GlobalData.h"
@@ -454,17 +455,19 @@ Bool ActionManager::canResumeConstructionOf( const Object *obj,
 	if( obj->isKindOf( KINDOF_DOZER ) == FALSE )
 		return FALSE;
 
-	// TheSuperHackers @bugfix Stubbjax 06/01/2026 Ensure only the owner of the construction can resume it.
-#if RETAIL_COMPATIBLE_CRC
-	Relationship r = obj->getRelationship(objectBeingConstructed);
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail allies vs ZH same-player resume (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+	{
+		Relationship r = obj->getRelationship(objectBeingConstructed);
 
-	// only available to our allies
-	if( r != ALLIES )
+		// only available to our allies
+		if( r != ALLIES )
+			return FALSE;
+	}
+	else if (obj->getControllingPlayer() != objectBeingConstructed->getControllingPlayer())
+	{
 		return FALSE;
-#else
-	if (obj->getControllingPlayer() != objectBeingConstructed->getControllingPlayer())
-		return FALSE;
-#endif
+	}
 
 	// if the objectBeingConstructed is not actually under construction we can't resume that!
 	if( !objectBeingConstructed->getStatusBits().test( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
@@ -482,12 +485,11 @@ Bool ActionManager::canResumeConstructionOf( const Object *obj,
 	// in the future)
 	//
 	Object *builder = TheGameLogic->findObjectByID( objectBeingConstructed->getBuilderID() );
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_BUILDING_RESUMPTION_DELAY
-	if( builder )
-#else
-	// TheSuperHackers @bugfix Stubbjax 18/11/2025 Allow scaffold to be immediately resumed after builder death.
-	if (builder && !builder->isEffectivelyDead())
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail any-builder vs ZH living-builder (was RETAIL_COMPATIBLE_CRC).
+	const Bool builderBlocksResume = (GameProfile::get().isGenerals() || PRESERVE_BUILDING_RESUMPTION_DELAY)
+		? (builder != nullptr)
+		: (builder != nullptr && !builder->isEffectivelyDead());
+	if (builderBlocksResume)
 	{
 		AIUpdateInterface *ai = builder->getAI();
 		DEBUG_ASSERTCRASH( ai, ("Builder object does not have an AI interface!") );

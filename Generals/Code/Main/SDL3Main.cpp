@@ -45,6 +45,7 @@
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
 #include "Common/GameMemory.h"
+#include "Common/GameProfile.h"
 #include "Common/Debug.h"
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
@@ -251,6 +252,11 @@ int main(int argc, char* argv[])
 		TheUnicodeStringCriticalSection = &critSec2;
 		TheDmaCriticalSection = &critSec3;
 		TheMemoryPoolCriticalSection = &critSec4;
+
+		// GeneralsX @feature cheviiot 23/10/2026 Select GameProfile before memory pools/assets (PLAN-023).
+		if (!GameProfile::selectForProcess(argc, argv, FALSE)) {
+			return 1;
+		}
 
 		// Initialize memory manager early (required by NEW operator)
 		initMemoryManager();

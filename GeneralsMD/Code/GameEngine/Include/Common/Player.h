@@ -566,6 +566,10 @@ public:
 	/// All of our units are new spied upon; they sight for the given enemy
 	void setUnitsVisionSpied( Bool setting, KindOfMaskType whichUnits, PlayerIndex byWhom );
 
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail vision lives on Player;
+	// ZH keeps per-Object vision. Dual-layout always allocates Player fields; GameProfile selects use.
+	PlayerMaskType getVisionSpiedMask() const;
+
 	/// Destroy all of the teams for this player, causing him to DIE.
 	void killPlayer();
 
@@ -802,6 +806,9 @@ private:
 
 	Bool									m_attackedBy[MAX_PLAYER_COUNT];	///< For each player, have they attacked me?
 	UnsignedInt						m_attackedFrame;	///< Last frame attacked.
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7 dual-layout: Generals vision pair (ZH uses Object).
+	Int										m_visionSpiedBy[MAX_PLAYER_COUNT];  ///< Reference count of having units spied on by players.
+	PlayerMaskType				m_visionSpiedMask;	///< For quick lookup and edge triggered maintenance
 
 	Real									m_cashBountyPercent;
 

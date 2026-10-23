@@ -1,7 +1,7 @@
 # PLAN-023 Echelon Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Stage 01 implemented and locally validated; unified runtime pending
+Status: Stage 06 Gate 6 — Batches A–D + TERRAIN_DECAL + 05.7 dual-layout; CRC→GameProfile waves 1–11 (behavioral + NameKey + Object/ExperienceTracker CRC; global `RETAIL_COMPATIBLE_CRC` stays 0); dual-profile + record→playback CRC-clean + save/load exit 0 both profiles; LAN dual discovery exit 0; isolated merge rehearsal `0fea59a33` (do not blind-promote); `RTS_BUILD_MIGRATION_BINARIES` option (default ON). Gate 6 still open: fresh-tip upstream promote, flip migration binaries OFF after acceptance, external fixture CRC parity
 
 ## Product contract
 
@@ -168,7 +168,29 @@ The upstream maintenance contract and integration rehearsal must also pass.
 Stage 01 introduces the consolidation map/checker, a shared FPU header and three
 canonical Zero Hour device sources consumed by both existing builds;
 see [the implementation notes](../support/UNIFIED_ENGINE_STAGE01.md).
-The earlier architecture survey did not include builds or runtime checks.
-Serena C++ symbol navigation failed during initialization in that survey;
-semantic refactoring tools remain unavailable. The complete baseline/runtime
-and single-executable migration gates remain open.
+Stage 02 shares the remaining license-identical `W3DGameLogic.cpp` and collapses
+the 27 byte-identical CompatLib headers onto the Zero Hour tree used by the
+existing CompatLib library; see [Stage 02 notes](../support/UNIFIED_ENGINE_STAGE02.md).
+Stage 03 introduces an immutable `GameProfile` selected before command-line
+startup parsing and asset mount, with provisional `-game generals|zh` support
+and profile-routed primary asset ENV selection; see
+[Stage 03 notes](../support/UNIFIED_ENGINE_STAGE03.md).
+Stage 04 retargets 138 license-identical Generals `GameEngine` sources to Zero
+Hour canonical paths (provenance map 170 entries), sizes `NameKeyGenerator`
+sockets from the profile (6473 / 45007), gates `syncNameKeyID` to Zero Hour, and
+routes `AudioSettings` money volume defaults through `GameProfile`; see
+[Stage 04 notes](../support/UNIFIED_ENGINE_STAGE04.md). Adding Zero Hour
+`GameEngine/Include` to the Generals target is an anti-pattern: it pulls NGMP
+headers and breaks the Generals link. Keep separate game Include trees until
+headers are reconciled. Stage 05 gates Player/Object/Xfer serialization through
+`GameProfile` (05.1–05.6); 05.7 header layout remains deferred; see
+[Stage 05 notes](../support/UNIFIED_ENGINE_STAGE05.md). Stage 06 scaffolds the
+`echelon` executable (links ZH engine, `RTS_UNIFIED_ENGINE` allows both `-game`
+profiles) while retaining `GeneralsX` / `GeneralsXZH` as migration checks; see
+[Stage 06 notes](../support/UNIFIED_ENGINE_STAGE06.md);
+[upstream rehearsal dry-run](../support/UNIFIED_ENGINE_UPSTREAM_REHEARSAL.md).
+Gate 6 remaining: fresh-tip promote of `upstream/main` onto the plan tip (not
+`0fea59a33`); set `RTS_BUILD_MIGRATION_BINARIES=OFF` after acceptance; reconcile
+older `generalsx-replays` fixture CRC (soft-pass exit 2 today). Campaigns /
+skirmish / LAN / mods / saves / replays path-validated on both profiles via
+headless smokes; NGMP remains the online target.

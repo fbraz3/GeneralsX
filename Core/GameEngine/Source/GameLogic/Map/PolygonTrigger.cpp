@@ -29,6 +29,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/DataChunk.h"
+#include "Common/GameProfile.h"
 #include "Common/MapObject.h"
 #include "Common/MapReaderWriterInfo.h"
 #include "Common/Xfer.h"
@@ -186,14 +187,13 @@ Bool PolygonTrigger::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChu
 			loc.z = file.readInt();
 			pTrig->addPoint(loc);
 		}
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
-		if (numPoints<2) {
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH drops <2-point triggers; Generals keeps (was RETAIL_COMPATIBLE_CRC gate).
+		if (!GameProfile::get().isGenerals() && numPoints<2) {
 			DEBUG_LOG(("Deleting polygon trigger '%s' with %d points.",
 					pTrig->getTriggerName().str(), numPoints));
 			deleteInstance(pTrig);
 			continue;
 		}
-#endif
 		if (pPrevTrig) {
 			pPrevTrig->setNextPoly(pTrig);
 		} else {
@@ -241,8 +241,11 @@ Bool PolygonTrigger::ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChu
 */
 void PolygonTrigger::WritePolygonTriggersDataChunk(DataChunkOutput &chunkWriter)
 {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
-	const DataChunkVersionType version = K_TRIGGERS_VERSION_3;
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals retail map triggers v3 / ZH v4 (was #if RTS_GENERALS && RETAIL_COMPATIBLE_DATA).
+#if RETAIL_COMPATIBLE_DATA
+	const DataChunkVersionType version = GameProfile::get().isGenerals()
+		? K_TRIGGERS_VERSION_3
+		: K_TRIGGERS_VERSION_4;
 #else
 	const DataChunkVersionType version = K_TRIGGERS_VERSION_4;
 #endif

@@ -40,8 +40,9 @@ project(genzh LANGUAGES C CXX)
 # GeneralsX @build BenderAI 10/02/2026
 # Linux port: Make CompatLib headers globally accessible so Core libraries (WWLib, WWMath, etc.)
 # can access platform compatibility types when building for non-Windows platforms
+# GeneralsX @refactor cheviiot 23/10/2026 Use the canonical Zero Hour CompatLib headers for both games.
 if(UNIX)
-    include_directories(${CMAKE_SOURCE_DIR}/Generals/Code/CompatLib/Include)
+    include_directories(${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include)
 endif()
 
 # Compiler cache (ccache) – must be included before compilers.cmake so the

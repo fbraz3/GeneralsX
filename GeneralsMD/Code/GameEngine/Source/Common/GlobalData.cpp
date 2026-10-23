@@ -48,6 +48,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/INI.h"
 #include "Common/Registry.h"
 #include "Common/OptionPreferences.h"
@@ -640,7 +641,6 @@ GlobalData::GlobalData()
 	m_checkForLeaks = TRUE;
 	m_benchmarkTimer = -1;
 
-
 	m_allowUnselectableSelection = FALSE;
 	m_disableCameraFade = false;
 	m_disableScriptedInputDisabling = false;
@@ -682,6 +682,10 @@ GlobalData::GlobalData()
 	m_skirmishTickRate = LOGICFRAMES_PER_SECOND;
 	m_chipSetType = 0;
 	m_headless = FALSE;
+	m_quitAfterLogicFrames = 0;
+	m_lanProbe = FALSE;
+	m_cliSkirmish = FALSE;
+	m_saveAtLogicFrame = 0;
 	m_checkForUpdates = TRUE;
 	m_windowed = 0;
 	m_xResolution = DEFAULT_DISPLAY_WIDTH;
@@ -1514,11 +1518,12 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 
 #elif defined(__APPLE__)
 	// GeneralsX @feature Bender 01/04/2026 macOS user data directory
-	// Uses ~/Library/Application Support as standard macOS location for Zero Hour
+	// GeneralsX @feature cheviiot 23/10/2026 Leaf follows GameProfile (Generals vs GeneralsZH).
 	{
 		const char* home = getenv("HOME");
 		if (home) {
-			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH";
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX"
+				/ GameProfile::get().getUserDataLeafName();
 			std::filesystem::create_directories(path);
 			userDataDir = path.string().c_str();
 			if (!userDataDir.endsWith("/"))
@@ -1530,7 +1535,7 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 
 #else
 	// GeneralsX @feature Bender 01/04/2026 Linux user data directory
-	// Uses XDG Base Directory specification for Zero Hour
+	// GeneralsX @feature cheviiot 23/10/2026 Leaf follows GameProfile (Generals vs GeneralsZH).
 	{
 		std::filesystem::path path;
 		const char* xdgDataHome = getenv("XDG_DATA_HOME");
@@ -1544,7 +1549,7 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 			path = "./";
 		}
 
-		path = path / "GeneralsX" / "GeneralsZH";
+		path = path / "GeneralsX" / GameProfile::get().getUserDataLeafName();
 		std::filesystem::create_directories(path);
 		userDataDir = path.string().c_str();
 		if (!userDataDir.endsWith("/"))

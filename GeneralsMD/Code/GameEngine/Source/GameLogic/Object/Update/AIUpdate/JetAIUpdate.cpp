@@ -29,6 +29,7 @@
 #define DEFINE_LOCOMOTORSET_NAMES
 
 #include "Common/ActionManager.h"
+#include "Common/GameProfile.h"
 #include "Common/GlobalData.h"
 #include "Common/MiscAudio.h"
 #include "Common/ThingFactory.h"
@@ -234,11 +235,8 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-#if RETAIL_COMPATIBLE_CRC
-			return STATE_SUCCESS;
-#else
-			return STATE_FAILURE;
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail SUCCESS vs ZH FAILURE (was RETAIL_COMPATIBLE_CRC).
+			return GameProfile::get().isGenerals() ? STATE_SUCCESS : STATE_FAILURE;
 
 		// gotta reserve a space in order to reserve a runway
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), nullptr))
@@ -508,11 +506,8 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-#if RETAIL_COMPATIBLE_CRC
-			return STATE_SUCCESS;
-#else
-			return STATE_FAILURE;
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail SUCCESS vs ZH FAILURE (was RETAIL_COMPATIBLE_CRC).
+			return GameProfile::get().isGenerals() ? STATE_SUCCESS : STATE_FAILURE;
 
 		ParkingPlaceBehaviorInterface::PPInfo ppinfo;
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), &ppinfo))
@@ -751,11 +746,8 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-#if RETAIL_COMPATIBLE_CRC
-			return STATE_SUCCESS;
-#else
-			return STATE_FAILURE;
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail SUCCESS vs ZH FAILURE (was RETAIL_COMPATIBLE_CRC).
+			return GameProfile::get().isGenerals() ? STATE_SUCCESS : STATE_FAILURE;
 
 		ParkingPlaceBehaviorInterface::PPInfo ppinfo;
 		if (!pp->reserveSpace(jet->getID(), jetAI->friend_getParkingOffset(), &ppinfo))
@@ -1005,11 +997,8 @@ public:
 
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
 		if (pp == nullptr)
-#if RETAIL_COMPATIBLE_CRC
-			return STATE_SUCCESS;
-#else
-			return STATE_FAILURE;
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail SUCCESS vs ZH FAILURE (was RETAIL_COMPATIBLE_CRC).
+			return GameProfile::get().isGenerals() ? STATE_SUCCESS : STATE_FAILURE;
 
 		Coord3D landingApproach;
 		if (jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
@@ -1627,11 +1616,13 @@ public:
 	{
 		Object* jet = getMachineOwner();
 
-#if !RETAIL_COMPATIBLE_CRC
-		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
-		if (pp == nullptr)
-			return STATE_FAILURE;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH null-airfield fail (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
+		{
+			ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+			if (pp == nullptr)
+				return STATE_FAILURE;
+		}
 
 		UnsignedInt now = TheGameLogic->getFrame();
 		Bool allDone = true;
@@ -1779,13 +1770,17 @@ HeliAIStateMachine::HeliAIStateMachine(Object *owner, AsciiString name) : AIStat
 	defineState( TAKING_OFF, newInstance(HeliTakeoffOrLandingState)( this, false ), AI_IDLE, AI_IDLE );
 	defineState( LANDING_AWAIT_CLEARANCE, newInstance(SuccessState)( this ), ORIENT_FOR_PARKING_PLACE, AI_IDLE );
 	defineState( ORIENT_FOR_PARKING_PLACE, newInstance(JetOrHeliParkOrientState)( this ), LANDING, AI_IDLE );
-#if RETAIL_COMPATIBLE_CRC
-	defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, AI_IDLE );
-	defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, AI_IDLE );
-#else
-	defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, TAKING_OFF );
-	defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, TAKING_OFF );
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail heli fail→IDLE; ZH fail→TAKING_OFF (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+	{
+		defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, AI_IDLE );
+		defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, AI_IDLE );
+	}
+	else
+	{
+		defineState( LANDING, newInstance(HeliTakeoffOrLandingState)( this, true ), RELOAD_AMMO, TAKING_OFF );
+		defineState( RELOAD_AMMO, newInstance(JetOrHeliReloadAmmoState)( this ), AI_IDLE, TAKING_OFF );
+	}
 	defineState( RETURN_TO_DEAD_AIRFIELD, newInstance(JetOrHeliReturningToDeadAirfieldState)( this ), CIRCLING_DEAD_AIRFIELD, RETURN_TO_DEAD_AIRFIELD );
 	defineState( CIRCLING_DEAD_AIRFIELD, newInstance(JetOrHeliCirclingDeadAirfieldState)( this ), AI_IDLE, AI_IDLE );
 	defineState( TAXI_FROM_HANGAR, newInstance(JetOrHeliTaxiState)( this, FROM_HANGAR ), AI_IDLE, AI_IDLE );
@@ -2022,19 +2017,21 @@ UpdateSleepTime JetAIUpdate::update()
 				setLastCommandSource( CMD_FROM_AI );
 				getStateMachine()->setState( TAKING_OFF_AWAIT_CLEARANCE );
 
-#if !RETAIL_COMPATIBLE_CRC
-				// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Move healed helicopter to rally point if present.
-				if (Object *airfield = TheGameLogic->findObjectByID( jet->getProducerID() ))
+// GeneralsX @refactor cheviiot 24/10/2026 ZH heli rally after heal (was !RETAIL_COMPATIBLE_CRC).
+				if (!GameProfile::get().isGenerals())
 				{
-					if (ExitInterface *exitInterface = airfield->getObjectExitInterface())
+					// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Move healed helicopter to rally point if present.
+					if (Object *airfield = TheGameLogic->findObjectByID( jet->getProducerID() ))
 					{
-						if (const Coord3D *rallyPoint = exitInterface->getRallyPoint())
+						if (ExitInterface *exitInterface = airfield->getObjectExitInterface())
 						{
-							aiMoveToPosition( rallyPoint, CMD_FROM_AI );
+							if (const Coord3D *rallyPoint = exitInterface->getRallyPoint())
+							{
+								aiMoveToPosition( rallyPoint, CMD_FROM_AI );
+							}
 						}
 					}
 				}
-#endif
 			}
 			else
 			{
@@ -2146,11 +2143,13 @@ UpdateSleepTime JetAIUpdate::update()
 		if (m_attackLocoExpireFrame != 0 && now >= m_attackLocoExpireFrame)
 		{
 			m_attackLocoExpireFrame = 0;
-#if !RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @bugfix arcticdolphin 04/03/2026 Reset locomotor when attack locomotor timer expires.
-			// Relevant for the Supersonic Mode of the USA Aurora.
-			chooseLocomotorSet(LOCOMOTORSET_NORMAL);
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH attack-loco reset (was !RETAIL_COMPATIBLE_CRC).
+			if (!GameProfile::get().isGenerals())
+			{
+				// TheSuperHackers @bugfix arcticdolphin 04/03/2026 Reset locomotor when attack locomotor timer expires.
+				// Relevant for the Supersonic Mode of the USA Aurora.
+				chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+			}
 		}
 		if (m_attackersMissExpireFrame != 0 && now >= m_attackersMissExpireFrame)
 		{
@@ -2613,8 +2612,9 @@ void JetAIUpdate::aiDoCommand(const AICommandParms* parms)
 				// don't need (or want) to take off for these
 				break;
 
-#if !RETAIL_COMPATIBLE_CRC
+			// GeneralsX @refactor cheviiot 24/10/2026 ZH defer parked offensive cmds when OOA (was !RETAIL_COMPATIBLE_CRC).
 			// TheSuperHackers @tweak Stubbjax 23/01/2026 Parked jets now defer offensive commands when out of ammo.
+			// Generals retail skips these labels entirely (goes to default); do not fall into ENTER/GET_REPAIRED.
 			case AICMD_ATTACKMOVE_TO_POSITION:
 			case AICMD_ATTACK_AREA:
 			case AICMD_ATTACK_OBJECT:
@@ -2626,6 +2626,8 @@ void JetAIUpdate::aiDoCommand(const AICommandParms* parms)
 			case AICMD_GUARD_POSITION:
 			case AICMD_GUARD_RETALIATE:
 			case AICMD_HUNT:
+				if (GameProfile::get().isGenerals())
+					goto parkedTakeoffDefault;
 				if (isOutOfSpecialReloadAmmo())
 				{
 					setFlag(HAS_PENDING_COMMAND, true);
@@ -2633,7 +2635,6 @@ void JetAIUpdate::aiDoCommand(const AICommandParms* parms)
 				}
 
 				FALLTHROUGH;
-#endif
 
 			case AICMD_ENTER:
 			case AICMD_GET_REPAIRED:
@@ -2645,6 +2646,7 @@ void JetAIUpdate::aiDoCommand(const AICommandParms* parms)
 				FALLTHROUGH; // else fall thru to the default case!
 
 			default:
+			parkedTakeoffDefault:
 			{
 				// nuke any existing pending cmd
 				m_mostRecentCommand.store(*parms);

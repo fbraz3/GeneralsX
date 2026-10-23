@@ -50,6 +50,7 @@
 #include "Common/BuildAssistant.h"
 #include "Common/CRCDebug.h"
 #include "Common/DisabledTypes.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/MessageStream.h"
@@ -2051,32 +2052,34 @@ void Player::transferAssetsFromThat(Player *that)
 		return;
 	}
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 03/02/2026 Cancel any in-progress player upgrades 'that'
-	// player currently has in progress that 'this' player already has in progress or completed.
-	std::vector<const UpgradeTemplate*> upgradesToCancel;
-	for (Upgrade* upgrade = that->m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH-only upgrade transfer fix (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
 	{
-		const UpgradeTemplate* upgradeTemplate = upgrade->getTemplate();
-
-		if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION &&
-			upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER &&
-			(hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
+		// TheSuperHackers @bugfix Stubbjax 03/02/2026 Cancel any in-progress player upgrades 'that'
+		// player currently has in progress that 'this' player already has in progress or completed.
+		std::vector<const UpgradeTemplate*> upgradesToCancel;
+		for (Upgrade* upgrade = that->m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
 		{
-			upgradesToCancel.push_back(upgradeTemplate);
+			const UpgradeTemplate* upgradeTemplate = upgrade->getTemplate();
+
+			if (upgrade->getStatus() == UPGRADE_STATUS_IN_PRODUCTION &&
+				upgradeTemplate->getUpgradeType() == UPGRADE_TYPE_PLAYER &&
+				(hasUpgradeComplete(upgradeTemplate) || hasUpgradeInProduction(upgradeTemplate)))
+			{
+				upgradesToCancel.push_back(upgradeTemplate);
+			}
 		}
-	}
 
-	for (std::vector<const UpgradeTemplate*>::iterator cancelIt = upgradesToCancel.begin(); cancelIt != upgradesToCancel.end(); ++cancelIt)
-	{
-		const UpgradeTemplate* upgradeTemplate = *cancelIt;
-		that->iterateObjects(cancelUpgradeInProduction, const_cast<UpgradeTemplate*>(upgradeTemplate));
-	}
+		for (std::vector<const UpgradeTemplate*>::iterator cancelIt = upgradesToCancel.begin(); cancelIt != upgradesToCancel.end(); ++cancelIt)
+		{
+			const UpgradeTemplate* upgradeTemplate = *cancelIt;
+			that->iterateObjects(cancelUpgradeInProduction, const_cast<UpgradeTemplate*>(upgradeTemplate));
+		}
 
-	// TheSuperHackers @bugfix Stubbjax 03/02/2026 Ensure the in-progress upgrade mask is copied from 'that'
-	// player to 'this' player to prevent duplicate player upgrades being purchased.
-	m_upgradesInProgress.set(that->m_upgradesInProgress);
-#endif
+		// TheSuperHackers @bugfix Stubbjax 03/02/2026 Ensure the in-progress upgrade mask is copied from 'that'
+		// player to 'this' player to prevent duplicate player upgrades being purchased.
+		m_upgradesInProgress.set(that->m_upgradesInProgress);
+	}
 
 	std::list<Object *> objsToTransfer;
 
@@ -2367,12 +2370,13 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 		return;
 
 	Int costToBuild = victim->getTemplate()->calcCostToBuild(victim->getControllingPlayer());
-#if RETAIL_COMPATIBLE_CRC
-	Int bounty = REAL_TO_INT_CEIL(costToBuild * m_cashBountyPercent);
-#else
-	// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
-	Int bounty = WWMath::Ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail CEIL vs ZH epsilon Ceil (was RETAIL_COMPATIBLE_CRC).
+	Int bounty;
+	if (GameProfile::get().isGenerals())
+		bounty = REAL_TO_INT_CEIL(costToBuild * m_cashBountyPercent);
+	else
+		// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
+		bounty = WWMath::Ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
 
 	if( bounty )
 	{
@@ -3492,16 +3496,20 @@ void Player::applyBattlePlanBonusesForPlayerObjects( const BattlePlanBonusesData
 	}
 
 	DUMPBATTLEPLANBONUSES(m_battlePlanBonuses, this, nullptr);
-#if RETAIL_COMPATIBLE_CRC
-	iterateObjects( localApplyBattlePlanBonusesToObject, const_cast<BattlePlanBonusesData *>(bonus) );
-#else
-	// TheSuperHackers @bugfix Stubbjax 05/02/2026 Apply all bonuses the player has rather than just the most recent.
-	BattlePlanBonusesData newBonus = *m_battlePlanBonuses;
-	newBonus.m_armorScalar = bonus->m_armorScalar;
-	newBonus.m_sightRangeScalar = bonus->m_sightRangeScalar;
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail applies latest-only; ZH merges all (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+	{
+		iterateObjects( localApplyBattlePlanBonusesToObject, const_cast<BattlePlanBonusesData *>(bonus) );
+	}
+	else
+	{
+		// TheSuperHackers @bugfix Stubbjax 05/02/2026 Apply all bonuses the player has rather than just the most recent.
+		BattlePlanBonusesData newBonus = *m_battlePlanBonuses;
+		newBonus.m_armorScalar = bonus->m_armorScalar;
+		newBonus.m_sightRangeScalar = bonus->m_sightRangeScalar;
 
-	iterateObjects(localApplyBattlePlanBonusesToObject, &newBonus);
-#endif
+		iterateObjects(localApplyBattlePlanBonusesToObject, &newBonus);
+	}
 }
 
 
@@ -4216,11 +4224,15 @@ void Player::xfer( Xfer *xfer )
 	// attacked by
 	xfer->xferUser( m_attackedBy, sizeof( Bool ) * MAX_PLAYER_COUNT );
 
-	// vision spied by
-	xfer->xferUser( m_visionSpiedBy, sizeof( Int ) * MAX_PLAYER_COUNT );
+	// GeneralsX @feature cheviiot 23/10/2026 Player vision pair is Generals-only; ZH owns it on Object.
+	if( GameProfile::get().isGenerals() )
+	{
+		// vision spied by
+		xfer->xferUser( m_visionSpiedBy, sizeof( Int ) * MAX_PLAYER_COUNT );
 
-	// vision spied by mask
-	xfer->xferUser( &m_visionSpiedMask, sizeof( PlayerMaskType ) );
+		// vision spied by mask
+		xfer->xferUser( &m_visionSpiedMask, sizeof( PlayerMaskType ) );
+	}
 
 	// cash bounty percent
 	xfer->xferReal( &m_cashBountyPercent );

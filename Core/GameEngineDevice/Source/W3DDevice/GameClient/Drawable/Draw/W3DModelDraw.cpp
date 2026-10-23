@@ -282,15 +282,10 @@ static const char *TerrainDecalTextureName[TERRAIN_DECAL_MAX]=
 	"EXHordeB",//enthusiastic vehicle
 	"EXHordeB_UP", //enthusiastic vehicle with nationalism
 	"EXJunkCrate",//Marks a crate as special
-#if RTS_GENERALS && RETAIL_COMPATIBLE_XFER_SAVE
-	"", //dummy entry for TERRAIN_DECAL_NONE
-	"EXHordeC_UP", //enthusiastic with fanaticism
-	"EXChemSuit", //Marks a unit as having chemical suit on
-#else
+	// GeneralsX @refactor cheviiot 23/10/2026 ZH-canonical order (matches TerrainDecalType); Generals wire remaps in Drawable::xfer.
 	"EXHordeC_UP", //enthusiastic with fanaticism
 	"EXChemSuit", //Marks a unit as having chemical suit on
 	"", //dummy entry for TERRAIN_DECAL_NONE
-#endif
 	"" //dummy entry for TERRAIN_DECAL_SHADOW_TEXTURE
 };
 

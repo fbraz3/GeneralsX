@@ -50,6 +50,7 @@ static std::set<std::string> s_failedMapLookups;
 #include "Common/MessageStream.h"
 #include "Common/WellKnownKeys.h"
 #include "Common/INI.h"
+#include "Common/GameProfile.h"
 #include "Common/QuotedPrintable.h"
 #include "Common/SkirmishBattleHonors.h"
 #include "Common/ThingFactory.h"
@@ -404,12 +405,11 @@ void MapCache::writeCacheINI( const AsciiString &mapDir )
 			fprintf(fp, "  extentMin = X:%2.2f Y:%2.2f Z:%2.2f\n", md.m_extent.lo.x, md.m_extent.lo.y, md.m_extent.lo.z);
 			fprintf(fp, "  extentMax = X:%2.2f Y:%2.2f Z:%2.2f\n", md.m_extent.hi.x, md.m_extent.hi.y, md.m_extent.hi.z);
 
-// BAD AND NOW UNUSED:  the mapcache.ini should not contain localized data... using the lookup tag instead
-#if RTS_GENERALS
-			fprintf(fp, "  displayName = %s\n", UnicodeStringToQuotedPrintable(md.m_displayName).str());
-#else
-			fprintf(fp, "  nameLookupTag = %s\n", md.m_nameLookupTag.str());
-#endif
+			// GeneralsX @refactor cheviiot 23/10/2026 Mapcache write shape by profile (was #if RTS_GENERALS).
+			if (GameProfile::get().isGenerals())
+				fprintf(fp, "  displayName = %s\n", UnicodeStringToQuotedPrintable(md.m_displayName).str());
+			else
+				fprintf(fp, "  nameLookupTag = %s\n", md.m_nameLookupTag.str());
 
 			Coord3D pos;
 			WaypointMap::const_iterator itw = md.m_waypoints.begin();
@@ -951,14 +951,15 @@ static Bool addMapCollectionToMapListbox(
 
 		const AsciiString& asciiMapName = fileNameIt->second;
 
-#if RTS_ZEROHOUR
-		//Patch 1.03 -- Purposely filter out these broken maps that exist in Generals.
-		if( !asciiMapName.compare( "maps\\armored fury\\armored fury.map" ) ||
-			!asciiMapName.compare( "maps\\scorched earth\\scorched earth.map" ) )
+		// GeneralsX @refactor cheviiot 23/10/2026 ZH 1.03 broken-map filter (was #if RTS_ZEROHOUR).
+		if (GameProfile::get().isZeroHour())
 		{
-			continue;
+			if( !asciiMapName.compare( "maps\\armored fury\\armored fury.map" ) ||
+				!asciiMapName.compare( "maps\\scorched earth\\scorched earth.map" ) )
+			{
+				continue;
+			}
 		}
-#endif
 
 		MapCache::iterator mapCacheIt = TheMapCache->find(asciiMapName);
 		DEBUG_ASSERTCRASH(mapCacheIt != TheMapCache->end(), ("Map '%s' not found in map cache.", mapNameIt->str()));

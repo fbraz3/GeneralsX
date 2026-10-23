@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/Registry.h"
 #include "WWLib/registryini.h"
 
@@ -281,11 +282,12 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
-	// Try environment variable: CNC_ZH_INSTALLPATH, CNC_ZH_LANGUAGE, etc.
-	if (getEnvVar("CNC_ZH_", key, val))
+	// GeneralsX @feature cheviiot 23/10/2026 Registry identity follows the selected GameProfile.
+	const GameProfile &profile = GameProfile::get();
+	if (getEnvVar(profile.isZeroHour() ? "CNC_ZH_" : "CNC_GENERALS_", key, val))
 		return TRUE;
 
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+	AsciiString fullPath = profile.getRegistryGamePath();
 	fullPath.concat(path);
 	if (getStringFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
 	{
@@ -309,7 +311,8 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 
 Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
 {
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
+	// GeneralsX @feature cheviiot 23/10/2026 Registry identity follows the selected GameProfile.
+	AsciiString fullPath = GameProfile::get().getRegistryGamePath();
 	fullPath.concat(path);
 	if (getUnsignedIntFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
 	{
@@ -440,11 +443,8 @@ Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiStrin
 
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 {
-#if RTS_GENERALS
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Generals";
-#elif RTS_ZEROHOUR
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Registry identity follows the selected GameProfile.
+	AsciiString fullPath = GameProfile::get().getRegistryGamePath();
 
 	fullPath.concat(path);
 	DEBUG_LOG(("GetStringFromRegistry - looking in %s for key %s", fullPath.str(), key.str()));
@@ -470,11 +470,8 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 
 Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
 {
-#if RTS_GENERALS
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Generals";
-#elif RTS_ZEROHOUR
-	AsciiString fullPath = "SOFTWARE\\Electronic Arts\\EA Games\\Command and Conquer Generals Zero Hour";
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Registry identity follows the selected GameProfile.
+	AsciiString fullPath = GameProfile::get().getRegistryGamePath();
 
 	fullPath.concat(path);
 	DEBUG_LOG(("GetUnsignedIntFromRegistry - looking in %s for key %s", fullPath.str(), key.str()));

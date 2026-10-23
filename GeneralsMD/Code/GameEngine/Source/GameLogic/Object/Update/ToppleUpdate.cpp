@@ -130,7 +130,8 @@ static Real angleClosestTo(Real a1, Real a2, Real desired)
 {
 	a1 = normalizeAngle(a1);
 	a2 = normalizeAngle(a2);
-	return (fabs(stdAngleDiff(desired, a1)) < fabs(stdAngleDiff(desired, a2))) ? a1 : a2;
+	// GeneralsX @bugfix cheviiot 24/10/2026 Use WWMath::Fabs (upstream parity; cross-platform determinism).
+	return (WWMath::Fabs(stdAngleDiff(desired, a1)) < WWMath::Fabs(stdAngleDiff(desired, a2))) ? a1 : a2;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -298,7 +299,7 @@ UpdateSleepTime ToppleUpdate::update()
 		m_angularVelocity *= -d->m_bounceVelocityPercent;
 
 		if( BitIsSet( m_options, TOPPLE_OPTIONS_NO_BOUNCE ) == TRUE ||
-				fabs(m_angularVelocity) < VELOCITY_BOUNCE_LIMIT )
+				WWMath::Fabs(m_angularVelocity) < VELOCITY_BOUNCE_LIMIT )
 		{
 			// too slow, just stop
 			m_angularVelocity = 0;
@@ -338,7 +339,7 @@ UpdateSleepTime ToppleUpdate::update()
 				}
 			}
 		}
-		else if( fabs(m_angularVelocity) >= VELOCITY_BOUNCE_SOUND_LIMIT )
+		else if( WWMath::Fabs(m_angularVelocity) >= VELOCITY_BOUNCE_SOUND_LIMIT )
 		{
 			// fast enough bounce to warrant the bounce fx
 			if( BitIsSet( m_options, TOPPLE_OPTIONS_NO_FX ) == FALSE )

@@ -57,6 +57,7 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Display.h"
+#include "Common/GameProfile.h"
 #include "GameClient/DisplayStringManager.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetStaticText.h"
@@ -69,20 +70,18 @@ static void drawTypeText( GameWindow *window, DisplayString *str);
 
 static Color getFlashTransitionColor( UnsignedByte alpha )
 {
-#if RTS_GENERALS
-	return GameMakeColor( 255, 203, 45, alpha );
-#elif RTS_ZEROHOUR
+	// GeneralsX @refactor cheviiot 23/10/2026 Transition flash color by profile.
+	if (GameProfile::get().isGenerals())
+		return GameMakeColor( 255, 203, 45, alpha );
 	return GameMakeColor( 255, 255, 255, alpha );
-#endif
 }
 
 static Color getFullFadeTransitionColor( UnsignedByte alpha )
 {
-#if RTS_GENERALS
-	return GameMakeColor( 255, 190, 0, alpha );
-#elif RTS_ZEROHOUR
+	// GeneralsX @refactor cheviiot 23/10/2026 Transition fade color by profile.
+	if (GameProfile::get().isGenerals())
+		return GameMakeColor( 255, 190, 0, alpha );
 	return GameMakeColor( 60, 60, 180, alpha );
-#endif
 }
 //-----------------------------------------------------------------------------
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////

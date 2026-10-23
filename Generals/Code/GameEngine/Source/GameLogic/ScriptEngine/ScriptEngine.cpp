@@ -27,6 +27,7 @@
 // Author: John Ahlquist, Nov. 2001
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/DataChunk.h"
 #include "Common/file.h"
@@ -7092,12 +7093,10 @@ void ScriptEngine::removeAllSequentialScripts(Object *obj)
 		if (seqScript->m_objectID == id) {
 			it = cleanupSequentialScript(it, TRUE);
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @info Preserve the original (bugged) traversal behavior by skipping the next element, if any.
-			if (it != m_sequentialScripts.end()) {
+			// GeneralsX @refactor cheviiot 24/10/2026 Generals retail sequential-script skip (was RTS_GENERALS && RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals() && it != m_sequentialScripts.end()) {
 				++it;
 			}
-#endif
 		}
 		else
 			++it;

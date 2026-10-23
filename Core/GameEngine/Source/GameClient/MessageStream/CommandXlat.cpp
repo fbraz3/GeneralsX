@@ -35,6 +35,7 @@
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/GameProfile.h"
 #include "Common/GameType.h"
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
@@ -2857,9 +2858,8 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 
 			}
 		}
-#if RTS_ZEROHOUR
-		// ********************************************************************************************
-		else if( draw && draw->getObject() && !TheInGameUI->isInForceAttackMode() &&
+		// GeneralsX @refactor cheviiot 23/10/2026 Sabotage is Zero Hour only (was #if RTS_ZEROHOUR).
+		else if( GameProfile::get().isZeroHour() && draw && draw->getObject() && !TheInGameUI->isInForceAttackMode() &&
 						 TheInGameUI->canSelectedObjectsDoAction( InGameUI::ACTIONTYPE_SABOTAGE_BUILDING,
 																											draw->getObject(),
 																											InGameUI::SELECTION_ANY ) )
@@ -2877,7 +2877,6 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 			}
 
 		}
-#endif
 		// ********************************************************************************************
 		else if( draw && !TheInGameUI->isInForceAttackMode() && canSelectionSalvage(obj) )
 		{
@@ -4368,11 +4367,11 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		case GameMessage::MSG_META_CAMERA_RESET:
 			TheInGameUI->resetCamera();
 			break;
-#if RTS_ZEROHOUR
+		// GeneralsX @refactor cheviiot 23/10/2026 Camera tracking toggle is ZH-only (was #if RTS_ZEROHOUR).
 		case GameMessage::MSG_META_TOGGLE_CAMERA_TRACKING_DRAWABLE:
-			TheInGameUI->setCameraTrackingDrawable( true );
+			if (GameProfile::get().isZeroHour())
+				TheInGameUI->setCameraTrackingDrawable( true );
 			break;
-#endif
         //--------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_TOGGLE_FAST_FORWARD_REPLAY:
 		{

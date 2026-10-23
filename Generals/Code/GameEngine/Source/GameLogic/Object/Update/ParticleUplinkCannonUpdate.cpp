@@ -32,6 +32,7 @@
 #define DEFINE_DEATH_NAMES
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+#include "Common/GameProfile.h"
 #include "Common/GameUtility.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
@@ -301,19 +302,15 @@ Bool ParticleUplinkCannonUpdate::initiateIntentToDoSpecialPower(const SpecialPow
 		{
 			pos.set( *targetObj->getPosition() );
 		}
-#if !(RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC)
-		else
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH rejects unknown special-power arg (was !(ZH&&CRC)).
+		else if (!GameProfile::get().isGenerals())
 		{
 			return false;
 		}
-#endif
 
-#if !RETAIL_COMPATIBLE_CRC
-		m_manualTargetMode = FALSE;
-#if !RTS_GENERALS
-		m_scriptedWaypointMode = FALSE;
-#endif
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH clears manual target mode (was !RETAIL_COMPATIBLE_CRC; Generals lacks scriptedWaypoint).
+		if (!GameProfile::get().isGenerals())
+			m_manualTargetMode = FALSE;
 
 		//All computer controlled players have automatic control -- the "S" curve.
 		UnsignedInt now = TheGameLogic->getFrame();
@@ -504,14 +501,20 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 				buildingToInitialTargetVector.set( m_initialTargetPosition );
 				buildingToInitialTargetVector.sub( *me->getPosition() );
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+				// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail FP order via GameProfile.
 				// TheSuperHackers @info Caball009 25/09/2026 VC6 is extremely sensitive to the ordering of floating-point operations in this code section.
 				// Nudge the compiler to generate the call to Coord3D::length as sqrt((x*x + y*y) + z*z), rather than sqrt((z*z + x*x) + y*y).
 				// The latter ordering is not retail-compatible here.
-				Real targetDistance = sqrt(sqr(buildingToInitialTargetVector.x) + sqr(buildingToInitialTargetVector.y) + sqr(buildingToInitialTargetVector.z));
-#else
-				Real targetDistance = buildingToInitialTargetVector.length();
-#endif
+				Real targetDistance;
+				if (GameProfile::get().isGenerals())
+				{
+					targetDistance = WWMath::SqrtOrigin(
+						sqr(buildingToInitialTargetVector.x) + sqr(buildingToInitialTargetVector.y) + sqr(buildingToInitialTargetVector.z));
+				}
+				else
+				{
+					targetDistance = buildingToInitialTargetVector.length();
+				}
 
 				//Calculate the point position assuming the target position is on the x axis relative to the building.
 				m_currentTargetPosition.x = cxDistance + targetDistance;

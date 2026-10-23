@@ -183,9 +183,8 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "BEGIN_CAMERA_ZOOM_OUT",										GameMessage::MSG_META_BEGIN_CAMERA_ZOOM_OUT },
 	{ "END_CAMERA_ZOOM_OUT",											GameMessage::MSG_META_END_CAMERA_ZOOM_OUT },
 	{ "CAMERA_RESET",															GameMessage::MSG_META_CAMERA_RESET },
-#ifdef RTS_ZEROHOUR
+	// GeneralsX @refactor cheviiot 23/10/2026 Keep mapping; handler no-ops for Generals profile.
 	{ "TOGGLE_CAMERA_TRACKING_DRAWABLE",					GameMessage::MSG_META_TOGGLE_CAMERA_TRACKING_DRAWABLE },
-#endif
 	{ "TOGGLE_FAST_FORWARD_REPLAY",								GameMessage::MSG_META_TOGGLE_FAST_FORWARD_REPLAY },
 	{ "TOGGLE_PAUSE",															GameMessage::MSG_META_TOGGLE_PAUSE },
 	{ "TOGGLE_PAUSE_ALT",													GameMessage::MSG_META_TOGGLE_PAUSE_ALT },

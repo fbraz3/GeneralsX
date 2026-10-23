@@ -62,6 +62,7 @@ class LandMineInterface;
 class ProjectileUpdateInterface;
 class AIUpdateInterface;
 class ExitInterface;
+class DelayedUpgradeUpdateInterface;
 class DockUpdateInterface;
 class RailedTransportDockUpdateInterface;
 class SpecialPowerUpdateInterface;
@@ -125,6 +126,8 @@ public:
 	virtual ProjectileUpdateInterface* getProjectileUpdateInterface() = 0;
 	virtual AIUpdateInterface* getAIUpdateInterface() = 0;
 	virtual ExitInterface* getUpdateExitInterface() = 0;
+	// GeneralsX @feature cheviiot 23/10/2026 Generals DelayedUpgrade acquisition (PLAN-023 Gate 6).
+	virtual DelayedUpgradeUpdateInterface* getDelayedUpgradeUpdateInterface() = 0;
 	virtual DockUpdateInterface* getDockUpdateInterface() = 0;
 	virtual RailedTransportDockUpdateInterface *getRailedTransportDockUpdateInterface() = 0;
 	virtual SlowDeathBehaviorInterface* getSlowDeathBehaviorInterface() = 0;
@@ -180,6 +183,7 @@ public:
 	virtual ProjectileUpdateInterface* getProjectileUpdateInterface() override { return nullptr; }
 	virtual AIUpdateInterface* getAIUpdateInterface() override { return nullptr; }
 	virtual ExitInterface* getUpdateExitInterface() override { return nullptr; }
+	virtual DelayedUpgradeUpdateInterface* getDelayedUpgradeUpdateInterface() override { return nullptr; }
 	virtual DockUpdateInterface* getDockUpdateInterface() override { return nullptr; }
 	virtual RailedTransportDockUpdateInterface *getRailedTransportDockUpdateInterface() override { return nullptr; }
 	virtual SlowDeathBehaviorInterface* getSlowDeathBehaviorInterface() override { return nullptr; }

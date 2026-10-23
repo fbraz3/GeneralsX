@@ -80,6 +80,9 @@ static void embedPristineMap( AsciiString map, Xfer *xfer )
 	{
 
 		DEBUG_CRASH(( "embedPristineMap - Error opening source file '%s'", map.str() ));
+		// GeneralsX @tweak cheviiot 24/10/2026 Diagnose pristine-map embed failures in headless save smoke.
+		fprintf(stderr, "[SMOKE] embedPristineMap open failed map='%s'\n", map.str());
+		fflush(stderr);
 		throw SC_INVALID_DATA;
 
 	}

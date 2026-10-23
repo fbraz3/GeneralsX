@@ -29,6 +29,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/GameAudio.h"
 #include "Common/GlobalData.h"
@@ -353,10 +354,9 @@ Real SpecialPowerModule::getPercentReady() const
 
 Bool SpecialPowerModule::startsReady() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return false;
-#endif
-
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail never startsReady; ZH uses INI (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return false;
 	const SpecialPowerModuleData* modData = getSpecialPowerModuleData();
 	return modData->m_startsReady;
 }

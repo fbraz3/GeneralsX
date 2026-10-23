@@ -185,9 +185,10 @@ mkdir -p logs && gdb -batch -ex "run -win" -ex "bt full" -ex "thread apply all b
 ## Branching & Sync
 ### TheSuperHackers upstream sync
 ```bash
-git remote add thesuperhackers git@github.com:TheSuperHackers/GeneralsGameCode.git
-git fetch thesuperhackers
-git merge thesuperhackers/main
+git remote add upstream https://github.com/TheSuperHackers/GeneralsGameCode.git
+# Prefer deepen (or unshallow): a shallow fetch leaves merge-base empty ("unrelated histories")
+./scripts/tooling/git/fetch-upstream-main.sh
+# Isolated worktree merge + provenance adaptation — see docs/WORKDIR/support/UNIFIED_ENGINE_UPSTREAM_REHEARSAL.md
 ```
 
 **Conflict resolution**:

@@ -79,9 +79,8 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_STEALTH_GARRISON,				/** enemy teams can't tell that unit is in building.. and if they
 																		garrison that building, they stealth unit will eject. */
 	KINDOF_CASH_GENERATOR,					///< used to check if the unit generates cash... checked by cash hackers and whatever else comes up
-#if RTS_GENERALS
-	KINDOF_AIRFIELD,								///< unit has a runway that planes can takeoff/land on
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Always keep Generals AIRFIELD slot so ZH-canonical + Generals profile share KindOf indices after CASH_GENERATOR.
+	KINDOF_AIRFIELD,								///< unit has a runway that planes can takeoff/land on (Generals; unused by ZH INI)
 	KINDOF_DRAWABLE_ONLY,						///< template is used only to create drawables (not Objects)
 	KINDOF_MP_COUNT_FOR_VICTORY,		///< If a player loses all his buildings that have this kindof in a multiplayer game, he loses.
 	KINDOF_REBUILD_HOLE,						///< a GLA rebuild hole

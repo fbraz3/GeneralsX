@@ -42,6 +42,7 @@
 
 #include "Common/BuildAssistant.h"
 #include "Common/FramePacer.h"
+#include "Common/GameProfile.h"
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
 #include "Common/Module.h"
@@ -353,12 +354,14 @@ void W3DView::buildCameraPosition( Vector3& sourcePos, Vector3& targetPos )
 		// TheSuperHackers @todo Investigate whether the non Generals code is correct for Zero Hour.
 		// It certainly is incorrect for Generals when m_FXPitch goes above 1:
 		// Seen in USA mission 1 second cut scene with SCUD Storm.
-#if RTS_GENERALS
-		Real height = sourcePos.Z - targetPos.Z;
-		height *= m_FXPitch;
-		targetPos.Z = sourcePos.Z - height;
-#else
-		if (m_FXPitch <= 1.0f)
+		// GeneralsX @refactor cheviiot 24/10/2026 Profile-gate FX pitch (was #if RTS_GENERALS).
+		if (GameProfile::get().isGenerals())
+		{
+			Real height = sourcePos.Z - targetPos.Z;
+			height *= m_FXPitch;
+			targetPos.Z = sourcePos.Z - height;
+		}
+		else if (m_FXPitch <= 1.0f)
 		{
 			targetPos.Z = sourcePos.Z - ((sourcePos.Z - targetPos.Z) * m_FXPitch);
 		}
@@ -367,7 +370,6 @@ void W3DView::buildCameraPosition( Vector3& sourcePos, Vector3& targetPos )
 			sourcePos.X = targetPos.X + ((sourcePos.X - targetPos.X) / m_FXPitch);
 			sourcePos.Y = targetPos.Y + ((sourcePos.Y - targetPos.Y) / m_FXPitch);
 		}
-#endif
 	}
 }
 
@@ -2901,11 +2903,8 @@ void W3DView::rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, 
 	m_rcInfo.angle.startAngle = m_angle;
 	// TheSuperHackers @todo Investigate if the non Generals code is correct for Zero Hour.
 	// It certainly is incorrect for Generals: Seen in GLA mission 1 opening cut scene.
-#if RTS_GENERALS
-	m_rcInfo.angle.endAngle = m_angle + angle;
-#else
-	m_rcInfo.angle.endAngle = angle;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Profile-gate scripted rotate end angle (was #if RTS_GENERALS).
+	m_rcInfo.angle.endAngle = GameProfile::get().isGenerals() ? (m_angle + angle) : angle;
 	m_rcInfo.startTimeMultiplier = m_timeMultiplier;
 	m_rcInfo.endTimeMultiplier = m_timeMultiplier;
 	m_rcInfo.ease.setEaseTimes(easeIn/milliseconds, easeOut/milliseconds);
@@ -3567,11 +3566,11 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 	m_mcwpInfo.curSegDistance += deltaTime*m_mcwpInfo.totalDistance;
 	// TheSuperHacker @todo Investigate which one is really correct.
 	// The non Generals condition causes camera bug in Generals Shell Map.
-#if RTS_GENERALS
-	while (m_mcwpInfo.curSegDistance > m_mcwpInfo.waySegLength[m_mcwpInfo.curSegment])
-#else
-	while (m_mcwpInfo.curSegDistance >= m_mcwpInfo.waySegLength[m_mcwpInfo.curSegment])
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Profile-gate waypoint segment compare (was #if RTS_GENERALS).
+	const Bool generalsWaypointSeg = GameProfile::get().isGenerals();
+	while (generalsWaypointSeg
+		? (m_mcwpInfo.curSegDistance > m_mcwpInfo.waySegLength[m_mcwpInfo.curSegment])
+		: (m_mcwpInfo.curSegDistance >= m_mcwpInfo.waySegLength[m_mcwpInfo.curSegment]))
 	{
 		if (hasScriptedState(Scripted_MoveOnWaypointPath))
 		{

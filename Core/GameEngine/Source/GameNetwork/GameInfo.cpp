@@ -31,6 +31,7 @@
 #include "Common/CRCDebug.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
@@ -999,14 +1000,18 @@ static AsciiString buildGameInfoAsciiString(const GameInfo& game, const AsciiStr
 	}
 
 	AsciiString optionsString;
-#if RTS_GENERALS
-	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game.getMapContentsMask(), percentEncodeMapName(newMapName).str(),
-		game.getMapCRC(), game.getMapSize(), game.getSeed(), game.getCRCInterval());
-#else
-	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game.getUseStats(), game.getMapContentsMask(), percentEncodeMapName(newMapName).str(),
-		game.getMapCRC(), game.getMapSize(), game.getSeed(), game.getCRCInterval(), game.getSuperweaponRestriction(),
-		game.getStartingCash().countMoney(), game.oldFactionsOnly() ? 'Y' : 'N' );
-#endif
+	// GeneralsX @refactor cheviiot 23/10/2026 Lobby options string by GameProfile (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
+	{
+		optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game.getMapContentsMask(), percentEncodeMapName(newMapName).str(),
+			game.getMapCRC(), game.getMapSize(), game.getSeed(), game.getCRCInterval());
+	}
+	else
+	{
+		optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game.getUseStats(), game.getMapContentsMask(), percentEncodeMapName(newMapName).str(),
+			game.getMapCRC(), game.getMapSize(), game.getSeed(), game.getCRCInterval(), game.getSuperweaponRestriction(),
+			game.getStartingCash().countMoney(), game.oldFactionsOnly() ? 'Y' : 'N' );
+	}
 
 	//add player info for each slot
 	optionsString.concat(slotListID);
@@ -1747,11 +1752,8 @@ void SkirmishGameInfo::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void SkirmishGameInfo::xfer( Xfer *xfer )
 {
-#if RTS_GENERALS
-	const XferVersion currentVersion = 2;
-#else
-	const XferVersion currentVersion = 4;
-#endif
+	// GeneralsX @refactor cheviiot 23/10/2026 Skirmish xfer v2 Generals / v4 ZH (was #if RTS_GENERALS).
+	const XferVersion currentVersion = GameProfile::get().isGenerals() ? 2 : 4;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 

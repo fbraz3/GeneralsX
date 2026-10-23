@@ -528,7 +528,8 @@ set(GAMEENGINE_SRC
 #    Source/Common/DiscreteCircle.cpp
     Source/Common/GameEngine.cpp
     Source/Common/GameLOD.cpp
-    Source/Common/GameMain.cpp
+    # GeneralsX @refactor cheviiot 23/10/2026 Stage 04: compile canonical Zero Hour GameEngine sources with Generals headers.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/GameMain.cpp
     Source/Common/GlobalData.cpp
 #    Source/Common/INI/INI.cpp
 #    Source/Common/INI/INIAiData.cpp
@@ -562,53 +563,53 @@ set(GAMEENGINE_SRC
 #    Source/Common/MessageStream.cpp
 #    Source/Common/MiniLog.cpp
     Source/Common/MultiplayerSettings.cpp
-    Source/Common/NameKeyGenerator.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/NameKeyGenerator.cpp
     Source/Common/PartitionSolver.cpp
 #    Source/Common/PerfTimer.cpp
 #    Source/Common/RandomValue.cpp
     Source/Common/Recorder.cpp
     Source/Common/RTS/ActionManager.cpp
     Source/Common/RTS/Energy.cpp
-    Source/Common/RTS/Handicap.cpp
-    Source/Common/RTS/MissionStats.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/RTS/Handicap.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/RTS/MissionStats.cpp
     Source/Common/RTS/Money.cpp
     Source/Common/RTS/Player.cpp
     Source/Common/RTS/PlayerList.cpp
     Source/Common/RTS/PlayerTemplate.cpp
     Source/Common/RTS/ProductionPrerequisite.cpp
     Source/Common/RTS/ResourceGatheringManager.cpp
-    Source/Common/RTS/Science.cpp
-    Source/Common/RTS/ScoreKeeper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/RTS/Science.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/RTS/ScoreKeeper.cpp
     Source/Common/RTS/SpecialPower.cpp
     Source/Common/RTS/Team.cpp
     Source/Common/RTS/TunnelTracker.cpp
     Source/Common/SkirmishBattleHonors.cpp
     Source/Common/StateMachine.cpp
-    Source/Common/StatsCollector.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/StatsCollector.cpp
 #    Source/Common/System/ArchiveFile.cpp
 #    Source/Common/System/ArchiveFileSystem.cpp
 #    Source/Common/System/AsciiString.cpp
     Source/Common/System/BuildAssistant.cpp
-    Source/Common/System/CriticalSection.cpp
-    Source/Common/System/DataChunk.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/CriticalSection.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/DataChunk.cpp
 #    Source/Common/System/Debug.cpp
-    Source/Common/System/Directory.cpp
-    Source/Common/System/DisabledTypes.cpp
-    Source/Common/System/encrypt.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/Directory.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/DisabledTypes.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/encrypt.cpp
 #    Source/Common/System/File.cpp
 #    Source/Common/System/FileSystem.cpp
     Source/Common/System/FunctionLexicon.cpp
 #    Source/Common/System/GameCommon.cpp
     #Source/Common/System/GameMemory.cpp
 #    Source/Common/System/GameType.cpp
-    Source/Common/System/Geometry.cpp
-    Source/Common/System/KindOf.cpp
-    Source/Common/System/List.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/Geometry.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/KindOf.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/List.cpp
 #    Source/Common/System/LocalFile.cpp
 #    Source/Common/System/LocalFileSystem.cpp
     #Source/Common/System/MemoryInit.cpp
 #    Source/Common/System/ObjectStatusTypes.cpp
-    Source/Common/System/QuotedPrintable.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/System/QuotedPrintable.cpp
 #    Source/Common/System/Radar.cpp
 #    Source/Common/System/RAMFile.cpp
     Source/Common/System/registry.cpp
@@ -625,10 +626,10 @@ set(GAMEENGINE_SRC
 #    Source/Common/System/XferLoad.cpp
 #    Source/Common/System/XferSave.cpp
 #    Source/Common/TerrainTypes.cpp
-    Source/Common/Thing/DrawModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/Thing/DrawModule.cpp
     Source/Common/Thing/Module.cpp
     Source/Common/Thing/ModuleFactory.cpp
-    Source/Common/Thing/Thing.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/Common/Thing/Thing.cpp
     Source/Common/Thing/ThingFactory.cpp
 #    Source/Common/Thing/ThingTemplate.cpp
 #    Source/Common/UserPreferences.cpp
@@ -694,45 +695,45 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GUICallbacks/IMECandidate.cpp
 #    Source/GameClient/GUI/GUICallbacks/InGameChat.cpp
 #    Source/GameClient/GUI/GUICallbacks/InGamePopupMessage.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/CreditsMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/DifficultySelect.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/CreditsMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/DifficultySelect.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/DisconnectWindow.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/DownloadMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/EstablishConnectionsWindow.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/GameInfoWindow.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/EstablishConnectionsWindow.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/GameInfoWindow.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/KeyboardOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/LanGameOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/LanLobbyMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/LanMapSelectMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/LanMapSelectMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/MainMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/MapSelectMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/NetworkDirectConnect.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/MapSelectMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/NetworkDirectConnect.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/OptionsMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/PopupCommunicator.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/PopupCommunicator.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/PopupHostGame.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/PopupJoinGame.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/PopupLadderSelect.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/PopupPlayerInfo.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/PopupReplay.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/PopupReplay.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/PopupSaveLoad.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/QuitMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/ReplayMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/ReplayMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/ScoreScreen.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/SinglePlayerMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/SinglePlayerMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishGameOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishMapSelectMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLBuddyOverlay.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLGameSetupMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLLobbyMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLLoginMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLMapSelectMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
 #    Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
 #    Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
@@ -776,7 +777,7 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/View.cpp
 #    Source/GameClient/Water.cpp
     Source/GameLogic/AI/AI.cpp
-    Source/GameLogic/AI/AIDock.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/AI/AIDock.cpp
     Source/GameLogic/AI/AIGroup.cpp
     Source/GameLogic/AI/AIGuard.cpp
 #    Source/GameLogic/AI/AIPathfind.cpp
@@ -784,20 +785,20 @@ set(GAMEENGINE_SRC
     Source/GameLogic/AI/AISkirmishPlayer.cpp
     Source/GameLogic/AI/AIStates.cpp
     Source/GameLogic/AI/AITNGuard.cpp
-    Source/GameLogic/AI/Squad.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/AI/Squad.cpp
     Source/GameLogic/AI/TurretAI.cpp
 #    Source/GameLogic/Map/PolygonTrigger.cpp
 #    Source/GameLogic/Map/SidesList.cpp
 #    Source/GameLogic/Map/TerrainLogic.cpp
     Source/GameLogic/Object/Armor.cpp
     Source/GameLogic/Object/Behavior/AutoHealBehavior.cpp
-    Source/GameLogic/Object/Behavior/BehaviorModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/BehaviorModule.cpp
     Source/GameLogic/Object/Behavior/BridgeBehavior.cpp
-    Source/GameLogic/Object/Behavior/BridgeScaffoldBehavior.cpp
-    Source/GameLogic/Object/Behavior/BridgeTowerBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/BridgeScaffoldBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/BridgeTowerBehavior.cpp
     Source/GameLogic/Object/Behavior/DumbProjectileBehavior.cpp
-    Source/GameLogic/Object/Behavior/FireWeaponWhenDamagedBehavior.cpp
-    Source/GameLogic/Object/Behavior/FireWeaponWhenDeadBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/FireWeaponWhenDamagedBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/FireWeaponWhenDeadBehavior.cpp
     Source/GameLogic/Object/Behavior/GenerateMinefieldBehavior.cpp
     Source/GameLogic/Object/Behavior/InstantDeathBehavior.cpp
     Source/GameLogic/Object/Behavior/JetSlowDeathBehavior.cpp
@@ -805,91 +806,91 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Behavior/OverchargeBehavior.cpp
     Source/GameLogic/Object/Behavior/ParkingPlaceBehavior.cpp
     Source/GameLogic/Object/Behavior/PoisonedBehavior.cpp
-    Source/GameLogic/Object/Behavior/POWTruckBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/POWTruckBehavior.cpp
     Source/GameLogic/Object/Behavior/PrisonBehavior.cpp
-    Source/GameLogic/Object/Behavior/PropagandaCenterBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/PropagandaCenterBehavior.cpp
     Source/GameLogic/Object/Behavior/PropagandaTowerBehavior.cpp
     Source/GameLogic/Object/Behavior/RebuildHoleBehavior.cpp
     Source/GameLogic/Object/Behavior/SlowDeathBehavior.cpp
     Source/GameLogic/Object/Behavior/SpawnBehavior.cpp
-    Source/GameLogic/Object/Behavior/SupplyWarehouseCripplingBehavior.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Behavior/SupplyWarehouseCripplingBehavior.cpp
     Source/GameLogic/Object/Behavior/TechBuildingBehavior.cpp
     Source/GameLogic/Object/Body/ActiveBody.cpp
-    Source/GameLogic/Object/Body/BodyModule.cpp
-    Source/GameLogic/Object/Body/HighlanderBody.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Body/BodyModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Body/HighlanderBody.cpp
     Source/GameLogic/Object/Body/HiveStructureBody.cpp
-    Source/GameLogic/Object/Body/ImmortalBody.cpp
-    Source/GameLogic/Object/Body/InactiveBody.cpp
-    Source/GameLogic/Object/Body/StructureBody.cpp
-    Source/GameLogic/Object/Collide/CollideModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Body/ImmortalBody.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Body/InactiveBody.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Body/StructureBody.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/CollideModule.cpp
     Source/GameLogic/Object/Collide/CrateCollide/ConvertToCarBombCrateCollide.cpp
     Source/GameLogic/Object/Collide/CrateCollide/ConvertToHijackedVehicleCrateCollide.cpp
     Source/GameLogic/Object/Collide/CrateCollide/CrateCollide.cpp
-    Source/GameLogic/Object/Collide/CrateCollide/HealCrateCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/CrateCollide/HealCrateCollide.cpp
     Source/GameLogic/Object/Collide/CrateCollide/MoneyCrateCollide.cpp
     Source/GameLogic/Object/Collide/CrateCollide/SalvageCrateCollide.cpp
-    Source/GameLogic/Object/Collide/CrateCollide/ShroudCrateCollide.cpp
-    Source/GameLogic/Object/Collide/CrateCollide/UnitCrateCollide.cpp
-    Source/GameLogic/Object/Collide/CrateCollide/VeterancyCrateCollide.cpp
-    Source/GameLogic/Object/Collide/FireWeaponCollide.cpp
-    Source/GameLogic/Object/Collide/SquishCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/CrateCollide/ShroudCrateCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/CrateCollide/UnitCrateCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/CrateCollide/VeterancyCrateCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/FireWeaponCollide.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Collide/SquishCollide.cpp
     Source/GameLogic/Object/Contain/CaveContain.cpp
     Source/GameLogic/Object/Contain/GarrisonContain.cpp
-    Source/GameLogic/Object/Contain/HealContain.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Contain/HealContain.cpp
     Source/GameLogic/Object/Contain/MobNexusContain.cpp
     Source/GameLogic/Object/Contain/OpenContain.cpp
     Source/GameLogic/Object/Contain/OverlordContain.cpp
     Source/GameLogic/Object/Contain/ParachuteContain.cpp
-    Source/GameLogic/Object/Contain/RailedTransportContain.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Contain/RailedTransportContain.cpp
     Source/GameLogic/Object/Contain/TransportContain.cpp
     Source/GameLogic/Object/Contain/TunnelContain.cpp
-    Source/GameLogic/Object/Create/CreateModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/CreateModule.cpp
     Source/GameLogic/Object/Create/GrantUpgradeCreate.cpp
-    Source/GameLogic/Object/Create/PreorderCreate.cpp
-    Source/GameLogic/Object/Create/SpecialPowerCreate.cpp
-    Source/GameLogic/Object/Create/SupplyCenterCreate.cpp
-    Source/GameLogic/Object/Create/SupplyWarehouseCreate.cpp
-    Source/GameLogic/Object/Create/VeterancyGainCreate.cpp
-    Source/GameLogic/Object/Damage/BoneFXDamage.cpp
-    Source/GameLogic/Object/Damage/DamageModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/PreorderCreate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/SpecialPowerCreate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/SupplyCenterCreate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/SupplyWarehouseCreate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Create/VeterancyGainCreate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Damage/BoneFXDamage.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Damage/DamageModule.cpp
     Source/GameLogic/Object/Damage/TransitionDamageFX.cpp
-    Source/GameLogic/Object/Destroy/DestroyModule.cpp
-    Source/GameLogic/Object/Die/CreateCrateDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Destroy/DestroyModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/CreateCrateDie.cpp
     Source/GameLogic/Object/Die/CreateObjectDie.cpp
-    Source/GameLogic/Object/Die/CrushDie.cpp
-    Source/GameLogic/Object/Die/DamDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/CrushDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/DamDie.cpp
     Source/GameLogic/Object/Die/DestroyDie.cpp
-    Source/GameLogic/Object/Die/DieModule.cpp
-    Source/GameLogic/Object/Die/EjectPilotDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/DieModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/EjectPilotDie.cpp
     Source/GameLogic/Object/Die/FXListDie.cpp
-    Source/GameLogic/Object/Die/KeepObjectDie.cpp
-    Source/GameLogic/Object/Die/RebuildHoleExposeDie.cpp
-    Source/GameLogic/Object/Die/SpecialPowerCompletionDie.cpp
-    Source/GameLogic/Object/Die/UpgradeDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/KeepObjectDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/RebuildHoleExposeDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/SpecialPowerCompletionDie.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Die/UpgradeDie.cpp
     Source/GameLogic/Object/ExperienceTracker.cpp
     Source/GameLogic/Object/FiringTracker.cpp
-    Source/GameLogic/Object/GhostObject.cpp
-    Source/GameLogic/Object/Helper/ObjectDefectionHelper.cpp
-    Source/GameLogic/Object/Helper/ObjectHelper.cpp
-    Source/GameLogic/Object/Helper/ObjectRepulsorHelper.cpp
-    Source/GameLogic/Object/Helper/ObjectSMCHelper.cpp
-    Source/GameLogic/Object/Helper/ObjectWeaponStatusHelper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/GhostObject.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Helper/ObjectDefectionHelper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Helper/ObjectHelper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Helper/ObjectRepulsorHelper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Helper/ObjectSMCHelper.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Helper/ObjectWeaponStatusHelper.cpp
     Source/GameLogic/Object/Locomotor.cpp
     Source/GameLogic/Object/Object.cpp
     Source/GameLogic/Object/ObjectCreationList.cpp
-    Source/GameLogic/Object/ObjectTypes.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/ObjectTypes.cpp
     Source/GameLogic/Object/PartitionManager.cpp
-    Source/GameLogic/Object/SimpleObjectIterator.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SimpleObjectIterator.cpp
     Source/GameLogic/Object/SpecialPower/BaikonurLaunchPower.cpp
-    Source/GameLogic/Object/SpecialPower/CashBountyPower.cpp
-    Source/GameLogic/Object/SpecialPower/CashHackSpecialPower.cpp
-    Source/GameLogic/Object/SpecialPower/CleanupAreaPower.cpp
-    Source/GameLogic/Object/SpecialPower/DefectorSpecialPower.cpp
-    Source/GameLogic/Object/SpecialPower/DemoralizeSpecialPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/CashBountyPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/CashHackSpecialPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/CleanupAreaPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/DefectorSpecialPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/DemoralizeSpecialPower.cpp
     Source/GameLogic/Object/SpecialPower/OCLSpecialPower.cpp
-    Source/GameLogic/Object/SpecialPower/SpecialAbility.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/SpecialAbility.cpp
     Source/GameLogic/Object/SpecialPower/SpecialPowerModule.cpp
-    Source/GameLogic/Object/SpecialPower/SpyVisionSpecialPower.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/SpecialPower/SpyVisionSpecialPower.cpp
     Source/GameLogic/Object/Update/AIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/AssaultTransportAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/ChinookAIUpdate.cpp
@@ -899,66 +900,66 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Update/AIUpdate/HackInternetAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/JetAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/MissileAIUpdate.cpp
-    Source/GameLogic/Object/Update/AIUpdate/POWTruckAIUpdate.cpp
-    Source/GameLogic/Object/Update/AIUpdate/RailedTransportAIUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/AIUpdate/POWTruckAIUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/AIUpdate/RailedTransportAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/RailroadGuideAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/SupplyTruckAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/TransportAIUpdate.cpp
-    Source/GameLogic/Object/Update/AIUpdate/WanderAIUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/AIUpdate/WanderAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/WorkerAIUpdate.cpp
     Source/GameLogic/Object/Update/AssistedTargetingUpdate.cpp
     Source/GameLogic/Object/Update/AutoDepositUpdate.cpp
-    Source/GameLogic/Object/Update/AutoFindHealingUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/AutoFindHealingUpdate.cpp
     Source/GameLogic/Object/Update/BaseRenerateUpdate.cpp
     Source/GameLogic/Object/Update/BattlePlanUpdate.cpp
     Source/GameLogic/Object/Update/BoneFXUpdate.cpp
-    Source/GameLogic/Object/Update/CheckpointUpdate.cpp
-    Source/GameLogic/Object/Update/CleanupHazardUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/CheckpointUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/CleanupHazardUpdate.cpp
     Source/GameLogic/Object/Update/CommandButtonHuntUpdate.cpp
     Source/GameLogic/Object/Update/DelayedWeaponSetUpgradeUpdate.cpp
-    Source/GameLogic/Object/Update/DeletionUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DeletionUpdate.cpp
     Source/GameLogic/Object/Update/DemoTrapUpdate.cpp
     Source/GameLogic/Object/Update/DockUpdate/DockUpdate.cpp
-    Source/GameLogic/Object/Update/DockUpdate/PrisonDockUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DockUpdate/PrisonDockUpdate.cpp
     Source/GameLogic/Object/Update/DockUpdate/RailedTransportDockUpdate.cpp
-    Source/GameLogic/Object/Update/DockUpdate/RepairDockUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DockUpdate/RepairDockUpdate.cpp
     Source/GameLogic/Object/Update/DockUpdate/SupplyCenterDockUpdate.cpp
-    Source/GameLogic/Object/Update/DockUpdate/SupplyWarehouseDockUpdate.cpp
-    Source/GameLogic/Object/Update/DynamicGeometryInfoUpdate.cpp
-    Source/GameLogic/Object/Update/DynamicShroudClearingRangeUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DockUpdate/SupplyWarehouseDockUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DynamicGeometryInfoUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/DynamicShroudClearingRangeUpdate.cpp
     Source/GameLogic/Object/Update/EMPUpdate.cpp
-    Source/GameLogic/Object/Update/EnemyNearUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/EnemyNearUpdate.cpp
     Source/GameLogic/Object/Update/FireOCLAfterWeaponCooldownUpdate.cpp
-    Source/GameLogic/Object/Update/FireSpreadUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/FireSpreadUpdate.cpp
     Source/GameLogic/Object/Update/FirestormDynamicGeometryInfoUpdate.cpp
     Source/GameLogic/Object/Update/FireWeaponUpdate.cpp
-    Source/GameLogic/Object/Update/FlammableUpdate.cpp
-    Source/GameLogic/Object/Update/FloatUpdate.cpp
-    Source/GameLogic/Object/Update/HeightDieUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/FlammableUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/FloatUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/HeightDieUpdate.cpp
     Source/GameLogic/Object/Update/HelicopterSlowDeathUpdate.cpp
-    Source/GameLogic/Object/Update/HijackerUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/HijackerUpdate.cpp
     Source/GameLogic/Object/Update/HordeUpdate.cpp
     Source/GameLogic/Object/Update/LaserUpdate.cpp
-    Source/GameLogic/Object/Update/LifetimeUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/LifetimeUpdate.cpp
     Source/GameLogic/Object/Update/MissileLauncherBuildingUpdate.cpp
-    Source/GameLogic/Object/Update/MobMemberSlavedUpdate.cpp
-    Source/GameLogic/Object/Update/NeutronMissileSlowDeathUpdate.cpp
-    Source/GameLogic/Object/Update/NeutronMissileUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/MobMemberSlavedUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/NeutronMissileSlowDeathUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/NeutronMissileUpdate.cpp
     Source/GameLogic/Object/Update/OCLUpdate.cpp
     Source/GameLogic/Object/Update/ParticleUplinkCannonUpdate.cpp
     Source/GameLogic/Object/Update/PhysicsUpdate.cpp
-    Source/GameLogic/Object/Update/PilotFindVehicleUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/PilotFindVehicleUpdate.cpp
     Source/GameLogic/Object/Update/PointDefenseLaserUpdate.cpp
-    Source/GameLogic/Object/Update/PowerPlantUpdate.cpp
-    Source/GameLogic/Object/Update/ProductionExitUpdate/DefaultProductionExitUpdate.cpp
-    Source/GameLogic/Object/Update/ProductionExitUpdate/QueueProductionExitUpdate.cpp
-    Source/GameLogic/Object/Update/ProductionExitUpdate/SpawnPointProductionExitUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/PowerPlantUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/ProductionExitUpdate/DefaultProductionExitUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/ProductionExitUpdate/QueueProductionExitUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/ProductionExitUpdate/SpawnPointProductionExitUpdate.cpp
     Source/GameLogic/Object/Update/ProductionExitUpdate/SupplyCenterProductionExitUpdate.cpp
     Source/GameLogic/Object/Update/ProductionUpdate.cpp
     Source/GameLogic/Object/Update/ProjectileStreamUpdate.cpp
-    Source/GameLogic/Object/Update/ProneUpdate.cpp
-    Source/GameLogic/Object/Update/RadarUpdate.cpp
-    Source/GameLogic/Object/Update/RadiusDecalUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/ProneUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/RadarUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/RadiusDecalUpdate.cpp
     Source/GameLogic/Object/Update/SlavedUpdate.cpp
     Source/GameLogic/Object/Update/SpecialAbilityUpdate.cpp
     Source/GameLogic/Object/Update/SpyVisionUpdate.cpp
@@ -967,28 +968,28 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Update/StickyBombUpdate.cpp
     Source/GameLogic/Object/Update/StructureCollapseUpdate.cpp
     Source/GameLogic/Object/Update/StructureToppleUpdate.cpp
-    Source/GameLogic/Object/Update/TensileFormationUpdate.cpp
-    Source/GameLogic/Object/Update/ToppleUpdate.cpp
-    Source/GameLogic/Object/Update/UpdateModule.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/TensileFormationUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/ToppleUpdate.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Update/UpdateModule.cpp
     Source/GameLogic/Object/Update/WaveGuideUpdate.cpp
-    Source/GameLogic/Object/Upgrade/ActiveShroudUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/ActiveShroudUpgrade.cpp
     Source/GameLogic/Object/Upgrade/ArmorUpgrade.cpp
     Source/GameLogic/Object/Upgrade/CommandSetUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/CostModifierUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/CostModifierUpgrade.cpp
     Source/GameLogic/Object/Upgrade/DelayedUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/ExperienceScalarUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/LocomotorSetUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/MaxHealthUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/ObjectCreationUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/PowerPlantUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/RadarUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/StatusBitsUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/ExperienceScalarUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/LocomotorSetUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/MaxHealthUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/ObjectCreationUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/PowerPlantUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/RadarUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/StatusBitsUpgrade.cpp
     Source/GameLogic/Object/Upgrade/StealthUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/SubObjectsUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/UnpauseSpecialPowerUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/SubObjectsUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/UnpauseSpecialPowerUpgrade.cpp
     Source/GameLogic/Object/Upgrade/UpgradeModule.cpp
-    Source/GameLogic/Object/Upgrade/WeaponBonusUpgrade.cpp
-    Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/WeaponBonusUpgrade.cpp
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
     Source/GameLogic/Object/Weapon.cpp
     Source/GameLogic/Object/WeaponSet.cpp
     Source/GameLogic/ScriptEngine/ScriptActions.cpp
@@ -1062,8 +1063,9 @@ target_sources(g_gameengine PRIVATE ${GAMEENGINE_SRC})
 target_include_directories(g_gameengine PUBLIC
     Include
 )
+# GeneralsX @refactor cheviiot 23/10/2026 Point Generals at the canonical Zero Hour CompatLib headers.
 if(UNIX)
-    target_include_directories(g_gameengine PUBLIC ../CompatLib/Include)
+    target_include_directories(g_gameengine PUBLIC "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include")
 endif()
 
 # Ensure DXVK headers are available when building on Linux

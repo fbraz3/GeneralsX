@@ -113,6 +113,8 @@ public:
 	//const Image *getPushedImage() const;
 	const Image *getSideIconImage() const;
 	const AsciiString getTooltip() const { return m_tooltip; }
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: stub for Core LoadScreen (ZH-only Features INI).
+	const AsciiString getGeneralFeatures() const { return AsciiString::TheEmptyString; }
 
 	const ScienceVec& getIntrinsicSciences() const { return m_intrinsicSciences; }
 	Int getIntrinsicSciencePurchasePoints() const { return m_intrinsicSPP; }

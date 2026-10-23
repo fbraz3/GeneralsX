@@ -36,6 +36,7 @@
 
 #include "GameLogic/WeaponSet.h"
 
+#include "Common/GameProfile.h"
 #include "Common/INI.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -59,7 +60,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<>
-const char* const WeaponSetFlags::s_bitNameList[] =
+const char* WeaponSetFlags::s_bitNameList[] =
 {
 	"VETERAN",
 	"ELITE",
@@ -281,21 +282,19 @@ void WeaponSet::xfer( Xfer *xfer )
 	xfer->xferUnsignedInt(&m_filledWeaponSlotMask);
 	xfer->xferInt(&m_totalAntiMask);
 
-#if RTS_GENERALS
-	if (version < 2)
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals v1 damage-mask packing via GameProfile (was #if RTS_GENERALS).
+	// ZH serializes BitFlags from stream v1; Generals retail used UnsignedInt until v2.
+	if (GameProfile::get().isGenerals() && version < 2)
 	{
 		UnsignedInt totalDamageTypeMask = m_totalDamageTypeMask.toUnsignedInt();
 		xfer->xferUnsignedInt(&totalDamageTypeMask);
 		m_totalDamageTypeMask = DamageTypeFlags(totalDamageTypeMask);
 	}
-#endif
 
 	xfer->xferBool(version >= 3 ? &m_hasPitchLimit : &m_hasDamageWeapon);
 	xfer->xferBool(&m_hasDamageWeapon);
 
-#if RTS_GENERALS
-	if (version >= 2)
-#endif
+	if (!GameProfile::get().isGenerals() || version >= 2)
 	{
 		m_totalDamageTypeMask.xfer(xfer);// BitSet has built in xfer
 	}

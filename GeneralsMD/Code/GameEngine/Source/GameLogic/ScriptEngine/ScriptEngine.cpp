@@ -32,6 +32,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/FramePacer.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
 #include "Common/LatchRestore.h"
@@ -7793,12 +7794,11 @@ void ScriptEngine::removeAllSequentialScripts(Object *obj)
 		if (seqScript->m_objectID == id) {
 			it = cleanupSequentialScript(it, TRUE);
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+			// GeneralsX @refactor cheviiot 24/10/2026 Generals retail sequential-script skip (was RETAIL_COMPATIBLE_CRC / RTS_GENERALS).
 			// TheSuperHackers @info Preserve the original (bugged) traversal behavior by skipping the next element, if any.
-			if (it != m_sequentialScripts.end()) {
+			if (GameProfile::get().isGenerals() && it != m_sequentialScripts.end()) {
 				++it;
 			}
-#endif
 		}
     else
 		  ++it;

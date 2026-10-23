@@ -1,3 +1,36 @@
+# TODO Originally referred to build host and user, replace with git info perhaps?
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
+"#pragma once
+
+#define VERSION_LOCALBUILDNUM 0
+#define VERSION_BUILDUSER \"\"
+#define VERSION_BUILDLOC \"\"
+"
+)
+
+# Based on original binary values for these variables.
+if (IS_VS6_BUILD)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
+"#pragma once
+
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 7
+#define VERSION_BUILDNUM 601
+"
+)
+else()
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
+"#pragma once
+
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 8
+#define VERSION_BUILDNUM 601
+"
+)
+endif()
+
+# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default ON).
+if(NOT DEFINED RTS_BUILD_MIGRATION_BINARIES OR RTS_BUILD_MIGRATION_BINARIES)
 add_executable(g_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
@@ -32,37 +65,6 @@ target_link_libraries(g_generals PRIVATE
 # GeneralsX @build BenderAI 11/02/2026
 if(SAGE_USE_SDL3)
     target_link_libraries(g_generals PRIVATE sdl3lib)
-endif()
-
-# TODO Originally referred to build host and user, replace with git info perhaps?
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
-"#pragma once
-
-#define VERSION_LOCALBUILDNUM 0
-#define VERSION_BUILDUSER \"\"
-#define VERSION_BUILDLOC \"\"
-"
-)
-
-# Based on original binary values for these variables.
-if (IS_VS6_BUILD)
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
-"#pragma once
-
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 7
-#define VERSION_BUILDNUM 601
-"
-)
-else()
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
-"#pragma once
-
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 8
-#define VERSION_BUILDNUM 601
-"
-)
 endif()
 
 if(MSVC)
@@ -106,3 +108,4 @@ endif()
 if(MINGW AND COMMAND add_debug_strip_target)
     add_debug_strip_target(g_generals)
 endif()
+endif() # RTS_BUILD_MIGRATION_BINARIES

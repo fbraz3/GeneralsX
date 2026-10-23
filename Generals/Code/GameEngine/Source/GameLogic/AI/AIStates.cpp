@@ -32,6 +32,7 @@
 #include "Common/AudioHandleSpecialValues.h"
 #include "Common/CRCDebug.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GlobalData.h"
 #include "Common/Money.h"
 #include "Common/PerfTimer.h"
@@ -1029,12 +1030,14 @@ void AIStateMachine::clear()
 	m_goalWaypoint = nullptr;
 	m_goalSquad = nullptr;
 
-#if !RETAIL_COMPATIBLE_CRC
-	if (m_temporaryState)
-		m_temporaryState->onExit(EXIT_RESET);
+// GeneralsX @refactor cheviiot 24/10/2026 ZH clears temporary state on clear (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
+	{
+		if (m_temporaryState)
+			m_temporaryState->onExit(EXIT_RESET);
 
-	m_temporaryState = nullptr;
-#endif
+		m_temporaryState = nullptr;
+	}
 
 	AIUpdateInterface* ai = getOwner()->getAI();
 	if (ai)
@@ -2618,15 +2621,19 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 		{
 			// If obj is stealthed, can no longer approach.
 			// TheSuperHackers @bugfix Stubbjax 19/11/2025 Except when disarming stealthed mines.
-#if RETAIL_COMPATIBLE_CRC
-			return STATE_FAILURE;
-#else
-			const Bool isTargetingMine = weapon && weapon->getDamageType() == DAMAGE_DISARM &&
-				(victim->isKindOf(KINDOF_MINE));
-
-			if (!isTargetingMine)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always fails; ZH allows disarm mines (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals())
+			{
 				return STATE_FAILURE;
-#endif
+			}
+			else
+			{
+				const Bool isTargetingMine = weapon && weapon->getDamageType() == DAMAGE_DISARM &&
+					(victim->isKindOf(KINDOF_MINE));
+
+				if (!isTargetingMine)
+					return STATE_FAILURE;
+			}
 		}
 		ai->setCurrentVictim(victim);
 		// Attacking an object.
@@ -5339,15 +5346,17 @@ StateReturnType AIAttackState::onEnter()
 	if (m_attackParameters && m_attackParameters->shouldExit(getMachine()))
 		return STATE_SUCCESS;
 
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
-	//Kris: Jan 12, 2005
-	//Don't allow units under construction to attack! The selection/action manager system was responsible for preventing this
-	//from ever happening, but failed in two cases which I fixed. This is an extra check to mitigate cheats.
-	if( source->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH under-construction attack block via GameProfile (was #if !(RTS_GENERALS && RETAIL_CRC)).
+	if (!GameProfile::get().isGenerals())
 	{
-		return STATE_FAILURE;
+		//Kris: Jan 12, 2005
+		//Don't allow units under construction to attack! The selection/action manager system was responsible for preventing this
+		//from ever happening, but failed in two cases which I fixed. This is an extra check to mitigate cheats.
+		if( source->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
+		{
+			return STATE_FAILURE;
+		}
 	}
-#endif
 
 	// if all of our weapons are out of ammo, can't attack.
 	// (this can happen for units which never auto-reload, like the Raptor)
@@ -6176,13 +6185,12 @@ StateReturnType AIEnterState::update()
 	StateReturnType code = AIInternalMoveToState::update();
 
 	// if it's airborne, wait for it to land
-#if RETAIL_COMPATIBLE_CRC
-	if (code == STATE_SUCCESS && goal->isAboveTerrain() && !obj->isAboveTerrain())
-#else
+// GeneralsX @refactor cheviiot 24/10/2026 Retail airborne wait vs ZH vertical overlap (was RETAIL_COMPATIBLE_CRC).
 	// TheSuperHackers @bugfix Stubbjax 05/11/2025 Check for vertical overlap when entering containers.
-	// This prevents levitating or airborne units from entering containers they are not actually touching.
-	if (code == STATE_SUCCESS && !hasVerticalOverlap(goal, obj))
-#endif
+	if (code == STATE_SUCCESS && (
+			GameProfile::get().isGenerals()
+				? (goal->isAboveTerrain() && !obj->isAboveTerrain())
+				: !hasVerticalOverlap(goal, obj)))
 	{
 		code = STATE_CONTINUE;
 	}
@@ -6297,11 +6305,9 @@ StateReturnType AIExitState::update()
 		if( goalExitInterface == nullptr )
 			return STATE_FAILURE;
 
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @bugfix Stubbjax 03/05/2026 Stop trying to exit if the container is dead, as we are already ejected.
-		if (goal->isEffectivelyDead())
+// GeneralsX @refactor cheviiot 24/10/2026 ZH stops exit if container dead (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals() && goal->isEffectivelyDead())
 			return STATE_FAILURE;
-#endif
 
 		if( goalExitInterface->isExitBusy() )
 			return STATE_CONTINUE;// Just wait a sec.

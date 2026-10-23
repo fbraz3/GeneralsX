@@ -30,6 +30,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #define DEFINE_SLOWDEATHPHASE_NAMES
 
 #include "Common/Thing.h"
@@ -124,16 +125,18 @@ void InstantDeathBehavior::onDie( const DamageInfo *damageInfo )
 	if (!isDieApplicable(damageInfo))
 		return;
 
-#if RETAIL_COMPATIBLE_CRC
-	AIUpdateInterface* ai = getObject()->getAIUpdateInterface();
-	if (ai)
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail early AI-dead gate (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
 	{
-		// has another AI already handled us. (hopefully another InstantDeathBehavior)
-		if (ai->isAiInDeadState())
-			return;
-		ai->markAsDead();
+		AIUpdateInterface* ai = getObject()->getAIUpdateInterface();
+		if (ai)
+		{
+			// has another AI already handled us. (hopefully another InstantDeathBehavior)
+			if (ai->isAiInDeadState())
+				return;
+			ai->markAsDead();
+		}
 	}
-#endif
 
 	const InstantDeathBehaviorModuleData* d = getInstantDeathBehaviorModuleData();
 
@@ -159,11 +162,8 @@ void InstantDeathBehavior::onDie( const DamageInfo *damageInfo )
 		ObjectCreationList::create(ocl, getObject(), nullptr);
 	}
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 23/07/2026 Prevent firing weapons when a scaffold is cancelled
-	// or destroyed. This logic matches the condition in the FireWeaponWhenDeadBehavior module.
-	if (!getObject()->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION))
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH skips under-construction weapons (was !RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals() || !getObject()->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION))
 	{
 		listSize = d->m_weapons.size();
 		if (listSize > 0)
@@ -179,18 +179,18 @@ void InstantDeathBehavior::onDie( const DamageInfo *damageInfo )
 		}
 	}
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 21/07/2026 Allow multiple InstantDeathBehaviors to be processed.
-	// Multiple FXListDie, CreateObjectDie and FireWeaponWhenDeadBehavior modules are already supported.
-	AIUpdateInterface* ai = getObject()->getAIUpdateInterface();
-	if (ai)
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH marks AI dead after FX (allows multiple) (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
 	{
-		// has another AI already handled us. (hopefully another InstantDeathBehavior)
-		if (ai->isAiInDeadState())
-			return;
-		ai->markAsDead();
+		AIUpdateInterface* ai = getObject()->getAIUpdateInterface();
+		if (ai)
+		{
+			// has another AI already handled us. (hopefully another InstantDeathBehavior)
+			if (ai->isAiInDeadState())
+				return;
+			ai->markAsDead();
+		}
 	}
-#endif
 
 	TheGameLogic->destroyObject(getObject());
 }

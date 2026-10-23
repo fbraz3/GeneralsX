@@ -38,6 +38,7 @@
 #include "Common/ThingTemplate.h"
 #include "Common/WellKnownKeys.h"
 #include "Common/Xfer.h"
+#include "Common/GameProfile.h"
 
 #include "GameClient/TerrainVisual.h"
 #include "GameClient/View.h"
@@ -2664,10 +2665,9 @@ void TerrainLogic::flattenTerrain(Object *obj)
 			iMin.y = REAL_TO_INT_FLOOR(minY/MAP_XY_FACTOR);
 			iMax.x = REAL_TO_INT_FLOOR(maxX/MAP_XY_FACTOR);
 			iMax.y = REAL_TO_INT_FLOOR(maxY/MAP_XY_FACTOR);
-#if RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @info bobtista 29/09/2026 Retail scans from row 0, so rows below the map edge stay untouched.
-			iMin.y = std::max(0, iMin.y);
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail clamps iMin.y to 0 (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals())
+				iMin.y = std::max(0, iMin.y);
 
 			Int i, j;
 			Real totalHeight = 0;
@@ -2759,10 +2759,9 @@ void TerrainLogic::flattenTerrain(Object *obj)
 			iMin.y = REAL_TO_INT_FLOOR((pos->y-radius)/MAP_XY_FACTOR);
 			iMax.x = REAL_TO_INT_FLOOR((pos->x+radius)/MAP_XY_FACTOR);
 			iMax.y = REAL_TO_INT_FLOOR((pos->y+radius)/MAP_XY_FACTOR);
-#if RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @info bobtista 29/09/2026 Retail scans from row 0, so rows below the map edge stay untouched.
-			iMin.y = std::max(0, iMin.y);
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail clamps iMin.y to 0 (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals())
+				iMin.y = std::max(0, iMin.y);
 
 			Int i, j;
 			Real totalHeight = 0;
@@ -2875,10 +2874,9 @@ void TerrainLogic::createCraterInTerrain(Object *obj)
 	iMin.y = REAL_TO_INT_FLOOR(minY / MAP_XY_FACTOR);
 	iMax.x = REAL_TO_INT_FLOOR(maxX / MAP_XY_FACTOR);
 	iMax.y = REAL_TO_INT_FLOOR(maxY / MAP_XY_FACTOR);
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info bobtista 29/09/2026 Retail scans from row 0, so rows below the map edge stay untouched.
-	iMin.y = std::max( 0, iMin.y );
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail clamps iMin.y to 0 (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		iMin.y = std::max( 0, iMin.y );
 
 	Real deltaX, deltaY;
 

@@ -26,6 +26,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
+
 #define DEFINE_VETERANCY_NAMES				// for TheVeterancyNames[]
 
 #include "Common/ActionManager.h"
@@ -362,11 +364,9 @@ private:
 			for (std::list<ObjectID>::iterator oit = it->rappellerIDs.begin(); oit != it->rappellerIDs.end(); )
 			{
 				Object* rappeller = TheGameLogic->findObjectByID(*oit);
-#if RETAIL_COMPATIBLE_CRC
-				if (rappeller == nullptr || rappeller->isEffectivelyDead() || !rappeller->isAboveTerrain())
-#else
-				if (rappeller == nullptr || rappeller->isEffectivelyDead() || !rappeller->isAboveTerrain() || rappeller->isContained())
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH also clears contained rappellers (was RETAIL_COMPATIBLE_CRC).
+				if (rappeller == nullptr || rappeller->isEffectivelyDead() || !rappeller->isAboveTerrain()
+					|| (!GameProfile::get().isGenerals() && rappeller->isContained()))
 				{
 					oit = it->rappellerIDs.erase(oit);
 				}
@@ -588,26 +588,30 @@ public:
 				Object* rappeller = getPotentialRappeller(obj);
 				if (rappeller != nullptr)
 				{
-#if RETAIL_COMPATIBLE_CRC
-					ExitInterface *exitInterface = obj->getObjectExitInterface();
-					ExitDoorType exitDoor = exitInterface ? exitInterface->reserveDoorForExit(rappeller->getTemplate(), rappeller) : DOOR_NONE_AVAILABLE;
-					if(exitDoor != DOOR_NONE_AVAILABLE)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail reserves door; ZH bypasses (was RETAIL_COMPATIBLE_CRC).
+					if (GameProfile::get().isGenerals())
 					{
-						exitInterface->exitObjectViaDoor(rappeller, exitDoor);
+						ExitInterface *exitInterface = obj->getObjectExitInterface();
+						ExitDoorType exitDoor = exitInterface ? exitInterface->reserveDoorForExit(rappeller->getTemplate(), rappeller) : DOOR_NONE_AVAILABLE;
+						if(exitDoor != DOOR_NONE_AVAILABLE)
+						{
+							exitInterface->exitObjectViaDoor(rappeller, exitDoor);
+						}
+						else
+						{
+							DEBUG_CRASH(("rappeller is not free to exit... what?"));
+						}
 					}
 					else
 					{
-						DEBUG_CRASH(("rappeller is not free to exit... what?"));
+						// TheSuperHackers @bugfix 03/01/2026 Bypass door reservation as rappellers are always
+						// expected to be free to exit. This avoids prior rappel conditions in getAiFreeToExit
+						// from allowing rappellers to be freely 'dropped' from the Chinook during this state.
+						if (ExitInterface* exitInterface = obj->getObjectExitInterface())
+						{
+							exitInterface->exitObjectViaDoor(rappeller, DOOR_1);
+						}
 					}
-#else
-					// TheSuperHackers @bugfix 03/01/2026 Bypass door reservation as rappellers are always
-					// expected to be free to exit. This avoids prior rappel conditions in getAiFreeToExit
-					// from allowing rappellers to be freely 'dropped' from the Chinook during this state.
-					if (ExitInterface* exitInterface = obj->getObjectExitInterface())
-					{
-						exitInterface->exitObjectViaDoor(rappeller, DOOR_1);
-					}
-#endif
 
 					rappeller->setTransformMatrix(&it->dropStartMtx);
 
@@ -1055,12 +1059,11 @@ ObjectID ChinookAIUpdate::getBuildingToNotPathAround() const
 //-------------------------------------------------------------------------------------------------
 AIFreeToExitType ChinookAIUpdate::getAiFreeToExit(const Object* exiter) const
 {
-#if RETAIL_COMPATIBLE_CRC
-	 if (m_flightStatus == CHINOOK_LANDED ||
-				(m_flightStatus == CHINOOK_DOING_COMBAT_DROP && exiter->isKindOf(KINDOF_CAN_RAPPEL)))
-#else
-	if (m_flightStatus == CHINOOK_LANDED)
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail free-on-combat-drop; ZH landed-only (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals()
+			? (m_flightStatus == CHINOOK_LANDED ||
+					(m_flightStatus == CHINOOK_DOING_COMBAT_DROP && exiter->isKindOf(KINDOF_CAN_RAPPEL)))
+			: (m_flightStatus == CHINOOK_LANDED))
 		return FREE_TO_EXIT;
 
 	return WAIT_TO_EXIT;
@@ -1084,10 +1087,8 @@ UpdateSleepTime ChinookAIUpdate::update()
 	if (pp != nullptr)
 	{
 		if (m_flightStatus == CHINOOK_LANDED &&
-#if !RETAIL_COMPATIBLE_CRC
-				// TheSuperHackers @bugfix Stubbjax 03/11/2025 Prevent Chinooks from taking off while there are still units wanting to enter or exit.
-				!waitingToEnterOrExit &&
-#endif
+				// GeneralsX @refactor cheviiot 24/10/2026 ZH waits for enter/exit queue (was !RETAIL_COMPATIBLE_CRC).
+				(GameProfile::get().isGenerals() || !waitingToEnterOrExit) &&
 				!m_hasPendingCommand &&
 				getObject()->getBodyModule()->getHealth() == getObject()->getBodyModule()->getMaxHealth())
 		{
@@ -1095,19 +1096,21 @@ UpdateSleepTime ChinookAIUpdate::update()
 			pp->setHealee(getObject(), false);
 			setMyState(TAKING_OFF, nullptr, nullptr, CMD_FROM_AI);
 
-#if !RETAIL_COMPATIBLE_CRC
-			// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Move healed Chinook to rally point if present.
-			if (Object *airfield = TheGameLogic->findObjectByID( m_airfieldForHealing ))
+// GeneralsX @refactor cheviiot 24/10/2026 ZH Chinook rally after heal (was !RETAIL_COMPATIBLE_CRC).
+			if (!GameProfile::get().isGenerals())
 			{
-				if (ExitInterface *exitInterface = airfield->getObjectExitInterface())
+				// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Move healed Chinook to rally point if present.
+				if (Object *airfield = TheGameLogic->findObjectByID( m_airfieldForHealing ))
 				{
-					if (const Coord3D *rallyPoint = exitInterface->getRallyPoint())
+					if (ExitInterface *exitInterface = airfield->getObjectExitInterface())
 					{
-						aiMoveToPosition( rallyPoint, CMD_FROM_AI );
+						if (const Coord3D *rallyPoint = exitInterface->getRallyPoint())
+						{
+							aiMoveToPosition( rallyPoint, CMD_FROM_AI );
+						}
 					}
 				}
 			}
-#endif
 		}
 		else
 		{
@@ -1291,14 +1294,11 @@ void ChinookAIUpdate::privateCombatDrop( Object* target, const Coord3D& pos, Com
 //-------------------------------------------------------------------------------------------------
 void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 {
-#if RETAIL_COMPATIBLE_CRC
-	// this gets reset every time a command is issued.
-	setAirfieldForHealing(INVALID_ID);
-#else
-	// TheSuperHackers @bugfix Stubbjax 31/10/2025 Don't leave healing state for evacuation commands.
-	if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always clears healing; ZH keeps for evacuate/exit (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
 		setAirfieldForHealing(INVALID_ID);
-#endif
+	else if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT)
+		setAirfieldForHealing(INVALID_ID);
 
 	if (!isAllowedToRespondToAiCommands(parms))
 		return;
@@ -1324,31 +1324,34 @@ void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 			// just pass it thru.
 		}
 		break;
-#if !RETAIL_COMPATIBLE_CRC
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH enter self/capacity guards (was !RETAIL_COMPATIBLE_CRC).
 		case AICMD_ENTER:
 		{
-			// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter ourselves (we can be in the same group).
-			if (parms->m_obj && parms->m_obj->getID() == getObject()->getID())
-				return;
+			if (!GameProfile::get().isGenerals())
+			{
+				// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter ourselves (we can be in the same group).
+				if (parms->m_obj && parms->m_obj->getID() == getObject()->getID())
+					return;
 
-			// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter something we cannot (we can be in the same group).
-			if (!TheActionManager->canEnterObject(getObject(), parms->m_obj, parms->m_cmdSource, DONT_CHECK_CAPACITY))
-				return;
+				// TheSuperHackers @bugfix Stubbjax 12/08/2026 Ignore the command if we are told to enter something we cannot (we can be in the same group).
+				if (!TheActionManager->canEnterObject(getObject(), parms->m_obj, parms->m_cmdSource, DONT_CHECK_CAPACITY))
+					return;
+			}
 		}
 		break;
-#endif
 
 		case AICMD_MOVE_TO_POSITION_AND_EVACUATE:
 		case AICMD_MOVE_TO_POSITION_AND_EVACUATE_AND_EXIT:
 		{
 			const Real THRESH = 3.0f;
 			const Real THRESH_SQR = THRESH*THRESH;
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_CHINOOK_PASSENGER_DUMPING
+// GeneralsX @refactor cheviiot 24/10/2026 Retail/PRESERVE dump-all; ZH paced exit (was RETAIL_COMPATIBLE_CRC || PRESERVE_*).
+#if PRESERVE_CHINOOK_PASSENGER_DUMPING
 			const bool allowExit = true;
 #else
-			// TheSuperHackers @bugfix Stubbjax 04/11/2025 Passengers are no longer all dumped in a single frame.
-			const ContainModuleInterface* contain = getObject()->getContain();
-			const bool allowExit = contain && contain->hasObjectsWantingToEnterOrExit();
+			const bool allowExit = GameProfile::get().isGenerals()
+				? true
+				: (getObject()->getContain() && getObject()->getContain()->hasObjectsWantingToEnterOrExit());
 #endif
 
 			if (calcDistSqr(*getObject()->getPosition(), parms->m_pos) > THRESH_SQR &&
