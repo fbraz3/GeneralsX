@@ -35,6 +35,8 @@ echo "INFO: Gate 6 battery build=${BUILD_DIR}" | tee -a "${SUMMARY}"
 run dual "${SCRIPT_DIR}/smoke-echelon-dual-profile.sh" "${BUILD_DIR}"
 run map-alpine "${SCRIPT_DIR}/smoke-echelon-map-load.sh" "${BUILD_DIR}" "Maps/Alpine Assault/Alpine Assault.map" 90 180
 run map-usa01 "${SCRIPT_DIR}/smoke-echelon-map-load.sh" "${BUILD_DIR}" "Maps/USA01/USA01.map" 90 180
+run mod-path "${SCRIPT_DIR}/smoke-echelon-mod-path.sh" "${BUILD_DIR}"
+run lan "${SCRIPT_DIR}/smoke-echelon-lan.sh" "${BUILD_DIR}"
 run saveload-zh "${SCRIPT_DIR}/smoke-echelon-save-load.sh" "${BUILD_DIR}" zh
 run saveload-generals "${SCRIPT_DIR}/smoke-echelon-save-load.sh" "${BUILD_DIR}" generals
 run rr-zh "${SCRIPT_DIR}/smoke-echelon-record-replay.sh" "${BUILD_DIR}" zh
