@@ -77,6 +77,7 @@ set(WWMATH_SRC
     vp.h
     wwmath.cpp
     wwmath.h
+    wwmathids.h
 )
 
 add_library(core_wwmath STATIC)
@@ -87,10 +88,7 @@ target_sources(core_wwmath PRIVATE ${WWMATH_SRC})
 target_link_libraries(core_wwmath PRIVATE
     core_wwcommon
     corei_always
-)
-
-target_link_libraries(core_wwmath PUBLIC
-    gamemath
+    core_wwsaveload
 )
 
 if (SAGE_USE_DETERMINISTIC_MATH)

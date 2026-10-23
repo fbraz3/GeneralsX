@@ -68,6 +68,11 @@ public:
 
 	virtual void		Update_Tangents() { TangentsDirty = false; }
 
+	// save-load support
+	virtual const PersistFactoryClass &	Get_Factory() const override;
+	virtual bool								Save(ChunkSaveClass &csave) override;
+	virtual bool								Load(ChunkLoadClass &cload) override;
+
 protected:
 
 	class TangentsClass
@@ -105,6 +110,11 @@ public:
 
 	virtual void		Set_Tangents(int i,float in_tan,float out_tan);
 	virtual void		Get_Tangents(int i,float * set_in,float * set_out);
+
+	// save-load support
+	virtual const PersistFactoryClass &	Get_Factory() const override;
+	virtual bool								Save(ChunkSaveClass &csave) override;
+	virtual bool								Load(ChunkLoadClass &cload) override;
 
 protected:
 
