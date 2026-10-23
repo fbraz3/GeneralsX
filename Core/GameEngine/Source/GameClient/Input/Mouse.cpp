@@ -1269,7 +1269,7 @@ Int Mouse::getCursorIndex(const AsciiString& name)
 
 	/** @todo This is silly to have to define these names from INI in the code ...
 		* that should be changed (CBD) */
-	static const char *CursorININames[] =
+	static const char *CursorININames[NUM_MOUSE_CURSORS] =
 	{
 		//"InvalidMouseCursor",  // this entry is not actually a mouse cursor, but just a
 														 // reminder that it does exist
@@ -1326,7 +1326,6 @@ Int Mouse::getCursorIndex(const AsciiString& name)
 		"ParticleUplinkCannon",
 
 	};
-	static_assert(ARRAY_SIZE(CursorININames) == NUM_MOUSE_CURSORS, "Incorrect array size");
 
 	for (Int i=0; i<NUM_MOUSE_CURSORS; ++i)
 	{

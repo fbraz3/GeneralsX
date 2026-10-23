@@ -47,7 +47,6 @@ typedef enum
 	IMAGE_STATUS_ROTATED_90_CLOCKWISE	= 0x00000001,  // image should be treated as rotated
 	IMAGE_STATUS_RAW_TEXTURE					= 0x00000002,  // image struct contains raw texture data
 
-	IMAGE_STATUS_END // keep after the last named flag
 } ImageStatus;
 #ifdef DEFINE_IMAGE_STATUS_NAMES
 static const char *const imageStatusNames[] =
@@ -56,7 +55,6 @@ static const char *const imageStatusNames[] =
 	"RAW_TEXTURE",
 	nullptr
 };
-static_assert(equalsEnumBitFlagsCount(ARRAY_SIZE(imageStatusNames) - 1, IMAGE_STATUS_END), "Incorrect array size");
 #endif  // end DEFINE_IMAGE_STATUS_NAMES
 
 //-------------------------------------------------------------------------------------------------

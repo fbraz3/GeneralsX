@@ -16,7 +16,6 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "PreRTS.h"
 #include "GameLogic/Pathfinder/PathfindCellInfo.h"
 
 constexpr const UnsignedInt CELL_INFOS_TO_ALLOCATE = 30000;

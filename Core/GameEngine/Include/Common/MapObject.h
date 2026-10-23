@@ -105,7 +105,6 @@ class MapObject : public MemoryPoolObject
 	Shadow*								m_shadowObj; ///< object that renders shadow in the 3d scene.
 	RenderObjClass*				m_bridgeTowers[ BRIDGE_MAX_TOWERS ];		///< for bridge towers
 	Int										m_runtimeFlags;
-	DrawableID						m_treeID;		///< tree buffer id, unique per object.
 
 public:
 	static MapObject *TheMapObjectListPtr;
@@ -154,7 +153,6 @@ public:
 	RenderObjClass *getRenderObj() const {return m_renderObj;}
 	void setShadowObj(Shadow *pObj)	{m_shadowObj=pObj;}
 	Shadow *getShadowObj() const {return m_shadowObj;}
-	DrawableID getTreeID() const {return m_treeID;}
 
 	RenderObjClass* getBridgeRenderObject( BridgeTowerType type );
 	void setBridgeRenderObject( BridgeTowerType type, RenderObjClass* renderObj );

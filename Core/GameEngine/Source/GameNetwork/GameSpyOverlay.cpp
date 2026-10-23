@@ -165,7 +165,7 @@ void RaiseGSMessageBox()
 	* gsOverlays holds a list of the .wnd files used in GS overlays.
 	* The entries *MUST* be in the same order as the GSOverlayType enum.
 	*/
-static const char * gsOverlays[] =
+static const char * gsOverlays[GSOVERLAY_MAX] =
 {
 	"Menus/PopupPlayerInfo.wnd",	// Player info (right-click)
 	"Menus/WOLMapSelectMenu.wnd",	// Map select
@@ -177,7 +177,6 @@ static const char * gsOverlays[] =
 	"Menus/PopupLocaleSelect.wnd",// Prompt for user's locale
 	"Menus/OptionsMenu.wnd",			// popup options
 };
-static_assert(ARRAY_SIZE(gsOverlays) == GSOVERLAY_MAX, "Incorrect array size");
 
 static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 {
