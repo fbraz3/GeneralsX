@@ -1,7 +1,7 @@
 # PLAN-023 Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Architecture agreed; source comparison completed; implementation pending
+Status: Stage 01 implemented and locally validated; unified runtime pending
 
 ## Product contract
 
@@ -44,6 +44,12 @@ in the two games. Share canonical sources before sharing compiled objects.
 
 ## Target architecture
 
+Use Zero Hour as the canonical engine foundation, as selected by the user.
+Preserve its source structure and newer infrastructure. Adapt original Generals
+through an explicit compatibility profile covering rules, module registration,
+asset layers, game identity and save/replay formats. Existing shared Core
+infrastructure remains shared. Do not rebuild a parallel Generals engine.
+
 One application initializes an immutable game profile, then starts one engine.
 The profile selects asset roots, original game/version identity, user-data
 paths and an explicit rules policy. Selection may be exposed through a startup
@@ -72,8 +78,10 @@ Minimize structural divergence: retain upstream file, class and function names
 where practical. Prefer existing Core locations for shared infrastructure;
 leave game-specific modules in their natural locations. Do not move the whole
 engine into a newly named tree or reformat legacy sources during consolidation.
-Choose a canonical location per subsystem from actual upstream change history,
-not a blanket assumption that every shared file belongs in the Zero Hour tree.
+Keep existing Core locations for already-shared infrastructure and use the
+Zero Hour implementation as the default canonical location for remaining game
+code. Review upstream history when extracting Generals compatibility behavior;
+do not discard base-game fixes or modules absent from Zero Hour.
 
 Every moved or consolidated file needs a maintained provenance map listing both
 original game paths, canonical destination and any extracted rules/serialization
@@ -152,7 +160,10 @@ The upstream maintenance contract and integration rehearsal must also pass.
 
 ## Current limitations
 
-No baseline builds or runtime checks were performed during this architecture
-survey. Serena C++ symbol navigation failed during initialization in the
-preceding survey; repair it before relying on semantic refactoring tools.
-Migration gates above remain uncompleted.
+Stage 01 introduces the consolidation map/checker, a shared FPU header and three
+canonical Zero Hour device sources consumed by both existing builds;
+see [the implementation notes](../support/UNIFIED_ENGINE_STAGE01.md).
+The earlier architecture survey did not include builds or runtime checks.
+Serena C++ symbol navigation failed during initialization in that survey;
+semantic refactoring tools remain unavailable. The complete baseline/runtime
+and single-executable migration gates remain open.
