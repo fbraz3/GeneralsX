@@ -120,6 +120,7 @@ static WWINLINE float Fabs(float val)
 	static WWINLINE float Floorf(float val) { return Floor(val); }
 	static WWINLINE float Ceilf(float val) { return Ceil(val); }
 	static WWINLINE float Sqrtf(float val) { return Sqrt(val); }
+	static WWINLINE float Roundf(float val) { return Floor(val + 0.5f); }
 
 static WWINLINE int Float_To_Int_Chop(const float& f);
 static WWINLINE int Float_To_Int_Floor(const float& f);
