@@ -1,7 +1,7 @@
 # Unified Engine Stage 06: One Executable Scaffold (`echelon`)
 
 Date: 2026-10-23 (updated 24/10/2026)
-Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration binaries OFF, `smoke-echelon-gate6.sh` (dual/map/mod/LAN/save/RR/CRC fixtures) exit 0; CRC→GameProfile waves 1–11; `#3531` FileSystem path-key + `#3538` headless font dummies ported; global `RETAIL_COMPATIBLE_CRC` stays 0. Remaining: macOS evidence; optional old-fixture CRC
+Status: Gate 6 COMPLETE for PLAN-023 objective — Linux `smoke-echelon-gate6.sh` exit 0; macOS Build run 40012141402 green (echelon step); promote FF'd; migration binaries default OFF; `#3531`/`#3538` ported; PR #387; `RETAIL_COMPATIBLE_CRC` stays 0. Optional: native Mac dual-profile smoke; old-fixture CRC
 
 ## Scope (this stage)
 
