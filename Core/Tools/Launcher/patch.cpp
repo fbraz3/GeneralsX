@@ -279,18 +279,9 @@ void Apply_Patch(char *patchfile,ConfigFile &config,int skuIndex)
     regRetval=RegOpenKeyEx(HKEY_LOCAL_MACHINE,path.get(),0,
         KEY_ALL_ACCESS,&regKey);
     if (regRetval!=ERROR_SUCCESS)
-    {
       DBGMSG("Can't open reg key for writing");
-    }
-    else
-    {
-      regRetval=RegSetValueEx(regKey,"Version",0,REG_DWORD,(uint8 *)&version,sizeof(version));
-      if (regRetval!=ERROR_SUCCESS)
-      {
-        DBGMSG("Can't write Version to reg key");
-      }
-      RegCloseKey(regKey);
-    }
+    regRetval=RegSetValueEx(regKey,"Version",0,REG_DWORD,(uint8 *)&version,
+        sizeof(version));
 
 
     // Create blocking DLG for update info

@@ -234,11 +234,17 @@ SoundEditDialogClass::OnOK ()
 	}
 
 	//
-	//	Pass a sound with the settings on the dialog onto the render object
+	//	Create a sound definition from the settings on the dialog
 	//
 	AudibleSoundClass *sound = Create_Sound_Object ();
-	SoundRObj->Set_Sound (sound);
+	AudibleSoundDefinitionClass definition;
+	definition.Initialize_From_Sound (sound);
 	REF_PTR_RELEASE (sound);
+
+	//
+	//	Pass the sound definition onto the render object
+	//
+	SoundRObj->Set_Sound (&definition);
 
 	//
 	//	Pass the flags onto the render object

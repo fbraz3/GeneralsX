@@ -41,7 +41,7 @@
 
 const char *CompressionManager::getCompressionNameByType( CompressionType compType )
 {
-	static const char *s_compressionNames[] = {
+	static const char *s_compressionNames[COMPRESSION_MAX+1] = {
 		"No compression",
 		"RefPack",
 		"LZHL",
@@ -57,14 +57,13 @@ const char *CompressionManager::getCompressionNameByType( CompressionType compTy
 		"BTree",
 		"Huff",
 	};
-	static_assert(ARRAY_SIZE(s_compressionNames) == COMPRESSION_COUNT, "Incorrect array size");
 	return s_compressionNames[compType];
 }
 
 // For perf timers, so we can have separate ones for compression/decompression
 const char *CompressionManager::getDecompressionNameByType( CompressionType compType )
 {
-	static const char *s_decompressionNames[] = {
+	static const char *s_decompressionNames[COMPRESSION_MAX+1] = {
 		"d_None",
 		"d_RefPack",
 		"d_NoxLZW",
@@ -80,7 +79,6 @@ const char *CompressionManager::getDecompressionNameByType( CompressionType comp
 		"d_BTree",
 		"d_Huff",
 	};
-	static_assert(ARRAY_SIZE(s_decompressionNames) == COMPRESSION_COUNT, "Incorrect array size");
 	return s_decompressionNames[compType];
 }
 
@@ -360,7 +358,7 @@ struct CompData
 {
 public:
 	Int origSize;
-	Int compressedSize[COMPRESSION_COUNT];
+	Int compressedSize[COMPRESSION_MAX+1];
 };
 
 void DoCompressTest()
@@ -368,9 +366,9 @@ void DoCompressTest()
 
 	Int i;
 
-	PerfGather *s_compressGathers[COMPRESSION_COUNT];
-	PerfGather *s_decompressGathers[COMPRESSION_COUNT];
-	for (i = 0; i < COMPRESSION_COUNT; ++i)
+	PerfGather *s_compressGathers[COMPRESSION_MAX+1];
+	PerfGather *s_decompressGathers[COMPRESSION_MAX+1];
+	for (i = 0; i < COMPRESSION_MAX+1; ++i)
 	{
 		s_compressGathers[i] = new PerfGather(CompressionManager::getCompressionNameByType((CompressionType)i));
 		s_decompressGathers[i] = new PerfGather(CompressionManager::getDecompressionNameByType((CompressionType)i));
@@ -488,7 +486,7 @@ void DoCompressTest()
 	PerfGather::resetAll();
 	CopyFile( "AAAPerfStats.csv", "AAACompressPerfStats.csv", FALSE );
 
-	for (i = 0; i < COMPRESSION_COUNT; ++i)
+	for (i = 0; i < COMPRESSION_MAX+1; ++i)
 	{
 		delete s_compressGathers[i];
 		s_compressGathers[i] = nullptr;

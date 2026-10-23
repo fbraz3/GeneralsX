@@ -37,7 +37,6 @@
 #pragma once
 
 #include "always.h"
-#include <Utility/bit_adapter.h>
 #include <math.h>
 #include <assert.h>
 
@@ -127,7 +126,7 @@ inline float WWMath::Sign(float val)
 
 inline bool WWMath::Fast_Is_Float_Positive(const float & val)
 {
-	return !(std::bit_cast<int>(val) & 0x80000000);
+	return !((*(int *)(&val)) & 0x80000000);
 }
 
 inline float WWMath::Random_Float(float min,float max)
@@ -205,11 +204,8 @@ inline long WWMath::Float_To_Long	(float f)
 {
 #if defined(_MSC_VER) && defined(_M_IX86)
 	long retval;
-	__asm
-	{
-		fld	dword ptr [f]
-		fistp dword ptr [retval]
-	}
+	__asm fld	dword ptr [f]
+	__asm fistp dword ptr [retval]
 	return retval;
 #else
 	return (long) f;
@@ -220,11 +216,8 @@ inline long WWMath::Float_To_Long	(double f)
 {
 #if defined(_MSC_VER) && defined(_M_IX86)
 	long retval;
-	__asm
-	{
-		fld	qword ptr [f]
-		fistp dword ptr [retval]
-	}
+	__asm fld	qword ptr [f]
+	__asm fistp dword ptr [retval]
 	return retval;
 #else
 	return (long) f;

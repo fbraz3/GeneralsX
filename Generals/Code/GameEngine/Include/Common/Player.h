@@ -270,9 +270,6 @@ public:
 	// Can we afford to build?
 	Bool canAffordBuild( const ThingTemplate *whatToBuild ) const;
 
-  // Check MaxSimultaneousOfType
-  Bool canBuildMoreOfType( const ThingTemplate *whatToBuild ) const;
-
 	/// Difficulty level for this player.
 	GameDifficulty getPlayerDifficulty() const;
 

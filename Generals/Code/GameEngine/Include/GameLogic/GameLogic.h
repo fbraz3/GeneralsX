@@ -249,10 +249,6 @@ public:
 
 	Bool isQuitToDesktopRequested() const { return m_quitToDesktopAfterMatch; }
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
-	void friend_destroyInTunnelContain(const Object* strandedObject);
-#endif
-
 protected:
 
 	// snapshot methods
@@ -283,7 +279,6 @@ private:
 
 	bool onNewGame(GameMessage *msg);
 	bool onClearGameData(GameMessage *msg, AIGroupPtr &currentlySelectedGroup);
-	bool onLogicCrcForPlayback(GameMessage *msg);
 	bool onBeginPathBuild(GameMessage *msg);
 	bool onEndPathBuild(GameMessage *msg);
 	bool onSetRallyPoint(GameMessage *msg);

@@ -1,6 +1,5 @@
 set(CORE_LIBRARIES_SRC
     Debug.cpp
-    Include/Lib/BaseDefines.h
     Include/Lib/BaseFunctions.h
     Include/Lib/BaseType.h
     Include/Lib/Coord2D.h

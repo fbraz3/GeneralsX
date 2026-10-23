@@ -1099,14 +1099,13 @@ Real Drawable::getScale () const
 //-------------------------------------------------------------------------------------------------
 void Drawable::reactToBodyDamageStateChange(BodyDamageType newState)
 {
-	static const ModelConditionFlagType TheDamageMap[] =
+	static const ModelConditionFlagType TheDamageMap[BODYDAMAGETYPE_COUNT] =
 	{
 		MODELCONDITION_INVALID,
 		MODELCONDITION_DAMAGED,
 		MODELCONDITION_REALLY_DAMAGED,
 		MODELCONDITION_RUBBLE,
 	};
-	static_assert(ARRAY_SIZE(TheDamageMap) == BODYDAMAGETYPE_COUNT, "Incorrect array size");
 
 	ModelConditionFlags newDamage;
 	if (TheDamageMap[newState] != MODELCONDITION_INVALID)

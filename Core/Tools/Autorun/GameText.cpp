@@ -42,7 +42,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <Utility/string_adapter.h>
+#include <string>
 
 #include <Lib/BaseType.h>
 #include "GameText.h"
@@ -90,7 +90,7 @@
 struct StringInfo
 {
 	std::string			label;
-	stl::wstring		text;
+	std::wstring		text;
 	std::string			speech;
 };
 
@@ -122,7 +122,7 @@ struct CSFHeader
 struct NoString
 {
 	struct NoString *next;
-	stl::wstring text;
+	std::wstring text;
 };
 
 
@@ -142,7 +142,7 @@ class GameTextManager : public GameTextInterface
 		virtual void					update() {};			///< update text manager
 		virtual void					reset();					///< Resets the text system
 
-		virtual const unichar * fetch( const Char *label );		///< Returns the associated labeled unicode text
+		virtual const wchar_t * fetch( const Char *label );		///< Returns the associated labeled unicode text
 	protected:
 
 		Int							m_textCount;
@@ -150,7 +150,7 @@ class GameTextManager : public GameTextInterface
 		Char						m_buffer[MAX_UITEXT_LENGTH];
 		Char						m_buffer2[MAX_UITEXT_LENGTH];
 		Char						m_buffer3[MAX_UITEXT_LENGTH];
-		unichar				m_tbuffer[MAX_UITEXT_LENGTH*2];
+		WideChar				m_tbuffer[MAX_UITEXT_LENGTH*2];
 
 		StringInfo			*m_stringInfo;
 		StringLookUp		*m_stringLUT;
@@ -159,13 +159,13 @@ class GameTextManager : public GameTextInterface
 		Bool						m_munkee;
 		NoString				*m_noStringList;
 		Int							m_useStringFile;
-		stl::wstring		m_failed;
+		std::wstring		m_failed;
 
-		void						stripSpaces ( unichar *string );
+		void						stripSpaces ( WideChar *string );
 		void						removeLeadingAndTrailing ( Char *m_buffer );
 		void						readToEndOfQuote( File *file, Char *in, Char *out, Char *wavefile, Int maxBufLen );
 		void						reverseWord ( Char *file, Char *lp );
-		void						translateCopy( unichar *outbuf, Char *inbuf );
+		void						translateCopy( WideChar *outbuf, Char *inbuf );
 		Bool						getStringCount( Char *filename);
 		Bool						getCSFInfo ( Char *filename );
 		Bool						parseCSF(  Char *filename );
@@ -380,10 +380,10 @@ void GameTextManager::reset()
 // GameTextManager::stripSpaces
 //============================================================================
 
-void GameTextManager::stripSpaces ( unichar *string )
+void GameTextManager::stripSpaces ( WideChar *string )
 {
-	unichar *str, *ptr;
-	unichar ch, last = 0;
+	WideChar *str, *ptr;
+	WideChar ch, last = 0;
 	Int skipall = TRUE;
 
 	str = ptr = string;
@@ -627,7 +627,7 @@ void GameTextManager::reverseWord ( Char *file, Char *lp )
 // GameTextManager::translateCopy
 //============================================================================
 
-void GameTextManager::translateCopy( unichar *outbuf, Char *inbuf )
+void GameTextManager::translateCopy( WideChar *outbuf, Char *inbuf )
 {
 	Bool slash = FALSE;
 
@@ -884,7 +884,7 @@ Bool GameTextManager::parseCSF( Char *filename )
 
 			if ( len )
 			{
-				file.read ( m_tbuffer, len*sizeof(unichar) );
+				file.read ( m_tbuffer, len*sizeof(WideChar) );
 			}
 
 			if ( num == 0 )
@@ -893,7 +893,7 @@ Bool GameTextManager::parseCSF( Char *filename )
 				m_tbuffer[len] = 0;
 
 				{
-					unichar *ptr;
+					WideChar *ptr;
 
 					ptr = m_tbuffer;
 
@@ -1045,7 +1045,7 @@ quit:
 // *GameTextManager::fetch
 //============================================================================
 
-const unichar * GameTextManager::fetch( const Char *label )
+const wchar_t * GameTextManager::fetch( const Char *label )
 {
 	DEBUG_ASSERTCRASH ( m_initialized, ("String Manager has not been m_initialized") );
 
@@ -1066,9 +1066,9 @@ const unichar * GameTextManager::fetch( const Char *label )
 	if( lookUp == nullptr )
 	{
 		// See if we already have the missing string
-		unichar tmp[256];
+		wchar_t tmp[256];
 		swprintf(tmp, 256, L"MISSING: '%hs'", label);
-		stl::wstring missingString = tmp;
+		std::wstring missingString = tmp;
 
 		NoString *noString = m_noStringList;
 

@@ -21,7 +21,6 @@
 #ifndef __HUFWRITE
 #define __HUFWRITE 1
 
-#include <stddef.h>
 #include <string.h>
 #include "codex.h"
 #include "huffcodex.h"
@@ -1051,8 +1050,8 @@ static void HUFF_pack(struct HuffEncodeContext *EC,
 		if (!i3)
 			HUFF_writecode(EC,dest,i);
 
-		if ((bptr1 - EC->buffer) >= (ptrdiff_t)(EC->plen+curpc))
-			curpc = (unsigned int)((bptr1 - EC->buffer) - EC->plen);
+		if (((long) bptr1- (long) EC->buffer) >= (long)(EC->plen+curpc))
+			curpc = (long) bptr1 - (long) EC->buffer - EC->plen;
 	}
 
 	/* write EOF ([clue] 0gn [10]) */

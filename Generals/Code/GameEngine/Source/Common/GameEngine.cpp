@@ -208,10 +208,11 @@ static void updateWindowTitle()
 	}
 
 #if RTS_GENERALS
-	UnicodeString gameTitle = TheGameText->FETCH_OR_SUBSTITUTE("GUI:Command&ConquerGenerals", L"Command and Conquer Generals");
+	const WideChar* defaultGameTitle = L"Command and Conquer Generals";
 #elif RTS_ZEROHOUR
-	UnicodeString gameTitle = TheGameText->FETCH_OR_SUBSTITUTE("GUI:Command&ConquerGenerals", L"Command and Conquer Generals Zero Hour");
+	const WideChar* defaultGameTitle = L"Command and Conquer Generals Zero Hour";
 #endif
+	UnicodeString gameTitle = TheGameText->FETCH_OR_SUBSTITUTE("GUI:Command&ConquerGenerals", defaultGameTitle);
 
 	if (!gameTitle.isEmpty())
 	{

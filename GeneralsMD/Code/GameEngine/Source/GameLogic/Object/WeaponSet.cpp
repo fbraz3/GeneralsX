@@ -364,44 +364,34 @@ void WeaponSet::updateWeaponSet(const Object* obj)
 //-------------------------------------------------------------------------------------------------
 /*static*/ ModelConditionFlags WeaponSet::getModelConditionForWeaponSlot(WeaponSlotType wslot, WeaponSetConditionType a)
 {
-	static const ModelConditionFlagType Nothing[] = {
-		MODELCONDITION_INVALID,
-		MODELCONDITION_INVALID,
-		MODELCONDITION_INVALID
-	};
-	static const ModelConditionFlagType Firing[] = {
+	static const ModelConditionFlagType Nothing[WEAPONSLOT_COUNT] = { MODELCONDITION_INVALID, MODELCONDITION_INVALID, MODELCONDITION_INVALID };
+	static const ModelConditionFlagType Firing[WEAPONSLOT_COUNT] = {
 		MODELCONDITION_FIRING_A,
 		MODELCONDITION_FIRING_B,
 		MODELCONDITION_FIRING_C
 	};
-	static const ModelConditionFlagType Betweening[] = {
+	static const ModelConditionFlagType Betweening[WEAPONSLOT_COUNT] = {
 		MODELCONDITION_BETWEEN_FIRING_SHOTS_A,
 		MODELCONDITION_BETWEEN_FIRING_SHOTS_B,
 		MODELCONDITION_BETWEEN_FIRING_SHOTS_C
 	};
-	static const ModelConditionFlagType Reloading[] = {
+	static const ModelConditionFlagType Reloading[WEAPONSLOT_COUNT] = {
 		MODELCONDITION_RELOADING_A,
 		MODELCONDITION_RELOADING_B,
 		MODELCONDITION_RELOADING_C
 	};
-	static const ModelConditionFlagType PreAttack[] = {
+	static const ModelConditionFlagType PreAttack[WEAPONSLOT_COUNT] = {
 		MODELCONDITION_PREATTACK_A,
 		MODELCONDITION_PREATTACK_B,
 		MODELCONDITION_PREATTACK_C
 	};
-	static const ModelConditionFlagType* Lookup[] = {
+	static const ModelConditionFlagType* Lookup[WSF_COUNT] = {
 		Nothing,
 		Firing,
 		Betweening,
 		Reloading,
 		PreAttack
 	};
-	static_assert(ARRAY_SIZE(Nothing) == WEAPONSLOT_COUNT, "Incorrect array size");
-	static_assert(ARRAY_SIZE(Firing) == WEAPONSLOT_COUNT, "Incorrect array size");
-	static_assert(ARRAY_SIZE(Betweening) == WEAPONSLOT_COUNT, "Incorrect array size");
-	static_assert(ARRAY_SIZE(Reloading) == WEAPONSLOT_COUNT, "Incorrect array size");
-	static_assert(ARRAY_SIZE(PreAttack) == WEAPONSLOT_COUNT, "Incorrect array size");
-	static_assert(ARRAY_SIZE(Lookup) == WSF_COUNT, "Incorrect array size");
 
 	ModelConditionFlags flags;	// defaults to all clear
 
@@ -409,12 +399,11 @@ void WeaponSet::updateWeaponSet(const Object* obj)
 	if (f != MODELCONDITION_INVALID)
 		flags.set(f);
 
-	static const ModelConditionFlagType Using[] = {
+	static const ModelConditionFlagType Using[WEAPONSLOT_COUNT] = {
 		MODELCONDITION_USING_WEAPON_A,
 		MODELCONDITION_USING_WEAPON_B,
 		MODELCONDITION_USING_WEAPON_C
 	};
-	static_assert(ARRAY_SIZE(Using) == WEAPONSLOT_COUNT, "Incorrect array size");
 	if (a != WSF_NONE)
 		flags.set(Using[wslot]);
 
@@ -1116,11 +1105,6 @@ Bool WeaponSet::setWeaponLock( WeaponSlotType weaponSlot, WeaponLockType lockTyp
 	if (lockType == NOT_LOCKED)
 	{
 		DEBUG_CRASH(("calling setWeaponLock with NOT_LOCKED, so I am doing nothing... did you mean to use releaseWeaponLock()?"));
-		return false;
-	}
-
-	if (static_cast<UnsignedInt>(weaponSlot) >= ARRAY_SIZE(m_weapons))
-	{
 		return false;
 	}
 

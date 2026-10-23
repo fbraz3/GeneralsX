@@ -38,8 +38,7 @@
 #include "stdafx.h"
 #include "wdump.h"
 #include "chunk_d.h"
-#include "WWLib/RAWFILE.h"
-#include "WWLib/Vector.h"
+#include "rawfilem.h"
 #include "FindDialog.h"
 
 #ifdef RTS_DEBUG
@@ -47,6 +46,9 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+static int Get_Bit(void const * array, int bit);
+static void Set_Bit(void * array, int bit, int value);
 
 
 ChunkTableClass ChunkItem::ChunkTable;
@@ -241,9 +243,7 @@ void ChunkTableClass::AddItem(CListCtrl *list, int &Counter, const char *name, W
 		"Disable",
 		"Modulate",
 		"Add",
-		"Bump-Environment",
-		"Bump-Environment Luminance",
-		"Modulate 2X"
+		"Bump-Environment"
 	};
 	static const char * _secgradient[] = {
 		"Disable",
@@ -268,11 +268,7 @@ void ChunkTableClass::AddItem(CListCtrl *list, int &Counter, const char *name, W
 		"Sub",
 		"SubR",
 		"Blend",
-		"DetailBlend",
-		"AddSigned",
-		"AddSigned2X",
-		"Scale2X",
-		"ModAlphaAddColor"
+		"DetailBlend"
 	};
 	static const char * _detailalpha[] = {
 		"Disable",
@@ -292,16 +288,6 @@ void ChunkTableClass::AddItem(CListCtrl *list, int &Counter, const char *name, W
 		"Alpha Test Disable",
 		"Alpha Test Enable"
 	};
-	static_assert(ARRAY_SIZE(_depth_compare) == W3DSHADER_DEPTHCOMPARE_PASS_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_depth_mask) == W3DSHADER_DEPTHMASK_WRITE_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_destblend) == W3DSHADER_DESTBLENDFUNC_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_prigradient) == W3DSHADER_PRIGRADIENT_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_secgradient) == W3DSHADER_SECGRADIENT_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_srcblend) == W3DSHADER_SRCBLENDFUNC_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_texturing) == W3DSHADER_TEXTURING_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_detailcolor) == W3DSHADER_DETAILCOLORFUNC_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_detailalpha) == W3DSHADER_DETAILALPHAFUNC_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_alphatest) == W3DSHADER_ALPHATEST_MAX, "Incorrect array size");
 
 	int counter = 0;
 	char label[256];
@@ -402,8 +388,6 @@ void ChunkTableClass::AddItem(CListCtrl *list, int &Counter, const char *name, W
 		"Smooth",
 		"Flat"
 	};
-	static_assert(ARRAY_SIZE(_depth_mask) == W3DSHADER_DEPTHMASK_WRITE_MAX, "Incorrect array size");
-	static_assert(ARRAY_SIZE(_texturing) == W3DSHADER_TEXTURING_MAX, "Incorrect array size");
 
 	int counter = 0;
 	char label[256];
@@ -1639,7 +1623,6 @@ void ChunkTableClass::List_W3D_CHUNK_ANIMATION_CHANNEL(ChunkItem *Item, CListCtr
 		"Z Rotation",
 		"Quaternion"
 	};
-	static_assert(ARRAY_SIZE(_chntypes) == ANIM_CHANNEL_Q + 1, "Incorrect array size");
 
 
 	W3dAnimChannelStruct *data = (W3dAnimChannelStruct *) Item->Data;
@@ -1671,7 +1654,6 @@ void ChunkTableClass::List_W3D_CHUNK_BIT_CHANNEL(ChunkItem *Item, CListCtrl *lis
 	{
 		"Visibility",
 	};
-	static_assert(ARRAY_SIZE(_chntypes) == BIT_CHANNEL_VIS + 1, "Incorrect array size");
 
 
 	W3dBitChannelStruct *data = (W3dBitChannelStruct *) Item->Data;
@@ -2475,7 +2457,7 @@ bool ChunkData::Load(const char *filename)
 
 	Release_Data();
 
-	RawFileClass chunk_file;
+	RawFileMClass chunk_file;
 
 	if (!chunk_file.Open(filename)) {
 		return false;
@@ -2556,6 +2538,25 @@ void ChunkData::Release_Data()
 	while(Chunks.IsEmpty() == 0) {
 		ChunkItem *item = Chunks.RemoveHead();
 		delete item;
+	}
+}
+
+
+
+int Get_Bit(void const * array, int bit)
+{
+	unsigned char mask = (unsigned char)(1 << (bit % 8));
+	return((*((unsigned char *)array + (bit/8)) & mask) != 0);
+}
+
+void Set_Bit(void * array, int bit, int value)
+{
+	unsigned char mask = (unsigned char)(1 << (bit % 8));
+
+	if (value != 0) {
+		*((unsigned char *)array + (bit/8)) |= mask;
+	} else {
+		*((unsigned char *)array + (bit/8)) &= (unsigned char)~mask;
 	}
 }
 

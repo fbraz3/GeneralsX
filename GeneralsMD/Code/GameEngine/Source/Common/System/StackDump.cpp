@@ -51,7 +51,7 @@ static CONTEXT gsContext;
 //*****************************************************************************
 void StackDumpDefaultHandler(const char*line)
 {
-	DEBUG_LOG(("%s", line));
+	DEBUG_LOG((line));
 }
 
 

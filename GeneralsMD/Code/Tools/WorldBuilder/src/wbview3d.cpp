@@ -119,13 +119,6 @@ static Real theLightYOffset = 0.07f;
 static Int theFlashCount = 0;
 #endif
 
-static const Int MAX_DRAWABLE_MAP_AREA = 1024*1024; ///< Larger maps draw the partial terrain window
-
-static Bool canDrawEntireMap(const WorldHeightMap *htMap)
-{
-	return htMap != nullptr && htMap->getXExtent() * htMap->getYExtent() <= MAX_DRAWABLE_MAP_AREA;
-}
-
 // ----------------------------------------------------------------------------
 // Global Variables:
 // ----------------------------------------------------------------------------
@@ -1040,7 +1033,7 @@ void WbView3d::updateTrees()
 					Coord3D pos = *pMapObj->getLocation();
 					if (m_heightMapRenderObj) {
 						pos.z += m_heightMapRenderObj->getHeightMapHeight(pos.x, pos.y, nullptr);
-						TheTerrainRenderObject->addTree(pMapObj->getTreeID(), pos, scale, pMapObj->getAngle(),
+						TheTerrainRenderObject->addTree((DrawableID)(Int)pMapObj, pos, scale, pMapObj->getAngle(),
 							0.0f /*no random scaling*/, md);
 					}
 				}
@@ -1413,7 +1406,7 @@ void WbView3d::invalObjectInView(MapObject *pMapObjIn)
 
 		const ThingTemplate *tTemplate = pMapObj->getThingTemplate();
 		if (tTemplate && tTemplate->isKindOf(KINDOF_OPTIMIZED_TREE)) {
-			if (!m_heightMapRenderObj->updateTreePosition(pMapObj->getTreeID(), loc, pMapObj->getAngle())) {
+			if (!m_heightMapRenderObj->updateTreePosition((DrawableID)(Int)pMapObj, loc, pMapObj->getAngle())) {
 				// Couldn't find it, so update them all. [5/27/2003]
 				updateAllTrees = true;
 			}
@@ -1600,7 +1593,7 @@ void WbView3d::updateHeightMapInView(WorldHeightMap *htMap, Bool partial, const 
 		if (partial) {
 			m_heightMapRenderObj->doPartialUpdate(partialRange, htMap, &lightListIt);
 		} else {
-			if (m_showEntireMap && canDrawEntireMap(htMap)) {
+			if (m_showEntireMap) {
 				htMap->setDrawOrg(0, 0);
 				htMap->setDrawWidth(htMap->getXExtent());
 				htMap->setDrawHeight(htMap->getYExtent());
@@ -2898,9 +2891,7 @@ void WbView3d::OnViewShowentire3dmap()
 
 void WbView3d::OnUpdateViewShowentire3dmap(CCmdUI* pCmdUI)
 {
-	const Bool canDraw = canDrawEntireMap(WbDoc() ? WbDoc()->GetHeightMap() : nullptr);
-	pCmdUI->Enable(canDraw);
-	pCmdUI->SetCheck(m_showEntireMap && canDraw ? 1 : 0);
+	pCmdUI->SetCheck(m_showEntireMap?1:0);
 }
 
 void WbView3d::OnViewShowtopdownview()

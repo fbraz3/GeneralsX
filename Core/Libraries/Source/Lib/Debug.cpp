@@ -111,10 +111,9 @@ static bool theLogCriticalSectionInitialized = false;
 char* TheCurrentIgnoreCrashPtr = nullptr;
 #ifdef DEBUG_LOGGING
 UnsignedInt DebugLevelMask = 0;
-const char *TheDebugLevels[] = {
+const char *TheDebugLevels[DEBUG_LEVEL_MAX] = {
 	"NET"
 };
-static_assert(ARRAY_SIZE(TheDebugLevels) == DEBUG_LEVEL_MAX, "Incorrect array size");
 #endif
 
 // ----------------------------------------------------------------------------

@@ -33,7 +33,6 @@
 #include <afxcview.h> // treeview class
 #include <afxtempl.h> // CList class
 #include <afxdlgs.h> // FileDialog class
-#include <afxdisp.h> // AfxOleInit
 
 #include "WWLib/chunkio.h"
 #include "WWMath/Vector3i.h"

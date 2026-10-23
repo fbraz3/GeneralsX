@@ -155,7 +155,7 @@ public:
 																								 Player *player);
 
 	/// query if we can build at this location
-	virtual LegalBuildCode isLocationClearOfObjects( const Coord3D *worldPos,
+	virtual Bool isLocationClearOfObjects( const Coord3D *worldPos,
 																								 const ThingTemplate *build,
 																								 Real angle,  // angle to construct 'build' a
 																								 const Object *builderObject,

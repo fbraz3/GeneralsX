@@ -1126,7 +1126,7 @@ typedef enum
 	SURFACE_TYPE_MAX			// NOTE: if you add a surface type, add it to the SurfaceEffects.INI file!
 } W3D_SURFACE_TYPES;
 
-const char * const SURFACE_TYPE_STRINGS[] =
+const char * const SURFACE_TYPE_STRINGS[SURFACE_TYPE_MAX] =
 {
 	"Light Metal",
 	"Heavy Metal",
@@ -1161,7 +1161,6 @@ const char * const SURFACE_TYPE_STRINGS[] =
 	"Underwater Dirt",
 	"Underwater Tiberium Dirt",
 };
-static_assert(ARRAY_SIZE(SURFACE_TYPE_STRINGS) == SURFACE_TYPE_MAX, "Incorrect array size");
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Flags for the Mesh Attributes member
@@ -1793,7 +1792,7 @@ enum
 // The definition of this string array can be found in
 // Part_Ldr.cpp.  Please update this array accordingly.
 //
-extern const char *EMITTER_TYPE_NAMES[];
+extern const char *EMITTER_TYPE_NAMES[EMITTER_TYPEID_COUNT];
 
 struct W3dEmitterHeaderStruct
 {
@@ -2189,8 +2188,8 @@ struct W3dNullObjectStruct
 
 //
 //	Note:  This structure is followed directly by a chunk (W3D_CHUNK_SOUNDROBJ_DEFINITION)
-// that contains the settings of the sound.  See SoundRenderObjDefClass::Write_Definition
-// in soundrobj.cpp for details.
+// that contains an embedded AudibleSoundDefinitionClass's storage.  See audibledound.h
+// for details.
 //
 struct W3dSoundRObjHeaderStruct
 {

@@ -242,32 +242,6 @@ static void extractAndSaveMap( AsciiString mapToSave, Xfer *xfer )
 }
 
 // ------------------------------------------------------------------------------------------------
-// TheSuperHackers @bugfix bobtista 20/10/2026 Clear the loading save flag on every exit from a load,
-// including a throw, so that a failed save load does not leave the quit menu disabled.
-class LoadingSaveScope
-{
-public:
-	LoadingSaveScope( Bool loading ) : m_loading( loading )
-	{
-		if( m_loading )
-		{
-			TheGameLogic->setLoadingSave( TRUE );
-		}
-	}
-
-	~LoadingSaveScope()
-	{
-		if( m_loading )
-		{
-			TheGameLogic->setLoadingSave( FALSE );
-		}
-	}
-
-private:
-	Bool m_loading;
-};
-
-// ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
 	* 1: Initial version
@@ -277,7 +251,10 @@ private:
 // ------------------------------------------------------------------------------------------------
 void GameStateMap::xfer( Xfer *xfer )
 {
-	LoadingSaveScope loadingSaveScope( xfer->getXferMode() == XFER_LOAD );
+	if( xfer->getXferMode() == XFER_LOAD )
+	{
+		TheGameLogic->setLoadingSave( TRUE );
+	}
 
 	// version
 	const XferVersion currentVersion = 2;
@@ -470,6 +447,7 @@ void GameStateMap::xfer( Xfer *xfer )
 	if( xfer->getXferMode() == XFER_LOAD )
 	{
 		TheGameLogic->startNewGame( TRUE );
+		TheGameLogic->setLoadingSave( FALSE );
 	}
 
 }

@@ -124,7 +124,6 @@ public:
 #endif
 
 	virtual Real getAverageFPS() override { return 0; }
-	virtual Real getLow1PercentFPS() override { return 0; }
 	virtual Real getCurrentFPS() override { return 0; }
 	virtual Int getLastFrameDrawCalls() override { return 0; }
 
