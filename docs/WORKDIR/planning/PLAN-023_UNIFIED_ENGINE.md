@@ -1,7 +1,7 @@
 # PLAN-023 Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Architecture agreed; implementation pending
+Status: Architecture agreed; source comparison completed; implementation pending
 
 ## Product contract
 
@@ -21,7 +21,9 @@ At main commit afb09f144:
 - Generals/Code and GeneralsMD/Code contain 1,014 and 1,148 tracked C/C++
   source/header files respectively.
 - 1,006 relative paths occur in both trees; 27 are byte-identical and 979
-  differ. These are file counts, not semantic difference measurements.
+  differ. Of those 979, 536 differ only in the opening license game title;
+  443 have further differences. These are file counts, not semantic difference
+  measurements, and include development tools.
 - There are 8 Generals-only and 142 Zero Hour-only paths.
 - gi_always and zi_always define RTS_GENERALS and RTS_ZEROHOUR respectively.
 - corei_gameengine_private is an INTERFACE target with INTERFACE sources;
@@ -29,6 +31,12 @@ At main commit afb09f144:
 - Game-specific include paths precede Core headers. Header and class layout
   differences must be examined before moving translation units into a shared
   compiled target.
+
+See [the source comparison](../audit/UNIFIED_ENGINE_SOURCE_COMPARISON_2026-10-23.md)
+for reproducible counts, concrete save/layout/rules differences and initial
+deduplication candidates. In particular, identical NameKeyGenerator.cpp files
+consume different class layouts, and Player save version 8 has different fields
+in the two games. Share canonical sources before sharing compiled objects.
 
 ## Target architecture
 
