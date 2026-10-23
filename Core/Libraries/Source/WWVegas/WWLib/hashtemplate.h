@@ -38,7 +38,6 @@
 
 #include "always.h"
 #include "wwstring.h"
-#include <Utility/bit_adapter.h>
 
 // Class for providing hash values
 
@@ -60,7 +59,7 @@ template <class Key> inline unsigned int HashTemplateKeyClass<Key>::Get_Hash_Val
 // casting yields a very bad hash function)
 template <> inline unsigned int HashTemplateKeyClass<float>::Get_Hash_Value (const float& s)
 {
-	unsigned int z = std::bit_cast<unsigned int>(s);
+	unsigned int z = *((const unsigned int*)(&s));
 	return ((z>>22)+(z>>12)+(z));
 }
 

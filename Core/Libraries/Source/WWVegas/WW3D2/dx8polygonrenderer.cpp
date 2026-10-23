@@ -91,12 +91,25 @@ DX8PolygonRendererClass::~DX8PolygonRendererClass()
 
 void DX8PolygonRendererClass::Log()
 {
-	WWDEBUG_SAY(("\t%8d %8d %6d %6d %6d %s\n",
+	StringClass work(true);
+
+	work.Format("	%8d %8d %6d %6d %6d %s\n",
 		index_count,
 		index_count/3,
 		index_offset,
 		min_vertex_index,
 		vertex_index_range,
-		mmc->Get_Name()));
+		mmc->Get_Name());
+
+/*	work.Format(
+		"		Index count: %d (%d polys) i_offset: %d min_vi: %d vi_range: %d ident: %d (%s)\n",
+		index_count,
+		index_count/3,
+		index_offset,
+		min_vertex_index,
+		vertex_index_range,
+		mmc->ident,
+		mmc->Get_Name());
+*/	WWDEBUG_SAY((work));
 }
 

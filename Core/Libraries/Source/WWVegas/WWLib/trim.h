@@ -39,4 +39,4 @@
 #include <wchar.h>
 
 char * strtrim(char * buffer);
-unichar * wcstrim(unichar * buffer);
+wchar_t * wcstrim(wchar_t * buffer);

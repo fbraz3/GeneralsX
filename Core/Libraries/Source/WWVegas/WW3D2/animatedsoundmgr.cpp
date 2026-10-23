@@ -42,6 +42,9 @@
 #include "WWLib/inisup.h"
 #include "WWLib/ffactory.h"
 #include "WWLib/WWFILE.h"
+#include "WWSaveLoad/definition.h"
+#include "WWSaveLoad/definitionmgr.h"
+#include "WWSaveLoad/definitionclassids.h"
 #include "WWAudio/WWAudio.h"
 #include "WWAudio/AudibleSound.h"
 #include "htree.h"
@@ -509,7 +512,7 @@ AnimatedSoundMgrClass::Trigger_Sound
 				//
 				//	Don't trigger the sound if its skipped too far past...
 				//
-				//if (WWMath::Fabsf (new_frame - old_frame) < 3.0F) {
+				//if (WWMath::Fabs (new_frame - old_frame) < 3.0F) {
 
 					//
 					// Stop the audio?

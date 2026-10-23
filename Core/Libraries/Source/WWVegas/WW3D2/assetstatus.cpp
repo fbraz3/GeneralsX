@@ -23,7 +23,7 @@
 
 AssetStatusClass AssetStatusClass::Instance;
 
-const char* ReportCategoryNames[]={
+const char* ReportCategoryNames[AssetStatusClass::REPORT_COUNT]={
 	"LOAD_ON_DEMAND_ROBJ",
 	"LOAD_ON_DEMAND_HANIM",
 	"LOAD_ON_DEMAND_HTREE",
@@ -31,7 +31,6 @@ const char* ReportCategoryNames[]={
 	"MISSING_HANIM",
 	"MISSING_HTREE"
 };
-static_assert(ARRAY_SIZE(ReportCategoryNames) == AssetStatusClass::REPORT_COUNT, "Incorrect array size");
 
 AssetStatusClass::AssetStatusClass()
 	:

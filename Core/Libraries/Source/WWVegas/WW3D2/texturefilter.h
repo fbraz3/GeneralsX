@@ -92,7 +92,7 @@ public:
 		TEXTURE_FILTER_COUNT
 	};
 
-	static const char* const TextureFilterModeString[];
+	static const char* const TextureFilterModeString[TEXTURE_FILTER_COUNT];
 
 	static TextureFilterMode getTextureFilterMode(const char* str);
 
