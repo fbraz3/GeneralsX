@@ -45,6 +45,7 @@
 #include "WWDebug/wwdebug.h"
 #include "dx8wrapper.h"
 #include "dx8caps.h"
+#include <Utility/bit_adapter.h>
 
 
 bool ShaderClass::ShaderDirty=true;
@@ -344,17 +345,15 @@ void ShaderClass::Report_Unable_To_Fog (const char *source)
 #ifdef DEBUG_LOGGING
 	static unsigned _reportcount = 0;
 
-	const char		*unabletofogtext		= "WARNING: Unable to fog shader in %s with given blending mode.";
-	const char		*unabletofogmoretext = "WARNING: Unable to fog additional shaders (further warnings will be suppressed).";
 	const unsigned  maxreportcount		= 10;
 
 	// Limit the no. of warning messages to some practical maximum. Suppress all subsequent warnings.
 	if (_reportcount < maxreportcount) {
-		WWDEBUG_SAY ((unabletofogtext, source));
+		WWDEBUG_SAY (("WARNING: Unable to fog shader in %s with given blending mode.", source));
 		_reportcount++;
 	} else {
 		if (_reportcount == maxreportcount) {
-			WWDEBUG_SAY ((unabletofogmoretext));
+			WWDEBUG_SAY (("WARNING: Unable to fog additional shaders (further warnings will be suppressed)."));
 			_reportcount++;
 		}
 	}
@@ -375,15 +374,16 @@ public:
 	bool		useAlpha;
 };
 
-const Blend srcBlendLUT[ShaderClass::SRCBLEND_MAX] =
+const Blend srcBlendLUT[] =
 {
 	Blend(D3DBLEND_ZERO, false),
 	Blend(D3DBLEND_ONE, false),
 	Blend(D3DBLEND_SRCALPHA, true),
  	Blend(D3DBLEND_DESTCOLOR, true)
 };
+static_assert(ARRAY_SIZE(srcBlendLUT) == ShaderClass::SRCBLEND_MAX, "Incorrect array size");
 
-const Blend dstBlendLUT[ShaderClass::DSTBLEND_MAX] =
+const Blend dstBlendLUT[] =
 {
 	Blend(D3DBLEND_ZERO, false),
 	Blend(D3DBLEND_ONE, false),
@@ -392,6 +392,7 @@ const Blend dstBlendLUT[ShaderClass::DSTBLEND_MAX] =
  	Blend(D3DBLEND_SRCALPHA, true),
  	Blend(D3DBLEND_INVSRCALPHA, true)
 };
+static_assert(ARRAY_SIZE(dstBlendLUT) == ShaderClass::DSTBLEND_MAX, "Incorrect array size");
 
 
 /***********************************************************************************************
@@ -1033,7 +1034,7 @@ void ShaderClass::Apply()
 	if (diff&ShaderClass::MASK_NPATCHENABLE) {
 		float level=1.0f;
 		if (Get_NPatch_Enable()) level=float(WW3D::Get_NPatches_Level());
-		DX8Wrapper::Set_DX8_Render_State(D3DRS_PATCHSEGMENTS,*((DWORD*)&level));
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_PATCHSEGMENTS,std::bit_cast<DWORD>(level));
 	}
 
 	// Enable/disable alpha test

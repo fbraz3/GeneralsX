@@ -375,6 +375,7 @@ ImageAndColorInfo imageAndColorTable[] =
 	{ 0, IDENTIFIER_INVALID, nullptr, nullptr, nullptr, 0 }
 
 };
+static_assert(ARRAY_SIZE(imageAndColorTable) == NUM_STATE_IDENTIFIERS, "Incorrect array size");
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////
 
@@ -483,7 +484,7 @@ void LoadFontCombo( HWND comboBox, GameFont *currFont )
 		index = SendMessage( comboBox, CB_ADDSTRING, 0, (LPARAM)buffer );
 
 		// attach pointer to font at combo index
-		SendMessage( comboBox, CB_SETITEMDATA, index, (DWORD)font );
+		SendMessage( comboBox, CB_SETITEMDATA, index, (LPARAM)font );
 
 	}
 

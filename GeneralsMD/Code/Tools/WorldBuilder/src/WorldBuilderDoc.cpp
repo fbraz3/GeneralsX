@@ -1248,6 +1248,11 @@ BOOL CWorldBuilderDoc::OnNewDocument()
 	hi.xExtent = AfxGetApp()->GetProfileInt("GameOptions", "Default Map X-size", 100);
 	hi.yExtent = AfxGetApp()->GetProfileInt("GameOptions", "Default Map Y-size", 100);
 	hi.borderWidth = AfxGetApp()->GetProfileInt("GameOptions", "Default Map Border", 30);
+	if (!WorldHeightMapEdit::isValidPlayableMapSize(hi.xExtent, hi.yExtent, hi.borderWidth)) {
+		hi.xExtent = 100;
+		hi.yExtent = 100;
+		hi.borderWidth = 30;
+	}
 	hi.forResize = false;
 	if (!firstTime) {
 		CString label;
@@ -2109,6 +2114,7 @@ static void writeRawDict( FILE *theLogFile, const char* nm, const Dict* d )
 		Dict::DataType t = d->getNthType(i);
 
 		const char* typenames[] = { "Bool", "int", "float", "ascii", "unicode" };
+		static_assert(ARRAY_SIZE(typenames) == Dict::DICT_TYPE_COUNT, "Incorrect array size");
 		fprintf(theLogFile, "Entry %d is %s: %s = ",i,typenames[t], kname.str());
 
 		switch(t)
@@ -2154,6 +2160,7 @@ void CWorldBuilderDoc::OnDumpDocToText()
 {
 	MapObject *pMapObj = nullptr;
 	const char* vetStrings[] = {"Green", "Regular", "Veteran", "Elite"};
+	static_assert(ARRAY_SIZE(vetStrings) == LEVEL_COUNT, "Incorrect array size");
 	const char* aggroStrings[] = {"Passive", "Normal", "Guard", "Hunt", "Aggressive", "Sleep"};
 	AsciiString noOwner = "No Owner";
 	static FILE *theLogFile = nullptr;

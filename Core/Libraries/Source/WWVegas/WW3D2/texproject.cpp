@@ -939,7 +939,7 @@ bool TexProjectClass::Compute_Perspective_Projection
 	** If the box is behind the viewpoint or the viewpoint is inside the box
 	** our FOV will be > 180 degrees. Have to give up
 	*/
-	if ((box.Center.Z > 0.0f) || (box.Extent.Z > WWMath::Fabs(box.Center.Z))) {
+	if ((box.Center.Z > 0.0f) || (box.Extent.Z > WWMath::Fabsf_Legacy(box.Center.Z))) {
 		return false;
 	}
 
@@ -957,8 +957,8 @@ bool TexProjectClass::Compute_Perspective_Projection
 		zfar = box.Center.Z + user_zfar;
 	}
 
-	float tan_hfov2 = WWMath::Fabs(box.Extent.X / (box.Center.Z + box.Extent.Z));
-	float tan_vfov2 = WWMath::Fabs(box.Extent.Y / (box.Center.Z + box.Extent.Z));
+	float tan_hfov2 = WWMath::Fabsf_Legacy(box.Extent.X / (box.Center.Z + box.Extent.Z));
+	float tan_vfov2 = WWMath::Fabsf_Legacy(box.Extent.Y / (box.Center.Z + box.Extent.Z));
 	float hfov = 2.0f * WWMath::Atan(tan_hfov2);
 	float vfov = 2.0f * WWMath::Atan(tan_vfov2);
 
@@ -1155,14 +1155,17 @@ bool TexProjectClass::Compute_Texture
 
 		bool snapshot=WW3D::Is_Snapshot_Activated();
 		SNAPSHOT_SAY(("TexProjectCLass::Begin_Render()"));
-		WW3D::Begin_Render(true,zclear,color);	// false to zclear as we don't have z-buffer
-		WW3D::Render(*model,*context);
-		SNAPSHOT_SAY(("TexProjectCLass::End_Render()"));
-		WW3D::End_Render(false);
+		WW3DErrorType renderResult=WW3D::Begin_Render(true,zclear,color);
+		if (renderResult == WW3D_ERROR_OK)
+		{
+			WW3D::Render(*model,*context);
+			SNAPSHOT_SAY(("TexProjectCLass::End_Render()"));
+			WW3D::End_Render(false);
+		}
 		WW3D::Activate_Snapshot(snapshot);	// End_Render() ends the shapsnot, so restore the state
 
 		DX8Wrapper::Set_Render_Target((IDirect3DSurface8 *)nullptr);
-
+		return renderResult == WW3D_ERROR_OK;
 	}
 
 #if 0

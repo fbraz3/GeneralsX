@@ -36,7 +36,6 @@
 
 
 #include "wwmath.h"
-#include "WWDebug/wwhack.h"
 #include "lookuptable.h"
 #include <stdlib.h>
 #include "WWDebug/wwdebug.h"
@@ -55,13 +54,22 @@ void		WWMath::Init()
 	int a=0;
 	for (;a<ARC_TABLE_SIZE;++a) {
 		float cv=float(a-ARC_TABLE_SIZE/2)*(1.0f/(ARC_TABLE_SIZE/2));
+#if RETAIL_COMPATIBLE_CRC
 		_FastAcosTable[a]=acos(cv);
 		_FastAsinTable[a]=asin(cv);
+#else
+		_FastAcosTable[a]=Acosf(cv);
+		_FastAsinTable[a]=Asinf(cv);
+#endif
 	}
 
 	for (a=0;a<SIN_TABLE_SIZE;++a) {
 		float cv= (float)a * 2.0f * WWMATH_PI / SIN_TABLE_SIZE; //float(a-SIN_TABLE_SIZE/2)*(1.0f/(SIN_TABLE_SIZE/2));
+#if RETAIL_COMPATIBLE_CRC
 		_FastSinTable[a]=sin(cv);
+#else
+		_FastSinTable[a]=Sinf(cv);
+#endif
 
 		if (a>0) {
 			_FastInvSinTable[a]=1.0f/_FastSinTable[a];
@@ -79,18 +87,5 @@ void		WWMath::Shutdown()
 float		WWMath::Random_Float()
 {
 	return ((float)(rand() & 0xFFF)) / (float)(0xFFF);
-}
-
-
-/*
-** Force link some modules from this library.
-*/
-void Do_Force_Links()
-{
-	FORCE_LINK(curve);
-	FORCE_LINK(hermitespline);
-	FORCE_LINK(catmullromspline);
-	FORCE_LINK(cardinalspline);
-	FORCE_LINK(tcbspline);
 }
 

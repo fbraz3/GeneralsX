@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <Utility/bit_adapter.h>
+#include "BaseDefines.h"
+
 //-----------------------------------------------------------------------------
 inline Real rad2deg(Real rad) { return rad * (180/PI); }
 inline Real deg2rad(Real rad) { return rad * (PI/180); }
@@ -61,13 +64,13 @@ __forceinline float fast_float_trunc(float f)
   }
   return f;
 #else
-  unsigned x = *(unsigned *)&f;
+  unsigned x = std::bit_cast<unsigned>(f);
   unsigned char exp = x >> 23;
   int mask = exp < 127 ? 0 : 0xff800000;
   exp -= 127;
   mask >>= exp & 31;
   x &= mask;
-  return *(float *)&x;
+  return std::bit_cast<float>(x);
 #endif
 }
 
@@ -75,8 +78,8 @@ __forceinline float fast_float_trunc(float f)
 __forceinline float fast_float_floor(float f)
 {
   static unsigned almost1=(126<<23)|0x7fffff;
-  if (*(unsigned *)&f &0x80000000)
-    f-=*(float *)&almost1;
+  if (std::bit_cast<unsigned>(f) &0x80000000)
+    f-=std::bit_cast<float>(almost1);
   return fast_float_trunc(f);
 }
 
@@ -84,13 +87,13 @@ __forceinline float fast_float_floor(float f)
 __forceinline float fast_float_ceil(float f)
 {
   static unsigned almost1=(126<<23)|0x7fffff;
-  if ( (*(unsigned *)&f &0x80000000)==0)
-    f+=*(float *)&almost1;
+  if ( (std::bit_cast<unsigned>(f) &0x80000000)==0)
+    f+=std::bit_cast<float>(almost1);
   return fast_float_trunc(f);
 }
 
 // once we've ceiled/floored, trunc and round are identical, and currently, round is faster... (srj)
-#if RTS_GENERALS /*&& RETAIL_COMPATIBLE_CRC*/
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
 #define REAL_TO_INT_CEIL(x)				(fast_float2long_round(ceilf(x)))
 #define REAL_TO_INT_FLOOR(x)			(fast_float2long_round(floorf(x)))
 #else
@@ -101,3 +104,20 @@ __forceinline float fast_float_ceil(float f)
 #define FAST_REAL_TRUNC(x)        fast_float_trunc(x)
 #define FAST_REAL_CEIL(x)         fast_float_ceil(x)
 #define FAST_REAL_FLOOR(x)        fast_float_floor(x)
+
+//-------------------------------------------------------------------------------------------------
+// Checking whether a size matches the bit flags count from an enum definition:
+// enum MyEnum
+// {
+//   MyEnumValue1 = 1<<0,
+//   MyEnumValue2 = 1<<1,
+//   MyEnumValue3 = 1<<2,
+//   MyEnumEnd
+// }
+// static_assert(equalsEnumBitFlagsCount(3, MyEnumEnd), "Incorrect size");
+//
+template <typename EnumType>
+constexpr inline Bool equalsEnumBitFlagsCount(size_t expectedSize, EnumType bitFlagsEnd)
+{
+	return 1 << (expectedSize - 1) == static_cast<size_t>(bitFlagsEnd) - 1;
+}

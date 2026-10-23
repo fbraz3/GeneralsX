@@ -376,8 +376,6 @@ void W3DView::buildCameraPosition( Vector3& sourcePos, Vector3& targetPos )
 void W3DView::buildCameraTransform( Matrix3D *transform, const Vector3 &sourcePos, const Vector3 &targetPos )
 {
 	//m_3DCamera->Set_View_Plane(DEG_TO_RADF(50.0f));
-	//DEBUG_LOG(("zoom %f, SourceZ %f, posZ %f, groundLevel %f CamOffZ %f",
-	//			zoom, sourcePos.Z, pos.z, groundLevel, getCameraOffsetZ()));
 
 	// build new camera transform
 	transform->Make_Identity();
@@ -1535,7 +1533,7 @@ void W3DView::update()
 					if (cameraLockObj->isUsingAirborneLocomotor() && cameraLockObj->isAboveTerrainOrWater())
 					{
 						Matrix3D camXForm;
-						Real idealZRot = cameraLockObj->getOrientation() - M_PI_2;
+						Real idealZRot = cameraLockObj->getOrientation() - WWMATH_HALF_PI;
 
 						if (m_snapImmediate)
 						{
@@ -2271,7 +2269,7 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 void W3DView::setDefaultView(Real pitch, Real angle, Real maxHeight)
 {
 	// MDC - we no longer want to rotate maps (design made all of them right to begin with)
-	//	m_defaultAngle = angle * M_PI/180.0f;
+	//	m_defaultAngle = angle * WWMATH_PI/180.0f;
 	setDefaultPitch(pitch);
 	m_maxHeightAboveGround = TheGlobalData->m_maxCameraHeight*maxHeight;
 	if (m_minHeightAboveGround > m_maxHeightAboveGround)
