@@ -14,6 +14,10 @@ compatibility. Online work targets NGMP. Selecting a game must happen before
 mounting its assets or constructing engine subsystems. Switching games during
 a running session is outside the initial scope.
 
+Upstream updates must remain maintainable after consolidation. This is a
+mandatory acceptance condition, not a follow-up cleanup. The engine must not
+become an isolated rewrite that can only consume upstream fixes manually.
+
 ## Verified starting point
 
 At main commit afb09f144:
@@ -55,6 +59,55 @@ and replay behavior from the selected profile, rather than renumbering shared
 enums or assuming that matching names imply compatible layouts. NGMP/LAN must
 reject incompatible game profiles before a match begins.
 
+## Upstream maintenance contract
+
+The existing upstream remote points to TheSuperHackers/GeneralsGameCode;
+origin points to fbraz3/GeneralsX. Preserve Git ancestry and record the last
+integrated upstream commit. DXVK remains a separate dependency/fork with its
+own integration history; do not mix its changes into game-source migrations.
+Other reference repositories are sources to study, not automatically merged
+upstreams unless separately designated.
+
+Minimize structural divergence: retain upstream file, class and function names
+where practical. Prefer existing Core locations for shared infrastructure;
+leave game-specific modules in their natural locations. Do not move the whole
+engine into a newly named tree or reformat legacy sources during consolidation.
+Choose a canonical location per subsystem from actual upstream change history,
+not a blanket assumption that every shared file belongs in the Zero Hour tree.
+
+Every moved or consolidated file needs a maintained provenance map listing both
+original game paths, canonical destination and any extracted rules/serialization
+code. A many-to-one entry must make changes from either original path visible
+to the integration workflow. The map assists review; it must not automatically
+overwrite the common file when both incoming variants change.
+
+Keep mechanical moves/deduplication, runtime policy extraction and behavior
+changes in separate commits. A shared implementation should remain recognizably
+related to its upstream source. Keep platform/backend changes concentrated in
+their existing abstraction layers. Do not preserve two maintained engine copies
+or a generated second source tree just to make textual merges easier.
+
+Integration procedure:
+
+1. Record the incoming upstream range and preserve the current downstream head.
+   Integrate on an isolated branch/worktree; never overwrite the working branch.
+2. Review the upstream diff through the provenance map, including additions at
+   former paths and edits to both members of consolidated pairs. Detect missing
+   mappings, revived duplicate files and unresolved game-macro branches.
+3. Merge history normally where possible. Explicitly adapt moved-file and
+   rules-policy changes. Blanket conflict resolution with ours/theirs is not
+   sufficient for unified gameplay or serialization code.
+4. Run both profile builds during migration, then the single executable with
+   both profiles. Validate the affected replay/save scenarios and deterministic
+   results. Separate intended upstream behavior changes from merge regressions.
+5. Record the integrated commit, adapted changes and validation results.
+
+Before completing consolidation, rehearse this procedure with a real upstream
+commit range that touches a consolidated subsystem. Record conflicts and any
+manual adaptations. Clean Git merges alone are insufficient: changes from both
+game trees must reach their intended runtime profiles and pass validation.
+Conflict-free updates are not promised; traceable, bounded integration is.
+
 ## Migration gates
 
 1. **Baseline and inventory.** Record reproducible builds and representative
@@ -62,6 +115,7 @@ reject incompatible game profiles before a match begins.
    Inventory active source lists, game macros, include shadowing, global
    singletons, serializers and variant-specific modules. Distinguish cosmetic
    differences from behavior and data-layout differences.
+   Record upstream ancestry and establish the file provenance map before moves.
 2. **Shared platform implementation.** Consolidate CompatLib and SDL3/device
    implementations in the platform layer, in small validated changes. Retain
    both executable targets as migration checks. Do not share objects across
@@ -81,6 +135,7 @@ reject incompatible game profiles before a match begins.
 6. **One executable.** Link the reconciled engine once, add startup selection,
    adapt packaging and smoke/replay automation. Remove redundant executable
    targets and source copies only after both profiles pass the gates.
+   Complete an upstream integration rehearsal against a recorded commit range.
 
 ## Validation and completion
 
@@ -93,6 +148,7 @@ Completion requires one executable running both profiles, independent asset
 and user-data selection, preserved original rules, working campaigns/skirmish/
 LAN and supported mods, save/replay compatibility, and no duplicated general
 backend implementations. A successful compile alone is insufficient.
+The upstream maintenance contract and integration rehearsal must also pass.
 
 ## Current limitations
 
