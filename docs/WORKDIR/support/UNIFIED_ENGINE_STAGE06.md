@@ -34,14 +34,16 @@ Status: Gate 6 Linux acceptance green — promote FF'd (`14e21aa83`), migration 
 | Object `onDisabledEdge` + AIStates under-construction attack via `GameProfile` | |
 | Smoke script also checks GeneralsX/GeneralsXZH wrong-profile FATAL | |
 | Release `-map` + `-quitAfterFrames`; dual-profile ShellMap1/USA01/Alpine map-load exit 0 | Clean CRC replay parity vs generalsx-replays fixtures |
-| Isolated worktree + #3544/#3389 adaptations; ancestry `--deepen`; whole-tree merge @ `0fea59a33` | Promote merge + port remaining DIFF upstream fixes; dual-target removal |
-| `adapt_unified_engine_upstream.py` + `deploy-linux-echelon.sh` (ldd-first FFmpeg SONAME copy) | Dual migration target removal |
+| Isolated worktree + #3544/#3389 adaptations; ancestry `--deepen`; whole-tree merge @ `0fea59a33` | |
+| Fresh-tip promote FF'd (`14e21aa83`); Core tip restored after WWMath/API skew | |
+| `adapt_unified_engine_upstream.py` + `deploy-linux-echelon.sh` (ldd-first FFmpeg SONAME copy) | |
 | `smoke-echelon-replay.sh`: ZH fixture soft-pass CRC mismatch frame 100 (exit 2); cross-profile soft-pass (exit 3); self record→playback CRC-clean | External fixture CRC parity vs older generalsx-replays (still frame 100 after waves 1–11) |
 | `RTS_BUILD_MIGRATION_BINARIES` default OFF; `smoke-echelon-gate6.sh` acceptance battery | |
 | `-lanProbe` (startup CLI) + `smoke-echelon-lan.sh` dual-profile bind/RequestLocations exit 0 | Interactive dual-instance LAN lobby match |
 | `-skirmish` + `smoke-echelon-record-replay.sh` dual-profile record→playback CRC exit 0 | |
 | `smoke-echelon-mod-path.sh` dual-profile `-mod` exit 0; `deploy-linux-echelon.sh` restored | |
 | `#3531` `FileSystem::makePathKey` / `comparePath` + FilenameLess (mod-override kept) | |
+| `#3538` headless DisplayString/FontLibrary dummies (MD+Generals) | |
 
 ## How to smoke
 
