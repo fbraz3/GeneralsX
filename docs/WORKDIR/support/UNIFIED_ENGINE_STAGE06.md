@@ -2,7 +2,7 @@
 
 Date: 2026-10-23 (updated 24/10/2026)
 Status: dual-profile smoke exit 0 after Gate 6 Batches A–D + TERRAIN_DECAL + KindOf/W3D/AI + 05.7 dual-layout wave (vision/TunnelTracker/BodyModule/StickyBomb/OpenContain → GameProfile); mismatch checks on migration binaries;
-Gate 6 still open (CRC→GameProfile waves 1–11 green; promote fresh-tip merge next; dual-target removal + fixture CRC parity; global `RETAIL_COMPATIBLE_CRC` stays 0 — Generals retail via GameProfile)
+Gate 6 still open (CRC→GameProfile waves 1–11 green; fresh-tip promote branch `echelon/upstream-promote-20261024` @ `14e21aa83` dual/RR green — merge into plan tip next; then migration binaries OFF + fixture CRC parity; global `RETAIL_COMPATIBLE_CRC` stays 0)
 
 ## Scope (this stage)
 
@@ -37,7 +37,7 @@ Gate 6 still open (CRC→GameProfile waves 1–11 green; promote fresh-tip merge
 | Isolated worktree + #3544/#3389 adaptations; ancestry `--deepen`; whole-tree merge @ `0fea59a33` | Promote merge + port remaining DIFF upstream fixes; dual-target removal |
 | `adapt_unified_engine_upstream.py` + `deploy-linux-echelon.sh` (ldd-first FFmpeg SONAME copy) | Dual migration target removal |
 | `smoke-echelon-replay.sh`: ZH fixture soft-pass CRC mismatch frame 100 (exit 2); cross-profile soft-pass (exit 3); self record→playback CRC-clean | External fixture CRC parity vs older generalsx-replays (still frame 100 after waves 1–11) |
-| `RTS_BUILD_MIGRATION_BINARIES` option (default ON) gates GeneralsX/GeneralsXZH | Flip OFF after Gate 6 acceptance |
+| `RTS_BUILD_MIGRATION_BINARIES` default OFF; `smoke-echelon-gate6.sh` acceptance battery | Optional ON for mismatch binaries |
 | `-lanProbe` (startup CLI) + `smoke-echelon-lan.sh` dual-profile bind/RequestLocations exit 0 | Interactive dual-instance LAN lobby match |
 | `-skirmish` + `smoke-echelon-record-replay.sh` dual-profile record→playback CRC exit 0 | |
 
@@ -98,7 +98,7 @@ Deploy:
 
 1. ~~Port remaining DIFF upstream fixes~~ — done for actionable ports (see Adapt notes below); remaining mapped DIFFs are intentional (WWMath Origin/Trig, `GameProfile`, Linux `wchar_t`, Steam map-select tweak, Core-local `FPUControl.h`). Consider promoting rehearsal merge after CRC=1 layout.
 2. Promote rehearsal merge when dual-profile still green; keep converting high-impact `#if RETAIL_COMPATIBLE_CRC` to GameProfile (do **not** flip global CRC=1 — breaks ZH fixed paths).
-3. Keep `RTS_BUILD_MIGRATION_BINARIES=ON` until Gate 6 acceptance; then OFF (drops GeneralsX / GeneralsXZH).
+3. `RTS_BUILD_MIGRATION_BINARIES` default **OFF** (echelon-only product binary); set ON to rebuild GeneralsX/GeneralsXZH mismatch checks.
 4. Optional: interactive lobby UI; reconcile older generalsx-replays fixtures CRC (frame 100).
 
 ## Adapt notes (24/10/2026)

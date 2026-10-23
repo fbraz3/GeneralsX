@@ -72,8 +72,8 @@ endif()
 cmake_dependent_option(RTS_BUILD_ECHELON "Build the unified echelon executable." ON "RTS_BUILD_ZEROHOUR" OFF)
 add_feature_info(EchelonStuff RTS_BUILD_ECHELON "Build unified echelon executable")
 
-# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: keep GeneralsX/GeneralsXZH until acceptance, then OFF.
-option(RTS_BUILD_MIGRATION_BINARIES "Build GeneralsX / GeneralsXZH migration check binaries alongside echelon." ON)
+# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: default OFF after acceptance (echelon is the product binary).
+option(RTS_BUILD_MIGRATION_BINARIES "Build GeneralsX / GeneralsXZH migration check binaries alongside echelon." OFF)
 add_feature_info(MigrationBinaries RTS_BUILD_MIGRATION_BINARIES "Build legacy GeneralsX / GeneralsXZH migration binaries")
 
 if(RTS_BUILD_GENERALS)

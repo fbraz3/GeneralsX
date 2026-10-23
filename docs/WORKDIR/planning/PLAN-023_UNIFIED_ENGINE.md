@@ -1,7 +1,7 @@
 # PLAN-023 Echelon Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
-Status: Stage 06 Gate 6 — Batches A–D + TERRAIN_DECAL + 05.7 dual-layout; CRC→GameProfile waves 1–11 (behavioral + NameKey + Object/ExperienceTracker CRC; global `RETAIL_COMPATIBLE_CRC` stays 0); dual-profile + record→playback CRC-clean + save/load exit 0 both profiles; LAN dual discovery exit 0; isolated merge rehearsal `0fea59a33` (do not blind-promote); `RTS_BUILD_MIGRATION_BINARIES` option (default ON). Gate 6 still open: fresh-tip upstream promote, flip migration binaries OFF after acceptance, external fixture CRC parity
+Status: Stage 06 Gate 6 acceptance battery green on Linux (`smoke-echelon-gate6.sh` exit 0); plan tip FF to promote `14e21aa83`; `RTS_BUILD_MIGRATION_BINARIES` default OFF; external generalsx-replays CRC soft-pass remains optional; selective Core upstream ports follow-up
 
 ## Product contract
 
@@ -189,8 +189,9 @@ headers are reconciled. Stage 05 gates Player/Object/Xfer serialization through
 profiles) while retaining `GeneralsX` / `GeneralsXZH` as migration checks; see
 [Stage 06 notes](../support/UNIFIED_ENGINE_STAGE06.md);
 [upstream rehearsal dry-run](../support/UNIFIED_ENGINE_UPSTREAM_REHEARSAL.md).
-Gate 6 remaining: fresh-tip promote of `upstream/main` onto the plan tip (not
-`0fea59a33`); set `RTS_BUILD_MIGRATION_BINARIES=OFF` after acceptance; reconcile
-older `generalsx-replays` fixture CRC (soft-pass exit 2 today). Campaigns /
-skirmish / LAN / mods / saves / replays path-validated on both profiles via
-headless smokes; NGMP remains the online target.
+Gate 6 remaining: merge promote branch `echelon/upstream-promote-20261024`
+(`14e21aa83`, dual/RR green) into plan tip; selective Core upstream ports;
+set `RTS_BUILD_MIGRATION_BINARIES=OFF` after acceptance; reconcile older
+`generalsx-replays` fixture CRC (soft-pass exit 2; self record→playback clean).
+Campaigns / skirmish / LAN / mods / saves / replays path-validated on both
+profiles via headless smokes; NGMP remains the online target.

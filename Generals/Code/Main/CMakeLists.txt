@@ -29,8 +29,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 endif()
 
-# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default ON).
-if(NOT DEFINED RTS_BUILD_MIGRATION_BINARIES OR RTS_BUILD_MIGRATION_BINARIES)
+# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default OFF).
+if(RTS_BUILD_MIGRATION_BINARIES)
 add_executable(g_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.

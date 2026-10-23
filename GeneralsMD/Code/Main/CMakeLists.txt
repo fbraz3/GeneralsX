@@ -18,8 +18,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 "
 )
 
-# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default ON).
-if(NOT DEFINED RTS_BUILD_MIGRATION_BINARIES OR RTS_BUILD_MIGRATION_BINARIES)
+# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default OFF).
+if(RTS_BUILD_MIGRATION_BINARIES)
 add_executable(z_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
@@ -100,7 +100,7 @@ endif()
 endif() # RTS_BUILD_MIGRATION_BINARIES
 
 # GeneralsX @build cheviiot 23/10/2026 PLAN-023 Stage 06: echelon = ZH-canonical binary with dual -game profiles.
-# Migration targets gated by RTS_BUILD_MIGRATION_BINARIES (default ON until Gate 6 acceptance).
+# Migration targets gated by RTS_BUILD_MIGRATION_BINARIES (default OFF after Gate 6 acceptance).
 if(RTS_BUILD_ECHELON)
     add_executable(echelon WIN32)
     set_target_properties(echelon PROPERTIES OUTPUT_NAME echelon)

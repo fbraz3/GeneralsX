@@ -180,6 +180,22 @@ python3 scripts/tooling/cpp/maintenance/adapt_unified_engine_upstream.py
 Gate 6 acceptance still requires dual migration target removal after promote +
 fixture CRC parity review.
 
+
+## Fresh-tip promote (2026-10-24)
+
+| Field | Value |
+|---|---|
+| Worktree | `/home/cheviiot/Project/Games/GeneralsX-wt-upstream-promote` |
+| Branch | `echelon/upstream-promote-20261024` @ `14e21aa83` |
+| Tip snapshot | `de2d0331f` (Gate 6 GameProfile dual-path tip) |
+| Merge commit | `d6a0388f1` (then restore/fix commits) |
+| Upstream tip | `f02fcd381` (`upstream/main`) |
+| Conflicts | **186** (log: `logs/upstream-promote-conflicts-20261024.txt`) |
+| Resolution | GeneralsX-preferring ours; Core/Generals/GeneralsMD/cmake restored to tip after auto-merge API skew; WWMath upstream-name aliases kept |
+| Smoke | dual-profile + record→playback ZH/Generals exit 0 after promote restore |
+
+Do not reuse `0fea59a33`. Follow-up: selective Core upstream ports (filesystem case-fold #3531, headless font dummies #3538, etc.) without breaking WWMath pairing; merge promote into `echelon/unified-engine-plan` when ready; then `RTS_BUILD_MIGRATION_BINARIES=OFF`.
+
 ## References
 
 - PLAN-023 Integration procedure
