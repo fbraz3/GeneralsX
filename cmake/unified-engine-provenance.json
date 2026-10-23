@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "source_revision": "afb09f14449bb499d0b60a9e2fd814eb6016ef5b",
+  "upstream_revision": "0af9db488ece8301f4e04fbb6af22115096d4131",
+  "entries": [
+    {
+      "canonical_path": "Core/GameEngine/Include/GameLogic/FPUControl.h",
+      "original_paths": [
+        "Generals/Code/GameEngine/Include/GameLogic/FPUControl.h",
+        "GeneralsMD/Code/GameEngine/Include/GameLogic/FPUControl.h"
+      ],
+      "policy": "Identical declarations and guard implementation; setFPMode and its callers remain unchanged."
+    },
+    {
+      "canonical_path": "GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp",
+      "original_paths": ["Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp"],
+      "policy": "Zero Hour is canonical; identical source except license title, still compiled separately with each game's headers."
+    },
+    {
+      "canonical_path": "GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDynamicLight.cpp",
+      "original_paths": ["Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDynamicLight.cpp"],
+      "policy": "Zero Hour is canonical; identical source except license title, still compiled separately with each game's headers."
+    },
+    {
+      "canonical_path": "GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DInGameUI.cpp",
+      "original_paths": ["Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DInGameUI.cpp"],
+      "policy": "Zero Hour is canonical; identical source except license title, still compiled separately with each game's headers."
+    }
+  ]
+}

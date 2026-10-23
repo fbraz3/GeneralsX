@@ -29,6 +29,8 @@
 
 #pragma once
 
+// GeneralsX @refactor cheviiot 23/10/2026 Share FPU declarations without changing either game's FPU implementation.
+
 /**
   * setFPMode sets the FPU internal precision and rounding mode.  As DirectX is not guaranteed to
 	* leave the FPU in a good state, we must call this at the start of GameLogic::update() and

@@ -243,7 +243,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/Damage.h
     Include/GameLogic/ExperienceTracker.h
     Include/GameLogic/FiringTracker.h
-    Include/GameLogic/FPUControl.h
+#    Include/GameLogic/FPUControl.h
     Include/GameLogic/GameLogic.h
     Include/GameLogic/GhostObject.h
     Include/GameLogic/Locomotor.h

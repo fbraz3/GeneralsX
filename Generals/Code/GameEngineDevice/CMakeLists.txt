@@ -129,7 +129,8 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/TerrainTex.cpp
 #    Source/W3DDevice/GameClient/TileData.cpp
     Source/W3DDevice/GameClient/W3DAssetManager.cpp
-    Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
+    # GeneralsX @refactor cheviiot 23/10/2026 Compile the canonical Zero Hour source with Generals headers.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
     Source/W3DDevice/GameClient/W3DBibBuffer.cpp
     Source/W3DDevice/GameClient/W3DBridgeBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
@@ -137,10 +138,12 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/W3DDisplay.cpp
 #    Source/W3DDevice/GameClient/W3DDisplayString.cpp
 #    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
-    Source/W3DDevice/GameClient/W3DDynamicLight.cpp
+    # GeneralsX @refactor cheviiot 23/10/2026 Compile the canonical Zero Hour source with Generals headers.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDynamicLight.cpp
     Source/W3DDevice/GameClient/W3DFileSystem.cpp
     Source/W3DDevice/GameClient/W3DGameClient.cpp
-    Source/W3DDevice/GameClient/W3DInGameUI.cpp
+    # GeneralsX @refactor cheviiot 23/10/2026 Compile the canonical Zero Hour source with Generals headers.
+    ${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DInGameUI.cpp
 #    Source/W3DDevice/GameClient/W3DMouse.cpp
 #    Source/W3DDevice/GameClient/W3DParticleSys.cpp
     Source/W3DDevice/GameClient/W3DPoly.cpp
