@@ -1,9 +1,14 @@
-# PLAN-023 Unified Engine with Runtime Game Selection
+# PLAN-023 Echelon Unified Engine with Runtime Game Selection
 
 Date: 2026-10-23
 Status: Stage 01 implemented and locally validated; unified runtime pending
 
 ## Product contract
+
+The product is named Echelon, covering both the engine and its integrated
+launcher. The intended executable name is `echelon`; existing target and binary
+names remain during migration. See [fork identity](../../../UPSTREAM.md) for
+branding boundaries, source lineage and upstream maintenance policy.
 
 The user selected one executable with startup selection of Generals or Zero
 Hour. Each game retains its original rules. A launcher that delegates to two

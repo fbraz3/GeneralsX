@@ -1,6 +1,16 @@
-# GeneralsX: Instructions for AI Coding Agents
+# Echelon: Instructions for AI Coding Agents
 
-## What I Am
+## Fork Identity
+
+Echelon is the owner's unified engine and integrated launcher project, based on
+GeneralsX. Use Zero Hour as the canonical engine foundation and preserve original
+Generals rules through a compatibility profile. The single executable and
+launcher are still migration goals; two inherited executable targets remain.
+Read [UPSTREAM.md](UPSTREAM.md) before branding, packaging or upstream integration
+work. Preserve upstream ancestry, source paths, licenses and existing attributions.
+The earlier Echelon prototype is separate and must not be overwritten.
+
+## Inherited Engine Foundation
 GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + MiniAudio + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Key Entry Points
