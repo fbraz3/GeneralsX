@@ -13,11 +13,14 @@
 
 #include "Common/GameProfile.h"
 
+struct SDL_Window;
+
 namespace GameSelectUI
 {
 
 // Blocking SDL chooser before memory pools / asset mount.
-// Returns FALSE if the user closed the window (abort launch).
-Bool run(GameProfileKind preselect, GameProfileKind *outChosen);
+// On success leaves a visible non-Vulkan SDL_Window in *outWindow for handoff
+// (caller recreates with SDL_WINDOW_VULKAN for DXVK). Returns FALSE on cancel.
+Bool run(GameProfileKind preselect, GameProfileKind *outChosen, SDL_Window **outWindow);
 
 } // namespace GameSelectUI
