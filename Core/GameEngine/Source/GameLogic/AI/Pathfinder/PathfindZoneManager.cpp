@@ -16,6 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "Common/GameProfile.h"
 #include "GameLogic/Pathfinder/PathfindCell.h"
 #include "GameLogic/Pathfinder/PathfindConstants.h"
 #include "GameLogic/Pathfinder/PathfindLayer.h"
@@ -130,15 +131,19 @@ void PathfindZoneManager::reset()  ///< Called when the map is reset.
 
 void PathfindZoneManager::markZonesDirty()  ///< Called when the zones need to be recalculated.
 {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-	m_nextFrameToCalculateZones = TheGameLogic->getFrame();
-#else
-	if (TheGameLogic->getFrame()<2) {
-		m_nextFrameToCalculateZones = 2;
-		return;
-	}
-	m_nextFrameToCalculateZones = MIN( m_nextFrameToCalculateZones, TheGameLogic->getFrame() + ZONE_UPDATE_FREQUENCY );
+	// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals dirty-zone timing via GameProfile (was #if RTS_GENERALS && RETAIL...).
+#if RETAIL_COMPATIBLE_PATHFINDING
+	if (GameProfile::get().isGenerals()) {
+		m_nextFrameToCalculateZones = TheGameLogic->getFrame();
+	} else
 #endif
+	{
+		if (TheGameLogic->getFrame()<2) {
+			m_nextFrameToCalculateZones = 2;
+			return;
+		}
+		m_nextFrameToCalculateZones = MIN( m_nextFrameToCalculateZones, TheGameLogic->getFrame() + ZONE_UPDATE_FREQUENCY );
+	}
 }
 
 /**
@@ -185,8 +190,9 @@ void PathfindZoneManager::calculateZones( PathfindCell **map, PathfindLayer laye
 			bounds.hi.x = bounds.lo.x + ZONE_BLOCK_SIZE - 1; // bounds are inclusive.
 			bounds.hi.y = bounds.lo.y + ZONE_BLOCK_SIZE - 1; // bounds are inclusive.
 			bounds.hi.updateMin(globalBounds.hi);
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-			if (bounds.lo.x>bounds.hi.x || bounds.lo.y>bounds.hi.y) {
+			// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals bounds assert via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+			if (GameProfile::get().isGenerals() && (bounds.lo.x>bounds.hi.x || bounds.lo.y>bounds.hi.y)) {
 				DEBUG_CRASH(("Incorrect bounds calculation. Logic error, fix me. jba."));
 				continue;
 			}
@@ -210,8 +216,9 @@ void PathfindZoneManager::calculateZones( PathfindCell **map, PathfindLayer laye
 					if (cell->getZone()==0) {
 						cell->setZone(m_maxZone);
 						m_maxZone++;
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-						if (m_maxZone>= maxZones) {
+						// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals zone exhaustion check via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+						if (GameProfile::get().isGenerals() && m_maxZone>= maxZones) {
 							DEBUG_CRASH(("Ran out of pathfind zones.  SERIOUS ERROR! jba."));
 							break;
 						}
@@ -282,8 +289,9 @@ void PathfindZoneManager::calculateZones( PathfindCell **map, PathfindLayer laye
 			bounds.hi.y = bounds.lo.y + ZONE_BLOCK_SIZE - 1; // bounds are inclusive.
 
 			bounds.hi.updateMin(globalBounds.hi);
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-			if (bounds.lo.x>bounds.hi.x || bounds.lo.y>bounds.hi.y) {
+			// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals bounds assert via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+			if (GameProfile::get().isGenerals() && (bounds.lo.x>bounds.hi.x || bounds.lo.y>bounds.hi.y)) {
 				DEBUG_CRASH(("Incorrect bounds calculation. Logic error, fix me. jba."));
 				continue;
 			}
@@ -315,106 +323,114 @@ void PathfindZoneManager::calculateZones( PathfindCell **map, PathfindLayer laye
 			if ( i > globalBounds.lo.x && r_thisCell.getZone() != map[i-1][j].getZone() ) {
 				const PathfindCell &r_leftCell = map[i-1][j];
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-				if (r_thisCell.getType() == r_leftCell.getType()) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_hierarchicalZones, m_maxZone);
-				}
-				if (PathfindCell::waterGround(r_thisCell, r_leftCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundWaterZones, m_maxZone);
-				}
-				if (PathfindCell::groundRubble(r_thisCell, r_leftCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundRubbleZones, m_maxZone);
-				}
-				if (PathfindCell::groundCliff(r_thisCell, r_leftCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundCliffZones, m_maxZone);
-				}
-				if (PathfindCell::terrain(r_thisCell, r_leftCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_terrainZones, m_maxZone);
-				}
-				if (PathfindCell::crusherGround(r_thisCell, r_leftCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_crusherZones, m_maxZone);
-				}
-#else
-				//if this is true, skip all the ones below
-				if (r_thisCell.getType() == r_leftCell.getType())
-					ZoneBlock::applyZone(r_thisCell, r_leftCell, m_hierarchicalZones, m_maxZone);
-				else {
-					Bool notTerrainOrCrusher = TRUE; // if this is false, skip the if-else-ladder below
-
+				// GeneralsX @refactor cheviiot 23/10/2026 Left-neighbor zone merge by GameProfile when retail pathfind on.
+#if RETAIL_COMPATIBLE_PATHFINDING
+				if (GameProfile::get().isGenerals()) {
+					if (r_thisCell.getType() == r_leftCell.getType()) {
+						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_hierarchicalZones, m_maxZone);
+					}
+					if (PathfindCell::waterGround(r_thisCell, r_leftCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundWaterZones, m_maxZone);
+					}
+					if (PathfindCell::groundRubble(r_thisCell, r_leftCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundRubbleZones, m_maxZone);
+					}
+					if (PathfindCell::groundCliff(r_thisCell, r_leftCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundCliffZones, m_maxZone);
+					}
 					if (PathfindCell::terrain(r_thisCell, r_leftCell)) {
 						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_terrainZones, m_maxZone);
-						notTerrainOrCrusher = FALSE;
 					}
-
 					if (PathfindCell::crusherGround(r_thisCell, r_leftCell)) {
 						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_crusherZones, m_maxZone);
-						notTerrainOrCrusher = FALSE;
 					}
-
-					if ( notTerrainOrCrusher ) {
-						if (PathfindCell::waterGround(r_thisCell, r_leftCell))
-							ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundWaterZones, m_maxZone);
-						else if (PathfindCell::groundRubble(r_thisCell, r_leftCell))
-							ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundRubbleZones, m_maxZone);
-						else if (PathfindCell::groundCliff(r_thisCell, r_leftCell))
-							ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundCliffZones, m_maxZone);
-					}
-
-				}
+				} else
 #endif
+				{
+					//if this is true, skip all the ones below
+					if (r_thisCell.getType() == r_leftCell.getType())
+						ZoneBlock::applyZone(r_thisCell, r_leftCell, m_hierarchicalZones, m_maxZone);
+					else {
+						Bool notTerrainOrCrusher = TRUE; // if this is false, skip the if-else-ladder below
+
+						if (PathfindCell::terrain(r_thisCell, r_leftCell)) {
+							ZoneBlock::applyZone(r_thisCell, r_leftCell, m_terrainZones, m_maxZone);
+							notTerrainOrCrusher = FALSE;
+						}
+
+						if (PathfindCell::crusherGround(r_thisCell, r_leftCell)) {
+							ZoneBlock::applyZone(r_thisCell, r_leftCell, m_crusherZones, m_maxZone);
+							notTerrainOrCrusher = FALSE;
+						}
+
+						if ( notTerrainOrCrusher ) {
+							if (PathfindCell::waterGround(r_thisCell, r_leftCell))
+								ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundWaterZones, m_maxZone);
+							else if (PathfindCell::groundRubble(r_thisCell, r_leftCell))
+								ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundRubbleZones, m_maxZone);
+							else if (PathfindCell::groundCliff(r_thisCell, r_leftCell))
+								ZoneBlock::applyZone(r_thisCell, r_leftCell, m_groundCliffZones, m_maxZone);
+						}
+
+					}
+				}
 
 			}
 
 			if (j>globalBounds.lo.y && r_thisCell.getZone()!=map[i][j-1].getZone()) {
 				const PathfindCell &r_topCell = map[i][j-1];
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-				if (r_thisCell.getType() == r_topCell.getType()) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_hierarchicalZones, m_maxZone);
-				}
-				if (PathfindCell::waterGround(r_thisCell, r_topCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundWaterZones, m_maxZone);
-				}
-				if (PathfindCell::groundRubble(r_thisCell, r_topCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundRubbleZones, m_maxZone);
-				}
-				if (PathfindCell::groundCliff(r_thisCell, r_topCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundCliffZones, m_maxZone);
-				}
-				if (PathfindCell::terrain(r_thisCell, r_topCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_terrainZones, m_maxZone);
-				}
-				if (PathfindCell::crusherGround(r_thisCell, r_topCell)) {
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_crusherZones, m_maxZone);
-				}
-#else
-				//if this is true, skip all the ones below
-				if (r_thisCell.getType() == r_topCell.getType())
-					ZoneBlock::applyZone(r_thisCell, r_topCell, m_hierarchicalZones, m_maxZone);
-				else {
-					Bool notTerrainOrCrusher = TRUE; // if this is false, skip the if-else-ladder below
-
+				// GeneralsX @refactor cheviiot 23/10/2026 Top-neighbor zone merge by GameProfile when retail pathfind on.
+#if RETAIL_COMPATIBLE_PATHFINDING
+				if (GameProfile::get().isGenerals()) {
+					if (r_thisCell.getType() == r_topCell.getType()) {
+						ZoneBlock::applyZone(r_thisCell, r_topCell, m_hierarchicalZones, m_maxZone);
+					}
+					if (PathfindCell::waterGround(r_thisCell, r_topCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundWaterZones, m_maxZone);
+					}
+					if (PathfindCell::groundRubble(r_thisCell, r_topCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundRubbleZones, m_maxZone);
+					}
+					if (PathfindCell::groundCliff(r_thisCell, r_topCell)) {
+						ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundCliffZones, m_maxZone);
+					}
 					if (PathfindCell::terrain(r_thisCell, r_topCell)) {
 						ZoneBlock::applyZone(r_thisCell, r_topCell, m_terrainZones, m_maxZone);
-						notTerrainOrCrusher = FALSE;
 					}
-
 					if (PathfindCell::crusherGround(r_thisCell, r_topCell)) {
 						ZoneBlock::applyZone(r_thisCell, r_topCell, m_crusherZones, m_maxZone);
-						notTerrainOrCrusher = FALSE;
 					}
-
-					if (notTerrainOrCrusher) {
-						if (PathfindCell::waterGround(r_thisCell, r_topCell))
-							ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundWaterZones, m_maxZone);
-						else if (PathfindCell::groundRubble(r_thisCell, r_topCell))
-							ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundRubbleZones, m_maxZone);
-						else if (PathfindCell::groundCliff(r_thisCell, r_topCell))
-							ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundCliffZones, m_maxZone);
-					}
-
-				}
+				} else
 #endif
+				{
+					//if this is true, skip all the ones below
+					if (r_thisCell.getType() == r_topCell.getType())
+						ZoneBlock::applyZone(r_thisCell, r_topCell, m_hierarchicalZones, m_maxZone);
+					else {
+						Bool notTerrainOrCrusher = TRUE; // if this is false, skip the if-else-ladder below
+
+						if (PathfindCell::terrain(r_thisCell, r_topCell)) {
+							ZoneBlock::applyZone(r_thisCell, r_topCell, m_terrainZones, m_maxZone);
+							notTerrainOrCrusher = FALSE;
+						}
+
+						if (PathfindCell::crusherGround(r_thisCell, r_topCell)) {
+							ZoneBlock::applyZone(r_thisCell, r_topCell, m_crusherZones, m_maxZone);
+							notTerrainOrCrusher = FALSE;
+						}
+
+						if (notTerrainOrCrusher) {
+							if (PathfindCell::waterGround(r_thisCell, r_topCell))
+								ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundWaterZones, m_maxZone);
+							else if (PathfindCell::groundRubble(r_thisCell, r_topCell))
+								ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundRubbleZones, m_maxZone);
+							else if (PathfindCell::groundCliff(r_thisCell, r_topCell))
+								ZoneBlock::applyZone(r_thisCell, r_topCell, m_groundCliffZones, m_maxZone);
+						}
+
+					}
+				}
 
 			}
 
@@ -745,11 +761,13 @@ zoneStorageType PathfindZoneManager::getBlockZone(LocomotorSurfaceTypeMask accep
 		return 0;
 	}
 	zoneStorageType zone =  m_zoneBlocks[blockX][blockY].getEffectiveZone(acceptableSurfaces, crusher, cell->getZone());
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-	if (zone > m_maxZone) {
+	// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals uses zone > max; ZH uses >= (was #if RTS_GENERALS && RETAIL...).
+#if RETAIL_COMPATIBLE_PATHFINDING
+	const Bool invalidZone = GameProfile::get().isGenerals() ? (zone > m_maxZone) : (zone >= m_maxZone);
 #else
-	if (zone >= m_maxZone) {
+	const Bool invalidZone = (zone >= m_maxZone);
 #endif
+	if (invalidZone) {
 		DEBUG_CRASH(("Invalid zone."));
 		return UNINITIALIZED_ZONE;
 	}

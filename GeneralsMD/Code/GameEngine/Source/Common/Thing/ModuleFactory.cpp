@@ -39,6 +39,7 @@
 
 #include "Common/Module.h"
 #include "Common/ModuleFactory.h"
+#include "Common/GameProfile.h"
 #include "Common/NameKeyGenerator.h"
 
 // behavior includes
@@ -169,6 +170,7 @@
 #include "GameLogic/Module/MissileLauncherBuildingUpdate.h"
 #include "GameLogic/Module/StealthDetectorUpdate.h"
 #include "GameLogic/Module/StealthUpdate.h"
+#include "GameLogic/Module/DelayedWeaponSetUpgradeUpdate.h"
 #include "GameLogic/Module/SpawnPointProductionExitUpdate.h"
 #include "GameLogic/Module/SpawnBehavior.h"
 #include "GameLogic/Module/SpyVisionUpdate.h"
@@ -209,6 +211,7 @@
 #include "GameLogic/Module/UnpauseSpecialPowerUpgrade.h"
 #include "GameLogic/Module/WeaponBonusUpgrade.h"
 #include "GameLogic/Module/WeaponSetUpgrade.h"
+#include "GameLogic/Module/DelayedUpgrade.h"
 #include "GameLogic/Module/CostModifierUpgrade.h"
 #include "GameLogic/Module/ExperienceScalarUpgrade.h"
 #include "GameLogic/Module/MaxHealthUpgrade.h"
@@ -387,6 +390,9 @@ void ModuleFactory::init()
 	addModule( BaseRegenerateUpdate );
 	addModule( StealthDetectorUpdate );
 	addModule( StealthUpdate );
+	// GeneralsX @feature cheviiot 23/10/2026 Generals-only DelayedWeaponSetUpgradeUpdate for echelon.
+	if (GameProfile::get().isGenerals())
+		addModule( DelayedWeaponSetUpgradeUpdate );
 	addModule( DeletionUpdate );
 	addModule( SmartBombTargetHomingUpdate );
 	addModule( DynamicShroudClearingRangeUpdate );
@@ -472,6 +478,9 @@ void ModuleFactory::init()
 	addModule( CostModifierUpgrade );
 	addModule( ActiveShroudUpgrade );
 	addModule( ArmorUpgrade );
+	// GeneralsX @feature cheviiot 23/10/2026 Generals-only DelayedUpgrade for echelon.
+	if (GameProfile::get().isGenerals())
+		addModule( DelayedUpgrade );
 	addModule( CommandSetUpgrade );
 	addModule( GrantScienceUpgrade );
 	addModule( PassengersFireUpgrade );

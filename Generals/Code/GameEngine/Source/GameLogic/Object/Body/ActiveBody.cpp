@@ -29,6 +29,8 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+
+#include "Common/GameProfile.h"
 #include "Common/BitFlagsIO.h"
 #include "Common/CRCDebug.h"
 #include "Common/DamageFX.h"
@@ -1008,24 +1010,20 @@ void ActiveBody::internalChangeHealth( Real delta )
 //-------------------------------------------------------------------------------------------------
 const UnsignedInt *ActiveBody::getLastDamageTimestamp() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return &m_lastDamageTimestamp;
-#else
-	// TheSuperHackers @fix WebbontheWeb 03/10/2026 Avoid treating never-damaged sentinels as an attack timestamp.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always returns ptr; ZH nulls sentinel (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return &m_lastDamageTimestamp;
 	return m_lastDamageTimestamp != InvalidBodyTimestamp ? &m_lastDamageTimestamp : nullptr;
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const UnsignedInt *ActiveBody::getLastHealingTimestamp() const
 {
-#if RETAIL_COMPATIBLE_CRC
-	return &m_lastHealingTimestamp;
-#else
-	// TheSuperHackers @fix WebbontheWeb 04/10/2026 Avoid treating never-healed sentinels as a healing timestamp.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always returns ptr; ZH nulls sentinel (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return &m_lastHealingTimestamp;
 	return m_lastHealingTimestamp != InvalidBodyTimestamp ? &m_lastHealingTimestamp : nullptr;
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------

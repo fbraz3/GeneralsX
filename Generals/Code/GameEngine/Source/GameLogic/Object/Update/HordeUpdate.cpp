@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_HORDEACTION_NAMES
 #include "Common/Player.h"
@@ -80,11 +81,9 @@ public:
 
 	virtual Bool allow(Object *objOther) override
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @bugfix Stubbjax 07/08/2026 Prevent dead units from being considered for horde membership.
-		if (objOther->isEffectivelyDead())
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH excludes dead from horde (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals() && objOther->isEffectivelyDead())
 			return false;
-#endif
 
 		// must be exact same type as us (well, maybe)
 		if (m_data->m_exactMatch && m_obj->getTemplate() != objOther->getTemplate())

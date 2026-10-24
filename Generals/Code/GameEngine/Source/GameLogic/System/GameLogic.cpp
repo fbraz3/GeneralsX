@@ -42,6 +42,7 @@
 #include "Common/CRCDebug.h"
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GameEngine.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
@@ -3410,15 +3411,11 @@ void GameLogic::update()
 		{
 			UpdateModulePtr u = *it;
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
-#if RETAIL_COMPATIBLE_CRC
-			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
-#else
-			// TheSuperHackers @bugfix Stubbjax 15/03/2026 The disabled-types-to-process mask is now exclusive.
-			// Previously, if the disabled mask had any bits in common with the disabled-types-to-process mask,
-			// the update would be processed. Now, if any *other* bits are set in the disabled mask, the update
-			// is no longer processed.
-			if (u->getDisabledTypesToProcess().testForAll(dis))
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail intersection vs ZH exclusive disabled mask (was RETAIL_COMPATIBLE_CRC).
+			const Bool allowUpdate = GameProfile::get().isGenerals()
+				? (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
+				: u->getDisabledTypesToProcess().testForAll(dis);
+			if (allowUpdate)
 			{
 				USE_PERF_TIMER(GameLogic_update_normal)
 
@@ -3458,15 +3455,11 @@ void GameLogic::update()
 			UpdateSleepTime sleepLen = UPDATE_SLEEP_NONE;	// default, if it is disabled.
 
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
-#if RETAIL_COMPATIBLE_CRC
-			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
-#else
-			// TheSuperHackers @bugfix Stubbjax 15/03/2026 The disabled-types-to-process mask is now exclusive.
-			// Previously, if the disabled mask had any bits in common with the disabled-types-to-process mask,
-			// the update would be processed. Now, if any *other* bits are set in the disabled mask, the update
-			// is no longer processed.
-			if (u->getDisabledTypesToProcess().testForAll(dis))
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail intersection vs ZH exclusive disabled mask (was RETAIL_COMPATIBLE_CRC).
+			const Bool allowUpdate = GameProfile::get().isGenerals()
+				? (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
+				: u->getDisabledTypesToProcess().testForAll(dis);
+			if (allowUpdate)
 			{
 				USE_PERF_TIMER(GameLogic_update_sleepy)
 

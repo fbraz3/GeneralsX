@@ -79,9 +79,8 @@ public:
 	// virtual destructor prototype provided by memory pool declaration
 
 	virtual void onObjectCreated() override;
-#if !RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always present; Generals profile no-ops retail path in cpp.
 	virtual void onDelete() override;
-#endif
 
 	virtual UpdateSleepTime update() override;							///< called once per frame
 

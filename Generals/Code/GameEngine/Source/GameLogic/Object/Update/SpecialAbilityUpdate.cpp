@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/GameAudio.h"
 #include "Common/GlobalData.h"
@@ -1263,11 +1264,22 @@ void SpecialAbilityUpdate::triggerAbilityEffect()
 				const ParticleSystemTemplate *tmp = data->m_disableFXParticleSystem;
 				if (tmp)
 				{
+					// GeneralsX @refactor cheviiot 24/10/2026 Generals burns Logic RNG before Client FX (was RETAIL_COMPATIBLE_CRC).
+					if (GameProfile::get().isGenerals())
+					{
+						Coord3D offs = {0,0,0};
+						target->getGeometryInfo().makeRandomOffsetWithinFootprint( offs, LogicRandomValueClass() );
+					}
+
 					ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
 					if (sys)
 					{
 						Coord3D offs = {0,0,0};
-						target->getGeometryInfo().makeRandomOffsetWithinFootprint( offs );
+						// GeneralsX @refactor cheviiot 24/10/2026 Generals Client RNG vs ZH default (was RETAIL_COMPATIBLE_CRC).
+						if (GameProfile::get().isGenerals())
+							target->getGeometryInfo().makeRandomOffsetWithinFootprint( offs, ClientRandomValueClass() );
+						else
+							target->getGeometryInfo().makeRandomOffsetWithinFootprint( offs );
 
 						sys->attachToObject(target);
 						sys->setPosition( &offs );
@@ -1338,11 +1350,10 @@ void SpecialAbilityUpdate::triggerAbilityEffect()
 			if( targetMoney && objectMoney )
 			{
 				UnsignedInt cash = targetMoney->countMoney();
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_HARDCODED_BLACK_LOTUS_CASH_HACK
-				UnsignedInt desiredAmount = 1000;
-#else
-				UnsignedInt desiredAmount = data->m_effectValue;
-#endif
+				// GeneralsX @refactor cheviiot 24/10/2026 Retail/hardcoded 1000 vs ZH effectValue (was RETAIL_COMPATIBLE_CRC).
+				const UnsignedInt desiredAmount = (GameProfile::get().isGenerals() || PRESERVE_HARDCODED_BLACK_LOTUS_CASH_HACK)
+					? 1000u
+					: data->m_effectValue;
 				//Check to see if they have the cash, otherwise, take the remainder!
 				cash = min( desiredAmount, cash );
 				if( cash > 0 )

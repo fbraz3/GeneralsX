@@ -30,6 +30,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/BuildAssistant.h"
 #include "Common/GlobalData.h"
@@ -688,10 +689,11 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 			}
 		}
 
-#if !RETAIL_COMPATIBLE_CRC
-		if (builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH rejects fogged build sites (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals()
+				&& builderObject
+				&& them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
 			return false;
-#endif
 
 		// an immobile object may obstruct our building depending on flags.
 		if( them->isKindOf( KINDOF_IMMOBILE ) )	{

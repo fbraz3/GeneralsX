@@ -66,11 +66,8 @@ public:
 	void healObjects();	///< heal all objects within the tunnel
 #endif
 
-#if RETAIL_COMPATIBLE_CRC
-	UnsignedInt friend_getTunnelCount() const {return m_tunnelCount;}///< TunnelContains are allowed to ask if they are the last one ahead of deletion time
-#else
-	UnsignedInt friend_getTunnelCount() const { return m_tunnelIDs.size(); }///< TunnelContains are allowed to ask if they are the last one ahead of deletion time
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: dual-layout always keeps m_tunnelCount.
+	UnsignedInt friend_getTunnelCount() const { return m_tunnelCount; }///< TunnelContains are allowed to ask if they are the last one ahead of deletion time
 
 	const std::list< ObjectID > *getContainerList() const {return &m_tunnelIDs;}
 
@@ -91,9 +88,8 @@ private:
 	std::list< ObjectID > m_xferContainList;///< for loading of m_containList during post processing
 	Int m_containListSize;									///< size of the contain list
 	UnsignedInt m_heroUnitsContained;				///< cached hero count
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7 dual-layout: always present (was RETAIL_COMPATIBLE_CRC-only).
 	UnsignedInt m_tunnelCount;							///< How many tunnels have registered so we know when we should kill our contain list
-#endif
 	UnsignedInt m_framesForFullHeal;				///< How many frames it takes to fully heal a unit
 	Bool m_needsFullHealTimeUpdate;					///< Set to true when needing to recalc full heal time to batch the operation
 

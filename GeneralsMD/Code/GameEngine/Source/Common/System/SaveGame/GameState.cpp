@@ -622,6 +622,10 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 	catch( ... )
 	{
 
+		// GeneralsX @tweak cheviiot 24/10/2026 Surface save-block failures for headless smoke (DEBUG_CRASH is silent in RelWithDebInfo).
+		fprintf(stderr, "[SMOKE] saveGame xferSaveData failed file='%s' path='%s'\n",
+			filename.str(), filepath.str());
+		fflush(stderr);
 		// close the file and get out of here
 		xferSave.close();
 		return SaveResult( SC_ERROR, filename );
@@ -1536,6 +1540,10 @@ void GameState::xferSaveData( Xfer *xfer, SnapshotType which )
 
 					DEBUG_CRASH(( "Error saving block '%s' in file '%s'",
 												blockName.str(), xfer->getIdentifier().str() ));
+					// GeneralsX @tweak cheviiot 24/10/2026 Identify failing snapshot block for save/load smoke.
+					fprintf(stderr, "[SMOKE] saveGame block failed name='%s' file='%s'\n",
+						blockName.str(), xfer->getIdentifier().str());
+					fflush(stderr);
 					throw;
 
 				}

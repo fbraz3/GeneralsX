@@ -29,6 +29,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
+
 #define DEFINE_LOCOMOTORSET_NAMES					// for TheLocomotorSetNames[]
 #define DEFINE_AUTOACQUIRE_NAMES
 
@@ -897,9 +899,7 @@ Object* AIUpdateInterface::checkForCrateToPickup()
 {
 	if (m_crateCreated != INVALID_ID)
 	{
-#if RETAIL_COMPATIBLE_CRC
-		m_crateCreated = INVALID_ID; // we have processed it, so clear it.
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail double-clears crate ID (harmless); keep find then clear.
 		Object* crate = TheGameLogic->findObjectByID(m_crateCreated);
 		m_crateCreated = INVALID_ID; // we have processed it, so clear it.
 		if (crate)
@@ -3560,13 +3560,10 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	// this fixes an obscure bug with mine-clearing: if you tell someone to clear mines and put the centerpoint
 	// inside a building, the dozer/worker will just go thru the building to that spot. ick. so if you find that
 	// this clause (below) is problematic, you'll probably have to find another way to fix this mine-clearing bug. (srj)
-#if RETAIL_COMPATIBLE_CRC
-	if (weapon && weapon->isContactWeapon() && !isPathAvailable(&localPos))
-#else
-  // TheSuperHackers @bugfix Stubbjax 23/08/2026 Only find a new position if the target is not within the attack range of the weapon.
-	// This allows contact weapons such as suicide bombs to immediately detonate without first pathing to a nearby position.
-	if (weapon && weapon->isContactWeapon() && !weapon->isWithinAttackRange(getObject(), &localPos) && !isPathAvailable(&localPos))
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail path-only; ZH also checks attack range (was RETAIL_COMPATIBLE_CRC).
+	if (weapon && weapon->isContactWeapon()
+			&& (GameProfile::get().isGenerals() || !weapon->isWithinAttackRange(getObject(), &localPos))
+			&& !isPathAvailable(&localPos))
 	{
 		FindPositionOptions fpOptions;
 		fpOptions.minRadius = 0.0f;
@@ -3843,11 +3840,13 @@ void AIUpdateInterface::privateExit( Object *objectToExit, CommandSourceType cmd
 	{
 		// TheSuperHackers @bugfix Caball009 / Okladnoj 10/08/2026 Don't process invalid exit commands,
 		// because an object should not attempt to exit something it's not contained by.
-#if !RETAIL_COMPATIBLE_CRC
-		const ContainModuleInterface *contain = objectToExit->getContain();
-		if (contain == nullptr || !contain->isContained(us))
-			return;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH validates exit containment (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
+		{
+			const ContainModuleInterface *contain = objectToExit->getContain();
+			if (contain == nullptr || !contain->isContained(us))
+				return;
+		}
 	}
 
   if ( objectToExit->isDisabledByType( DISABLED_SUBDUED ) )
@@ -3881,11 +3880,13 @@ void AIUpdateInterface::privateExitInstantly( Object *objectToExit, CommandSourc
 	{
 		// TheSuperHackers @bugfix Caball009 / Okladnoj 10/08/2026 Don't process invalid exit commands,
 		// because an object should not attempt to exit something it's not contained by.
-#if !RETAIL_COMPATIBLE_CRC
-		const ContainModuleInterface *contain = objectToExit->getContain();
-		if (contain == nullptr || !contain->isContained(us))
-			return;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH validates exit containment (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
+		{
+			const ContainModuleInterface *contain = objectToExit->getContain();
+			if (contain == nullptr || !contain->isContained(us))
+				return;
+		}
 	}
 
   if ( objectToExit->isDisabledByType( DISABLED_SUBDUED ) )
@@ -4787,11 +4788,11 @@ void AIUpdateInterface::evaluateMoraleBonus( Bool inHorde, Bool allowNationalism
 		evaluateNationalismBonusClassic(inHorde, allowNationalism);
 		break;
 
-#if !RETAIL_COMPATIBLE_CRC
+// GeneralsX @refactor cheviiot 24/10/2026 ZH horde-fixed nationalism (was !RETAIL_COMPATIBLE_CRC).
 	case HORDEACTION_HORDE_FIXED:
-		evaluateNationalismBonus(inHorde, allowNationalism);
+		if (!GameProfile::get().isGenerals())
+			evaluateNationalismBonus(inHorde, allowNationalism);
 		break;
-#endif
 	}
 }
 

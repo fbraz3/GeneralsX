@@ -28,6 +28,7 @@
 
 #include "Common/AsciiString.h"
 #include "Common/GameMemory.h"
+#include "Common/GameProfile.h"
 #include "Common/PerfTimer.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "StdDevice/Common/StdLocalFile.h"
@@ -260,14 +261,14 @@ void StdLocalFileSystem::init()
 {
 #ifndef _WIN32
 	// GeneralsX @bugfix felipebraz 16/10/2026 Default asset root fallback from environment variables
+	// GeneralsX @feature cheviiot 23/10/2026 Prefer the selected GameProfile primary asset ENV.
 	if (s_assetFallbackPath.empty())
 	{
-#if RTS_ZEROHOUR
-		const char *env = getenv("CNC_GENERALS_ZH_PATH");
-		if (!env || !env[0]) env = getenv("CNC_GENERALS_PATH");
-#else
-		const char *env = getenv("CNC_GENERALS_PATH");
-#endif
+		const GameProfile &profile = GameProfile::get();
+		const char *env = getenv(profile.getPrimaryAssetEnvName());
+		if ((!env || !env[0]) && profile.isZeroHour()) {
+			env = getenv("CNC_GENERALS_PATH");
+		}
 		if (env && env[0])
 		{
 			setAssetRootPath(AsciiString(env));

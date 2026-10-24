@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
 #include "Common/INI.h"
@@ -235,14 +236,32 @@ void EMPUpdate::doDisableAttack()
 
 					for (UnsignedInt e = 0 ; e < emitterCount; ++e)
 					{
+						// GeneralsX @bugfix cheviiot 24/10/2026 PLAN-023: Generals retail Logic burn + Client FX; ZH keeps Logic FX.
+						// Upstream reference: TheSuperHackers @fix (particle CRC decoupling)
+						const Bool retailParticleCrc = GameProfile::get().isGenerals();
+						if( retailParticleCrc )
+						{
+							Coord3D offs = {0,0,0};
+							curVictim->getGeometryInfo().makeRandomOffsetWithinFootprint( offs, LogicRandomValueClass() );
+							GameLogicRandomValue(3, victimHeight);
+							GameLogicRandomValue(1, 100);
+						}
 
 						ParticleSystem *sys = TheParticleSystemManager->createParticleSystem(tmp);
 
 						if (sys)
 						{
 							Coord3D offs = {0,0,0};
-							curVictim->getGeometryInfo().makeRandomOffsetWithinFootprint( offs );
-							offs.z = GameLogicRandomValue(3, victimHeight);
+							if( retailParticleCrc )
+							{
+								curVictim->getGeometryInfo().makeRandomOffsetWithinFootprint( offs, ClientRandomValueClass() );
+								offs.z = GameClientRandomValue(3, victimHeight);
+							}
+							else
+							{
+								curVictim->getGeometryInfo().makeRandomOffsetWithinFootprint( offs );
+								offs.z = GameLogicRandomValue(3, victimHeight);
+							}
 
 							//This puts all the sparks within a quadrahemicycloid (rectangular dome) volume
 							//The same shape as a four cornered camping dome tent, for those with less Greek
@@ -259,7 +278,10 @@ void EMPUpdate::doDisableAttack()
 							sys->attachToObject(curVictim);
 							sys->setPosition( &offs );
 							sys->setSystemLifetime(MAX(0, data->m_disabledDuration - 30));
-							sys->setInitialDelay(GameLogicRandomValue(1,100));
+							if( retailParticleCrc )
+								sys->setInitialDelay(GameClientRandomValue(1,100));
+							else
+								sys->setInitialDelay(GameLogicRandomValue(1,100));
 						}
 					}
 				}

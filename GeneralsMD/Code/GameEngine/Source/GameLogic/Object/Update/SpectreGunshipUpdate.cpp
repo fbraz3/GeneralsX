@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_DEATH_NAMES
 
@@ -615,13 +616,11 @@ UpdateSleepTime SpectreGunshipUpdate::update()
 
 
           // GATTLING TARGETING LOGIC------------------------------------------
-#if RETAIL_COMPATIBLE_CRC
-				  // TheSuperHackers @fix The particle system is now decoupled from the logic crc
-				  const ParticleSystemTemplate *tmp = data->m_gattlingStrafeFXParticleSystem;
-				  if (tmp && gattling && gattling->testStatus( OBJECT_STATUS_IS_FIRING_WEAPON) )
-#else
-				  if (gattling && gattling->testStatus( OBJECT_STATUS_IS_FIRING_WEAPON) )
-#endif
+				  // GeneralsX @refactor cheviiot 24/10/2026 Retail couples particle template; ZH decouples (was RETAIL_COMPATIBLE_CRC).
+				  const Bool gattlingFiring = gattling && gattling->testStatus( OBJECT_STATUS_IS_FIRING_WEAPON);
+				  if (GameProfile::get().isGenerals()
+						  ? (data->m_gattlingStrafeFXParticleSystem && gattlingFiring)
+						  : gattlingFiring)
 				  {
 
 

@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
@@ -108,12 +109,10 @@ void FlammableUpdate::onDamage( DamageInfo *damageInfo )
 			m_flameDamageLimit = getFlammableUpdateModuleData()->m_flameDamageLimitData;
 		}
 		m_lastFlameDamageDealt = now;
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_NO_XP_FROM_FLAME_KILLS
-		m_flameSource = getObject()->getID();
-#else
-		// TheSuperHackers @bugfix Stubbjax 03/09/2025 Allow flame damage to award xp to the flame source.
-		m_flameSource = damageInfo->in.m_sourceID;
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail self as flame XP; ZH uses damage source (was RETAIL_COMPATIBLE_CRC).
+		m_flameSource = (GameProfile::get().isGenerals() || PRESERVE_NO_XP_FROM_FLAME_KILLS)
+			? getObject()->getID()
+			: damageInfo->in.m_sourceID;
 
 		Object *me = getObject();
 		if( !me->getStatusBits().test( OBJECT_STATUS_AFLAME ) && !me->getStatusBits().test( OBJECT_STATUS_BURNED ) )

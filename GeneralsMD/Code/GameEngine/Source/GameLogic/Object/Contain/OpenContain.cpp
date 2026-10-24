@@ -35,6 +35,7 @@
 
 #include "Common/BitFlagsIO.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/Module.h"
 #include "Common/Player.h"
@@ -177,12 +178,14 @@ OpenContain::~OpenContain()
 										 ("OpenContain %s: m_xferContainIDList is not empty but should be",
 											getObject()->getTemplate()->getName().str() ) );
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Caball009 18/08/2026 Due to a potential use-after-free bug that cannot be fixed
-	// with retail compatibility, it's desirable to be able to check if the contain list is empty after its destruction.
-	// Clear the list explicitly to reset the list size.
-	m_containList.clear();
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail keep clear-after-dtor semantics.
+	if( GameProfile::get().isGenerals() )
+	{
+		// TheSuperHackers @bugfix Caball009 18/08/2026 Due to a potential use-after-free bug that cannot be fixed
+		// with retail compatibility, it's desirable to be able to check if the contain list is empty after its destruction.
+		// Clear the list explicitly to reset the list size.
+		m_containList.clear();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -301,16 +304,18 @@ void OpenContain::addToContain( Object *rider )
 	if( rider == nullptr )
 		return;
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Caball009 25/05/2026 Ensure the occupant is only added to a non-destroyed
-	// container to avoid an invalid state and use-after-free bugs when accessing the contained by pointer.
-	if (getObject()->isDestroyed())
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: ZH-only destroyed-container guard.
+	if( !GameProfile::get().isGenerals() )
 	{
-		DEBUG_CRASH(("'%s' is about to be added to '%s', which is destroyed",
-			rider->getTemplate()->getName().str(), getObject()->getTemplate()->getName().str()));
-		return;
+		// TheSuperHackers @bugfix Caball009 25/05/2026 Ensure the occupant is only added to a non-destroyed
+		// container to avoid an invalid state and use-after-free bugs when accessing the contained by pointer.
+		if (getObject()->isDestroyed())
+		{
+			DEBUG_CRASH(("'%s' is about to be added to '%s', which is destroyed",
+				rider->getTemplate()->getName().str(), getObject()->getTemplate()->getName().str()));
+			return;
+		}
 	}
-#endif
 
 	// TheSuperHackers @bugfix Stubbjax 06/02/2026 Ensure the rider is not destroyed to prevent a
 	// likely crash if it enters the container on the same frame. If this occurs with an unpatched
@@ -369,11 +374,13 @@ void OpenContain::addToContain( Object *rider )
 		addOrRemoveObjFromWorld(rider, false);
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	// ensure our occupants are positioned correctly.
-	// TheSuperHackers @info Moving this call elsewhere will cause retail mismatch.
-	redeployOccupants();
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals redeploy before onContaining; ZH after.
+	if( GameProfile::get().isGenerals() )
+	{
+		// ensure our occupants are positioned correctly.
+		// TheSuperHackers @info Moving this call elsewhere will cause retail mismatch.
+		redeployOccupants();
+	}
 
 	// trigger an onContaining event for the object that just "ate" something
 	if( getObject()->getContain() )
@@ -384,9 +391,8 @@ void OpenContain::addToContain( Object *rider )
 	// ensure our occupants are positioned correctly.
 	// TheSuperHackers @fix Skyaero 10/07/2025 Now (re)deploys the occupants after the garrison points
 	// had a chance to initialize with prior call to onContaining(). No user facing bug was observed.
-#if !RETAIL_COMPATIBLE_CRC
-	redeployOccupants();
-#endif
+	if( !GameProfile::get().isGenerals() )
+		redeployOccupants();
 
 	// trigger an onContainedBy event for the object that just got "eaten" by us
 	rider->onContainedBy( getObject() );
@@ -445,14 +451,16 @@ void OpenContain::removeFromContain( Object *rider, Bool exposeStealthUnits )
 
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Caball009 18/08/2026 Due to a potential use-after-free bug that cannot be fixed
-	// with retail compatibility, the 'contained by' pointer of this object may point to an already destroyed object.
-	// Check the list size before executing the find operation below, otherwise the game crashes if the list
-	// was already destructed.
-	if (m_containList.empty())
-		return;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail empty-list guard.
+	if( GameProfile::get().isGenerals() )
+	{
+		// TheSuperHackers @bugfix Caball009 18/08/2026 Due to a potential use-after-free bug that cannot be fixed
+		// with retail compatibility, the 'contained by' pointer of this object may point to an already destroyed object.
+		// Check the list size before executing the find operation below, otherwise the game crashes if the list
+		// was already destructed.
+		if (m_containList.empty())
+			return;
+	}
 
 	ContainedItemsList::iterator it = std::find(m_containList.begin(), m_containList.end(), rider);
 	if (it != m_containList.end())
@@ -788,9 +796,9 @@ void OpenContain::scatterToNearbyPosition(Object* rider)
 		// set position of the object at center of building and move them toward pos
 		rider->setPosition( theContainer->getPosition() );
 		ai->ignoreObstacle(theContainer);
-#if !RETAIL_COMPATIBLE_CRC
-		ai->friend_setGoalObject(nullptr);
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: ZH clears AI goal on exit.
+		if( !GameProfile::get().isGenerals() )
+			ai->friend_setGoalObject(nullptr);
 		ai->aiMoveToPosition( &pos, CMD_FROM_AI );
 
 	}
@@ -927,9 +935,9 @@ void OpenContain::onDie( const DamageInfo * damageInfo )
 	if (!getOpenContainModuleData()->m_dieMuxData.isDieApplicable(getObject(), damageInfo))
 		return;
 
-#if !RETAIL_COMPATIBLE_CRC
-	killRidersWhoAreNotFreeToExit();
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: ZH kill non-free riders before damage; Generals after.
+	if( !GameProfile::get().isGenerals() )
+		killRidersWhoAreNotFreeToExit();
 
 	//Check to see if we are going to inflict damage on contained units.
 	if( getDamagePercentageToUnits() > 0 )
@@ -938,9 +946,8 @@ void OpenContain::onDie( const DamageInfo * damageInfo )
 		processDamageToContained(getDamagePercentageToUnits());
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	killRidersWhoAreNotFreeToExit();
-#endif
+	if( GameProfile::get().isGenerals() )
+		killRidersWhoAreNotFreeToExit();
 
 	// Leaving this commented out to show it can't work.  We are about to die, so they will have zero
 	// chance to hit an exitState::Update.  At least we would clean them up in onDelete.
@@ -1509,8 +1516,7 @@ void OpenContain::orderAllPassengersToHackInternet( CommandSourceType commandSou
 	}
 }
 
-#if RETAIL_COMPATIBLE_CRC
-
+// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always compile Internal helper.
 //-------------------------------------------------------------------------------------------------
 void OpenContain::processDamageToContainedInternal(Object* const* objects, size_t size, Real percentDamage)
 {
@@ -1542,93 +1548,91 @@ void OpenContain::processDamageToContainedInternal(Object* const* objects, size_
 	}
 }
 
-#endif // RETAIL_COMPATIBLE_CRC
-
 //-------------------------------------------------------------------------------------------------
 void OpenContain::processDamageToContained(Real percentDamage)
 {
-#if RETAIL_COMPATIBLE_CRC
-
-	DEBUG_ASSERTCRASH(m_containListSize == m_containList.size(), ("contain list size doesn't match size of container"));
-
-	// TheSuperHackers @bugfix Caball009 11/03/2026 Use a temporary copy of the contain list to iterate over,
-	// because causing damage to the occupants may remove some or all elements from the list
-	// while iterating over it, which may be unsafe.
-
-	constexpr const UnsignedInt smallContainerSize = 16;
-	const size_t containCount = m_containList.size();
-	if (containCount < smallContainerSize)
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail copy-iterate vs ZH detach-list path.
+	if( GameProfile::get().isGenerals() )
 	{
-		// GeneralsX @bugfix Bender 01/04/2026 Use copied element count to avoid invalid reads in non-assert builds.
-		Object* containCopy[smallContainerSize];
-		std::copy(m_containList.begin(), m_containList.end(), containCopy);
+		DEBUG_ASSERTCRASH(m_containListSize == m_containList.size(), ("contain list size doesn't match size of container"));
 
-		processDamageToContainedInternal(containCopy, containCount, percentDamage);
-	}
-	else
-	{
-		const std::vector<Object*> containCopy(m_containList.begin(), m_containList.end());
+		// TheSuperHackers @bugfix Caball009 11/03/2026 Use a temporary copy of the contain list to iterate over,
+		// because causing damage to the occupants may remove some or all elements from the list
+		// while iterating over it, which may be unsafe.
 
-		processDamageToContainedInternal(&containCopy[0], containCopy.size(), percentDamage);
-	}
-
-#else
-
-	// TheSuperHackers @bugfix xezon 05/06/2025 Temporarily empty the m_containList
-	// because causing damage to the occupants may remove some or all elements from the list
-	// while iterating over it, which may be unsafe.
-
-	// Caveat: While the m_containList is empty, it will not be possible to apply damage
-	// on death of a unit to another unit in the host container. If this functionality
-	// is desired, then this implementation needs to be revisited.
-
-	const DeathType deathType = getOpenContainModuleData()->m_isBurnedDeathToUnits ? DEATH_BURNED : DEATH_NORMAL;
-	const bool killContained = percentDamage == 1.0f;
-
-	ContainedItemsList list;
-	m_containList.swap(list);
-	m_containListSize = 0;
-
-	ContainedItemsList::iterator it = list.begin();
-
-	while ( it != list.end() )
-	{
-		Object *object = *it;
-
-		DEBUG_ASSERTCRASH( object, ("Contain list must not contain null element") );
-
-		// Calculate the damage to be inflicted on each unit.
-		Real damage = object->getBodyModule()->getMaxHealth() * percentDamage;
-
-		DamageInfo damageInfo;
-		damageInfo.in.m_damageType = DAMAGE_UNRESISTABLE;
-		damageInfo.in.m_deathType = deathType;
-		damageInfo.in.m_sourceID = getObject()->getID();
-		damageInfo.in.m_amount = damage;
-		object->attemptDamage( &damageInfo );
-
-		if( !object->isEffectivelyDead() && killContained )
-			object->kill(); // in case we are carrying flame proof troops we have been asked to kill
-
-		// GeneralsX @bugfix mreza0100 23/07/2026 A destroyed occupant cannot remove itself
-		// while the contain list is temporarily detached. Do not restore a pending dangling pointer.
-		if ( object->isEffectivelyDead() || object->isDestroyed() )
+		constexpr const UnsignedInt smallContainerSize = 16;
+		const size_t containCount = m_containList.size();
+		if (containCount < smallContainerSize)
 		{
-			onRemoving( object );
-			object->onRemovedFrom( getObject() );
-			it = list.erase( it );
+			// GeneralsX @bugfix Bender 01/04/2026 Use copied element count to avoid invalid reads in non-assert builds.
+			Object* containCopy[smallContainerSize];
+			std::copy(m_containList.begin(), m_containList.end(), containCopy);
+
+			processDamageToContainedInternal(containCopy, containCount, percentDamage);
 		}
 		else
 		{
-			++it;
+			const std::vector<Object*> containCopy(m_containList.begin(), m_containList.end());
+
+			processDamageToContainedInternal(&containCopy[0], containCopy.size(), percentDamage);
 		}
 	}
+	else
+	{
+		// TheSuperHackers @bugfix xezon 05/06/2025 Temporarily empty the m_containList
+		// because causing damage to the occupants may remove some or all elements from the list
+		// while iterating over it, which may be unsafe.
 
-	// Swap the list back where it belongs.
-	m_containList.swap(list);
-	m_containListSize = (UnsignedInt)m_containList.size();
+		// Caveat: While the m_containList is empty, it will not be possible to apply damage
+		// on death of a unit to another unit in the host container. If this functionality
+		// is desired, then this implementation needs to be revisited.
 
-#endif // RETAIL_COMPATIBLE_CRC
+		const DeathType deathType = getOpenContainModuleData()->m_isBurnedDeathToUnits ? DEATH_BURNED : DEATH_NORMAL;
+		const bool killContained = percentDamage == 1.0f;
+
+		ContainedItemsList list;
+		m_containList.swap(list);
+		m_containListSize = 0;
+
+		ContainedItemsList::iterator it = list.begin();
+
+		while ( it != list.end() )
+		{
+			Object *object = *it;
+
+			DEBUG_ASSERTCRASH( object, ("Contain list must not contain null element") );
+
+			// Calculate the damage to be inflicted on each unit.
+			Real damage = object->getBodyModule()->getMaxHealth() * percentDamage;
+
+			DamageInfo damageInfo;
+			damageInfo.in.m_damageType = DAMAGE_UNRESISTABLE;
+			damageInfo.in.m_deathType = deathType;
+			damageInfo.in.m_sourceID = getObject()->getID();
+			damageInfo.in.m_amount = damage;
+			object->attemptDamage( &damageInfo );
+
+			if( !object->isEffectivelyDead() && killContained )
+				object->kill(); // in case we are carrying flame proof troops we have been asked to kill
+
+			// GeneralsX @bugfix mreza0100 23/07/2026 A destroyed occupant cannot remove itself
+			// while the contain list is temporarily detached. Do not restore a pending dangling pointer.
+			if ( object->isEffectivelyDead() || object->isDestroyed() )
+			{
+				onRemoving( object );
+				object->onRemovedFrom( getObject() );
+				it = list.erase( it );
+			}
+			else
+			{
+				++it;
+			}
+		}
+
+		// Swap the list back where it belongs.
+		m_containList.swap(list);
+		m_containListSize = (UnsignedInt)m_containList.size();
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1676,17 +1680,19 @@ const Coord3D *OpenContain::getRallyPoint() const
 	if (m_rallyPointExists)
 		return &m_rallyPoint;
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Use primary exit interface rally point if available.
-	if (getObject())
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: ZH primary-exit rally fallback.
+	if( !GameProfile::get().isGenerals() )
 	{
-		ExitInterface *primaryExit = getObject()->getObjectExitInterface();
-		if (primaryExit && primaryExit != static_cast<const ExitInterface *>(this))
+		// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Use primary exit interface rally point if available.
+		if (getObject())
 		{
-			return primaryExit->getRallyPoint();
+			ExitInterface *primaryExit = getObject()->getObjectExitInterface();
+			if (primaryExit && primaryExit != static_cast<const ExitInterface *>(this))
+			{
+				return primaryExit->getRallyPoint();
+			}
 		}
 	}
-#endif
 
 	return nullptr;
 }

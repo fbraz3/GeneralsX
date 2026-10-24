@@ -29,6 +29,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/Xfer.h"
 #include "Common/ThingTemplate.h"
 #include "GameLogic/ExperienceTracker.h"
@@ -249,9 +250,9 @@ void ExperienceTracker::crc( Xfer *xfer )
 {
 	xfer->xferInt( &m_currentExperience );
 	xfer->xferUser( &m_currentLevel, sizeof( VeterancyLevel ) );
-#if !RETAIL_COMPATIBLE_CRC
-	xfer->xferBool(&m_isTrainable);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH CRC includes m_isTrainable (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
+		xfer->xferBool(&m_isTrainable);
 }
 
 //-----------------------------------------------------------------------------

@@ -1,3 +1,25 @@
+# TODO Originally referred to build host and user, replace with git info perhaps?
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
+"#pragma once
+
+#define VERSION_LOCALBUILDNUM 0
+#define VERSION_BUILDUSER \"\"
+#define VERSION_BUILDLOC \"\"
+"
+)
+
+# Based on original binary values for these variables.
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
+"#pragma once
+
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 4
+#define VERSION_BUILDNUM 601
+"
+)
+
+# GeneralsX @build cheviiot 24/10/2026 PLAN-023 Gate 6: migration binary optional (default OFF).
+if(RTS_BUILD_MIGRATION_BINARIES)
 add_executable(z_generals WIN32)
 
 # Use a binary name that doesn't conflict with original game.
@@ -35,26 +57,6 @@ target_link_libraries(z_generals PRIVATE
 if(SAGE_USE_SDL3)
     target_link_libraries(z_generals PRIVATE sdl3lib)
 endif()
-
-# TODO Originally referred to build host and user, replace with git info perhaps?
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
-"#pragma once
-
-#define VERSION_LOCALBUILDNUM 0
-#define VERSION_BUILDUSER \"\"
-#define VERSION_BUILDLOC \"\"
-"
-)
-
-# Based on original binary values for these variables.
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
-"#pragma once
-
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 4
-#define VERSION_BUILDNUM 601
-"
-)
 
 if(MSVC)
     target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
@@ -94,4 +96,69 @@ endif()
 # This creates generalszh${RTS_BUILD_OUTPUT_SUFFIX}.exe.debug (similar to MSVC .pdb files)
 if(MINGW AND COMMAND add_debug_strip_target)
     add_debug_strip_target(z_generals)
+endif()
+endif() # RTS_BUILD_MIGRATION_BINARIES
+
+# GeneralsX @build cheviiot 23/10/2026 PLAN-023 Stage 06: echelon = ZH-canonical binary with dual -game profiles.
+# Migration targets gated by RTS_BUILD_MIGRATION_BINARIES (default OFF after Gate 6 acceptance).
+if(RTS_BUILD_ECHELON)
+    add_executable(echelon WIN32)
+    set_target_properties(echelon PROPERTIES OUTPUT_NAME echelon)
+
+    if(WIN32)
+        target_link_libraries(echelon PRIVATE
+            deps_bink
+            comctl32
+            core_debug
+            d3d8
+            dinput8
+            dxguid
+            imm32
+            deps_miles
+            vfw32
+            winmm
+        )
+    endif()
+
+    target_link_libraries(echelon PRIVATE
+        core_profile_legacy
+        d3dx8
+        z_gameengine
+        z_gameenginedevice
+        zi_always
+    )
+
+    if(SAGE_USE_SDL3)
+        target_link_libraries(echelon PRIVATE sdl3lib)
+    endif()
+
+    target_compile_definitions(echelon PRIVATE
+        RTS_UNIFIED_ENGINE=1
+    )
+
+    target_include_directories(echelon PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+    target_sources(echelon PRIVATE
+        $<$<BOOL:${WIN32}>:WinMain.cpp>
+        $<$<BOOL:${WIN32}>:WinMain.h>
+        $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
+        $<$<NOT:$<BOOL:${WIN32}>>:GameSelectUI.cpp>
+        $<$<NOT:$<BOOL:${WIN32}>>:GameSelectUI.h>
+        $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
+    )
+
+    if(MSVC)
+        target_link_options(echelon PRIVATE "/NODEFAULTLIB:libci.lib")
+        if(NOT IS_VS6_BUILD)
+            target_link_options(echelon PRIVATE "/MANIFEST:NO")
+        endif()
+        target_sources(echelon PRIVATE RTS.RC)
+    endif()
+
+    if(MINGW AND COMMAND add_debug_strip_target)
+        add_debug_strip_target(echelon)
+    endif()
 endif()

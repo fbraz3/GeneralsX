@@ -22,6 +22,8 @@ set(GAMEENGINE_SRC
 #    Include/Common/BuildAssistant.h
 #    Include/Common/ClientUpdateModule.h
     Include/Common/CommandLine.h
+    # GeneralsX @feature cheviiot 23/10/2026 PLAN-023 Stage 03 immutable game profile.
+    Include/Common/GameProfile.h
     Include/Common/crc.h
     Include/Common/CRCDebug.h
 #    Include/Common/CriticalSection.h
@@ -254,7 +256,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/Damage.h
 #    Include/GameLogic/ExperienceTracker.h
 #    Include/GameLogic/FiringTracker.h
-#    Include/GameLogic/FPUControl.h
+    Include/GameLogic/FPUControl.h
 #    Include/GameLogic/GameLogic.h
     Include/GameLogic/GameMode.h
 #    Include/GameLogic/GhostObject.h
@@ -584,6 +586,8 @@ set(GAMEENGINE_SRC
     Source/Common/Bezier/BezierSegment.cpp
 #    Source/Common/BitFlags.cpp
     Source/Common/CommandLine.cpp
+    # GeneralsX @feature cheviiot 23/10/2026 PLAN-023 Stage 03 immutable game profile.
+    Source/Common/GameProfile.cpp
     Source/Common/crc.cpp
     Source/Common/CRCDebug.cpp
     Source/Common/DamageFX.cpp

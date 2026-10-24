@@ -27,6 +27,7 @@
 // Desc:   A standard ai update that also handles units that must deploy to attack and pack before moving.
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/Player.h"
 #include "Common/ThingFactory.h"
@@ -145,12 +146,10 @@ UpdateSleepTime DeployStyleAIUpdate::update()
 
 	// TheSuperHackers @bugfix Caball009 27/07/2026 The pathfinding code may use a stricter attack range check than used
 	// in this function, so the range check is insufficient. Objects are not allowed to deploy and attack if they're moving.
-#if RETAIL_COMPATIBLE_CRC
-	if (isInRange || isInGuardIdleState)
-#else
-	// @todo Simplify the code by moving the second branch up so 'isTryingToMove' is checked first.
-	if (!isTryingToMove && (isInRange || isInGuardIdleState))
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail ignores move; ZH requires !moving (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals()
+			? (isInRange || isInGuardIdleState)
+			: (!isTryingToMove && (isInRange || isInGuardIdleState)))
 	{
 		switch( m_state )
 		{

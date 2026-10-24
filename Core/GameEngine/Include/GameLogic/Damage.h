@@ -93,6 +93,9 @@ enum DamageType CPP_11(: Int)
 	DAMAGE_NUM_TYPES
 };
 
+// GeneralsX @feature cheviiot 23/10/2026 Bind DamageType INI names to the selected GameProfile (slot 31 fork).
+void ApplyDamageTypeNamesForProfile(void);
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 

@@ -29,6 +29,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "GameClient/ChallengeGenerals.h"
 
 
@@ -57,6 +58,10 @@ ChallengeGenerals::~ChallengeGenerals()
 
 void ChallengeGenerals::init()
 {
+	// GeneralsX @feature cheviiot 23/10/2026 Challenge Mode INI is Zero Hour-only; Generals assets have no ChallengeMode tree.
+	if( !GameProfile::get().isZeroHour() )
+		return;
+
 	INI ini;
 	ini.loadFileDirectory( "Data\\INI\\ChallengeMode", INI_LOAD_OVERWRITE, nullptr );
 }

@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -1168,10 +1169,12 @@ void W3DTerrainVisual::xfer( Xfer *xfer )
 {
 
 	// version
-#if RTS_GENERALS && RETAIL_COMPATIBLE_XFER_SAVE
-	XferVersion currentVersion = 2;
+	// GeneralsX @refactor cheviiot 24/10/2026 Generals retail terrain visual v2 / ZH v3 (was #if RTS_GENERALS && RETAIL_XFER).
+	const XferVersion currentVersion =
+#if RETAIL_COMPATIBLE_XFER_SAVE
+		GameProfile::get().isGenerals() ? 2 : 3;
 #else
-	XferVersion currentVersion = 3;
+		3;
 #endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );

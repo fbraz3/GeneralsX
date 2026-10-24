@@ -648,9 +648,8 @@ protected:
 
 	virtual void reactToTransformChange(const Matrix3D* oldMtx, const Coord3D* oldPos, Real oldAngle) override;
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: always present; call sites use GameProfile.
 	void removeFromTunnelContain();
-#endif
 
 private:
 

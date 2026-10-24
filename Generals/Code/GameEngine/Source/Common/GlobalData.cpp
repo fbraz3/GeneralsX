@@ -670,6 +670,10 @@ GlobalData::GlobalData()
 	m_skirmishTickRate = LOGICFRAMES_PER_SECOND;
 	m_chipSetType = 0;
 	m_headless = FALSE;
+	m_quitAfterLogicFrames = 0;
+	m_lanProbe = FALSE;
+	m_cliSkirmish = FALSE;
+	m_saveAtLogicFrame = 0;
 	// GeneralsX @feature BenderAI 21/04/2026 Default to TRUE; user can override via Options.ini
 	m_checkForUpdates = TRUE;
 	m_windowed = 0;

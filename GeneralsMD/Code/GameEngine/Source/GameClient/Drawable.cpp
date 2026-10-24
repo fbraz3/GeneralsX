@@ -40,6 +40,7 @@
 #include "Common/DrawModule.h"
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
@@ -4892,10 +4893,9 @@ void Drawable::xfer( Xfer *xfer )
 {
 
 	// version
-#if RETAIL_COMPATIBLE_XFER_SAVE && RTS_GENERALS
-	const XferVersion currentVersion = 5;
-#elif RETAIL_COMPATIBLE_XFER_SAVE
-	const XferVersion currentVersion = 7;
+	// GeneralsX @refactor cheviiot 23/10/2026 Drawable stream version by GameProfile (was #if RTS_GENERALS && RETAIL_XFER).
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	const XferVersion currentVersion = GameProfile::get().isGenerals() ? 5 : 7;
 #else
 	const XferVersion currentVersion = 9;
 #endif
@@ -4979,10 +4979,47 @@ void Drawable::xfer( Xfer *xfer )
 	}
 
 	// terrain decal type
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals retail wire order differs for NONE/FANATICISM/CHEMSUIT (indices 5-7).
 	TerrainDecalType decal = getTerrainDecalType();
-	xfer->xferUser( &decal, sizeof( TerrainDecalType ) );
+	Int wire = (Int)decal;
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	if (GameProfile::get().isGenerals())
+	{
+		// Generals wire: 5=NONE, 6=FANATICISM, 7=CHEMSUIT. Internal ZH: 5=FANATICISM, 6=CHEMSUIT, 7=NONE.
+		// Apply on SAVE and CRC so Generals-profile digests match retail wire order.
+		if (xfer->getXferMode() == XFER_SAVE || xfer->getXferMode() == XFER_CRC)
+		{
+			if (decal == TERRAIN_DECAL_NONE)
+				wire = 5;
+			else if (decal == TERRAIN_DECAL_HORDE_WITH_FANATICISM_UPGRADE)
+				wire = 6;
+			else if (decal == TERRAIN_DECAL_CHEMSUIT)
+				wire = 7;
+		}
+	}
+#endif
+	xfer->xferUser( &wire, sizeof( Int ) );
 	if( xfer->getXferMode() == XFER_LOAD )
+	{
+#if RETAIL_COMPATIBLE_XFER_SAVE
+		if (GameProfile::get().isGenerals())
+		{
+			if (wire == 5)
+				decal = TERRAIN_DECAL_NONE;
+			else if (wire == 6)
+				decal = TERRAIN_DECAL_HORDE_WITH_FANATICISM_UPGRADE;
+			else if (wire == 7)
+				decal = TERRAIN_DECAL_CHEMSUIT;
+			else
+				decal = (TerrainDecalType)wire;
+		}
+		else
+#endif
+		{
+			decal = (TerrainDecalType)wire;
+		}
 		setTerrainDecal( decal );
+	}
 
 	// explicit opacity
 	xfer->xferReal( &m_explicitOpacity );

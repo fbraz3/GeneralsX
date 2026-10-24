@@ -81,11 +81,45 @@ static void ConvertShortMapPathToLongMapPath(AsciiString &mapName)
 	AsciiString token;
 	AsciiString actualpath;
 
+	// GeneralsX @feature cheviiot 24/10/2026 Accept bare map titles ("Alpine Assault" → Maps\Alpine Assault\Alpine Assault.map).
 	if ((path.find('\\') == nullptr) && (path.find('/') == nullptr))
 	{
-		DEBUG_CRASH(("Invalid map name %s", mapName.str()));
+		if (path.isEmpty())
+		{
+			DEBUG_CRASH(("Invalid map name %s", mapName.str()));
+			return;
+		}
+		AsciiString bare = path;
+		if (bare.endsWithNoCase(".map"))
+		{
+			bare.truncateBy(4);
+		}
+		actualpath.format("Maps\\%s\\%s.map", bare.str(), bare.str());
+		mapName = actualpath;
 		return;
 	}
+
+	// GeneralsX @bugfix cheviiot 24/10/2026 Do not re-expand already-long paths
+	// (Maps\Name\Name.map → Maps\Name\Name\Name.map). Only expand the short form Maps\Name.map.
+	if (path.endsWithNoCase(".map"))
+	{
+		Int sepCount = 0;
+		for (const char *p = path.str(); *p; ++p)
+		{
+			if (*p == '\\' || *p == '/')
+				++sepCount;
+		}
+		if (sepCount >= 2)
+		{
+			// Normalize separators to backslash for engine map cache keys.
+			AsciiString norm;
+			for (const char *p = path.str(); *p; ++p)
+				norm.concat((*p == '/') ? '\\' : *p);
+			mapName = norm;
+			return;
+		}
+	}
+
 	path.nextToken(&token, "\\/");
 	while (!token.endsWithNoCase(".map") && (!token.isEmpty()))
 	{
@@ -405,11 +439,66 @@ Int parseNoShadows(char *args[], int)
 
 Int parseMapName(char *args[], int num)
 {
-	if (num == 2)
+	// GeneralsX @feature cheviiot 24/10/2026 Release -map for dual-profile smoke (was RTS_DEBUG-only; also set m_initialFile).
+	if (num > 1)
 	{
 		TheWritableGlobalData->m_mapName.set( args[ 1 ] );
 		ConvertShortMapPathToLongMapPath(TheWritableGlobalData->m_mapName);
+		TheWritableGlobalData->m_initialFile = TheWritableGlobalData->m_mapName;
+		TheWritableGlobalData->m_shellMapOn = FALSE;
+		TheWritableGlobalData->m_playIntro = FALSE;
+		TheWritableGlobalData->m_playSizzle = FALSE;
+		return 2;
 	}
+	return 1;
+}
+
+Int parseSkirmish(char *args[], int num)
+{
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: start GAME_SKIRMISH from CLI (enables .rep recording).
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_mapName.set(args[1]);
+		ConvertShortMapPathToLongMapPath(TheWritableGlobalData->m_mapName);
+		TheWritableGlobalData->m_initialFile = TheWritableGlobalData->m_mapName;
+		TheWritableGlobalData->m_shellMapOn = FALSE;
+		TheWritableGlobalData->m_playIntro = FALSE;
+		TheWritableGlobalData->m_playSizzle = FALSE;
+		TheWritableGlobalData->m_cliSkirmish = TRUE;
+		return 2;
+	}
+	return 1;
+}
+
+Int parseQuitAfterFrames(char *args[], int num)
+{
+	// GeneralsX @feature cheviiot 24/10/2026 Headless/smoke: quit after N in-game logic frames.
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_quitAfterLogicFrames = atoi(args[1]);
+		return 2;
+	}
+	return 1;
+}
+
+Int parseSaveAtFrame(char *args[], int num)
+{
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: write a .sav once at the given in-game frame.
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_saveAtLogicFrame = atoi(args[1]);
+		return 2;
+	}
+	return 1;
+}
+
+Int parseLanProbe(char *args[], int num)
+{
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: headless LAN socket bind + RequestLocations.
+	TheWritableGlobalData->m_lanProbe = TRUE;
+	TheWritableGlobalData->m_headless = TRUE;
+	TheWritableGlobalData->m_playIntro = FALSE;
+	TheWritableGlobalData->m_playSizzle = FALSE;
 	return 1;
 }
 
@@ -1186,6 +1275,9 @@ static CommandLineParam paramsForStartup[] =
 	// This runs the game without a window, graphics, input and audio. You can combine this with -replay
 	{ "-headless", parseHeadless },
 
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: must be startup-phase so SDL skips video (sets headless).
+	{ "-lanProbe", parseLanProbe },
+
 	// TheSuperHackers @feature helmutbuhler 13/04/2025
 	// Play back a replay. Pass the filename including .rep afterwards.
 	// You can pass this multiple times to play back multiple replays.
@@ -1237,9 +1329,16 @@ static CommandLineParam paramsForEngineInit[] =
 	// TheSuperHackers @feature xezon 03/08/2025 Force full viewport for 'Control Bar Pro' Addons like GenTool did it.
 	{ "-forcefullviewport", parseFullViewport },
 
+	// GeneralsX @feature cheviiot 24/10/2026 Release map load + frame-limit quit for PLAN-023 smoke (was RTS_DEBUG-only -map).
+	{ "-map", parseMapName },
+	{ "-quitAfterFrames", parseQuitAfterFrames },
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: skirmish CLI for recordable .rep smoke.
+	{ "-skirmish", parseSkirmish },
+	// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: save .sav at logic frame N.
+	{ "-saveAtFrame", parseSaveAtFrame },
+
 #if defined(RTS_DEBUG)
 	{ "-noaudio", parseNoAudio },
-	{ "-map", parseMapName },
 	{ "-nomusic", parseNoMusic },
 	{ "-novideo", parseNoVideo },
 	{ "-noLogOrCrash", parseNoLogOrCrash },

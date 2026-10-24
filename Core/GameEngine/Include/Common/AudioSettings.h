@@ -29,6 +29,7 @@
 #pragma once
 
 #include "Common/AsciiString.h"
+#include "Common/GameProfile.h"
 
 enum { MAX_HW_PROVIDERS = 4 };
 
@@ -37,12 +38,12 @@ struct AudioSettings
 	AudioSettings()
 		: m_use3DSoundRangeVolumeFade(true) // Enabled by default because it prevents audio cut off at the max range of 3D sounds
 		, m_3DSoundRangeVolumeFadeExponent(4.0f) // Exponent of 4 gives a nice balance between loud sounds and graceful fade
-#if RTS_GENERALS
+		// GeneralsX @feature cheviiot 23/10/2026 Do not call GameProfile::get() here (static ctors run before selectForProcess).
+		// Generals retail default is 1.0; ZH muted money clicks — AudioManager/INI/prefs overwrite after profile select.
 		, m_defaultMoneyTransactionVolume(1.0f)
-#elif RTS_ZEROHOUR
-		, m_defaultMoneyTransactionVolume(0.0f) // Uses zero volume by default because originally the money sounds did not work in Zero Hour
-#endif
 	{
+		if (GameProfile::isSelected() && GameProfile::get().isZeroHour())
+			m_defaultMoneyTransactionVolume = 0.0f;
 	}
 
 	AsciiString m_audioRoot;

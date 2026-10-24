@@ -49,6 +49,14 @@ Reserved for modern Windows toolchain (VS2022 + SDL3 + DXVK + MiniAudio)
 - `run.py` - Unified clang-tidy runner with batch processing and quiet output
 
 #### `tooling/cpp/maintenance/` - C++ Code Maintenance
+
+- `check_unified_engine_provenance.py` - Validate the consolidated-source map and
+  report upstream edits from either original game path without applying changes.
+  Run with Python 3 from any directory. Add `--upstream-range BASE..HEAD` to
+  inspect an incoming range and `--fail-on-mapped-change` to require review
+  (exit 2). Invalid maps, missing canonical files and revived copies fail with
+  exit 1. The map is `cmake/unified-engine-provenance.json`; its baseline commits
+  must be available locally (CI checks out full history).
 Utilities for large-scale code refactoring and fixes:
 - `fix_*.py` - Targeted fixes (matrix conversions, water rendering, noise, debug logging, Windows API)
 - `monitor-dxvk-build.py` - DXVK build monitoring tool
@@ -57,6 +65,10 @@ Utilities for large-scale code refactoring and fixes:
 - `unify_move_files.py` - Move files between Generals/GeneralsMD/Core with CMakeLists.txt updates
 
 ### `qa/` - Quality Assurance & Testing
+
+- `test_unified_engine_provenance.py` - Isolated Git fixture tests for both
+  original source paths, invalid mappings and the upstream-review exit status.
+  Run `python3 -m unittest discover -s scripts/qa -p test_unified_engine_provenance.py`.
 
 #### `qa/smoke/` - Smoke Tests
 - `docker-smoke-test-zh.sh` - Quick startup validation (expects crash, checks init output)

@@ -29,6 +29,8 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+
+#include "Common/GameProfile.h"
 #include "Common/GameMemory.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -123,9 +125,9 @@ void AIPlayer::onStructureProduced( Object *factory, Object *bldg )
 		d.setAsciiString(TheKey_objectName, info->getBuildingName());
 		d.setAsciiString(TheKey_objectScriptAttachment, info->getScript());
 		// TheSuperHackers @bugfix bobtista 31/10/2025 Preserve scaffold health when AI building construction completes instead of resetting to initial health.
-#if RETAIL_COMPATIBLE_CRC
-		d.setInt(TheKey_objectInitialHealth, info->getHealth());
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail resets scaffold health (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals())
+			d.setInt(TheKey_objectInitialHealth, info->getHealth());
 		d.setBool(TheKey_objectUnsellable, info->getUnsellable());
 
 		info->setUnderConstruction(false);
@@ -466,9 +468,9 @@ Object *AIPlayer::buildStructureNow(const ThingTemplate *bldgPlan, BuildListInfo
 		d.setAsciiString(TheKey_objectName, info->getBuildingName());
 		d.setAsciiString(TheKey_objectScriptAttachment, info->getScript());
 		// TheSuperHackers @bugfix bobtista 31/10/2025 Preserve scaffold health when AI building construction completes instead of resetting to initial health.
-#if RETAIL_COMPATIBLE_CRC
-		d.setInt(TheKey_objectInitialHealth, info->getHealth());
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail resets scaffold health (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals())
+			d.setInt(TheKey_objectInitialHealth, info->getHealth());
 		d.setBool(TheKey_objectUnsellable, info->getUnsellable());
 
 		bldg->updateObjValuesFromMapProperties(&d);
@@ -495,7 +497,8 @@ Object *AIPlayer::buildStructureNow(const ThingTemplate *bldgPlan, BuildListInfo
 		{
 			Coord3D rallyPoint;
 			Bool gotOffset = false;
-			if (fabs(info->getRallyOffset()->x) > 1.0f || fabs(info->getRallyOffset()->y)>1.0f) {
+			// GeneralsX @bugfix cheviiot 24/10/2026 Use WWMath::Fabs (upstream parity; cross-platform determinism).
+			if (WWMath::Fabs(info->getRallyOffset()->x) > 1.0f || WWMath::Fabs(info->getRallyOffset()->y)>1.0f) {
 				gotOffset;
 			}
 			if (!exitInterface->getNaturalRallyPoint(rallyPoint)) {
@@ -675,7 +678,8 @@ Object *AIPlayer::buildStructureWithDozer(const ThingTemplate *bldgPlan, BuildLi
 		{
 			Coord3D rallyPoint;
 			Bool gotOffset = false;
-			if (fabs(info->getRallyOffset()->x) > 1.0f || fabs(info->getRallyOffset()->y)>1.0f) {
+			// GeneralsX @bugfix cheviiot 24/10/2026 Use WWMath::Fabs (upstream parity; cross-platform determinism).
+			if (WWMath::Fabs(info->getRallyOffset()->x) > 1.0f || WWMath::Fabs(info->getRallyOffset()->y)>1.0f) {
 				gotOffset;
 			}
 			if (!exitInterface->getNaturalRallyPoint(rallyPoint)) {
@@ -938,11 +942,8 @@ Bool AIPlayer::isSupplySourceAttacked()
 	// TheSuperHackers @bugfix WebbontheWeb 27/09/2026 No longer scans for supply source attacks for just the last 10 frames.
 	// A prior EA comment indicated that the intent was to look for 10 seconds into the attack history.
 	const Int RefreshRate = 10;
-#if RETAIL_COMPATIBLE_CRC
-	const Int ScanWindow = 10;
-#else
-	const Int ScanWindow = 10 * LOGICFRAMES_PER_SECOND;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail 10-frame window vs ZH 10s (was RETAIL_COMPATIBLE_CRC).
+	const Int ScanWindow = GameProfile::get().isGenerals() ? 10 : (10 * LOGICFRAMES_PER_SECOND);
 	UnsignedInt curFrame = TheGameLogic->getFrame();
 	if (curFrame==0) {
 		m_supplySourceAttackCheckFrame = curFrame + RefreshRate;
@@ -3829,9 +3830,8 @@ void WorkOrder::loadPostProcess()
  */
 void AIPlayer::getPlayerStructureBounds(Region2D *bounds, Int playerNdx, Bool conservative)
 {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 Comment-only retail note removed from #if (was RTS_GENERALS && RETAIL_COMPATIBLE_CRC).
 	// TheSuperHackers @info In the Generals code, lo.y used to be uninitialized for both Region2D variables in this function.
-#endif
 	bounds->zero();
 
 	Player* pPlayer = ThePlayerList->getNthPlayer(playerNdx);

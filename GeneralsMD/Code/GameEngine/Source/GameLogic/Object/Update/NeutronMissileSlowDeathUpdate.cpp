@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include <cmath>
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -366,13 +367,10 @@ void NeutronMissileSlowDeathBehavior::doBlast( const BlastInfo *blastInfo )
 		}
 #endif
 
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_SEARCH
-		const DistanceCalculationType dc = FROM_CENTER_2D;
-#else
-		// TheSuperHackers @bugfix xezon 16/08/2026 From FROM_CENTER_2D,
-		// because objects that reach into the outer radius should also receive damage.
-		const DistanceCalculationType dc = FROM_BOUNDINGSPHERE_3D;
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail center-2D vs ZH bounding-sphere search (was RETAIL_COMPATIBLE_CRC).
+		const DistanceCalculationType dc = (GameProfile::get().isGenerals() || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_SEARCH)
+			? FROM_CENTER_2D
+			: FROM_BOUNDINGSPHERE_3D;
 
 		ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( missilePos,
 																																			 blastInfo->outerRadius,
@@ -389,26 +387,29 @@ void NeutronMissileSlowDeathBehavior::doBlast( const BlastInfo *blastInfo )
 			// get other position
 			otherPos = other->getPosition();
 
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_DAMAGE
-			// compute vector from the missile to other object
-			forceVector = *otherPos - *missilePos;
-#else
-			// compute vector from the missile to other object
-			// TheSuperHackers @tweak xezon 16/08/2026 No longer calculate the force vector to the center of the object,
-			// but to half way between the closest edge and the center of the object. This way a more appropriate
-			// damage value is sampled for a large structure inside the damage fall off range.
-			const Coord3D missileToObjectCenter = *otherPos - *missilePos;
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail center force vs ZH edge/center average (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals() || PRESERVE_RETAIL_NUKE_MISSILE_OUTER_RADIUS_DAMAGE)
+			{
+				// compute vector from the missile to other object
+				forceVector = *otherPos - *missilePos;
+			}
+			else
+			{
+				// TheSuperHackers @tweak xezon 16/08/2026 No longer calculate the force vector to the center of the object,
+				// but to half way between the closest edge and the center of the object. This way a more appropriate
+				// damage value is sampled for a large structure inside the damage fall off range.
+				const Coord3D missileToObjectCenter = *otherPos - *missilePos;
 
-			Coord3D missileToObjectEdge;
-			ThePartitionManager->getVectorTo(other, missilePos, FROM_BOUNDINGSPHERE_3D, missileToObjectEdge);
+				Coord3D missileToObjectEdge;
+				ThePartitionManager->getVectorTo(other, missilePos, FROM_BOUNDINGSPHERE_3D, missileToObjectEdge);
 
-			// flip direction
-			missileToObjectEdge = -missileToObjectEdge;
+				// flip direction
+				missileToObjectEdge = -missileToObjectEdge;
 
-			// take the average between the edge and center vectors
-			forceVector = missileToObjectEdge + missileToObjectCenter;
-			forceVector.scale(0.5f);
-#endif
+				// take the average between the edge and center vectors
+				forceVector = missileToObjectEdge + missileToObjectCenter;
+				forceVector.scale(0.5f);
+			}
 
 			// try to topple other object
 			other->topple( &forceVector, blastInfo->toppleSpeed, TOPPLE_OPTIONS_NO_BOUNCE |

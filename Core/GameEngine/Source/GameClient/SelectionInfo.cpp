@@ -28,6 +28,7 @@
 #include "GameLogic/Module/ContainModule.h"
 
 #include "Common/ActionManager.h"
+#include "Common/GameProfile.h"
 #include "Common/ThingTemplate.h"
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
@@ -345,17 +346,18 @@ Bool addDrawableToList( Drawable *draw, void *userData )
 	if (!pds->drawableListToFill)
 		return FALSE;
 
-#if !RTS_GENERALS || !PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION
-	// TheSuperHackers @info
-	// In retail, drag-selecting allows the player to select stealthed objects and objects through the
-	// fog. Some players exploit this bug to determine where an opponent's units are and consider this
-	// an important feature and an advanced skill to pull off, so we must leave the exploit.
-	if (draw->getFullyObscuredByShroud())
-		return FALSE;
-
-	if (draw->isDrawableEffectivelyHidden())
-		return FALSE;
+	// GeneralsX @refactor cheviiot 23/10/2026 Profile-gate shroud filter (was #if !RTS_GENERALS || !PRESERVE...).
+	// Generals+PRESERVE keeps retail fog/stealth drag-select exploit; ZH always filters.
+#if PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION
+	if (!GameProfile::get().isGenerals())
 #endif
+	{
+		if (draw->getFullyObscuredByShroud())
+			return FALSE;
+
+		if (draw->isDrawableEffectivelyHidden())
+			return FALSE;
+	}
 
 	if (!draw->getTemplate()->isAnyKindOf(pds->kindofsToMatch))
 		return FALSE;
@@ -377,19 +379,18 @@ Bool addDrawableToList( Drawable *draw, void *userData )
       return FALSE;
   }
 
-#if !RTS_GENERALS && PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION
-	// TheSuperHackers @info
-	// In retail, hidden objects such as passengers are included here when drag-selected, which causes
-	// enemy selection logic to exit early (only 1 enemy unit can be selected at a time). Some players
-	// exploit this bug to determine if a transport contains passengers and consider this an important
-	// feature and an advanced skill to pull off, so we must leave the exploit.
-	if (!pds->isPointSelection)
+#if PRESERVE_OCCUPANT_DETECTION_VIA_DRAG_SELECTION
+	// GeneralsX @refactor cheviiot 23/10/2026 ZH-only occupant drag filter when PRESERVE=1 (was #if !RTS_GENERALS && PRESERVE).
+	if (!GameProfile::get().isGenerals())
 	{
-		const Object *obj = draw->getObject();
-		if (obj)
-			if (!obj->isLocallyControlled())
-				if (obj->getContain() && draw->getObject()->getContain()->getContainCount() > 0)
-					return FALSE;
+		if (!pds->isPointSelection)
+		{
+			const Object *obj = draw->getObject();
+			if (obj)
+				if (!obj->isLocallyControlled())
+					if (obj->getContain() && draw->getObject()->getContain()->getContainCount() > 0)
+						return FALSE;
+		}
 	}
 #endif
 

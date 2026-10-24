@@ -482,6 +482,14 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 		fprintf(stderr, "[INI] load - processed total %d lines\n", lineCount);
 		fflush(stderr);
 	}
+	catch (const INIException &e)
+	{
+		// GeneralsX @tweak cheviiot 23/10/2026 Surface INIException text for dual-profile init diagnosis.
+		fprintf(stderr, "[INI] ERROR in load('%s') - %s\n", filename.str(), e.mFailureMessage ? e.mFailureMessage : "(no detail)");
+		fflush(stderr);
+		unPrepFile();
+		throw;
+	}
 	catch (...)
 	{
 		fprintf(stderr, "[INI] ERROR in load('%s') - exception caught\n", filename.str());

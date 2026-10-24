@@ -8,8 +8,9 @@ add_library(gi_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 target_include_directories(gi_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(gi_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
 target_include_directories(gi_main INTERFACE "Main")
+# GeneralsX @refactor cheviiot 23/10/2026 Point Generals at the canonical Zero Hour CompatLib headers.
 if(UNIX)
-    target_include_directories(gi_always INTERFACE "CompatLib/Include")
+    target_include_directories(gi_always INTERFACE "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/CompatLib/Include")
 endif()
 
 target_compile_definitions(gi_always INTERFACE

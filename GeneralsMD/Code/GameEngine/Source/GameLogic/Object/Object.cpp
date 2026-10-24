@@ -35,6 +35,7 @@
 #include "Common/BuildAssistant.h"
 #include "Common/Dict.h"
 #include "Common/GameEngine.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
 #include "Common/ModuleFactory.h"
@@ -45,9 +46,7 @@
 #include "Common/Team.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
 #include "Common/TunnelTracker.h"
-#endif
 #include "Common/Upgrade.h"
 #include "Common/WellKnownKeys.h"
 #include "Common/Xfer.h"
@@ -338,7 +337,8 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 		}
 	}
 
-	if( !isInactiveBody )
+	// GeneralsX @feature cheviiot 23/10/2026 Status/Subdual helpers are ZH-only (Generals NUM_SLEEP_HELPERS=5).
+	if( GameProfile::get().isZeroHour() && !isInactiveBody )
 	{
 		static const NameKeyType statusHelperModuleDataTagNameKey = NAMEKEY( "ModuleTag_StatusDamageHelper" );
 		static StatusDamageHelperModuleData statusModuleData;
@@ -395,12 +395,17 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 		m_firingTracker = newInstance(FiringTracker)(this, &firingTrackerModuleData);
 		*curB++ = m_firingTracker;
 
-		static const NameKeyType tempWeaponBonusHelperModuleDataTagNameKey = NAMEKEY( "ModuleTag_TempWeaponBonusHelper" );
-		static TempWeaponBonusHelperModuleData tempWeaponBonusModuleData;
-		tempWeaponBonusModuleData.setModuleTagNameKey( tempWeaponBonusHelperModuleDataTagNameKey );
-		m_tempWeaponBonusHelper = newInstance(TempWeaponBonusHelper)(this, &tempWeaponBonusModuleData);
-		*curB++ = m_tempWeaponBonusHelper;
+		// GeneralsX @feature cheviiot 23/10/2026 TempWeaponBonus helper is ZH-only.
+		if( GameProfile::get().isZeroHour() )
+		{
+			static const NameKeyType tempWeaponBonusHelperModuleDataTagNameKey = NAMEKEY( "ModuleTag_TempWeaponBonusHelper" );
+			static TempWeaponBonusHelperModuleData tempWeaponBonusModuleData;
+			tempWeaponBonusModuleData.setModuleTagNameKey( tempWeaponBonusHelperModuleDataTagNameKey );
+			m_tempWeaponBonusHelper = newInstance(TempWeaponBonusHelper)(this, &tempWeaponBonusModuleData);
+			*curB++ = m_tempWeaponBonusHelper;
+		}
 	}
+
 
 	// behaviors are always done first, so they get into the publicModule arrays
 	// before anything else.
@@ -715,8 +720,8 @@ void Object::onRemovedFrom( Object *removedFrom )
 
 }
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: compile into ZH-canonical Object for Generals profile.
 void Object::removeFromTunnelContain()
 {
 	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
@@ -730,7 +735,6 @@ void Object::removeFromTunnelContain()
 
 	onRemovedFrom(nullptr);
 }
-#endif
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -757,9 +761,9 @@ void Object::friend_setContainedBy(Object* containedBy)
 {
 	m_containedBy = containedBy;
 
-#if !RETAIL_COMPATIBLE_CRC
-	m_containedByFrame = containedBy ? TheGameLogic->getFrame() : 0;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH tracks containedByFrame (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
+		m_containedByFrame = containedBy ? TheGameLogic->getFrame() : 0;
 }
 
 const Object* Object::getEnclosingContainedBy() const
@@ -791,18 +795,19 @@ void Object::onDestroy()
 	// This is the old cleanUpContain safeguard.  Say goodbye so they don't try to look us up.
 	if( m_containedBy && m_containedBy->getContain() )
 	{
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
 		// TheSuperHackers @bugfix bobtista / Caball009 17/09/2026 Remove stranded tunnel occupants during destruction.
 		// Surrendering can transfer a tunnel without updating its tunnel tracker. If that tunnel is destroyed,
 		// m_containedBy still points to the freed tunnel, and its ID is read here through that stale pointer.
 		// An unregistered ID means the tunnel is gone, so this object is removed from the tunnel trackers directly.
 		// This is a limited workaround that keeps retail compatibility. It cannot detect reuse of the freed memory.
-		if (!TheGameLogic->findObjectByID(m_containedBy->getID()))
+		// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: GameProfile gate (echelon Generals profile).
+		// Upstream reference: bobtista / Caball009, GeneralsGameCode tunnel-contain fix
+		if (GameProfile::get().isGenerals()
+			&& !TheGameLogic->findObjectByID(m_containedBy->getID()))
 		{
 			removeFromTunnelContain();
 		}
 		else
-#endif
 		{
 			m_containedBy->getContain()->removeFromContain(this);
 		}
@@ -3118,9 +3123,8 @@ Bool Object::isSelectable() const
 	if ( m_isSelectable )
     if ( !testStatus(OBJECT_STATUS_UNSELECTABLE) )
 		  if ( !isEffectivelyDead() )
-#if !RETAIL_COMPATIBLE_CRC
-				if ( !getTemplate()->isKindOf(KINDOF_NO_SELECT) )
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH respects KINDOF_NO_SELECT (was !RETAIL_COMPATIBLE_CRC).
+				if (GameProfile::get().isGenerals() || !getTemplate()->isKindOf(KINDOF_NO_SELECT))
 					return TRUE;
 
   return FALSE;
@@ -3169,11 +3173,9 @@ Bool Object::hasAnySpecialPower() const
 //-------------------------------------------------------------------------------------------------
 void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel newLevel, Bool provideFeedback )
 {
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax 10/12/2025 Do not apply veterancy bonuses and animations for dead units.
-	if (isEffectivelyDead())
+// GeneralsX @refactor cheviiot 24/10/2026 ZH skips veterancy for dead (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && isEffectivelyDead())
 		return;
-#endif
 
 	updateUpgradeModules();
 
@@ -3232,10 +3234,9 @@ void Object::onVeterancyLevelChanged( VeterancyLevel oldLevel, VeterancyLevel ne
 
 void Object::createVeterancyLevelFX(VeterancyLevel oldLevel, VeterancyLevel newLevel)
 {
-#if RETAIL_COMPATIBLE_CRC
-	if (isEffectivelyDead())
+// GeneralsX @refactor cheviiot 24/10/2026 Retail skips dead FX here; ZH allows (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals() && isEffectivelyDead())
 		return;
-#endif
 
 	if (TheGameLogic->getDrawIconUI())
 	{
@@ -3899,11 +3900,13 @@ void Object::friend_adjustPowerForPlayer( Bool incoming )
 //-------------------------------------------------------------------------------------------------
 void Object::onDisabledEdge(Bool becomingDisabled)
 {
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
-	// rip through the behavior modules and call the onDisabledEdge for any modules that care
-	for( BehaviorModule **module = m_behaviors; *module; ++module )
-		(*module)->onDisabledEdge( becomingDisabled );
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH module onDisabledEdge via GameProfile (was #if !(RTS_GENERALS && RETAIL_CRC)).
+	if (!GameProfile::get().isGenerals())
+	{
+		// rip through the behavior modules and call the onDisabledEdge for any modules that care
+		for( BehaviorModule **module = m_behaviors; *module; ++module )
+			(*module)->onDisabledEdge( becomingDisabled );
+	}
 
 	Player* controller = getControllingPlayer();
 	// can be called during game teardown, thus controller can be null
@@ -3930,11 +3933,8 @@ void Object::onDisabledEdge(Bool becomingDisabled)
 	Int powerToAdjust = getTemplate()->getEnergyProduction();
 
 	// TheSuperHackers @bugfix Caball009 18/07/2025 Don't adjust the power for power plants that are still under construction.
-#if !RETAIL_COMPATIBLE_CRC
-	if ( powerToAdjust > 0 && !testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION) )
-#else
-	if ( powerToAdjust > 0 )
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH skips under-construction power plants (was RETAIL_COMPATIBLE_CRC).
+	if ( powerToAdjust > 0 && (GameProfile::get().isGenerals() || !testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION)) )
 	{
 		// We can't affect something that consumes, or else we go low power which removes the consumption
 		// which makes us not low power so we add the consumption so we go low power...
@@ -4016,19 +4016,14 @@ void Object::crc( Xfer *xfer )
 		logString.concat(tmp);
 	}
 #endif // DEBUG_CRC
-#if RETAIL_COMPATIBLE_CRC
-	xfer->xferUser(&m_objectUpgradesCompleted,				sizeof(Int64));
-#else
-	xfer->xferUser(&m_objectUpgradesCompleted, sizeof(m_objectUpgradesCompleted));
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail Int64 vs ZH BitFlags width in CRC (was RETAIL_COMPATIBLE_CRC).
+	xfer->xferUser(&m_objectUpgradesCompleted,
+		GameProfile::get().isGenerals() ? sizeof(Int64) : sizeof(m_objectUpgradesCompleted));
 #ifdef DEBUG_CRC
 	if (doLogging)
 	{
-#if RETAIL_COMPATIBLE_CRC
-		tmp.format("m_objectUpgradesCompleted: %I64X, ", m_objectUpgradesCompleted);
-#else
+		// GeneralsX @refactor cheviiot 24/10/2026 DEBUG_CRC always hex-string (BitFlags; was CRC Int64 printf).
 		tmp.format("m_objectUpgradesCompleted: %s, ", m_objectUpgradesCompleted.toHexString().str());
-#endif
 		logString.concat(tmp);
 	}
 #endif // DEBUG_CRC
@@ -4106,19 +4101,19 @@ void Object::xfer( Xfer *xfer )
 {
 
 	// version
-#if RTS_GENERALS
-
+	// GeneralsX @feature cheviiot 23/10/2026 Object stream version follows GameProfile (7/8 Generals, 9 ZH).
+	XferVersion currentVersion = 9;
+	if (GameProfile::get().isGenerals())
+	{
 #if RETAIL_COMPATIBLE_XFER_SAVE
-	const XferVersion currentVersion = 7;
+		currentVersion = 7;
 #else
-	const XferVersion currentVersion = 8;
+		currentVersion = 8;
 #endif
-
-#else
-	const XferVersion currentVersion = 9;
-#endif
+	}
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
+
 
 	// object ID
 	ObjectID id = getID();
@@ -4181,19 +4176,19 @@ void Object::xfer( Xfer *xfer )
 	}
 	else
 	{
-#if RTS_GENERALS
+		// GeneralsX @refactor cheviiot 23/10/2026 Generals v7 status packing via GameProfile (was #if RTS_GENERALS).
 		// TheSuperHackers @info Originally OBJECT_STATUS_IS_CARBOMB (28) + 1 would equal OBJECT_STATUS_COUNT,
-		// but the enum has been expanded with Zero Hour specific entries.
-		constexpr const UnsignedInt count = OBJECT_STATUS_IS_CARBOMB + 1;
-		constexpr const UnsignedInt mask = (1 << count) - 1;
-		static_assert(count == 29, "This code needs to be updated when inserting new entries into ObjectStatusTypes");
-
-		// shift by one bit: OBJECT_STATUS_NONE (0) has a dedicated bit in the bitset but not in the integer
-		UnsignedInt status = (m_status.toUnsignedInt() & mask) >> 1;
-#else
-		// Zero Hour uses this branch only for XFER_LOAD
+		// but the enum has been expanded with Zero Hour specific entries. ZH uses this branch only for XFER_LOAD.
 		UnsignedInt status;
-#endif
+		if (GameProfile::get().isGenerals())
+		{
+			constexpr const UnsignedInt count = OBJECT_STATUS_IS_CARBOMB + 1;
+			constexpr const UnsignedInt mask = (1 << count) - 1;
+			static_assert(count == 29, "This code needs to be updated when inserting new entries into ObjectStatusTypes");
+
+			// shift by one bit: OBJECT_STATUS_NONE (0) has a dedicated bit in the bitset but not in the integer
+			status = (m_status.toUnsignedInt() & mask) >> 1;
+		}
 		xfer->xferUnsignedInt(&status);
 
 		m_status.clear();
@@ -4221,17 +4216,21 @@ void Object::xfer( Xfer *xfer )
 	// sighting info, last look - must be saved cause we save PartitionCell::m_shroudLevel
 	xfer->xferSnapshot( m_partitionLastLook );
 
-	if( version >= 9 )
+	// GeneralsX @feature cheviiot 23/10/2026 ZH-only Object stream: reveal-all + vision (Player owns vision in Generals).
+	if( GameProfile::get().isZeroHour() && version >= 9 )
 		xfer->xferSnapshot( m_partitionRevealAllLastLook );
 
 	// sighting info, last shroud - must be saved cause we save PartitionCell::m_shroudLevel
 	xfer->xferSnapshot( m_partitionLastShroud );
 
-	// vision spied by
-	xfer->xferUser( m_visionSpiedBy, sizeof( Int ) * MAX_PLAYER_COUNT );
+	if( GameProfile::get().isZeroHour() )
+	{
+		// vision spied by
+		xfer->xferUser( m_visionSpiedBy, sizeof( Int ) * MAX_PLAYER_COUNT );
 
-	// vision spied by mask
-	xfer->xferUser( &m_visionSpiedMask, sizeof( PlayerMaskType ) );
+		// vision spied by mask
+		xfer->xferUser( &m_visionSpiedMask, sizeof( PlayerMaskType ) );
+	}
 
 	// sighting info, last threat
 	// John M says we don't need to save this (CBD)
@@ -4289,9 +4288,8 @@ void Object::xfer( Xfer *xfer )
 		xfer->xferUnsignedInt(&m_disabledTillFrame[DISABLED_UNDERPOWERED]);
 		xfer->xferUnsignedInt(&m_disabledTillFrame[DISABLED_FREEFALL]);
 
-#if RTS_GENERALS
-		if (version >= 8)
-#endif
+		// GeneralsX @feature cheviiot 23/10/2026 Middle disabled trio: ZH always; Generals only when stream >= 8.
+		if( !GameProfile::get().isGenerals() || version >= 8 )
 		{
 			// TheSuperHackers @info These 3 types are Zero Hour specific, but inserted in the middle of the enum.
 			xfer->xferUnsignedInt(&m_disabledTillFrame[DISABLED_AWESTRUCK]);
@@ -4667,10 +4665,12 @@ void Object::onCapture( Player *oldOwner, Player *newOwner )
 	// TheSuperHackers @tweak Stubbjax 19/11/2025 Except when the new owner is an ally, so that Hackers keep on hacking, etc.
 	if( getAIUpdateInterface()  &&  (oldOwner != newOwner) )
 	{
-#if RETAIL_COMPATIBLE_CRC
-		getAIUpdateInterface()->aiIdle(CMD_FROM_AI);
-#else
-		if (oldOwner->getRelationship(newOwner->getDefaultTeam()) != ALLIES)
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail always idle; ZH only vs non-allies + cancel dozers (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals())
+		{
+			getAIUpdateInterface()->aiIdle(CMD_FROM_AI);
+		}
+		else if (oldOwner->getRelationship(newOwner->getDefaultTeam()) != ALLIES)
 		{
 			getAIUpdateInterface()->aiIdle(CMD_FROM_AI);
 
@@ -4680,7 +4680,6 @@ void Object::onCapture( Player *oldOwner, Player *newOwner )
 				dozerAI->cancelAllTasks();
 			}
 		}
-#endif
 	}
 
 	// this gets the new owner some points
@@ -4762,28 +4761,24 @@ void Object::onDie( DamageInfo *damageInfo )
 	handlePartitionCellMaintenance();
 	if(m_team)
 		m_team->notifyTeamOfObjectDeath();
-#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
-	// Play death sound here.
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals death sounds via GameProfile (was #if RTS_GENERALS && RETAIL_COMPATIBLE_DATA).
+#if RETAIL_COMPATIBLE_DATA
+	if (GameProfile::get().isGenerals())
+	{
+		AudioEventRTS deathSound = *getTemplate()->getSoundDie();
+		if (damageInfo->in.m_deathType == DEATH_BURNED)
+			deathSound = *getTemplate()->getSoundDieFire();
+		else if (damageInfo->in.m_deathType == DEATH_POISONED || damageInfo->in.m_deathType == DEATH_POISONED_BETA)
+			deathSound = *getTemplate()->getSoundDieToxin();
 
-	AudioEventRTS deathSound = *getTemplate()->getSoundDie();
-	// If we were killed by fire, or by poison, we should play those die sounds instead of the usual
-	// sound
-	if (damageInfo->in.m_deathType == DEATH_BURNED)
-		deathSound = *getTemplate()->getSoundDieFire();
-	else if (damageInfo->in.m_deathType == DEATH_POISONED || damageInfo->in.m_deathType == DEATH_POISONED_BETA)
-		deathSound = *getTemplate()->getSoundDieToxin();
+		if (!TheAudio->isValidAudioEvent(&deathSound))
+			deathSound = *getTemplate()->getSoundDie();
 
-	// If we didn't actually have a specialized die sound (for the case of fire or poison, we
-	// should use the generic death sound)
-	if (!TheAudio->isValidAudioEvent(&deathSound))
-		deathSound = *getTemplate()->getSoundDie();
-
-	// Use the position. Next frame, when this unit is gone, this sound will be clipped because we
-	// can no longer automatically find its position. - jkmcd
-	deathSound.setPosition(getPosition());
-	PlayerIndex index = getControllingPlayer() ? getControllingPlayer()->getPlayerIndex() : 0;
-	deathSound.setPlayerIndex( index );
-	TheAudio->addAudioEvent(&deathSound);
+		deathSound.setPosition(getPosition());
+		PlayerIndex index = getControllingPlayer() ? getControllingPlayer()->getPlayerIndex() : 0;
+		deathSound.setPlayerIndex( index );
+		TheAudio->addAudioEvent(&deathSound);
+	}
 #endif
 
 	if (isLocallyViewed() && !selfInflicted) // wasLocallyViewed? :-)
@@ -5162,7 +5157,11 @@ void Object::look()
 					}
 
 					// Other players can also be looking through our eyes.
-					lookingMask |= m_visionSpiedMask;
+					// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail vision is on Player.
+					if( GameProfile::get().isGenerals() )
+						lookingMask |= controller->getVisionSpiedMask();
+					else
+						lookingMask |= m_visionSpiedMask;
 				}
 
 				Coord3D pos = *getPosition();
@@ -5736,10 +5735,9 @@ void Object::doCommandButtonAtObject( const CommandButton *commandButton, Object
 		switch( commandButton->getCommandType() )
 		{
 			case GUI_COMMAND_COMBATDROP:
-#if RETAIL_COMPATIBLE_CRC
-				if (!obj)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail null-obj early out (was RETAIL_COMPATIBLE_CRC).
+				if (GameProfile::get().isGenerals() && !obj)
 					return;
-#endif
 
 				if( ai )
 				{
@@ -5748,10 +5746,9 @@ void Object::doCommandButtonAtObject( const CommandButton *commandButton, Object
 				return;
 			case GUI_COMMAND_SPECIAL_POWER:
 			{
-#if RETAIL_COMPATIBLE_CRC
-				if (!obj)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail null-obj early out (was RETAIL_COMPATIBLE_CRC).
+				if (GameProfile::get().isGenerals() && !obj)
 					return;
-#endif
 
 				if( commandButton->getSpecialPowerTemplate() )
 				{

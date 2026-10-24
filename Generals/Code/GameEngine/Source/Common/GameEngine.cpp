@@ -48,6 +48,7 @@
 #include "Common/ArchiveFileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/GlobalData.h"
+#include "Common/GameProfile.h"
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
 #include "Common/NameKeyGenerator.h"
@@ -102,6 +103,7 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 #include "GameNetwork/LANAPI.h"
+#include "GameNetwork/GameInfo.h"
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
@@ -537,10 +539,8 @@ void GameEngine::init()
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), nullptr);
 		updateWindowTitle();
 
-#if RETAIL_COMPATIBLE_CRC
 		if (xferCRC.getCRC() == 0x2E876341)
-			TheNameKeyGenerator->verifyNameKeyID(1);
-#endif
+			TheNameKeyGenerator->verifyNameKeyID(GameProfile::get().getExpectedNameKeyIdAfterScienceIni());
 
 		initSubsystem(TheScienceStore,"TheScienceStore", MSGNEW("GameEngineSubsystem") ScienceStore(), &xferCRC, "Data\\INI\\Default\\Science", "Data\\INI\\Science");
 		initSubsystem(TheMultiplayerSettings,"TheMultiplayerSettings", MSGNEW("GameEngineSubsystem") MultiplayerSettings(), &xferCRC, "Data\\INI\\Default\\Multiplayer", "Data\\INI\\Multiplayer");
@@ -552,9 +552,8 @@ void GameEngine::init()
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
 
-#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+		// GeneralsX @feature cheviiot 23/10/2026 Profile-gates ZH name-key priming (no-op for Generals).
 		TheNameKeyGenerator->syncNameKeyID();
-#endif
 
 		initSubsystem(TheFunctionLexicon,"TheFunctionLexicon", createFunctionLexicon(), nullptr);
 		initSubsystem(TheModuleFactory,"TheModuleFactory", createModuleFactory(), nullptr);
@@ -593,10 +592,8 @@ void GameEngine::init()
 		initSubsystem(TheBuildAssistant,"TheBuildAssistant", MSGNEW("GameEngineSubsystem") BuildAssistant, nullptr);
 		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
 
-#if RETAIL_COMPATIBLE_CRC
 		if (xferCRC.getCRC() == 0xD9A74E13)
-			TheNameKeyGenerator->verifyNameKeyID(1586);
-#endif
+			TheNameKeyGenerator->verifyNameKeyID(GameProfile::get().getExpectedNameKeyIdAfterUpgradeIni());
 
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
@@ -693,15 +690,73 @@ void GameEngine::init()
 				TheWritableGlobalData->m_playIntro = FALSE;
 				TheWritableGlobalData->m_pendingFile = TheGlobalData->m_initialFile;
 
-				// shutdown the top, but do not pop it off the stack
-	//			TheShell->hideShell();
+				// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: CLI skirmish (human+AI) for .rep recording.
+				if (TheGlobalData->m_cliSkirmish)
+				{
+					if (TheSkirmishGameInfo == nullptr)
+					{
+						TheSkirmishGameInfo = NEW SkirmishGameInfo;
+					}
+					TheSkirmishGameInfo->init();
+					TheSkirmishGameInfo->clearSlotList();
+					TheSkirmishGameInfo->reset();
+					TheSkirmishGameInfo->enterGame();
 
-				// send a message to the logic for a new game
-				GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
-				msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
-				msg->appendIntegerArgument(DIFFICULTY_NORMAL);
-				msg->appendIntegerArgument(0);
-				InitRandom(0);
+					GameSlot humanSlot;
+					humanSlot.setState(SLOT_PLAYER, UnicodeString(L"EchelonSmoke"));
+					humanSlot.setColor(-1);
+					humanSlot.setPlayerTemplate(-1);
+					TheSkirmishGameInfo->setSlot(0, humanSlot);
+
+					GameSlot aiSlot;
+					aiSlot.setState(SLOT_EASY_AI);
+					aiSlot.setColor(-1);
+					aiSlot.setPlayerTemplate(-1);
+					TheSkirmishGameInfo->setSlot(1, aiSlot);
+
+					TheSkirmishGameInfo->setMap(TheGlobalData->m_initialFile);
+					AsciiString lowerMap = TheGlobalData->m_initialFile;
+					lowerMap.toLower();
+					const MapMetaData *md = TheMapCache ? TheMapCache->findMap(lowerMap) : nullptr;
+					if (md == nullptr && TheMapCache)
+					{
+						MapCache::const_iterator it = TheMapCache->find(lowerMap);
+						if (it != TheMapCache->end())
+						{
+							md = &it->second;
+						}
+					}
+					if (md)
+					{
+						TheSkirmishGameInfo->setMapCRC(md->m_CRC);
+						TheSkirmishGameInfo->setMapSize(md->m_filesize);
+					}
+					TheSkirmishGameInfo->setSeed(1);
+					TheSkirmishGameInfo->setCRCInterval(100);
+					TheSkirmishGameInfo->startGame(0);
+
+					TheWritableGlobalData->m_mapName = TheGlobalData->m_initialFile;
+					InitRandom(1);
+					GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_NEW_GAME);
+					msg->appendIntegerArgument(GAME_SKIRMISH);
+					msg->appendIntegerArgument(DIFFICULTY_NORMAL);
+					msg->appendIntegerArgument(0);
+					msg->appendIntegerArgument(30);
+					fprintf(stderr, "[SMOKE] CLI skirmish start map='%s'\n", TheGlobalData->m_initialFile.str());
+					fflush(stderr);
+				}
+				else
+				{
+					// shutdown the top, but do not pop it off the stack
+		//			TheShell->hideShell();
+
+					// send a message to the logic for a new game
+					GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
+					msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
+					msg->appendIntegerArgument(DIFFICULTY_NORMAL);
+					msg->appendIntegerArgument(0);
+					InitRandom(0);
+				}
 			}
 		}
 
@@ -949,6 +1004,37 @@ void GameEngine::execute()
 				}
 			}
 #endif
+			// GeneralsX @feature cheviiot 24/10/2026 PLAN-023 Gate 6: optional one-shot .sav for save/load smoke.
+			if (TheGlobalData->m_saveAtLogicFrame > 0
+				&& TheGameLogic
+				&& TheGameState
+				&& TheGameLogic->isInGame()
+				&& TheGameLogic->getFrame() >= (UnsignedInt)TheGlobalData->m_saveAtLogicFrame)
+			{
+				SaveResult saveResult = TheGameState->saveGame(
+					"echelon_smoke.sav", UnicodeString(L"EchelonSmoke"), SAVE_FILE_TYPE_NORMAL);
+				fprintf(stderr, "[SMOKE] saveAtFrame=%d result=%d file='%s'\n",
+					TheGlobalData->m_saveAtLogicFrame,
+					(Int)saveResult.saveCode,
+					saveResult.filename.str());
+				fflush(stderr);
+				TheWritableGlobalData->m_saveAtLogicFrame = 0;
+			}
+
+			// GeneralsX @feature cheviiot 24/10/2026 Release/headless smoke: quit after N in-game logic frames.
+			if (TheGlobalData->m_quitAfterLogicFrames > 0
+				&& TheGameLogic
+				&& TheGameLogic->isInGame()
+				&& TheGameLogic->getFrame() >= (UnsignedInt)TheGlobalData->m_quitAfterLogicFrames)
+			{
+				fprintf(stderr, "[SMOKE] quitAfterFrames reached frame %u (limit %d)\n",
+					TheGameLogic->getFrame(), TheGlobalData->m_quitAfterLogicFrames);
+				fflush(stderr);
+				if (TheRecorder && TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
+					TheRecorder->stopRecording();
+				TheGameLogic->clearGameData();
+				TheGameEngine->setQuitting(TRUE);
+			}
 
 			{
 				try

@@ -33,6 +33,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "Common/ThingTemplate.h"
@@ -267,11 +268,12 @@ void HelixContain::addToContain( Object *obj )
     m_portableStructureID = obj->getID();
     obj->friend_setContainedBy( getObject() );//fool portable into thinking my object is his container
 
-#if !(RETAIL_COMPATIBLE_CRC || PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS)
-    // TheSuperHackers @bugfix arcticdolphin 13/09/2026 Portable structures bypass onContaining(), so route their kill experience to the Helix here.
-    if ( obj->getExperienceTracker() )
-      obj->getExperienceTracker()->setExperienceSink( getObject()->getID() );
-#endif
+    // GeneralsX @refactor cheviiot 24/10/2026 ZH routes portable XP to Helix (was !RETAIL_COMPATIBLE_CRC && !PRESERVE).
+    if (!GameProfile::get().isGenerals() && !PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS)
+    {
+      if ( obj->getExperienceTracker() )
+        obj->getExperienceTracker()->setExperienceSink( getObject()->getID() );
+    }
 
     DEBUG_ASSERTCRASH(getObject() == nullptr || !getObject()->isDestroyed(),
       ("HelixContain::addToContain - Adding to a destroyed container"));
@@ -287,14 +289,15 @@ void HelixContain::removeFromContain( Object *obj, Bool exposeStealthUnits )
 {
   if ( obj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) && obj->getID() == m_portableStructureID )
 	{
-#if !RETAIL_COMPATIBLE_CRC
-    obj->friend_setContainedBy(nullptr);
-#endif
+    // GeneralsX @refactor cheviiot 24/10/2026 ZH clears containedBy on Helix detach (was !RETAIL_COMPATIBLE_CRC).
+    if (!GameProfile::get().isGenerals())
+      obj->friend_setContainedBy(nullptr);
 
-#if !(RETAIL_COMPATIBLE_CRC || PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS)
-    if ( obj->getExperienceTracker() )
-      obj->getExperienceTracker()->setExperienceSink( INVALID_ID );
-#endif
+    if (!GameProfile::get().isGenerals() && !PRESERVE_NO_XP_FROM_HELIX_ATTACHMENT_KILLS)
+    {
+      if ( obj->getExperienceTracker() )
+        obj->getExperienceTracker()->setExperienceSink( INVALID_ID );
+    }
 
     m_portableStructureID = INVALID_ID;
   }

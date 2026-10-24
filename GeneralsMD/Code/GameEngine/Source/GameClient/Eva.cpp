@@ -321,6 +321,24 @@ EvaMessage Eva::nameToMessage(const AsciiString& name)
 		}
 	}
 
+	// GeneralsX @feature cheviiot 23/10/2026 Generals Eva.ini uses undivided SuperweaponDetected/Launched
+	// names; map them to the ZH Enemy_* slots (closest semantic match for dual-profile init).
+	struct GeneralsEvaAlias { const char *from; EvaMessage to; };
+	static const GeneralsEvaAlias kGeneralsAliases[] =
+	{
+		{ "SUPERWEAPONDETECTED_PARTICLECANNON", EVA_SuperweaponDetected_Enemy_ParticleCannon },
+		{ "SUPERWEAPONDETECTED_NUKE", EVA_SuperweaponDetected_Enemy_Nuke },
+		{ "SUPERWEAPONDETECTED_SCUDSTORM", EVA_SuperweaponDetected_Enemy_ScudStorm },
+		{ "SUPERWEAPONLAUNCHED_PARTICLECANNON", EVA_SuperweaponLaunched_Enemy_ParticleCannon },
+		{ "SUPERWEAPONLAUNCHED_NUKE", EVA_SuperweaponLaunched_Enemy_Nuke },
+		{ "SUPERWEAPONLAUNCHED_SCUDSTORM", EVA_SuperweaponLaunched_Enemy_ScudStorm },
+	};
+	for (const GeneralsEvaAlias &alias : kGeneralsAliases)
+	{
+		if (name.compareNoCase(alias.from) == 0)
+			return alias.to;
+	}
+
 	DEBUG_CRASH(("Invalid requested Eva message translation :%s: jkmcd", name.str()));
 	return EVA_Invalid;
 }
@@ -339,6 +357,8 @@ AsciiString Eva::messageToName(EvaMessage message)
 EvaCheckInfo *Eva::newEvaCheckInfo(AsciiString name)
 {
 	EvaMessage mesg = nameToMessage(name);
+	if (mesg == EVA_Invalid)
+		return nullptr;
 
 	// Only return a new one if there isn't an existing one.
 	EvaCheckInfoPtrVecIt it;

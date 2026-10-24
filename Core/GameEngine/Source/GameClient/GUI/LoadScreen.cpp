@@ -53,6 +53,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 #include "Common/NameKeyGenerator.h"
+#include "Common/GameProfile.h"
 #include "Common/AudioAffect.h"
 #include "Common/AudioEventRTS.h"
 #include "Common/AudioHandleSpecialValues.h"
@@ -560,9 +561,9 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 			m_videoStream->frameDecompress();
 			m_videoStream->frameRender(m_videoBuffer);
 
-#if RTS_GENERALS
-			moveWindows( m_videoStream->frameIndex());
-#endif
+			// GeneralsX @refactor cheviiot 23/10/2026 Briefing window animate (was #if RTS_GENERALS).
+			if (GameProfile::get().isGenerals())
+				moveWindows( m_videoStream->frameIndex());
 
 			m_videoStream->frameNext();
 
@@ -595,41 +596,44 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 			TheDisplay->draw();
 		}
 
-#if !RTS_GENERALS
-		// let the background image show through
-		m_videoStream->close();
-		m_videoStream = nullptr;
-		m_loadScreen->winGetInstanceData()->setVideoBuffer( nullptr );
-		TheDisplay->draw();
-#endif
+		// GeneralsX @refactor cheviiot 23/10/2026 ZH closes briefing video after loop (was #if !RTS_GENERALS).
+		if (!GameProfile::get().isGenerals())
+		{
+			// let the background image show through
+			m_videoStream->close();
+			m_videoStream = nullptr;
+			m_loadScreen->winGetInstanceData()->setVideoBuffer( nullptr );
+			TheDisplay->draw();
+		}
 	}
 	else
 	{
-#if RTS_GENERALS
-		// if we're min speced
-		m_videoStream->frameGoto(m_videoStream->frameCount()); // zero based
-		while(!m_videoStream->isFrameReady())
-			Sleep(1);
-		m_videoStream->frameDecompress();
-		m_videoStream->frameRender(m_videoBuffer);
-		if(m_videoBuffer)
-				m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
-
-		m_objectiveWin->winHide(FALSE);
-		for(i = 0; i < MAX_DISPLAYED_UNITS; ++i)
-			m_unitDesc[i]->winHide(FALSE);
-		m_location->winHide(FALSE);
-
-		// Audio was choppy so, I chopped it out!
-		TheAudio->friend_forcePlayAudioEventRTS(&TheCampaignManager->getCurrentMission()->m_briefingVoice);
-
-		for(Int i = 0; i < MAX_OBJECTIVE_LINES; ++i)
+		// GeneralsX @refactor cheviiot 23/10/2026 Generals min-spec briefing panel (was #if RTS_GENERALS).
+		if (GameProfile::get().isGenerals())
 		{
-			GadgetStaticTextSetText(m_objectiveLines[i], m_unicodeObjectiveLines[i]);
+			// if we're min speced
+			m_videoStream->frameGoto(m_videoStream->frameCount()); // zero based
+			while(!m_videoStream->isFrameReady())
+				Sleep(1);
+			m_videoStream->frameDecompress();
+			m_videoStream->frameRender(m_videoBuffer);
+			if(m_videoBuffer)
+					m_loadScreen->winGetInstanceData()->setVideoBuffer(m_videoBuffer);
+
+			m_objectiveWin->winHide(FALSE);
+			for(i = 0; i < MAX_DISPLAYED_UNITS; ++i)
+				m_unitDesc[i]->winHide(FALSE);
+			m_location->winHide(FALSE);
+
+			// Audio was choppy so, I chopped it out!
+			TheAudio->friend_forcePlayAudioEventRTS(&TheCampaignManager->getCurrentMission()->m_briefingVoice);
+
+			for(Int i = 0; i < MAX_OBJECTIVE_LINES; ++i)
+			{
+				GadgetStaticTextSetText(m_objectiveLines[i], m_unicodeObjectiveLines[i]);
+			}
 		}
-#else
-		// if we're min spec'ed don't play a movie
-#endif
+		// else ZH min-spec: don't play a movie
 
 		Int delay = mission->m_voiceLength * 1000;
 		Int begin = timeGetTime();
@@ -1295,47 +1299,51 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );
 
-#if RTS_GENERALS
-	const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
-	if(loadScreenImage)
-		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
-#else
-	// add portrait, features, and name for the local player's general
-	// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
-	const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
-	const Image *portrait = nullptr;
-	UnicodeString localName;
-	if (localGeneral)
+	// GeneralsX @refactor cheviiot 23/10/2026 MP load art by profile (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
 	{
-		portrait = localGeneral->getBioPortraitLarge();
-		localName = TheGameText->fetch( localGeneral->getBioName() );
+		const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
+		if(loadScreenImage)
+			m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 	}
 	else
 	{
-		// the main original factions don't have associated generals
-		AsciiString imageName;
-		if (pt->getName() == "FactionAmerica")
-			portrait = TheMappedImageCollection->findImageByName("SAFactionLogoLg_US");
-		else if (pt->getName() == "FactionGLA")
-			portrait = TheMappedImageCollection->findImageByName("SUFactionLogoLg_GLA");
-		else if (pt->getName() == "FactionChina")
-			portrait = TheMappedImageCollection->findImageByName("SNFactionLogoLg_China");
-		// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
-		else if (pt->getName() == "FactionObserver")
-			portrait = nullptr;
+		// add portrait, features, and name for the local player's general
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
+		const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
+		const Image *portrait = nullptr;
+		UnicodeString localName;
+		if (localGeneral)
+		{
+			portrait = localGeneral->getBioPortraitLarge();
+			localName = TheGameText->fetch( localGeneral->getBioName() );
+		}
 		else
-			DEBUG_CRASH(("Unexpected player template"));
+		{
+			// the main original factions don't have associated generals
+			AsciiString imageName;
+			if (pt->getName() == "FactionAmerica")
+				portrait = TheMappedImageCollection->findImageByName("SAFactionLogoLg_US");
+			else if (pt->getName() == "FactionGLA")
+				portrait = TheMappedImageCollection->findImageByName("SUFactionLogoLg_GLA");
+			else if (pt->getName() == "FactionChina")
+				portrait = TheMappedImageCollection->findImageByName("SNFactionLogoLg_China");
+			// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
+			else if (pt->getName() == "FactionObserver")
+				portrait = nullptr;
+			else
+				DEBUG_CRASH(("Unexpected player template"));
 
-		localName = pt->getDisplayName();
+			localName = pt->getDisplayName();
+		}
+		m_portraitLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralPortrait"));
+		m_portraitLocalGeneral->winSetEnabledImage( 0, portrait);
+		m_featuresLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralFeatures"));
+		AsciiString features = pt->getGeneralFeatures();
+		GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
+		m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralName"));
+		GadgetStaticTextSetText( m_nameLocalGeneral, localName );
 	}
-	m_portraitLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralPortrait"));
-	m_portraitLocalGeneral->winSetEnabledImage( 0, portrait);
-	m_featuresLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralFeatures"));
-	AsciiString features = pt->getGeneralFeatures();
-	GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
-	m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralName"));
-	GadgetStaticTextSetText( m_nameLocalGeneral, localName );
-#endif
 
 	AsciiString musicName = pt->getLoadScreenMusic();
 	if ( ! musicName.isEmpty() )
@@ -1396,17 +1404,21 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 			continue;
 
 		Color houseColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
-#if RTS_GENERALS
-		GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
-#else
-		// format the progress bar to house colors
-		AsciiString imageName;
-		imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
-		const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
-		if (! houseImage)
-			houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
-		m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
-#endif
+		// GeneralsX @refactor cheviiot 23/10/2026 MP load progress bar by profile.
+		if (GameProfile::get().isGenerals())
+		{
+			GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
+		}
+		else
+		{
+			// format the progress bar to house colors
+			AsciiString imageName;
+			imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
+			const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
+			if (! houseImage)
+				houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
+			m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
+		}
 
 		UnicodeString name = slot->getName();
 		GadgetStaticTextSetText(m_playerNames[netSlot], name );
@@ -1565,47 +1577,51 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );
 
-#if RTS_GENERALS
-	const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
-	if(loadScreenImage)
-		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
-#else
-	// add portrait, features, and name for the local player's general
-	// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
-	const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
-	const Image *portrait = nullptr;
-	UnicodeString localName;
-	if (localGeneral)
+	// GeneralsX @refactor cheviiot 23/10/2026 GameSpy load art by profile (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
 	{
-		portrait = localGeneral->getBioPortraitLarge();
-		localName = TheGameText->fetch( localGeneral->getBioName() );
+		const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
+		if(loadScreenImage)
+			m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 	}
 	else
 	{
-		// the main original factions don't have associated generals
-		AsciiString imageName;
-		if (pt->getName() == "FactionAmerica")
-			portrait = TheMappedImageCollection->findImageByName("SAFactionLogo144_US");
-		else if (pt->getName() == "FactionGLA")
-			portrait = TheMappedImageCollection->findImageByName("SUFactionLogo144_GLA");
-		else if (pt->getName() == "FactionChina")
-			portrait = TheMappedImageCollection->findImageByName("SNFactionLogo144_China");
-		// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
-		else if (pt->getName() == "FactionObserver")
-			portrait = nullptr;
+		// add portrait, features, and name for the local player's general
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference
+		const GeneralPersona *localGeneral = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName( pt->getName() ) : nullptr;
+		const Image *portrait = nullptr;
+		UnicodeString localName;
+		if (localGeneral)
+		{
+			portrait = localGeneral->getBioPortraitLarge();
+			localName = TheGameText->fetch( localGeneral->getBioName() );
+		}
 		else
-			DEBUG_CRASH(("Unexpected player template"));
+		{
+			// the main original factions don't have associated generals
+			AsciiString imageName;
+			if (pt->getName() == "FactionAmerica")
+				portrait = TheMappedImageCollection->findImageByName("SAFactionLogo144_US");
+			else if (pt->getName() == "FactionGLA")
+				portrait = TheMappedImageCollection->findImageByName("SUFactionLogo144_GLA");
+			else if (pt->getName() == "FactionChina")
+				portrait = TheMappedImageCollection->findImageByName("SNFactionLogo144_China");
+			// GeneralsX @bugfix felipebraz 06/10/2026 Allow FactionObserver without asserting
+			else if (pt->getName() == "FactionObserver")
+				portrait = nullptr;
+			else
+				DEBUG_CRASH(("Unexpected player template"));
 
-		localName = pt->getDisplayName();
+			localName = pt->getDisplayName();
+		}
+		m_portraitLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralPortrait"));
+		m_portraitLocalGeneral->winSetEnabledImage( 0, portrait);
+		m_featuresLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralFeatures"));
+		AsciiString features = pt->getGeneralFeatures();
+		GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
+		m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralName"));
+		GadgetStaticTextSetText( m_nameLocalGeneral, localName );
 	}
-	m_portraitLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralPortrait"));
-	m_portraitLocalGeneral->winSetEnabledImage( 0, portrait);
-	m_featuresLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralFeatures"));
-	AsciiString features = pt->getGeneralFeatures();
-	GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
-	m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralName"));
-	GadgetStaticTextSetText( m_nameLocalGeneral, localName );
-#endif
 
 	GameWindow *teamWin[MAX_SLOTS];
 	Int i = 0;
@@ -1681,17 +1697,21 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 			continue;
 
 		Color houseColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
-#if RTS_GENERALS
-		GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
-#else
-		// format the progress bar to house colors
-		AsciiString imageName;
-		imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
-		const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
-		if (! houseImage)
-			houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
-		m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
-#endif
+		// GeneralsX @refactor cheviiot 23/10/2026 GameSpy load progress bar by profile.
+		if (GameProfile::get().isGenerals())
+		{
+			GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
+		}
+		else
+		{
+			// format the progress bar to house colors
+			AsciiString imageName;
+			imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
+			const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
+			if (! houseImage)
+				houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
+			m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
+		}
 
 		UnicodeString name = slot->getName();
 		GadgetStaticTextSetText(m_playerNames[netSlot], name );

@@ -58,6 +58,11 @@ SimpleObjectIterator::Clump::~Clump()
 //=============================================================================
 SimpleObjectIterator::SimpleObjectIterator()
 {
+	// GeneralsX @refactor cheviiot 24/10/2026 Adapt upstream #3389 static_assert array sizing (ZH-canonical).
+	// Upstream reference: TheSuperHackers, PR #3389
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3389
+	static_assert(ARRAY_SIZE(theClumpCompareProcs) == ITER_ORDER_TYPE_COUNT, "Incorrect array size");
+
 	m_firstClump = nullptr;
 	m_curClump = nullptr;
 	m_clumpCount = 0;
