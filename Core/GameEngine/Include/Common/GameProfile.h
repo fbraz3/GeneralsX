@@ -43,6 +43,12 @@ public:
 	// allowAnyProfile: TRUE for the unified echelon binary (both profiles); FALSE for
 	// migration binaries GeneralsX / GeneralsXZH (compiled profile only).
 	static Bool selectForProcess(Int argc, Char **argv, Bool allowAnyProfile = FALSE);
+	// GeneralsX @feature cheviiot 24/10/2026 Apply a profile chosen by the native GameSelect UI (before pools/assets).
+	static void selectKind(GameProfileKind kind);
+	// True when argv implies non-GUI automation (headless/replay/map/skirmish/…); GameSelect UI is skipped.
+	static Bool isAutomationLaunch(Int argc, Char **argv);
+	// Parse -game / ECHELON_GAME as a UI preselection hint without locking the profile.
+	static Bool peekPreferredKind(Int argc, Char **argv, GameProfileKind *outKind);
 	// Tools or late paths that skip main selection fall back to the compiled default.
 	static void ensureSelected(void);
 	static Bool isSelected(void);

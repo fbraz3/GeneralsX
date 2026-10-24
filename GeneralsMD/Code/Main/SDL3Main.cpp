@@ -49,6 +49,9 @@
 #include "Common/Debug.h"
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
+#if defined(RTS_UNIFIED_ENGINE) && RTS_UNIFIED_ENGINE
+#include "GameSelectUI.h"
+#endif
 
 // DXVK WSI
 #define DXVK_WSI_SDL3 1
@@ -255,13 +258,26 @@ int main(int argc, char* argv[])
 
 		// GeneralsX @feature cheviiot 23/10/2026 Select GameProfile before memory pools/assets (PLAN-023).
 		// RTS_UNIFIED_ENGINE: echelon binary may select generals|zh; GeneralsXZH stays ZH-only.
+		// GeneralsX @feature cheviiot 24/10/2026 GUI launches open native GameSelect; automation skips UI.
 #if defined(RTS_UNIFIED_ENGINE) && RTS_UNIFIED_ENGINE
-		if (!GameProfile::selectForProcess(argc, argv, TRUE)) {
+		if (GameProfile::isAutomationLaunch(argc, argv)) {
+			if (!GameProfile::selectForProcess(argc, argv, TRUE)) {
+				return 1;
+			}
+		} else {
+			GameProfileKind preselect = GAME_PROFILE_ZERO_HOUR;
+			GameProfile::peekPreferredKind(argc, argv, &preselect);
+			GameProfileKind chosen = preselect;
+			if (!GameSelectUI::run(preselect, &chosen)) {
+				return 1;
+			}
+			GameProfile::selectKind(chosen);
+		}
 #else
 		if (!GameProfile::selectForProcess(argc, argv, FALSE)) {
-#endif
 			return 1;
 		}
+#endif
 
 		// Initialize memory manager early (required by NEW operator); pools follow selected profile.
 		initMemoryManager();

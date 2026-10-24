@@ -145,6 +145,8 @@ if(RTS_BUILD_ECHELON)
         $<$<BOOL:${WIN32}>:WinMain.cpp>
         $<$<BOOL:${WIN32}>:WinMain.h>
         $<$<NOT:$<BOOL:${WIN32}>>:SDL3Main.cpp>
+        $<$<NOT:$<BOOL:${WIN32}>>:GameSelectUI.cpp>
+        $<$<NOT:$<BOOL:${WIN32}>>:GameSelectUI.h>
         $<$<NOT:$<BOOL:${WIN32}>>:LinuxStubs.cpp>
     )
 

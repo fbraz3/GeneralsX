@@ -92,6 +92,78 @@ void GameProfile::select(GameProfileKind kind)
 	fflush(stderr);
 }
 
+void GameProfile::selectKind(GameProfileKind kind)
+{
+	select(kind);
+}
+
+Bool GameProfile::isAutomationLaunch(Int argc, Char **argv)
+{
+	// GeneralsX @feature cheviiot 24/10/2026 Skip GameSelect UI for headless / scripted launches.
+	static const Char *kAutomationFlags[] = {
+		"-headless",
+		"-replay",
+		"-loadreplay",
+		"-map",
+		"-skirmish",
+		"-lanProbe",
+		"-saveAtFrame",
+		"-quitAfterFrames",
+		"-file", // some tool paths
+	};
+	for (Int i = 1; i < argc; ++i) {
+		const Char *arg = argv[i];
+		if (arg == nullptr) {
+			continue;
+		}
+		for (UnsignedInt f = 0; f < sizeof(kAutomationFlags) / sizeof(kAutomationFlags[0]); ++f) {
+			if (equalsIgnoreCase(arg, kAutomationFlags[f])) {
+				return TRUE;
+			}
+		}
+	}
+	const Char *skip = getenv("ECHELON_SKIP_GAME_SELECT");
+	if (skip != nullptr && skip[0] == '1') {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+Bool GameProfile::peekPreferredKind(Int argc, Char **argv, GameProfileKind *outKind)
+{
+	if (outKind == nullptr) {
+		return FALSE;
+	}
+	GameProfileKind fromArg = compiledDefault();
+	Bool saw = FALSE;
+	for (Int i = 1; i < argc; ++i) {
+		const Char *arg = argv[i];
+		if (arg == nullptr || !equalsIgnoreCase(arg, "-game")) {
+			continue;
+		}
+		if (i + 1 >= argc || argv[i + 1] == nullptr) {
+			return FALSE;
+		}
+		GameProfileKind parsed;
+		if (!parseKindToken(argv[i + 1], &parsed)) {
+			return FALSE;
+		}
+		fromArg = parsed;
+		saw = TRUE;
+		++i;
+	}
+	if (!saw) {
+		const Char *envGame = getenv("ECHELON_GAME");
+		GameProfileKind fromEnv;
+		if (envGame != nullptr && envGame[0] != '\0' && parseKindToken(envGame, &fromEnv)) {
+			fromArg = fromEnv;
+			saw = TRUE;
+		}
+	}
+	*outKind = fromArg;
+	return saw;
+}
+
 Bool GameProfile::selectForProcess(Int argc, Char **argv, Bool allowAnyProfile)
 {
 	const GameProfileKind compiled = compiledDefault();
