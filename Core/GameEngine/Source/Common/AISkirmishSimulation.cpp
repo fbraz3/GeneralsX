@@ -94,9 +94,18 @@ AsciiString AISkirmishSimulation::resolveMapName(const AsciiString& wanted)
 	if (!TheMapCache)
 		return AsciiString::TheEmptyString;
 
-	// Exact key first (e.g. "Maps\NorthAmerica\NorthAmerica.map").
-	if (TheMapCache->findMap(wanted))
+	// GeneralsX @bugfix Claude 25/10/2026 MapCache::findMap() also matches display names and partial paths since the
+	// October 2026 upstream sync, so a hit no longer means that "wanted" is itself a cache key
+	// (e.g. "Maps\NorthAmerica\NorthAmerica.map"). Return the key it matched.
+	if (const MapMetaData* found = TheMapCache->findMap(wanted))
+	{
+		for (MapCache::const_iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+		{
+			if (&it->second == found)
+				return it->first;
+		}
 		return wanted;
+	}
 
 	// Otherwise case-insensitive substring match on key or display name, multiplayer maps only.
 	AsciiString needle = wanted;
