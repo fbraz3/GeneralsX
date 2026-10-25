@@ -96,6 +96,7 @@
 #include "WW3D2/light.h"
 #include "WW3D2/predlod.h"
 #include "WW3D2/ww3d.h"
+#include "WW3D2/Renderer.h"
 
 #include "W3DDevice/GameClient/CameraShakeSystem.h"
 
@@ -104,10 +105,6 @@ Real TheW3DFrameLengthInMsec = MSEC_PER_LOGICFRAME_REAL; // default is 33msec/fr
 static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much to overscan in the 3D screen region
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
-
-//=================================================================================================
-inline Real minf(Real a, Real b) { if (a < b) return a; else return b; }
-inline Real maxf(Real a, Real b) { if (a > b) return a; else return b; }
 
 //-------------------------------------------------------------------------------------------------
 // Normalizes angle to +- PI.
@@ -629,7 +626,7 @@ void W3DView::clipCameraIntoAreaConstraints()
 Bool W3DView::isWithinCameraAreaConstraints() const
 {
 	const Coord3D &pos = getPosition();
-	return m_cameraAreaConstraints.isInRegion(pos.x, pos.y);
+	return m_cameraAreaConstraints.containsWithin(pos.x, pos.y);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1788,7 +1785,8 @@ Bool W3DView::setViewFilterMode(FilterModes filterMode)
 	if (m_viewFilterMode != FM_NULL_MODE &&
 		m_viewFilter != FT_NULL_FILTER) {
 		if (!W3DShaderManager::filterSetup(m_viewFilter, m_viewFilterMode))
-		{	//setup failed so restore previous mode.
+		{
+			//setup failed so restore previous mode.
 			m_viewFilterMode = oldMode;
 			return FALSE;
 		}
@@ -1806,7 +1804,8 @@ Bool W3DView::setViewFilter(FilterTypes filter)
 	if (m_viewFilterMode != FM_NULL_MODE &&
 		m_viewFilter != FT_NULL_FILTER) {
 		if (!W3DShaderManager::filterSetup(m_viewFilter, m_viewFilterMode))
-		{	//setup failed so restore previous mode.
+		{
+			//setup failed so restore previous mode.
 			m_viewFilter = oldFilter;
 			return FALSE;
 		};
@@ -1925,7 +1924,7 @@ void W3DView::draw()
 		//The pass that rendered into a texture may have left the z-buffer in a weird state
 		//so clear it before rendering normal scene.
 		///@todo: Don't clear z-buffer unless shader uses z-bias or anything else that would cause <= z to fail on normal render.
-		DX8Wrapper::Clear(false, true, Vector3(0.0f,0.0f,0.0f), TheWaterTransparency->m_minWaterOpacity);	// Clear z but not color
+		Renderer::Clear(false, true, Vector3(0.0f,0.0f,0.0f), TheWaterTransparency->m_minWaterOpacity);	// Clear z but not color
 		W3DDisplay::m_3DScene->setCustomPassMode(SCENE_PASS_DEFAULT);
 		W3DDisplay::m_3DScene->doRender( m_3DCamera );
 		Coord2D deltaScroll;
@@ -2569,6 +2568,63 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	if (drawInfo)
 		draw=drawInfo->m_drawable;
 
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Allow picking airborne units by clicking their tactical ground indicator ring.
+	if( draw == nullptr && TheGlobalData && TheGlobalData->isAirUnitGroundIndicator() && TheGameClient != nullptr )
+	{
+		Coord3D terrainPos;
+		if( screenToTerrain( screen, &terrainPos ) )
+		{
+			Real bestDistSq = 1e9f;
+			Drawable *bestAirDraw = nullptr;
+
+			for( Drawable *cand = TheGameClient->getDrawableList(); cand; cand = cand->getNextDrawable() )
+			{
+				// GeneralsX @bugfix felipebraz 17/10/2026 Suppress tactical picking when aircraft is stealthed/cloaked
+				if( !cand->isKindOf( KINDOF_AIRCRAFT ) || cand->getStealthLook() != STEALTHLOOK_NONE || cand->isDrawableEffectivelyHidden() || cand->getFullyObscuredByShroud() )
+					continue;
+
+				const Object *candObj = cand->getObject();
+				if( !candObj || candObj->isEffectivelyDead() )
+					continue;
+
+				// Tactical ground indicator picking only applies to local player's airborne units
+				if( ThePlayerList && ThePlayerList->getLocalPlayer() && candObj->getControllingPlayer() != ThePlayerList->getLocalPlayer() )
+					continue;
+
+				if( !forceAttack && !candObj->isSelectable() )
+					continue;
+
+				// GeneralsX @tweak felipebraz 16/10/2026 Filter out unselectable and GUI-ignored aircraft
+				if( !cand->isKindOf(KINDOF_SELECTABLE) || cand->isKindOf(KINDOF_IGNORED_IN_GUI) )
+					continue;
+
+				Real heightAboveGround = cand->getHeightAboveTerrain();
+				if( !WWMath::Is_Valid_Float(heightAboveGround) || heightAboveGround < W3DModelDraw::MIN_AIR_GROUND_INDICATOR_HEIGHT )
+					continue;
+
+				Real size = W3DModelDraw::calculateAirGroundIndicatorSize(cand->getTemplate());
+
+				Real radius = size * 0.5f;
+				const Coord3D *pos = cand->getPosition();
+				if( pos == nullptr )
+					continue;
+
+				Real dx = terrainPos.x - pos->x;
+				Real dy = terrainPos.y - pos->y;
+				Real distSq = dx * dx + dy * dy;
+
+				if( WWMath::Is_Valid_Float(distSq) && distSq <= radius * radius && distSq < bestDistSq )
+				{
+					bestDistSq = distSq;
+					bestAirDraw = cand;
+				}
+			}
+
+			if( bestAirDraw != nullptr )
+				draw = bestAirDraw;
+		}
+	}
+
 	return draw;
 
 }
@@ -2671,8 +2727,7 @@ void W3DView::lookAt( const Coord3D *o )
 		}
 	}
 
-	Coord2D pos2D = { pos.x, pos.y };
-	setPosition2D(pos2D);
+	setPosition2D(pos.asCoord2D());
 
 	resetPivotToGround();
 
@@ -3499,10 +3554,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 		setPosition(pos);
 		// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 		// the scripted action can occur.
-		m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, pos.x);
-		m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, pos.x);
-		m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, pos.y);
-		m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, pos.y);
+		m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, pos.x);
+		m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, pos.x);
+		m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, pos.y);
+		m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, pos.y);
 		return;
 	}
 
@@ -3606,10 +3661,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 	setPosition(result);
 	// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 	// the scripted action can occur.
-	m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, result.x);
-	m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, result.x);
-	m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, result.y);
-	m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, result.y);
+	m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, result.x);
+	m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, result.x);
+	m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, result.y);
+	m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, result.y);
 
 }
 

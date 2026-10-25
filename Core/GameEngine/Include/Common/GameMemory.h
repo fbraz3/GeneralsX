@@ -77,7 +77,6 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 
-#include "Lib/BaseType.h"
 #include "Common/Debug.h"
 #include "Common/Errors.h"
 
@@ -188,7 +187,9 @@
 // Useful for address sanitizer checks and other investigations.
 // Is included below the macros so that memory pool debug code can still be used.
 #ifdef DISABLE_GAMEMEMORY
-#include "GameMemoryNull.h"
+	#define INCLUDE_GAMEMEMORYNULL_INL 1
+	#include "GameMemoryNull.inl"
+	#undef INCLUDE_GAMEMEMORYNULL_INL
 #else
 
 #ifdef MEMORYPOOL_DEBUG
@@ -456,7 +457,7 @@ public:
 #endif
 
 	/// free the bytes. (assumes allocated by this dma.)
-	void freeBytes(void* pMem);
+	void freeBytes(void* pMem) noexcept;
 
 	/**
 		return the actual number of bytes that would be allocated
@@ -860,9 +861,11 @@ extern void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocatio
 
 	extern void * __cdecl operator new		(size_t size);
 	extern void __cdecl operator delete		(void *p);
+	extern void __cdecl operator delete		(void *p, size_t);
 
 	extern void * __cdecl operator new[]	(size_t size);
 	extern void __cdecl operator delete[]	(void *p);
+	extern void __cdecl operator delete[]	(void *p, size_t);
 
 	// additional overloads to account for VC/MFC funky versions
 	extern void* __cdecl operator new(size_t nSize, const char *, int);

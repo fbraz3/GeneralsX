@@ -88,6 +88,10 @@
 #include "GameClient/ClientInstance.h"
 #include "GameClient/FXList.h"
 #include "GameClient/GameClient.h"
+
+#ifdef SAGE_USE_NGMP
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+#endif
 #include "GameClient/Keyboard.h"
 #include "GameClient/Shell.h"
 #include "GameClient/GameText.h"
@@ -279,6 +283,10 @@ GameEngine::~GameEngine()
 
 	TheGameResultsQueue->endThreads();
 
+#ifdef SAGE_USE_NGMP
+	NGMP_OnlineServicesManager::getInstance().shutdown();
+#endif
+
 	// TheSuperHackers @fix helmutbuhler 03/06/2025
 	// Reset all subsystems before deletion to prevent crashing due to cross dependencies.
 	reset();
@@ -464,6 +472,10 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
+		// Mods must be mounted before GameData.ini is loaded, or the mod's GameData.ini is ignored.
+		CommandLine::parseCommandLineForModInit();
+		TheArchiveFileSystem->loadMods();
+
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
 	initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
 	TheWritableGlobalData->parseCustomDefinition();
@@ -571,8 +583,6 @@ void GameEngine::init()
 		// special-case: parse command-line parameters after loading global data
 		CommandLine::parseCommandLineForEngineInit();
 
-		TheArchiveFileSystem->loadMods();
-
 		// doesn't require resets so just create a single instance here.
 		TheGameLODManager = MSGNEW("GameEngineSubsystem") GameLODManager;
 		TheGameLODManager->init();
@@ -670,6 +680,25 @@ void GameEngine::init()
 
 
 		initSubsystem(TheFXListStore,"TheFXListStore", MSGNEW("GameEngineSubsystem") FXListStore(), &xferCRC, "Data\\INI\\Default\\FXList", "Data\\INI\\FXList");
+		// GeneralsX @feature fbraz3 08/10/2026 Load dynamic light pulses for explosions & superweapons without altering multiplayer CRC
+		if (TheFileSystem && TheFileSystem->doesFileExist("Data\\INI\\FXListGeneralsX.ini"))
+		{
+			try
+			{
+				INI iniGeneralsX;
+				iniGeneralsX.load(AsciiString("Data\\INI\\FXListGeneralsX.ini"), INI_LOAD_OVERWRITE, nullptr);
+			}
+			catch (const INIException& ex)
+			{
+				fprintf(stderr, "[INI] WARNING: Failed to load Data\\INI\\FXListGeneralsX.ini: %s\n", ex.mFailureMessage ? ex.mFailureMessage : "");
+				fflush(stderr);
+			}
+			catch (...)
+			{
+				fprintf(stderr, "[INI] WARNING: Unexpected exception loading Data\\INI\\FXListGeneralsX.ini\n");
+				fflush(stderr);
+			}
+		}
 		initSubsystem(TheWeaponStore,"TheWeaponStore", MSGNEW("GameEngineSubsystem") WeaponStore(), &xferCRC, nullptr, "Data\\INI\\Weapon");
 		initSubsystem(TheObjectCreationListStore,"TheObjectCreationListStore", MSGNEW("GameEngineSubsystem") ObjectCreationListStore(), &xferCRC, "Data\\INI\\Default\\ObjectCreationList", "Data\\INI\\ObjectCreationList");
 		initSubsystem(TheLocomotorStore,"TheLocomotorStore", MSGNEW("GameEngineSubsystem") LocomotorStore(), &xferCRC, nullptr, "Data\\INI\\Locomotor");
@@ -705,6 +734,13 @@ void GameEngine::init()
 
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
+
+#ifdef SAGE_USE_NGMP
+		if (!TheGlobalData->m_headless)
+		{
+			NGMP_OnlineServicesManager::getInstance().init();
+		}
+#endif
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -743,7 +779,7 @@ void GameEngine::init()
 #endif
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
-		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, nullptr);
+		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, nullptr, INI::LoadFlags_SearchSubDirs); // Added in Zero Hour
 #endif
 
 		TheMetaMap->generateMetaMap();
@@ -818,8 +854,12 @@ void GameEngine::init()
 			m_quitting = TRUE;
 		}
 
-		// load the initial shell screen
-		TheShell->push( "Menus/MainMenu.wnd" );
+		// GeneralsX @bugfix elmeriniemela 17/10/2026 Do not start the shell map during the intro.
+		// The main menu is not pushed here, as in the original code. MainMenuInit() calls
+		// showShellMap(TRUE), which would start the shell map (and its music and sounds)
+		// while the intro movies are still playing. GameClient::update() starts the shell map
+		// when the intro is done, and GameLogic::startNewGame() pushes the main menu once the
+		// shell map has loaded (or Shell::showShell() does it when the shell map is off).
 
 		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
@@ -1027,6 +1067,13 @@ void GameEngine::update()
 			{
 				TheNetwork->UPDATE();
 			}
+
+#ifdef SAGE_USE_NGMP
+			if (!TheGlobalData->m_headless)
+			{
+				NGMP_OnlineServicesManager::getInstance().update();
+			}
+#endif
 		}
 
 		// TheSuperHackers @info Ignores frozen time because the script engine needs updating in the logic update regardless.

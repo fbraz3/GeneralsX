@@ -38,11 +38,11 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameClient/W3DBridgeBuffer.h
 #    Include/W3DDevice/GameClient/W3DBufferManager.h
 #    Include/W3DDevice/GameClient/W3DCustomScene.h
-#    Include/W3DDevice/GameClient/W3DDebugDisplay.h
-#    Include/W3DDevice/GameClient/W3DDebugIcons.h
-#    Include/W3DDevice/GameClient/W3DDisplay.h
-#    Include/W3DDevice/GameClient/W3DDisplayString.h
-#    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
+    Include/W3DDevice/GameClient/W3DDebugDisplay.h
+    Include/W3DDevice/GameClient/W3DDebugIcons.h
+    Include/W3DDevice/GameClient/W3DDisplay.h
+    Include/W3DDevice/GameClient/W3DDisplayString.h
+    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
 #    Include/W3DDevice/GameClient/W3DDynamicLight.h
 #    Include/W3DDevice/GameClient/W3DFileSystem.h
     Include/W3DDevice/GameClient/W3DGadget.h
@@ -55,6 +55,8 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameClient/W3DMirror.h
     Include/W3DDevice/GameClient/W3DMouse.h
     Include/W3DDevice/GameClient/W3DParticleSys.h
+    Include/W3DDevice/GameClient/W3DPostProcess.h
+    Include/W3DDevice/GameClient/W3DPostProcessShaders.h
 #    Include/W3DDevice/GameClient/W3DPoly.h
     Include/W3DDevice/GameClient/W3DProfilerFrameCapture.h
 #    Include/W3DDevice/GameClient/W3DProjectedShadow.h
@@ -69,6 +71,7 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameClient/W3DSnow.h
 #    Include/W3DDevice/GameClient/W3DStatusCircle.h
     Include/W3DDevice/GameClient/W3DTerrainBackground.h
+    Include/W3DDevice/GameClient/W3DTerrainParticles.h
     Include/W3DDevice/GameClient/W3DTerrainTracks.h
     Include/W3DDevice/GameClient/W3DTerrainVisual.h
     Include/W3DDevice/GameClient/W3DTreeBuffer.h
@@ -84,14 +87,6 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/W3DDevice/GameLogic/W3DGameLogic.h
 #    Include/W3DDevice/GameLogic/W3DGhostObject.h
 #    Include/W3DDevice/GameLogic/W3DTerrainLogic.h
-    Include/Win32Device/Common/Win32BIGFile.h
-    Include/Win32Device/Common/Win32BIGFileSystem.h
-#    Include/Win32Device/Common/Win32GameEngine.h
-#    Include/Win32Device/GameClient/Win32DIKeyboard.h
-#    Include/Win32Device/GameClient/Win32DIMouse.h
-#    Include/Win32Device/GameClient/Win32Mouse.h
-#    Source/MilesAudioDevice/MilesAudioManager.cpp
-#    Source/VideoDevice/Bink/BinkVideoPlayer.cpp (Bink SDK Windows-only, using stubs)
     Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
     Source/W3DDevice/Common/System/W3DRadar.cpp
     Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
@@ -147,17 +142,18 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
 #    Source/W3DDevice/GameClient/W3DBibBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DBridgeBuffer.cpp
-#    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
-#    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
-#    Source/W3DDevice/GameClient/W3DDisplay.cpp
-#    Source/W3DDevice/GameClient/W3DDisplayString.cpp
-#    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
+    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
+    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
+    Source/W3DDevice/GameClient/W3DDisplay.cpp
+    Source/W3DDevice/GameClient/W3DDisplayString.cpp
+    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
 #    Source/W3DDevice/GameClient/W3DDynamicLight.cpp
 #    Source/W3DDevice/GameClient/W3DFileSystem.cpp
 #    Source/W3DDevice/GameClient/W3DGameClient.cpp
 #    Source/W3DDevice/GameClient/W3DInGameUI.cpp
     Source/W3DDevice/GameClient/W3DMouse.cpp
     Source/W3DDevice/GameClient/W3DParticleSys.cpp
+    Source/W3DDevice/GameClient/W3DPostProcess.cpp
 #    Source/W3DDevice/GameClient/W3DPoly.cpp
     Source/W3DDevice/GameClient/W3DProfilerFrameCapture.cpp
     Source/W3DDevice/GameClient/W3DPropBuffer.cpp
@@ -170,6 +166,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DSnow.cpp
 #    Source/W3DDevice/GameClient/W3DStatusCircle.cpp
     Source/W3DDevice/GameClient/W3DTerrainBackground.cpp
+    Source/W3DDevice/GameClient/W3DTerrainParticles.cpp
     Source/W3DDevice/GameClient/W3DTerrainTracks.cpp
     Source/W3DDevice/GameClient/W3DTerrainVisual.cpp
     Source/W3DDevice/GameClient/W3DTreeBuffer.cpp
@@ -185,11 +182,6 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/W3DDevice/GameLogic/W3DGameLogic.cpp
 #    Source/W3DDevice/GameLogic/W3DGhostObject.cpp
 #    Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-    Source/Win32Device/Common/Win32BIGFile.cpp
-    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-#    Source/Win32Device/Common/Win32GameEngine.cpp
-#    Source/Win32Device/GameClient/Win32DIMouse.cpp
-#    Source/Win32Device/GameClient/Win32Mouse.cpp
 )
 
 # GeneralsX @build BenderAI 13/02/2026 Platform-specific file implementations
@@ -198,26 +190,30 @@ if(WIN32)
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/MilesAudioDevice/MilesAudioManager.h
         Include/VideoDevice/Bink/BinkVideoPlayer.h
+        Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
         Source/MilesAudioDevice/MilesAudioManager.cpp
         Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+        Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
         Source/Win32Device/Common/Win32LocalFileSystem.cpp
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+    )
+else()
+    # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Include/StdDevice/Common/StdLANInterface.h
+        Source/StdDevice/Common/StdLANInterface.cpp
     )
 endif()
 
 # Add C++ 17 FileSystem implementation for non-VS6 builds
 if(NOT IS_VS6_BUILD)
     list(APPEND GAMEENGINEDEVICE_SRC
-        Include/StdDevice/Common/StdBIGFile.h
-        Include/StdDevice/Common/StdBIGFileSystem.h
         Include/StdDevice/Common/StdLocalFile.h
         Include/StdDevice/Common/StdLocalFileSystem.h
-        Source/StdDevice/Common/StdBIGFile.cpp
-        Source/StdDevice/Common/StdBIGFileSystem.cpp
         Source/StdDevice/Common/StdLocalFile.cpp
         Source/StdDevice/Common/StdLocalFileSystem.cpp
     )
@@ -245,9 +241,9 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 
 if(WIN32)
     target_link_libraries(corei_gameenginedevice_public INTERFACE
-        binkstub
+        deps_bink
         d3d8lib
-        milesstub
+        deps_miles
     )
 endif()
 

@@ -30,11 +30,11 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameClient/W3DBridgeBuffer.h
     Include/W3DDevice/GameClient/W3DBufferManager.h
     Include/W3DDevice/GameClient/W3DCustomScene.h
-    Include/W3DDevice/GameClient/W3DDebugDisplay.h
-    Include/W3DDevice/GameClient/W3DDebugIcons.h
-    Include/W3DDevice/GameClient/W3DDisplay.h
-    Include/W3DDevice/GameClient/W3DDisplayString.h
-    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
+#    Include/W3DDevice/GameClient/W3DDebugDisplay.h
+#    Include/W3DDevice/GameClient/W3DDebugIcons.h
+#    Include/W3DDevice/GameClient/W3DDisplay.h
+#    Include/W3DDevice/GameClient/W3DDisplayString.h
+#    Include/W3DDevice/GameClient/W3DDisplayStringManager.h
     Include/W3DDevice/GameClient/W3DDynamicLight.h
     Include/W3DDevice/GameClient/W3DFileSystem.h
 #    Include/W3DDevice/GameClient/W3DGadget.h
@@ -69,8 +69,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameLogic/W3DGameLogic.h
     Include/W3DDevice/GameLogic/W3DGhostObject.h
     Include/W3DDevice/GameLogic/W3DTerrainLogic.h
-#    Include/Win32Device/Common/Win32BIGFile.h
-#    Include/Win32Device/Common/Win32BIGFileSystem.h
 #    Include/Win32Device/Common/Win32GameEngine.h
 #    Include/Win32Device/Common/Win32LocalFile.h
 #    Include/Win32Device/Common/Win32LocalFileSystem.h
@@ -134,11 +132,11 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
     Source/W3DDevice/GameClient/W3DBibBuffer.cpp
     Source/W3DDevice/GameClient/W3DBridgeBuffer.cpp
-    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
-    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
-    Source/W3DDevice/GameClient/W3DDisplay.cpp
-    Source/W3DDevice/GameClient/W3DDisplayString.cpp
-    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
+#    Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
+#    Source/W3DDevice/GameClient/W3DDebugIcons.cpp
+#    Source/W3DDevice/GameClient/W3DDisplay.cpp
+#    Source/W3DDevice/GameClient/W3DDisplayString.cpp
+#    Source/W3DDevice/GameClient/W3DDisplayStringManager.cpp
     Source/W3DDevice/GameClient/W3DDynamicLight.cpp
     Source/W3DDevice/GameClient/W3DFileSystem.cpp
     Source/W3DDevice/GameClient/W3DGameClient.cpp
@@ -166,7 +164,6 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DGameLogic.cpp
     Source/W3DDevice/GameLogic/W3DGhostObject.cpp
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
-
 )
 
 # GeneralsX @build BenderAI 10/03/2026 - Separate Windows and Linux platform-specific files
@@ -209,7 +206,7 @@ target_include_directories(g_gameenginedevice PUBLIC
 )
 
 target_precompile_headers(g_gameenginedevice PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
+    [["Precompiled/BasePrecomp.h"]] # Must be first
     [["Common/STLTypedefs.h"]]
     [["Common/SubsystemInterface.h"]]
     [["WWLib/INI.h"]]
@@ -221,7 +218,6 @@ target_link_libraries(g_gameenginedevice PRIVATE
     corei_gameenginedevice_private
     gi_always
     gi_main
-    stb
 )
 
 target_link_libraries(g_gameenginedevice PUBLIC

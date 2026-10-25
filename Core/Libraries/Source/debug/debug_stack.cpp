@@ -27,10 +27,10 @@
 // Stack walker
 //////////////////////////////////////////////////////////////////////////////
 
-#include "debug.h"
-#include "debug_stack.h"
+#include "debug/debug.h"
+#include "debug/debug_stack.h"
 #include <windows.h>
-#include "WWLib/stringex.h"
+#include "Utility/stringex.h"
 #include <imagehlp.h>
 
 // Definitions to allow run-time linking to the dbghelp.dll functions.

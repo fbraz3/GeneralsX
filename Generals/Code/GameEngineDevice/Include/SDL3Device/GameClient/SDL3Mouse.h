@@ -84,7 +84,7 @@ private:
 
 	// Scale raw SDL window coordinates to game internal resolution
 	// GeneralsX @bugfix felipebraz 20/02/2026 Port fighter19 coordinate scaling fix
-	static void scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY);
+	static void scaleMouseCoordinates(float rawX, float rawY, Uint32 windowID, int& scaledX, int& scaledY);
 
 	// Load cursor from ANI file (fighter19 pattern)
 	// GeneralsX @bugfix BenderAI 22/02/2026 Port fighter19 cursor loading

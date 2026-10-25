@@ -94,91 +94,8 @@ const Image* ControlBar::m_rankVeteranIcon	= nullptr;
 const Image* ControlBar::m_rankEliteIcon		= nullptr;
 const Image* ControlBar::m_rankHeroicIcon		= nullptr;
 
-// GeneralsX @bugfix arazmj 24/08/2026 Preserve command card aspect ratios on widescreen displays.
-static void centerWindowsWithUniformHorizontalScale(GameWindow **windows, Int count, GameWindow *parent)
-{
-	if (!TheDisplay || !parent || !windows || count <= 0)
-		return;
-
-	const Real xScale = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
-	const Real yScale = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
-	if (xScale <= yScale)
-		return;
-
-	const Real uniformHorizontalScale = yScale / xScale;
-	Real minScreenX = 1000000.0f;
-	Real maxScreenX = 0.0f;
-	for (Int i = 0; i < count; ++i)
-	{
-		if (!windows[i])
-			continue;
-
-		Int screenX, screenY, width, height;
-		windows[i]->winGetScreenPosition(&screenX, &screenY);
-		windows[i]->winGetSize(&width, &height);
-		minScreenX = MIN(minScreenX, (Real)screenX);
-		maxScreenX = MAX(maxScreenX, (Real)(screenX + width));
-	}
-
-	if (maxScreenX <= minScreenX)
-		return;
-
-	ICoord2D parentSize;
-	parent->winGetSize(&parentSize.x, &parentSize.y);
-	Int parentScreenX, parentScreenY;
-	parent->winGetScreenPosition(&parentScreenX, &parentScreenY);
-	const Real groupWidth = (maxScreenX - minScreenX) * uniformHorizontalScale;
-	const Real groupLeft = parentScreenX + ((Real)parentSize.x - groupWidth) * 0.5f;
-
-	for (Int i = 0; i < count; ++i)
-	{
-		if (!windows[i])
-			continue;
-
-		Int screenX, screenY, width, height;
-		windows[i]->winGetScreenPosition(&screenX, &screenY);
-		windows[i]->winGetSize(&width, &height);
-		Int localX, localY;
-		windows[i]->winGetPosition(&localX, &localY);
-		Int windowParentScreenX = 0;
-		Int windowParentScreenY = 0;
-		GameWindow *windowParent = windows[i]->winGetParent();
-		if (windowParent)
-			windowParent->winGetScreenPosition(&windowParentScreenX, &windowParentScreenY);
-		const Int scaledScreenX =
-			(Int)(groupLeft + ((Real)screenX - minScreenX) * uniformHorizontalScale + 0.5f);
-		const Int scaledX = scaledScreenX - windowParentScreenX;
-		const Int scaledWidth = MAX(1, (Int)((Real)width * uniformHorizontalScale + 0.5f));
-		windows[i]->winSetPosition(scaledX, localY);
-		windows[i]->winSetSize(scaledWidth, height);
-	}
-}
-
-static void scaleWindowContentsWithUniformHorizontalScale(GameWindow **windows, Int count)
-{
-	if (!TheDisplay || !windows || count <= 0)
-		return;
-
-	const Real xScale = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
-	const Real yScale = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
-	if (xScale <= yScale)
-		return;
-
-	const Real uniformHorizontalScale = yScale / xScale;
-	for (Int i = 0; i < count; ++i)
-	{
-		if (!windows[i])
-			continue;
-
-		Int x, y, width, height;
-		windows[i]->winGetPosition(&x, &y);
-		windows[i]->winGetSize(&width, &height);
-		const Int scaledX = (Int)((Real)x * uniformHorizontalScale + 0.5f);
-		const Int scaledWidth = MAX(1, (Int)((Real)width * uniformHorizontalScale + 0.5f));
-		windows[i]->winSetPosition(scaledX, y);
-		windows[i]->winSetSize(scaledWidth, height);
-	}
-}
+// GeneralsX @bugfix Copilot 19/09/2026 Preserve full-resolution HUD card sizing.
+// Additional horizontal aspect fitting makes ultrawide thumbnails too small.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandButton //////////////////////////////////////////////////////////////////////////////////
@@ -390,7 +307,7 @@ void ControlBar::populatePurchaseScience( Player* player )
 
 			setControlCommand( m_sciencePurchaseWindowsRank3[ i ], commandButton );
 			ScienceType	st = SCIENCE_INVALID;
-			ScienceVec sv = commandButton->getScienceVec();
+			const ScienceVec &sv = commandButton->getScienceVec();
 			if (! sv.empty())
 			{
 				st = sv[ 0 ];
@@ -1290,34 +1207,6 @@ void ControlBar::init()
 			m_rightHUDUpgradeCameos[ i ]->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 		}
 
-		// GeneralsX @bugfix arazmj 24/08/2026 Apply aspect-correct geometry to control-bar card controls.
-		centerWindowsWithUniformHorizontalScale(
-			m_commandWindows,
-			MAX_COMMANDS_PER_SET,
-			m_contextParent[ CP_COMMAND ]);
-
-		GameWindow *rightHUDContent[MAX_RIGHT_HUD_UPGRADE_CAMEOS + 1];
-		rightHUDContent[0] = m_rightHUDCameoWindow;
-		for (i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
-			rightHUDContent[i + 1] = m_rightHUDUpgradeCameos[i];
-		centerWindowsWithUniformHorizontalScale(
-			rightHUDContent,
-			MAX_RIGHT_HUD_UPGRADE_CAMEOS + 1,
-			m_rightHUDUnitSelectParent);
-
-		GameWindow *buildQueueWindows[MAX_BUILD_QUEUE_BUTTONS];
-		for (i = 0; i < MAX_BUILD_QUEUE_BUTTONS; ++i)
-		{
-			windowName.format("ControlBar.wnd:ButtonQueue%02d", i + 1);
-			id = TheNameKeyGenerator->nameToKey(windowName.str());
-			buildQueueWindows[i] =
-				TheWindowManager->winGetWindowFromId(m_contextParent[ CP_BUILD_QUEUE ], id);
-		}
-		centerWindowsWithUniformHorizontalScale(
-			buildQueueWindows,
-			MAX_BUILD_QUEUE_BUTTONS,
-			m_contextParent[ CP_BUILD_QUEUE ]);
-
 //		m_transitionHandler = NEW GameWindowTransitionsHandler;
 //		m_transitionHandler->load();
 //		m_transitionHandler->init();
@@ -1908,9 +1797,9 @@ void ControlBar::evaluateContextUI()
 			return;
 		}
 
-		if (obj->getControllingPlayer()
-			&& obj->getControllingPlayer()->getPlayerTemplate()
-			&& obj->getControllingPlayer()->getPlayerTemplate()->getBeaconTemplate().compare(obj->getTemplate()->getName()) == 0
+		if (obj->getControllingPlayer() &&
+			obj->getControllingPlayer()->getPlayerTemplate() &&
+			obj->getControllingPlayer()->getPlayerTemplate()->getBeaconTemplate().compare(obj->getTemplate()->getName()) == 0
 			)
 		{
 			switchToContext( CB_CONTEXT_BEACON, draw );
@@ -2859,14 +2748,23 @@ void ControlBar::showRallyPoint(const Coord3D* loc)
 	// create a rally point drawable if necessary
 	if (m_rallyPointDrawableID == INVALID_DRAWABLE_ID)
 	{
+		// Upstream reference: CryoTheRenegade, PR #3304 https://github.com/TheSuperHackers/GeneralsGameCode/pull/3304
+		// GeneralsX @bugfix CryoTheRenegade 18/09/2026 Handle a missing RallyPointMarker template
 		const ThingTemplate* ttn = TheThingFactory->findTemplate("RallyPointMarker");
+		if (!ttn)
+		{
+			return;
+		}
+
 		marker = TheThingFactory->newDrawable(ttn);
 		DEBUG_ASSERTCRASH(marker, ("showRallyPoint: Unable to create rally point drawable"));
-		if (marker)
+		// GeneralsX @bugfix BenderAI 20/09/2026 Guard against null marker in release builds
+		if (!marker)
 		{
-			marker->setDrawableStatus(DRAWABLE_STATUS_NO_SAVE);
-			m_rallyPointDrawableID = marker->getID();
+			return;
 		}
+		marker->setDrawableStatus(DRAWABLE_STATUS_NO_SAVE);
+		m_rallyPointDrawableID = marker->getID();
 	}
 	else
 		marker = TheGameClient->findDrawableByID(m_rallyPointDrawableID);
@@ -3382,10 +3280,10 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	m_currentlyUsedSpecialPowersButtons = 0;
 	const PlayerTemplate *pt = player->getPlayerTemplate();
 
-	if(!player || !pt|| !player->isLocalPlayer()
-			|| pt->getSpecialPowerShortcutButtonCount() == 0
-			|| pt->getSpecialPowerShortcutWinName().isEmpty()
-			|| !player->isPlayerActive())
+	if(!player || !pt|| !player->isLocalPlayer() ||
+			pt->getSpecialPowerShortcutButtonCount() == 0 ||
+			pt->getSpecialPowerShortcutWinName().isEmpty() ||
+			!player->isPlayerActive())
 		return;
 	m_currentlyUsedSpecialPowersButtons = pt->getSpecialPowerShortcutButtonCount();
 	AsciiString layoutName, tempName, windowName, parentName;
@@ -3423,24 +3321,15 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 		}
 	}
 
-	// GeneralsX @bugfix arazmj 24/08/2026 Keep shortcut card backgrounds, hit regions, and overlays aspect-correct.
-	centerWindowsWithUniformHorizontalScale(
-		m_specialPowerShortcutButtonParents,
-		m_currentlyUsedSpecialPowersButtons,
-		m_specialPowerShortcutParent);
-	scaleWindowContentsWithUniformHorizontalScale(
-		m_specialPowerShortcutButtons,
-		m_currentlyUsedSpecialPowersButtons);
-
 }
 
 void ControlBar::populateSpecialPowerShortcut( Player *player)
 {
 	const CommandSet *commandSet;
 	Int i;
-	if(!player || !player->getPlayerTemplate()
-			|| !player->isLocalPlayer() || m_currentlyUsedSpecialPowersButtons == 0
-			|| m_specialPowerShortcutButtons == nullptr || m_specialPowerShortcutButtonParents == nullptr)
+	if(!player || !player->getPlayerTemplate() ||
+			!player->isLocalPlayer() || m_currentlyUsedSpecialPowersButtons == 0 ||
+			m_specialPowerShortcutButtons == nullptr || m_specialPowerShortcutButtonParents == nullptr)
 		return;
 	for( i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i )
 	{
@@ -3551,10 +3440,10 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 							Int i;
 
 							// get command set
-							if( !player || !player->getPlayerTemplate()
-									|| player->getPlayerTemplate()->getPurchaseScienceCommandSetRank1().isEmpty()
-									|| player->getPlayerTemplate()->getPurchaseScienceCommandSetRank3().isEmpty()
-									|| player->getPlayerTemplate()->getPurchaseScienceCommandSetRank8().isEmpty() )
+							if( !player || !player->getPlayerTemplate() ||
+									player->getPlayerTemplate()->getPurchaseScienceCommandSetRank1().isEmpty() ||
+									player->getPlayerTemplate()->getPurchaseScienceCommandSetRank3().isEmpty() ||
+									player->getPlayerTemplate()->getPurchaseScienceCommandSetRank8().isEmpty() )
 							{
 								continue;
 							}
@@ -3718,23 +3607,24 @@ Bool ControlBar::canShowSpecialPowerShortcut() const
 //-------------------------------------------------------------------------------------------------
 void ControlBar::updateSpecialPowerShortcut()
 {
-	if(!m_specialPowerShortcutParent || !m_specialPowerShortcutButtons
-	   || !ThePlayerList || !ThePlayerList->getLocalPlayer())
+	if(!m_specialPowerShortcutParent || !m_specialPowerShortcutButtons ||
+	   !ThePlayerList || !ThePlayerList->getLocalPlayer())
 		return;
 
 	const Bool hasValidShortcutButton = canShowSpecialPowerShortcut();
 
-	if( hasValidShortcutButton
-		  && m_specialPowerShortcutParent->winIsHidden()
-			&& m_contextParent[ CP_MASTER ]
-			&& !m_contextParent[ CP_MASTER ]->winIsHidden() )
+	if( hasValidShortcutButton &&
+		  m_specialPowerShortcutParent->winIsHidden() &&
+			m_contextParent[ CP_MASTER ] &&
+			!m_contextParent[ CP_MASTER ]->winIsHidden() )
 	{
 		showSpecialPowerShortcut();
 		animateSpecialPowerShortcut(TRUE);
 	}
-	else if( !hasValidShortcutButton
-					 && !m_specialPowerShortcutParent->winIsHidden()
-					 && m_animateWindowManagerForGenShortcuts->isFinished() )
+	else if( !hasValidShortcutButton &&
+					 !m_specialPowerShortcutParent->winIsHidden() &&
+					 m_animateWindowManagerForGenShortcuts &&
+					 m_animateWindowManagerForGenShortcuts->isFinished() )
 	{
 		animateSpecialPowerShortcut(FALSE);
 	}
@@ -3926,8 +3816,8 @@ void ControlBar::animateSpecialPowerShortcut( Bool isOn )
 
 void ControlBar::showSpecialPowerShortcut()
 {
-	if(TheScriptEngine->isGameEnding() || !m_specialPowerShortcutParent
-		||!m_specialPowerShortcutButtons || !ThePlayerList || !ThePlayerList->getLocalPlayer())
+	if(TheScriptEngine->isGameEnding() || !m_specialPowerShortcutParent ||
+		!m_specialPowerShortcutButtons || !ThePlayerList || !ThePlayerList->getLocalPlayer())
 		return;
 	Bool dontAnimate = TRUE;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i )

@@ -44,10 +44,16 @@
 #include "WWLib/win.h"
 
 // GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Linux text rendering (Phase 1.5)
+// GeneralsX @feature felipebraz 26/09/2026 Guard fontconfig header for platforms without fontconfig (e.g. iOS)
 #if defined(SAGE_USE_FREETYPE) && !defined(_WIN32)
     #include <ft2build.h>
     #include FT_FREETYPE_H
-    #include <fontconfig/fontconfig.h>
+    #if defined(__APPLE__)
+        #include <TargetConditionals.h>
+    #endif
+    #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+        #include <fontconfig/fontconfig.h>
+    #endif
 #endif
 
 /*
@@ -64,16 +70,32 @@ class FontCharsClassCharDataStruct
 public:
 	WCHAR				Value;
 	short				Width;
-	uint16 *		Buffer;
+	uint8 *			Buffer;
 };
 
-enum { CHAR_BUFFER_LEN		= 32768 };
+// TheSuperHackers @tweak Glyph blocks are sized from the font's own glyph cell so that both the
+// relative waste and the allocation count stay bounded at any point size. GLYPH_BLOCK_MIN_BYTES
+// holds as many glyphs as the original fixed 64KB block did at one texel (2 bytes) per pixel,
+// which keeps Arial up to roughly 19 point at the original density. GLYPH_BLOCK_MAX_BYTES
+// bounds the allocation count for very large fonts, and only engages for Arial above roughly 80 point.
+enum
+{
+	GLYPH_BLOCK_MIN_BYTES = 32768,
+	GLYPH_BLOCK_MAX_BYTES = 524288,
+	GLYPH_BLOCK_TARGET_CELLS = 16
+};
 
 class FontCharsBuffer
 {
-	W3DMPO_CODE(FontCharsBuffer)
 public:
-	uint16			Buffer[CHAR_BUFFER_LEN];
+	FontCharsBuffer() : Length( 0 ), Buffer( nullptr ) {}
+	FontCharsBuffer( int length, uint8 *buffer ) : Length( length ), Buffer( buffer ) {}
+
+	bool operator== (const FontCharsBuffer &src) const { return Length == src.Length && Buffer == src.Buffer; }
+	bool operator!= (const FontCharsBuffer &src) const { return !(*this == src); }
+
+	int				Length;
+	uint8 *			Buffer;
 };
 
 
@@ -87,6 +109,8 @@ public:
 
 	// TR: Hack for unicode font support
 	FontCharsClass					*AlternateUnicodeFont;
+	// GeneralsX @feature felipebraz 26/09/2026 Fallback font for brand/symbolic glyphs (Font Awesome)
+	FontCharsClass					*AlternateBrandFont;
 
 
 	bool	Initialize_GDI_Font( const char *font_name, int point_size, bool is_bold );
@@ -100,6 +124,10 @@ public:
 	int Get_Extra_Overlap() {return PixelOverlap;}
 
 	void	Blit_Char( WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y );
+	// GeneralsX @feature felipebraz 27/09/2026 Test if font contains a valid glyph mapping
+	bool	Has_Glyph( WCHAR ch ) const;
+
+	void	Free_Glyph_Cache();
 
 private:
 
@@ -131,12 +159,16 @@ private:
 	//	Private member data
 	//
 	StringClass							Name;
-	DynamicVectorClass<FontCharsBuffer*>	BufferList;
+	DynamicVectorClass<FontCharsBuffer>	BufferList;
 	int									CurrPixelOffset;
 	int									CharHeight;
 	int									CharAscent;
 	int									CharOverhang;
 	int									PixelOverlap;
+	int									GlyphBitmapWidth; // extents of the GDI scratch bitmap, derived from the font metrics
+	int									GlyphBitmapHeight;
+	int									GlyphCellBytes; // worst case bytes for one glyph of this font
+	int									GlyphBlockBytes; // size the glyph blocks ramp up to
 	int									PointSize;
 	StringClass							GDIFontName;
 	
@@ -219,14 +251,13 @@ public:
 	//
 	void	Build_Sentence (const WCHAR *text, int *hkX, int *hkY);
 	void	Draw_Sentence (uint32 color = 0xFFFFFFFF);
+	bool	Has_Sentence_Data () const						{ return SentenceData.Count () > 0; }
 
 	//
 	//	Texture hint
 	//
 	void	Set_Texture_Size_Hint( int hint )				{ TextureSizeHint = hint; }
 	int	Get_Texture_Size_Hint() const				{ return TextureSizeHint; }
-
-	void	Set_Mono_Spaced( bool onoff )						{ MonoSpaced = onoff; }
 
 private:
 
@@ -283,7 +314,6 @@ private:
 	int													CurrTextureSize;
 	int													TextureSizeHint;
 	SurfaceClass *							CurSurface;
-	bool												MonoSpaced;
 	float												WrapWidth;
 	bool												Centered;			// Determines whether or not to center each line
 	RectClass										ClipRect;

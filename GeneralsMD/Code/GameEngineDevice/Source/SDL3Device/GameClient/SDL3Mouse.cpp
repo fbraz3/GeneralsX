@@ -236,9 +236,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 			int frame_index = 0;
 			int hot_spot_x = 0;
 			int hot_spot_y = 0;
-			#ifdef __linux__
 			bool has_hotspot = false;
-			#endif
 
 			RIFFChunk *frame = (RIFFChunk*)((char *)chunk + sizeof(RIFFChunk));
 			while (frame != NULL && (char *)frame < file_buffer + size)
@@ -259,17 +257,12 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 
 					// Allow specifying the hot spot via properties on the surface
 					SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-					#ifdef __linux__
 					if (!has_hotspot)
 					{
 						hot_spot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, 0);
 						hot_spot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, 0);
 						has_hotspot = true;
 					}
-					#else
-					hot_spot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, 0);
-					hot_spot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, 0);
-					#endif
 
 					frame_index++;
 				}
@@ -289,9 +282,7 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				const int clamped_rate = (cursor->m_frameRate > 0) ? cursor->m_frameRate : 4;
 				const Uint32 frame_duration_ms = (Uint32)((clamped_rate * 1000) / 60);
 				SDL_CursorFrameInfo frame_infos[MAX_2D_CURSOR_ANIM_FRAMES];
-				#ifdef __linux__
 				SDL_Surface *first_surface = cursor->m_frameSurfaces[0];
-				#endif
 
 				for (int i = 0; i < frame_index; ++i)
 				{
@@ -299,7 +290,6 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					frame_infos[i].duration = frame_duration_ms;
 				}
 
-				#ifdef __linux__
 				if (first_surface)
 				{
 					if (hot_spot_x < 0) hot_spot_x = 0;
@@ -307,14 +297,12 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 					if (hot_spot_x >= first_surface->w) hot_spot_x = first_surface->w - 1;
 					if (hot_spot_y >= first_surface->h) hot_spot_y = first_surface->h - 1;
 				}
-				#endif
 
 				// GeneralsX @bugfix felipebraz 28/04/2026 Use SDL native animated cursor to ensure frame playback.
 				cursor->m_cursor = SDL_CreateAnimatedCursor(frame_infos, frame_index, hot_spot_x, hot_spot_y);
 				if (!cursor->m_cursor)
 				{
 					DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: SDL_CreateAnimatedCursor failed [%s]", SDL_GetError()));
-					#ifdef __linux__
 					// GeneralsX @bugfix BenderAI 11/05/2026 Fallback to static cursor when ANI animation fails.
 					if (first_surface)
 					{
@@ -327,11 +315,6 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 						delete[] file_buffer;
 						return NULL;
 					}
-					#else
-					delete cursor;
-					delete[] file_buffer;
-					return NULL;
-					#endif
 				}
 			}
 
@@ -455,6 +438,18 @@ void SDL3Mouse::initCursorResources(void)
 				DEBUG_ASSERTCRASH(cursorResources[cursor][direction], ("MissingCursor %s\n",resourcePath));
 			}
 		}
+	}
+
+	// GeneralsX @bugfix felipebraz 16/10/2026 Log cursor initialization status to console
+	if (cursorResources[NORMAL][0] && cursorResources[NORMAL][0]->m_cursor)
+	{
+		fprintf(stderr, "[CURSOR] Default normal cursor loaded successfully\n");
+		fflush(stderr);
+	}
+	else
+	{
+		fprintf(stderr, "[CURSOR] WARNING: Default normal cursor failed to load!\n");
+		fflush(stderr);
 	}
 }
 
@@ -834,9 +829,9 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
 }
 
 /**
- * Scale raw SDL3 window pixel coordinates to game internal resolution.
+ * Scale raw SDL3 window coordinates to game internal resolution.
  * This is CRITICAL for correct hit-testing: the game's UI layout is based on
- * its internal resolution (e.g. 800x600), but SDL reports pixel coordinates
+ * its internal resolution (e.g. 800x600), but SDL reports window coordinates
  * relative to the actual window size (e.g. 1920x1080). Without scaling, clicks
  * land at the wrong position and the game ignores them.
  *
@@ -844,12 +839,12 @@ void SDL3Mouse::translateWheelEvent(const SDL_MouseWheelEvent& event, MouseIO *r
  *
  * GeneralsX @bugfix felipebraz 20/02/2026 Fix mouse click coordinates not matching UI layout
  */
-void SDL3Mouse::scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& scaledX, int& scaledY)
+void SDL3Mouse::scaleMouseCoordinates(float rawX, float rawY, Uint32 windowID, int& scaledX, int& scaledY)
 {
 	SDL_Window* window = SDL_GetWindowFromID(windowID);
 	if (!window || !TheDisplay) {
-		scaledX = rawX;
-		scaledY = rawY;
+		scaledX = static_cast<int>(rawX);
+		scaledY = static_cast<int>(rawY);
 		return;
 	}
 
@@ -857,32 +852,48 @@ void SDL3Mouse::scaleMouseCoordinates(int rawX, int rawY, Uint32 windowID, int& 
 	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
 	if (windowWidth <= 0 || windowHeight <= 0) {
-		scaledX = rawX;
-		scaledY = rawY;
+		scaledX = static_cast<int>(rawX);
+		scaledY = static_cast<int>(rawY);
 		return;
 	}
 
 	int internalWidth  = TheDisplay->getWidth();
 	int internalHeight = TheDisplay->getHeight();
-
-	int pbX, pbY, pbW, pbH;
-	if (TheDisplay->getViewportRect(pbX, pbY, pbW, pbH)) {
-		int clampedX = rawX - pbX;
-		if (clampedX < 0) clampedX = 0;
-		if (clampedX > pbW) clampedX = pbW;
-		int clampedY = rawY - pbY;
-		if (clampedY < 0) clampedY = 0;
-		if (clampedY > pbH) clampedY = pbH;
-		scaledX = static_cast<int>(clampedX * static_cast<float>(internalWidth) / static_cast<float>(pbW));
-		scaledY = static_cast<int>(clampedY * static_cast<float>(internalHeight) / static_cast<float>(pbH));
+	if (internalWidth <= 0 || internalHeight <= 0) {
+		scaledX = static_cast<int>(rawX);
+		scaledY = static_cast<int>(rawY);
 		return;
 	}
 
-	float factorX = static_cast<float>(internalWidth)  / static_cast<float>(windowWidth);
-	float factorY = static_cast<float>(internalHeight) / static_cast<float>(windowHeight);
+	float viewportX = 0.0f;
+	float viewportY = 0.0f;
+	float viewportWidth = static_cast<float>(windowWidth);
+	float viewportHeight = static_cast<float>(windowHeight);
+	int pbX, pbY, pbW, pbH;
+	if (TheDisplay->getViewportRect(pbX, pbY, pbW, pbH)) {
+		// GeneralsX @bugfix Copilot 06/09/2026 Recreate the renderer's aspect-fit rectangle directly
+		// in SDL logical window coordinates. The cached viewport is derived from physical pixels and
+		// rounded to integers; converting it back before mapping Retina input can shift edge hit tests.
+		const float gameAspect = static_cast<float>(internalWidth) / static_cast<float>(internalHeight);
+		const float windowAspect = viewportWidth / viewportHeight;
+		if (windowAspect > gameAspect) {
+			viewportWidth = viewportHeight * gameAspect;
+			viewportX = (static_cast<float>(windowWidth) - viewportWidth) * 0.5f;
+		} else if (windowAspect < gameAspect) {
+			viewportHeight = viewportWidth / gameAspect;
+			viewportY = (static_cast<float>(windowHeight) - viewportHeight) * 0.5f;
+		}
+	}
 
-	scaledX = static_cast<int>(rawX * factorX);
-	scaledY = static_cast<int>(rawY * factorY);
+	float localX = rawX - viewportX;
+	float localY = rawY - viewportY;
+	if (localX < 0.0f) localX = 0.0f;
+	if (localX > viewportWidth) localX = viewportWidth;
+	if (localY < 0.0f) localY = 0.0f;
+	if (localY > viewportHeight) localY = viewportHeight;
+
+	scaledX = static_cast<int>(localX * static_cast<float>(internalWidth) / viewportWidth);
+	scaledY = static_cast<int>(localY * static_cast<float>(internalHeight) / viewportHeight);
 }
 
 /**
@@ -943,29 +954,29 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 
 	const SDL_Event& event = m_eventBuffer[eventIndex];
 
-	// Raw window-pixel coordinates and window ID, extracted per event type
-	int rawX = 0, rawY = 0;
+	// Raw SDL logical window coordinates and window ID, extracted per event type.
+	float rawX = 0.0f, rawY = 0.0f;
 	Uint32 windowID = 0;
 
 	// Switch on event type and delegate to appropriate translation method
 	switch (event.type) {
 		case SDL_EVENT_MOUSE_MOTION:
 			translateMotionEvent(event.motion, result);
-			rawX     = (int)event.motion.x;
-			rawY     = (int)event.motion.y;
+			rawX     = event.motion.x;
+			rawY     = event.motion.y;
 			windowID = event.motion.windowID;
 			break;
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			translateButtonEvent(event.button, result);
-			rawX     = (int)event.button.x;
-			rawY     = (int)event.button.y;
+			rawX     = event.button.x;
+			rawY     = event.button.y;
 			windowID = event.button.windowID;
 			break;
 		case SDL_EVENT_MOUSE_WHEEL:
 			translateWheelEvent(event.wheel, result);
-			rawX     = (int)event.wheel.mouse_x;
-			rawY     = (int)event.wheel.mouse_y;
+			rawX     = event.wheel.mouse_x;
+			rawY     = event.wheel.mouse_y;
 			windowID = event.wheel.windowID;
 			break;
 		default:
@@ -974,10 +985,10 @@ void SDL3Mouse::translateEvent(UnsignedInt eventIndex, MouseIO *result)
 			return;
 	}
 
-	// Scale from SDL window-pixel space to game internal resolution.
+	// Scale from SDL logical window space to game internal resolution.
 	// GeneralsX @bugfix felipebraz 20/02/2026 Without this, UI hit-testing fails because
 	// the game checks clicks against its internal resolution (e.g. 800x600) but SDL
-	// reports coordinates in actual window pixels (e.g. 1920x1080).
+	// reports coordinates in the current window coordinate space.
 	int scaledX = 0, scaledY = 0;
 	scaleMouseCoordinates(rawX, rawY, windowID, scaledX, scaledY);
 	result->pos.x = scaledX;

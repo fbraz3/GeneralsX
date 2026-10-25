@@ -26,8 +26,8 @@
 //
 // Debug command group 'debug'
 //////////////////////////////////////////////////////////////////////////////
-#include "debug.h"
-#include "debug_cmd.h"
+#include "debug/debug.h"
+#include "debug/debug_cmd.h"
 #include "internal.h"
 #include <windows.h>
 #include <process.h>
@@ -344,8 +344,8 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
       const char *pattern=argn<2?"*":argv[1];
       for (Debug::PatternListEntry **entryPtr=&dbg.firstPatternEntry;*entryPtr;)
       {
-        if ( (((*entryPtr)->frameTypes&mask)!=0)
-            && Debug::SimpleMatch((*entryPtr)->pattern,pattern) )
+        if ( (((*entryPtr)->frameTypes&mask)!=0) &&
+            Debug::SimpleMatch((*entryPtr)->pattern,pattern) )
         {
           // remove this entry
           modified=true;

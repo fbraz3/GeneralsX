@@ -71,6 +71,7 @@
 #define  STRICT
 #include <windows.h>
 #include <windowsx.h>
+#include <shellapi.h>
 #include <assert.h>
 #include <ctype.h>
 #include <direct.h>
@@ -119,7 +120,7 @@
 #include "GameClient/GameText.h"
 #include "Common/UnicodeString.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
-#include "Win32Device/Common/Win32BIGFileSystem.h"
+#include "Common/BIGFileSystem.h"
 #endif
 
 //-----------------------------------------------------------------------------
@@ -449,7 +450,7 @@ int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpszCmd
 	// create singletons
 	TheFileSystem->init();
 	TheLocalFileSystem = new Win32LocalFileSystem;
-	TheArchiveFileSystem = new Win32BIGFileSystem;
+	TheArchiveFileSystem = new BIGFileSystem;
 	TheGameText = CreateGameTextInterface();
 	TheGameText->init();
 
@@ -5323,7 +5324,8 @@ void Debug_Date_And_Time_Stamp ()
 		strcpy( ampm, "PM" );
 		today->tm_hour -= 12;
     }
-	if( today->tm_hour == 0 ) {		/* Adjust if midnight hour. */
+	if( today->tm_hour == 0 ) {
+		/* Adjust if midnight hour. */
 		today->tm_hour = 12;
 	}
 

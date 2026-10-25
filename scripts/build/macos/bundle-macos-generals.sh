@@ -17,7 +17,7 @@ DXVK_D3D8_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d8/libdxvk_d3d8.0
 DXVK_D3D9_LIB_MESON="${BUILD_DIR}/_deps/dxvk-build-macos/src/d3d9/libdxvk_d3d9.0.dylib"
 BINARY_SRC="${BUILD_DIR}/Generals/GeneralsX"
 DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
-OUTPUT_ZIP="${PROJECT_ROOT}/GeneralsX-macos-arm64.zip"
+OUTPUT_ZIP="${PROJECT_ROOT}/macos-arm64-GeneralsX.zip"
 
 DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
 DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"
@@ -343,6 +343,18 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature felipebraz 26/09/2026 Bundle universal fonts into application resources.
+mkdir -p "${RESOURCES_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    echo "  + Bundled fonts"
+    cp "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RESOURCES_DIR}/fonts/"
+    cp "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RESOURCES_DIR}/fonts/"
+else
+    echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
+    exit 1
+fi
+
 # App launcher wrapper
 echo "  + App launcher"
 cat > "${MACOS_DIR}/run.sh" << 'WRAPPER'
@@ -389,6 +401,11 @@ if [[ -f "${RESOURCES_DIR}/dxvk.conf" ]]; then
     export DXVK_CONFIG_FILE="${RESOURCES_DIR}/dxvk.conf"
 fi
 
+# GeneralsX @bugfix felipebraz 26/09/2026 Export GX_BUNDLE_FONTS so engine resolves staged fonts when CWD changes to asset root.
+if [[ -d "${RESOURCES_DIR}/fonts" ]]; then
+    export GX_BUNDLE_FONTS="${RESOURCES_DIR}/fonts"
+fi
+
 # Run from the detected Generals asset root when available.
 if [[ -d "${CNC_GENERALS_PATH}" ]]; then
     cd "${CNC_GENERALS_PATH}"
@@ -415,11 +432,12 @@ exec "${SCRIPT_DIR}/GeneralsX.app/Contents/MacOS/run.sh" "$@"
 RUNNER
 chmod +x "${STAGE_DIR}/run.sh"
 
-# Create zip
+# Create zip containing only the .app bundle directly at the root
+# GeneralsX @bugfix Meeseeks 14/09/2026 Package .app directly at zip root to prevent nested folders on extract.
 echo ""
 echo "Creating ${OUTPUT_ZIP}..."
 rm -f "${OUTPUT_ZIP}"
-(cd "${STAGE_DIR}" && zip -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}" run.sh)
+(cd "${STAGE_DIR}" && zip -y -r "${OUTPUT_ZIP}" "${APP_DIR_NAME}")
 
 echo ""
 echo "Bundle complete: ${OUTPUT_ZIP}"
@@ -428,7 +446,7 @@ unzip -l "${OUTPUT_ZIP}" | sed '1,3d;$d'
 echo ""
 echo "To use locally:"
 echo "  1) unzip ${OUTPUT_ZIP}"
-echo "  2) run: ./run.sh -win"
+echo "  2) run: ./${APP_DIR_NAME}/Contents/MacOS/run.sh -win"
 echo "  3) or open: open ${APP_DIR_NAME}"
 echo ""
 echo "Runtime env defaults inside app launcher:"

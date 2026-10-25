@@ -52,7 +52,7 @@
 #include "W3DDevice/GameClient/W3DParticleSys.h"
 #include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
-#include "StdDevice/Common/StdBIGFileSystem.h"
+#include "Common/BIGFileSystem.h"
 #include "Common/GlobalData.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -501,8 +501,8 @@ LocalFileSystem *SDL3GameEngine::createLocalFileSystem(void)
 
 ArchiveFileSystem *SDL3GameEngine::createArchiveFileSystem(void)
 {
-	fprintf(stderr, "INFO: SDL3GameEngine::createArchiveFileSystem() -> StdBIGFileSystem\n");
-	return NEW StdBIGFileSystem;
+	fprintf(stderr, "INFO: SDL3GameEngine::createArchiveFileSystem() -> BIGFileSystem\n");
+	return NEW BIGFileSystem;
 }
 
 GameLogic *SDL3GameEngine::createGameLogic(void)

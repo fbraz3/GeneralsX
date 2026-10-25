@@ -1092,7 +1092,7 @@ void DebugWindowDialog::getSwitchFromSystem( IN SwitchType switchType, OUT Bool&
 	{
 		case ST_HOLLOW: switchVal = m_particleSystem->m_isEmissionVolumeHollow; break;
 		case ST_ONESHOT: switchVal = m_particleSystem->m_isOneShot; break;
-		case ST_ALIGNXY: switchVal = m_particleSystem->m_isGroundAligned; break;
+		case ST_ALIGNXY: switchVal = m_particleSystem->m_particleAlignment == ParticleSystemInfo::PARTICLE_ALIGNMENT_XYPLANAR; break;
 		case ST_EMITABOVEGROUNDONLY: switchVal = m_particleSystem->m_isEmitAboveGroundOnly; break;
 		case ST_PARTICLEUPTOWARDSEMITTER: switchVal = m_particleSystem->m_isParticleUpTowardsEmitter; break;
 	};
@@ -1108,7 +1108,7 @@ void DebugWindowDialog::updateSwitchToSystem( IN SwitchType switchType, IN const
 	{
 		case ST_HOLLOW: m_particleSystem->m_isEmissionVolumeHollow = switchVal; break;
 		case ST_ONESHOT: m_particleSystem->m_isOneShot = switchVal; break;
-		case ST_ALIGNXY: m_particleSystem->m_isGroundAligned = switchVal; break;
+		case ST_ALIGNXY: m_particleSystem->m_particleAlignment = switchVal ? ParticleSystemInfo::PARTICLE_ALIGNMENT_XYPLANAR : ParticleSystemInfo::PARTICLE_ALIGNMENT_BILLBOARD; break;
 		case ST_EMITABOVEGROUNDONLY: m_particleSystem->m_isEmitAboveGroundOnly = switchVal; break;
 		case ST_PARTICLEUPTOWARDSEMITTER: m_particleSystem->m_isParticleUpTowardsEmitter = switchVal; break;
 	};
@@ -1246,7 +1246,8 @@ void DebugWindowDialog::performUpdate( IN Bool toUI )
 
 	static char buff[ARBITRARY_BUFF_SIZE];
 
-	{	// Update the emission type, velocity type, particle type and shader type.
+	{
+		// Update the emission type, velocity type, particle type and shader type.
 
 		CComboBox *pCombo;
 
@@ -1336,7 +1337,8 @@ void DebugWindowDialog::performUpdate( IN Bool toUI )
 		}
 	}
 
-	{	// update the minimum and maximum for Angle X, Y and Z, and Angular X, Y, and Z
+	{
+		// update the minimum and maximum for Angle X, Y and Z, and Angular X, Y, and Z
 
 		CWnd *pWnd;
 		pWnd = GetDlgItem(IDC_PSEd_AngleXMin);
@@ -1520,7 +1522,8 @@ void DebugWindowDialog::performUpdate( IN Bool toUI )
 		}
 	}
 
-	{	// update the damping values.
+	{
+		// update the damping values.
 		CWnd *pWnd;
 		pWnd = GetDlgItem(IDC_PSEd_AngleDampingMin);
 		if (pWnd) {
@@ -1567,7 +1570,8 @@ void DebugWindowDialog::performUpdate( IN Bool toUI )
 		}
 	}
 
-	{ // update gravity
+	{
+		// update gravity
 		CWnd *pWnd;
 		pWnd = GetDlgItem(IDC_PSEd_Gravity);
 		if (pWnd) {
@@ -1581,7 +1585,8 @@ void DebugWindowDialog::performUpdate( IN Bool toUI )
 		}
 	}
 
-	{	// all the kids need to update too.
+	{
+		// all the kids need to update too.
 		m_colorAlphaDialog.performUpdate(toUI);
 		m_switchesDialog.performUpdate(toUI);
 		m_moreParmsDialog.performUpdate(toUI);

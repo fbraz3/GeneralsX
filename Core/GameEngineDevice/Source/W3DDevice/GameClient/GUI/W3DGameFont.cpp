@@ -72,9 +72,12 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 	// then known-good Unicode fonts. We iterate all candidates and pick the first that loads AND has a
 	// different family from the base font. This avoids returning a font that lacks Cyrillic coverage
 	// (e.g., Arial on macOS) when a better universal font like "Arial Unicode MS" is available.
+	// GeneralsX @feature felipebraz 26/09/2026 Include Liberation Sans in Unicode fallback candidate list
 	static const char *kFallbackUnicodeFonts[] = {
 		"Arial Unicode MS",
 		"Arial Unicode",
+		"Liberation Sans",
+		"Liberation Serif",
 		"Arial",
 		"Helvetica Neue",
 		"Helvetica",
@@ -101,6 +104,42 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
 			return font;
+		}
+	}
+
+	return nullptr;
+}
+
+// GeneralsX @feature felipebraz 26/09/2026 Load Font Awesome Brands as dedicated brand icon fallback font
+static inline bool IsBrandFontName(const char *name)
+{
+	if (name == nullptr) return false;
+	return (strcmp(name, "fa-brands-400") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands Regular") == 0 ||
+	        strcmp(name, "Font Awesome 6 Brands") == 0 ||
+	        strcmp(name, "FontAwesome6Brands-Regular") == 0);
+}
+
+FontCharsClass *LoadBrandFallbackFont(Int size, Bool bold, const char *base_name)
+{
+	static const char *kBrandFonts[] = {
+		"Font Awesome 6 Brands Regular",
+		"Font Awesome 6 Brands",
+		"fa-brands-400",
+		nullptr
+	};
+
+	for (int i = 0; kBrandFonts[i]; ++i) {
+		if (base_name != nullptr && strcmp(kBrandFonts[i], base_name) == 0)
+			continue;
+
+		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(kBrandFonts[i], size, bold);
+		if (font != nullptr) {
+			// GeneralsX @bugfix felipebraz 27/09/2026 Ensure font has the required OS brand glyphs (Apple, Windows, Linux)
+			if (font->Has_Glyph(0xF179) && font->Has_Glyph(0xF17A) && font->Has_Glyph(0xF17C)) {
+				return font;
+			}
+			font->Release_Ref();
 		}
 	}
 
@@ -154,7 +193,8 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	// should not get an AlternateUnicodeFont set, otherwise Get_Char_Data enters infinite
 	// recursion: e.g. Arial → Arial Unicode MS → Arial → ...
 	{
-		bool skipFallback = false;
+		// GeneralsX @bugfix felipebraz 29/09/2026 Brand font aliases must skip Unicode fallback to preserve native glyph lookup
+		bool skipFallback = IsBrandFontName(name);
 		// Skip fallback for fonts that already have full Unicode coverage themselves
 		static const char *kFullCoverageFonts[] = {
 			"Arial Unicode MS",
@@ -162,14 +202,22 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 			"DejaVu Sans",
 			nullptr
 		};
-		for (int i = 0; kFullCoverageFonts[i]; i++) {
-			if (strcmp(name, kFullCoverageFonts[i]) == 0) {
-				skipFallback = true;
-				break;
+		if (!skipFallback) {
+			for (int i = 0; kFullCoverageFonts[i]; i++) {
+				if (strcmp(name, kFullCoverageFonts[i]) == 0) {
+					skipFallback = true;
+					break;
+				}
 			}
 		}
 		if (!skipFallback) {
 			fontChar->AlternateUnicodeFont = LoadUnicodeFallbackFont(size, bold, name);
+		}
+
+		// GeneralsX @feature felipebraz 26/09/2026 Provide brand glyph fallback for UI fonts
+		bool isBrandFont = IsBrandFontName(name);
+		if (!isBrandFont) {
+			fontChar->AlternateBrandFont = LoadBrandFallbackFont(size, bold, name);
 		}
 	}
 
@@ -186,6 +234,8 @@ void W3DFontLibrary::releaseFontData( GameFont *font )
 	// the W3D asset manager which is all taken for of us
 	if (font && font->fontData)
 	{
+		if(((FontCharsClass *)(font->fontData))->AlternateBrandFont)
+			((FontCharsClass *)(font->fontData))->AlternateBrandFont->Release_Ref();
 		if(((FontCharsClass *)(font->fontData))->AlternateUnicodeFont)
 			((FontCharsClass *)(font->fontData))->AlternateUnicodeFont->Release_Ref();
 		((FontCharsClass *)(font->fontData))->Release_Ref();

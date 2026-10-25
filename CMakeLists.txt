@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 
 # Use packagename_ROOT for FindPackage.
 if(POLICY CMP0074)
@@ -30,6 +30,10 @@ if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
 endif()
 
+# Define VCPKG feature before the project block
+# since they need to be initialized before the toolchain is
+include(cmake/config-vcpkg.cmake)
+
 # Top level project, doesn't really affect anything.
 project(genzh LANGUAGES C CXX)
 
@@ -59,16 +63,26 @@ if(MINGW)
     include(cmake/widl.cmake)
 endif()
 
-# Find/Add build dependencies and stubs shared by all projects
-if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    include(cmake/miles.cmake)
-    include(cmake/bink.cmake)
-endif()
-
 # Always include DX8 headers (needed for both Windows and Linux builds)
 # On Windows: min-dx8-sdk headers
 # On Linux: DXVK headers (for D3D8→Vulkan translation)
 include(cmake/dx8.cmake)
+
+# GeneralsX @build BenderAI 10/02/2026
+# Linux/macOS port: Make DXVK headers accessible globally so Core libraries
+# (Debug, WWLib, WWMath, etc.) can access platform compatibility and Windows base types
+if(UNIX)
+    if(APPLE)
+        include_directories(
+            ${dxvk_SOURCE_DIR}/include/native
+            ${dxvk_SOURCE_DIR}/include/native/windows
+            ${dxvk_SOURCE_DIR}/include/native/directx
+            ${dxvk_SOURCE_DIR}/include/vulkan
+        )
+    else()
+        include_directories(${dxvk_SOURCE_DIR}/include/dxvk)
+    endif()
+endif()
 
 # SDL3 windowing/input for Linux builds (Phase 1)
 # GeneralsX @build BenderAI 11/02/2026
@@ -76,7 +90,6 @@ if(SAGE_USE_SDL3)
     include(cmake/sdl3.cmake)
 endif()
 
-# Define a dummy stlport target when not on VC6.
 if (IS_VS6_BUILD)
     include(cmake/stlport.cmake)
 else()
@@ -102,6 +115,9 @@ include(cmake/miniaudio.cmake)
 # curl.cmake is self-guarded with if(SAGE_UPDATE_CHECK), so always safe to include.
 include(cmake/curl.cmake)
 
+# GeneralsX @feature GeneralsOnline NGMP protocol dependency setup
+include(cmake/ngmp.cmake)
+
 # GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
 # gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
 # Upstream reference: Okladnoj, PR #2670
@@ -109,18 +125,18 @@ include(cmake/curl.cmake)
 # Self-guarded with if(SAGE_USE_DETERMINISTIC_MATH), so always safe to include.
 include(cmake/gamemath.cmake)
 
-if (IS_VS6_BUILD)
-    # The original max sdk does not compile against a modern compiler.
-    # If there is a desire to make this work, then a fixed max sdk needs to be created.
-    add_subdirectory(Dependencies/MaxSDK)
-endif()
-add_subdirectory(Dependencies/Utility)
 
-# To be removed when abandoning VC6
-if (IS_VS6_BUILD)
-    include_directories(Dependencies/Utility)
-    add_compile_options(/FIUtility/CppMacros.h)
+if(RTS_BUILD_OPTION_TESTS)
+    # Must come before the subdirectories that add tests.
+    enable_testing()
+    include(cmake/googletest.cmake)
 endif()
+
+if(RTS_BUILD_OPTION_BENCHMARKS)
+    include(cmake/googlebenchmark.cmake)
+endif()
+
+add_subdirectory(Dependencies)
 
 add_subdirectory(resources)
 
@@ -154,6 +170,14 @@ if(RTS_BUILD_GENERALS)
     if(TARGET sage_patch)
         add_dependencies(g_generals sage_patch)
     endif()
+endif()
+
+if(RTS_BUILD_OPTION_TESTS)
+    add_subdirectory(Tests)
+endif()
+
+if(RTS_BUILD_OPTION_BENCHMARKS)
+    add_subdirectory(Benchmarks)
 endif()
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")

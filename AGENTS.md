@@ -1,7 +1,7 @@
 # GeneralsX: Instructions for AI Coding Agents
 
 ## What I Am
-GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + OpenAL + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
+GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for **Linux and macOS**, porting legacy Windows DirectX 8 + Miles Sound code to a modern stack (SDL3 + DXVK + MiniAudio + 64-bit). This is a **massive C++ game engine** (~500k LOC) preserving retail gameplay while modernizing the platform layer.
 
 ## Key Entry Points
 - `GeneralsMD/Code/Main/WinMain.cpp`
@@ -18,7 +18,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 |---------|---------------------|------------------------------|
 | Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
 | Windowing| SDL3              | Win32 API                    |
-| Audio   | OpenAL (MiniAudio WIP)| Miles Sound System           |
+| Audio   | MiniAudio           | Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
 | Platform| SDL3 + libc         | Win32 POSIX calls            |
 
@@ -28,7 +28,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 1. **Single codebase** – Linux and macOS build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
 3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
-4. **OpenAL / MiniAudio Parity** – Cross-platform audio stack. Implementations and bug fixes in one MUST be replicated in the other to maintain strict feature parity.
+4. **MiniAudio backend** – Cross-platform audio stack. MiniAudio is the primary and stable audio backend for all platforms (Linux, macOS). OpenAL is legacy/deprecated and no longer maintained.
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
 7. **Determinism** – Rendering/audio changes must not affect gameplay logic
@@ -36,6 +36,7 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 9. **Update worklog** – Update `docs/WORKLOG/YYYY-MM-DIARY.md` before committing (see [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) for details)
 10. **Reference repos** – Study patterns, don't copy-paste
 11. **Backport to Generals** – Bugfixes and improvements must be backported to the Generals base game.
+12. **NGMP over GameSpy** – The legacy GameSpy online backend is being discontinued. NGMP (`GeneralsOnline`) is the sole online multiplayer target. Singleplayer, Skirmish (vs AI), and LAN multiplayer must remain fully functional. GameSpy online compatibility is explicitly NOT required and must NOT block NGMP work. See [ngmp.instructions.md](.github/instructions/ngmp.instructions.md) for the full compatibility policy.
 
 ## Cross-Platform Determinism (Mac vs Linux)
 To guarantee cross-play between macOS ARM64 and Linux x86_64 without SyncCrash desyncs, you must obey the following rules:
@@ -54,13 +55,13 @@ To guarantee cross-play between macOS ARM64 and Linux x86_64 without SyncCrash d
     - `pow` -> `WWMath::PowOrigin`
 2. **NaN/Inf Integer Casting** – ARM64 casts `(Int)NaN` to `0`, while x86 casts it to `INT_MIN`. Any division by potentially zero (e.g. `val / maxHealth`) whose result might be cast to an integer or affect simulation flow MUST be guarded (`if (maxHealth > 0)`) or use `WWMath::Div_FixNaN` to avoid immediate CRC desyncs.
 3. **Double-Precision Isolation** – Do not allow implicit `double` promotion in transcendental/power math evaluations (e.g. `gm_sqrt`, `gm_pow`, `gm_atan`). x87 (24-bit mantissa) and NEON (53-bit mantissa) diverge by 1-ULP on double-precision. Ensure all `WWMath` wrappers explicitly accept/return `float` or internally downcast `double` to `float` prior to `gm_*f` execution to guarantee cross-platform bit-identical outputs.
-4. **FPU Environment State Leaks** – Audio drivers (OpenAL/MiniAudio) and OS callbacks aggressively alter hardware FPU registers (e.g., Flush-To-Zero, Rounding mode) for DSP performance. If this state leaks into the main thread, the simulation math diverges. **Always inject `ScopedFPUGuard`** at the boundaries of `GameLogic::update()`, audio thread callbacks, and mouse-picking logic (e.g., `View::pickDrawable()`).
+4. **FPU Environment State Leaks** – Audio drivers (MiniAudio) and OS callbacks aggressively alter hardware FPU registers (e.g., Flush-To-Zero, Rounding mode) for DSP performance. If this state leaks into the main thread, the simulation math diverges. **Always inject `ScopedFPUGuard`** at the boundaries of `GameLogic::update()`, audio thread callbacks, and mouse-picking logic (e.g., `View::pickDrawable()`).
 5. **FMA Contraction** – Fused Multiply-Add combines instructions with infinite intermediate precision, yielding different results on ARM64 vs x86_64. We strictly enforce `-ffp-contract=off` globally (and `/fp:precise` for MSVC). Never bypass this with `-ffast-math` or `/fp:fast`.
 6. **Deep CRC Memory Buffer Logging** – When a sync crash occurs and the root cause isn't obvious, the game automatically dumps a `Debug/deep_crc_YYYY-MM-DD-HH-MM-SS.bin` file containing a binary snapshot of the last 64 frames of state transfers. Use `scripts/qa/parse_deep_crc.py` to inspect these dumps and identify the exact object ID and state data that first diverged between players. Note: This requires the `RTS_BUILD_OPTION_DEEP_CRC=ON` CMake flag (which is enabled by default).
 
 ## Reference Repositories
 - **fighter19-dxvk-port** – Primary graphics/platform reference (DXVK + SDL3 on Linux)
-- **jmarshall-win64-modern** – Audio reference (OpenAL implementation, Generals-only)
+- **jmarshall-win64-modern** – Audio reference (legacy OpenAL implementation, Generals-only)
 - **thesuperhackers-main** – Upstream baseline for regression checks
 
 ## Build Commands
@@ -130,7 +131,7 @@ Docker is the recommended build method on Linux hosts to ensure all toolchain re
 
 ## Backport Rules
 **Backport to Generals when:**
-- Change is platform/backend code (SDL3, DXVK, OpenAL/MiniAudio) or a general bugfix/improvement
+- Change is platform/backend code (SDL3, DXVK, MiniAudio) or a general bugfix/improvement
 - Change is in shared Core libraries
 - Change is low-risk and clearly applicable
 
@@ -219,7 +220,7 @@ git merge thesuperhackers/main
 ## Docs Workflow
 1. Monthly diary in `docs/WORKLOG/YYYY-MM-DIARY.md` (YYYY=year, MM=month only, e.g., `2026-05-DIARY.md`), always including the standard AI-generated content disclosure note at the top
 2. Active work notes in `docs/WORKDIR/` (phases/planning/reports/support/audit/lessons)
-3. Step-by-step tutorials in `docs/HOWTO/` (user-facing guides for common tasks)
+3. User guides & tutorials reside in the GitHub Wiki (with temporary redirection stubs in `docs/HOWTO/`)
 4. Never drop working docs directly under `docs/` root
 
 ## GitHub CLI Examples
@@ -267,9 +268,9 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 - `GeneralsMD/`: Zero Hour.
 - `Generals/`: base game.
 - `Core/`: shared libraries.
-- `references/`: fbraz3-dxvk
+- `references/`: workspace reference directory (`../references/` with GameClient, GameServer).
 - `docs/WORKDIR/`: current work docs.
-- `docs/HOWTO/`: user-facing step-by-step tutorials (SagePatch config, etc.)
+- `docs/HOWTO/`: redirection stubs pointing to the GitHub Wiki (user tutorials, SagePatch config, etc.)
 - `logs/`: build/run/debug logs.
 
 ## Instruction Context Loading
@@ -286,8 +287,9 @@ The `**` at applyTo means all files, you MUST load it everytime.
 | [.github/instructions/cpp-conventions.instructions.md](.github/instructions/cpp-conventions.instructions.md) | `**/*.{cpp,h,hpp,c}` | Code style, annotations, platform isolation |
 | [.github/instructions/build.instructions.md](.github/instructions/build.instructions.md) | `cmake/**,CMakeLists.txt,CMakePresets.json` | Build presets, DXVK source of truth |
 | [.github/instructions/platform-linux.instructions.md](.github/instructions/platform-linux.instructions.md) | `scripts/build/linux/**` | Linux build notes |
-| [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**,references/fbraz3-dxvk/**` | macOS/DXVK build notes |
+| [.github/instructions/platform-macos.instructions.md](.github/instructions/platform-macos.instructions.md) | `scripts/build/macos/**` | macOS/DXVK build notes |
 | [.github/instructions/docs.instructions.md](.github/instructions/docs.instructions.md) | `**/*.md` | Documentation structure and workflow |
 | [.github/instructions/scripts.instructions.md](.github/instructions/scripts.instructions.md) | `scripts/**` | Script organization and naming |
+| [.github/instructions/ngmp.instructions.md](.github/instructions/ngmp.instructions.md) | `**/GeneralsOnline/**,**/NextGenMP/**` | NGMP cross-platform multiplayer integration guidelines |
 
 Update this table when instruction files are added, removed, or renamed.

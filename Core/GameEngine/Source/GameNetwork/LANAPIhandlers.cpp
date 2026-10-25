@@ -39,6 +39,7 @@
 #include "Common/UserPreferences.h"
 #include "GameNetwork/LANAPI.h"
 #include "GameNetwork/LANAPICallbacks.h"
+#include "GameNetwork/LANInterfaceDevice.h"
 #include "GameClient/MapUtil.h"
 
 // GeneralsX @build BenderAI 13/02/2026 WideCharWindows conversion helpers (fighter19 pattern)
@@ -94,14 +95,14 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 	else
 	{
 		// In game - are we a game host?
-		if (m_currentGame)
+		if (m_currentGame && AmIHost())
 		{
-			if (m_currentGame->getIP(0) == m_localIP)
+			AsciiString gameOpts = GenerateGameOptionsString();
+			if (!gameOpts.isEmpty())
 			{
 				LANMessage reply;
 				fillInLANMessage( &reply );
 				reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
-				AsciiString gameOpts = GenerateGameOptionsString();
 				strlcpy(reply.GameInfo.options, gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
 				// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 				CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
@@ -110,10 +111,10 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 
 				sendMessage(&reply);
 			}
-			else
-			{
-				// We're a joiner
-			}
+		}
+		else
+		{
+			// We're a joiner
 		}
 	}
 	// Add the player to the lobby player list
@@ -145,7 +146,8 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleGameAnnounce sender=%d.%d.%d.%d game=%ls inProgress=%d direct=%d\n",
 		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->GameInfo.gameName),
 		msg->GameInfo.inProgress, msg->GameInfo.isDirectConnect); */
-	if (senderIP == m_localIP)
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Ignore self-announcements from any active local interface on multi-homed hosts.
+	if (senderIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(senderIP))
 	{
 		return; // Don't try to update own info
 	}
@@ -251,13 +253,18 @@ void LANAPI::handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP )
 	// In game - are we a game host?
 	if (m_currentGame)
 	{
-		if (m_currentGame->getIP(0) == m_localIP || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
+		if (AmIHost() || (m_currentGame->isGameInProgress() && TheNetwork && TheNetwork->isPacketRouter())) // if we're in game we should reply if we're the packet router
 		{
+			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
+			if (gameOpts.isEmpty())
+			{
+				return;
+			}
+
 			LANMessage reply;
 			fillInLANMessage( &reply );
 			reply.messageType = LANMessage::MSG_GAME_ANNOUNCE;
 
-			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
 			strlcpy(reply.GameInfo.options,gameOpts.str(), ARRAY_SIZE(reply.GameInfo.options));
 			// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 			CopyWcharToWindowsWideChar(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName) - 1);
@@ -271,23 +278,23 @@ void LANAPI::handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP )
 
 static Bool IsInvalidCharForPlayerName(const WideChar c)
 {
-	return c < L' ' // C0 control chars
-		|| c == L',' || c == L':' || c == L';' // chars used for strtok in ParseAsciiStringToGameInfo
-		|| (c >= L'\x007f' && c <= L'\x009f') // DEL + C1 control chars
-		|| c == L'\x2028' || c == L'\x2029' // line and paragraph separators
-		|| (c >= L'\xdc00' && c <= L'\xdfff') // low surrogate, for chars beyond the Unicode Basic Multilingual Plane
-		|| (c >= L'\xd800' && c <= L'\xdbff'); // high surrogate, for chars beyond the BMP
+	return c < L' ' || // C0 control chars
+		c == L',' || c == L':' || c == L';' || // chars used for strtok in ParseAsciiStringToGameInfo
+		(c >= L'\x007f' && c <= L'\x009f') || // DEL + C1 control chars
+		c == L'\x2028' || c == L'\x2029' || // line and paragraph separators
+		(c >= L'\xdc00' && c <= L'\xdfff') || // low surrogate, for chars beyond the Unicode Basic Multilingual Plane
+		(c >= L'\xd800' && c <= L'\xdbff'); // high surrogate, for chars beyond the BMP
 }
 
 static Bool IsSpaceCharacter(const WideChar c)
 {
-	return c == L' ' // space
-		|| c == L'\xA0' // no-break space
-		|| c == L'\x1680' // ogham space mark
-		|| (c >= L'\x2000' && c <= L'\x200A') // en/em spaces, figure, punctuation, thin, hair
-		|| c == L'\x202F' // narrow no-break space
-		|| c == L'\x205F' // medium mathematical space
-		|| c == L'\x3000'; // ideographic space
+	return c == L' ' || // space
+		c == L'\xA0' || // no-break space
+		c == L'\x1680' || // ogham space mark
+		(c >= L'\x2000' && c <= L'\x200A') || // en/em spaces, figure, punctuation, thin, hair
+		c == L'\x202F' || // narrow no-break space
+		c == L'\x205F' || // medium mathematical space
+		c == L'\x3000'; // ideographic space
 }
 
 static Bool ContainsInvalidChars(const WideChar* playerName)
@@ -323,21 +330,27 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameToJoin.gameIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, m_inLobby); */
 
-	if (msg->GameToJoin.gameIP != m_localIP)
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join requests targeted at either m_localIP or any local interface IP.
+	if (msg->GameToJoin.gameIP != m_localIP && !LANInterfaceDevice::isLocalHostAddress(msg->GameToJoin.gameIP))
 	{
 		/* 		fprintf(stderr, "[LAN86] handleRequestJoin ignored sender=%d.%d.%d.%d reason=wrong-game-ip\n",
 			PRINTF_IP_AS_4_INTS(senderIP)); */
 		return; // Not us.  Ignore it.
 	}
+
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Use target game IP for join replies without mutating m_localIP on the host.
+	// Keeping m_localIP consistent with slot 0 ensures host-role checks and game announcements remain intact.
+	UnsignedInt replyGameIP = msg->GameToJoin.gameIP;
+
 	LANMessage reply;
 	fillInLANMessage( &reply );
-	if (!m_inLobby && m_currentGame && m_currentGame->getIP(0) == m_localIP)
+	if (!m_inLobby && m_currentGame && AmIHost())
 	{
 		if (m_currentGame->isGameInProgress())
 		{
 			reply.messageType = LANMessage::MSG_JOIN_DENY;
 			reply.GameNotJoined.reason = LANAPIInterface::RET_GAME_STARTED;
-			reply.GameNotJoined.gameIP = m_localIP;
+			reply.GameNotJoined.gameIP = replyGameIP;
 			reply.GameNotJoined.playerIP = senderIP;
 			/* 			fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-started responseIP=%d.%d.%d.%d\n",
 				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP)); */
@@ -362,7 +375,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					msg->GameToJoin.exeCRC, TheGlobalData->m_exeCRC));
 				reply.messageType = LANMessage::MSG_JOIN_DENY;
 				reply.GameNotJoined.reason = LANAPIInterface::RET_CRC_MISMATCH;
-				reply.GameNotJoined.gameIP = m_localIP;
+				reply.GameNotJoined.gameIP = replyGameIP;
 				reply.GameNotJoined.playerIP = senderIP;
 				canJoin = false;
 			}
@@ -399,7 +412,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 						// serials match!  kick the punk!
 						reply.messageType = LANMessage::MSG_JOIN_DENY;
 						reply.GameNotJoined.reason = LANAPIInterface::RET_SERIAL_DUPE;
-						reply.GameNotJoined.gameIP = m_localIP;
+						reply.GameNotJoined.gameIP = replyGameIP;
 						reply.GameNotJoined.playerIP = senderIP;
 						canJoin = false;
 
@@ -421,7 +434,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// Just deny with a duplicate name reason, for backwards compatibility with retail
 					reply.messageType = LANMessage::MSG_JOIN_DENY;
 					reply.GameNotJoined.reason = LANAPIInterface::RET_DUPLICATE_NAME;
-					reply.GameNotJoined.gameIP = m_localIP;
+					reply.GameNotJoined.gameIP = replyGameIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
 					/* 					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=invalid-name responseIP=%d.%d.%d.%d\n",
@@ -441,7 +454,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// just deny duplicates
 					reply.messageType = LANMessage::MSG_JOIN_DENY;
 					reply.GameNotJoined.reason = LANAPIInterface::RET_DUPLICATE_NAME;
-					reply.GameNotJoined.gameIP = m_localIP;
+					reply.GameNotJoined.gameIP = replyGameIP;
 					reply.GameNotJoined.playerIP = senderIP;
 					canJoin = false;
 					/* 					fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=duplicate-name responseIP=%d.%d.%d.%d\n",
@@ -462,7 +475,7 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 					// GeneralsX @bugfix BenderAI 13/02/2026 Use CopyWcharToWindowsWideChar (fighter19 pattern)
 					CopyWcharToWindowsWideChar(reply.GameJoined.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameJoined.gameName) - 1);
 					reply.GameJoined.slotPosition = player;
-					reply.GameJoined.gameIP = m_localIP;
+					reply.GameJoined.gameIP = replyGameIP;
 					reply.GameJoined.playerIP = senderIP;
 
 					LANGameSlot newSlot;
@@ -524,10 +537,20 @@ void LANAPI::handleJoinAccept( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleJoinAccept sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d slot=%d game=%ls\n",
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, msg->GameJoined.slotPosition, GetWindowsWideCharAsWchar(msg->GameJoined.gameName)); */
-	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join response if playerIP matches m_localIP or any local interface IP.
+	if (msg->GameJoined.playerIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP)) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
 		{
+			// If host responded using a different local interface IP (e.g. Ethernet while m_localIP was Wi-Fi),
+			// align our active local IP with the real interface the host accepted us on.
+			// Note: We assign m_localIP directly instead of calling SetLocalIP() to avoid resetting
+			// transport buffers while LANAPI::update() is processing incoming packets.
+			if (m_localIP != msg->GameJoined.playerIP && LANInterfaceDevice::isRealLocalInterfaceAddress(msg->GameJoined.playerIP))
+			{
+				m_localIP = msg->GameJoined.playerIP;
+			}
+
 			// GeneralsX @bugfix BenderAI 13/02/2026 Wrap WideCharWindows with GetWindowsWideCharAsWchar (fighter19 pattern)
 			m_currentGame = LookupGame(UnicodeString(GetWindowsWideCharAsWchar(msg->GameJoined.gameName)));
 
@@ -583,7 +606,8 @@ void LANAPI::handleJoinDeny( LANMessage *msg, UnsignedInt senderIP )
 	/* 	fprintf(stderr, "[LAN86] handleJoinDeny sender=%d.%d.%d.%d playerIP=%d.%d.%d.%d localIP=%d.%d.%d.%d pending=%d reason=%d game=%ls\n",
 		PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(msg->GameJoined.playerIP), PRINTF_IP_AS_4_INTS(m_localIP),
 		m_pendingAction, msg->GameNotJoined.reason, GetWindowsWideCharAsWchar(msg->GameNotJoined.gameName)); */
-	if (msg->GameJoined.playerIP == m_localIP) // Is it for us?
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Accept join deny if playerIP matches m_localIP or any local interface IP.
+	if (msg->GameJoined.playerIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(msg->GameJoined.playerIP)) // Is it for us?
 	{
 		if (m_pendingAction == ACT_JOIN) // Are we trying to join?
 		{
@@ -679,6 +703,7 @@ void LANAPI::handleRequestLobbyLeave( LANMessage *msg, UnsignedInt senderIP )
 			if (player->getIP() == senderIP)
 			{
 				removePlayer(player);
+				delete player;
 				OnPlayerList(m_lobbyPlayers);
 				break;
 			}

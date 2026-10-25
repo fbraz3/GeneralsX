@@ -83,7 +83,8 @@ Bool W3DSnowManager::ReAcquireResources()
 		DEBUG_ASSERTCRASH(m_pDev, ("Trying to ReAcquireResources on W3DSnowManager without device"));
 
 		if (m_VertexBufferD3D == nullptr)
-		{	// Create vertex buffer
+		{
+			// Create vertex buffer
 
 			if (FAILED(m_pDev->CreateVertexBuffer
 			(
@@ -167,9 +168,6 @@ void W3DSnowManager::update()
 #define ISPOW2(x)  (x && (x & (x-1)) == 0)	//is a number a power of 2?
 #define MODPOW2(x,y) ((x) & (y-1))		//mod '%' operator for powers of 2.
 
-// Helper function to stuff a FLOAT into a DWORD argument
-inline DWORD FtoDW( FLOAT f ) { return *((DWORD*)&f); }
-
 /*Recursively subdivide the large snow box enclosing the camera until we reach some predefined leaf size.  This
 method is used so that very few off-screen particles end up getting rendered.  Culling them individually would
 be too expensive since we're dealing with 1000's for this effect.*/
@@ -185,9 +183,11 @@ void W3DSnowManager::renderSubBox(RenderInfoClass &rinfo, Int originX, Int origi
 	MinMaxAABoxClass mmbox;
 
 	if (boxDimX > m_leafDim)
-	{	//subdivide the box
+	{
+		//subdivide the box
 		if (boxDimY > m_leafDim)
-		{	//subdivide in both directions
+		{
+			//subdivide in both directions
 			//Upper left
 			mmbox.MinCorner.Set(originX*m_emitterSpacing-m_cullOverscan, (originY + halfY)*m_emitterSpacing-m_cullOverscan, m_snowCeiling-m_boxDimensions);
 			mmbox.MaxCorner.Set((originX + halfX)*m_emitterSpacing+m_cullOverscan, cubeDimY*m_emitterSpacing+m_cullOverscan, m_snowCeiling);
@@ -211,7 +211,8 @@ void W3DSnowManager::renderSubBox(RenderInfoClass &rinfo, Int originX, Int origi
 			return;
 		}
 		else
-		{	//only subdivide in x direction.
+		{
+			//only subdivide in x direction.
 			//Left
 			mmbox.MinCorner.Set(originX*m_emitterSpacing-m_cullOverscan, originY*m_emitterSpacing-m_cullOverscan, m_snowCeiling-m_boxDimensions);
 			mmbox.MaxCorner.Set((originX + halfX)*m_emitterSpacing+m_cullOverscan, cubeDimY*m_emitterSpacing+m_cullOverscan, m_snowCeiling);
@@ -227,7 +228,8 @@ void W3DSnowManager::renderSubBox(RenderInfoClass &rinfo, Int originX, Int origi
 	}
 	else
 	if (boxDimY > m_leafDim)
-	{	//only subdivide in y direction
+	{
+		//only subdivide in y direction
 		//Top
 		mmbox.MinCorner.Set(originX*m_emitterSpacing-m_cullOverscan, (originY+halfY)*m_emitterSpacing-m_cullOverscan, m_snowCeiling-m_boxDimensions);
 		mmbox.MaxCorner.Set(cubeDimX*m_emitterSpacing+m_cullOverscan, cubeDimY*m_emitterSpacing+m_cullOverscan, m_snowCeiling);
@@ -422,12 +424,12 @@ void W3DSnowManager::render(RenderInfoClass &rinfo)
     // Set the render states for using point sprites
 	DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSPRITEENABLE, TRUE );
     DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALEENABLE,  TRUE );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE,     FtoDW(m_pointSize) );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE_MIN, FtoDW(m_minPointSize) );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE_MAX, FtoDW(m_maxPointSize) );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_A,  FtoDW(0.00f) );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_B,  FtoDW(0.00f) );
-    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_C,  FtoDW(1.00f) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE,     F2DW(m_pointSize) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE_MIN, F2DW(m_minPointSize) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSIZE_MAX, F2DW(m_maxPointSize) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_A,  F2DW(0.00f) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_B,  F2DW(0.00f) );
+    DX8Wrapper::Set_DX8_Render_State( D3DRS_POINTSCALE_C,  F2DW(1.00f) );
 
 	DX8Wrapper::_Get_D3D_Device8()->SetStreamSource( 0, m_VertexBufferD3D, sizeof(POINTVERTEX) );
     DX8Wrapper::_Get_D3D_Device8()->SetVertexShader( D3DFVF_POINTVERTEX );

@@ -61,6 +61,7 @@
 #include "WWMath/plane.h"
 #include "camera.h"
 #include "ww3d.h"
+#include "Renderer.h"
 #include "rinfo.h"
 #include "WWLib/chunkio.h"
 #include "dx8renderer.h"
@@ -226,7 +227,7 @@ void SceneClass::Render(RenderInfoClass & rinfo)
 			Customized_Render(rinfo);
 			break;
 		case EXTRA_PASS_CLEAR_LINE:
-			DX8Wrapper::Clear(true, false, Vector3(0.0f,0.0f,0.0f));	// Clear color but not z
+			Renderer::Clear(true, false, Vector3(0.0f,0.0f,0.0f));	// Clear color but not z
 			WW3D::Enable_Texturing(false);
 			DX8Wrapper::Set_DX8_Render_State(D3DRS_FILLMODE,D3DFILL_WIREFRAME);
 			DX8Wrapper::Set_DX8_Render_State (D3DRS_ZBIAS, 7);
@@ -544,12 +545,12 @@ void SimpleSceneClass::Customized_Render(RenderInfoClass & rinfo)
 	// apply only the first four lights in the scene
 	// derived classes should use light environment
 	WWASSERT(rinfo.light_environment==nullptr);
-	int count=0;
 	// Turn off lights in case we have none
 	DX8Wrapper::Set_Light(0,nullptr);
 	DX8Wrapper::Set_Light(1,nullptr);
 	DX8Wrapper::Set_Light(2,nullptr);
 	DX8Wrapper::Set_Light(3,nullptr);
+	int count=0;
 	for (it.First(&LightList); !it.Is_Done(); it.Next())
 	{
 		if (count<4)

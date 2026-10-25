@@ -2478,6 +2478,9 @@ void GadgetListBoxRemoveMultiSelect( GameWindow *listbox )
 //=============================================================================
 void GadgetListBoxSetListLength( GameWindow *listbox, Int newLength )
 {
+	if (!listbox)
+		return;
+
 	ListboxData *listboxData = (ListboxData *)listbox->winGetUserData();
 
 

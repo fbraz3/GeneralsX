@@ -173,22 +173,15 @@ If you need to reference older markdown issues for historical context:
 - Update the path and add a note that these are archived
 - Do not maintain these going forward
 
-### `docs/BUILD/` - Platform Build Instructions
-**Purpose**: Platform-specific build and environment setup guides for active platforms (Linux, macOS, Windows, etc.)
-**Naming Convention**: One file per platform, all caps (e.g., `LINUX.md`, `MACOS.md`, `WINDOWS.md`)
-**Content**: Step-by-step build, deploy, and troubleshooting instructions for each supported platform. These are the canonical build docs referenced by contributors and CI.
-
-**Examples:**
-- LINUX.md — Linux build instructions
-- MACOS.md — macOS build instructions
-- WINDOWS.md — Windows build instructions (future)
+### `docs/BUILD/` - Platform Build Instructions (Migrated to Wiki)
+**Purpose**: Redirection stubs pointing to canonical platform build and environment setup guides on the [GitHub Wiki](https://github.com/fbraz3/GeneralsX/wiki).
+**Active Location**: Canonical build guides now live in the project wiki:
+- [Building on Linux](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux)
+- [Building on macOS](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS)
 
 **Guidelines**:
-- All new build instructions must go here (not ETC)
-- Update cross-references in other docs to point to this directory
-- Keep instructions up to date with build scripts and CI
-
-**Not here**: General reference, historical analysis, or non-build docs
+- New build instructions and platform guides should be created and updated directly in the GitHub Wiki.
+- In-repo `docs/BUILD/` files serve as temporary redirection stubs.
 
 ### `docs/ETC/` - Reference & Historical Materials
 **Purpose**: Older reference materials, archived analysis, and miscellaneous documentation
@@ -204,21 +197,12 @@ If you need to reference older markdown issues for historical context:
 
 **Not here**: Active phase work, current session reports, active planning, or build instructions
 
-### `docs/HOWTO/` - User-Facing Tutorials
-**Purpose**: Step-by-step guides for common tasks (configuration, troubleshooting, etc.)
-**Format**: One `.md` file per tutorial, UPPERCASE_WITH_UNDERSCORES naming
-**Index**: `docs/HOWTO/README.md` lists all available tutorials
-
-**Naming Convention**: `TOPIC_NAME.md` (e.g., `SAGEPATCH_CONFIGURATION.md`)
-
-**Examples:**
-- SAGEPATCH_CONFIGURATION.md — Camera, scroll, draw distance settings
-- LINUX_TROUBLESHOOTING.md — Common Linux issues and fixes
+### `docs/HOWTO/` - User-Facing Tutorials (Migrated to Wiki)
+**Purpose**: Redirection stubs pointing to user guides and step-by-step tutorials on the [GitHub Wiki](https://github.com/fbraz3/GeneralsX/wiki).
+**Active Location**: All tutorials and user guides now reside in the project wiki:
+- [GeneralsX Wiki](https://github.com/fbraz3/GeneralsX/wiki)
+- Direct link index preserved in `docs/HOWTO/README.md`
 
 **Guidelines**:
-- Written for end users, not developers
-- Include clear steps, examples, and troubleshooting sections
-- Update `docs/HOWTO/README.md` when adding new tutorials
-- Cross-link from root `README.md` if the tutorial is particularly important
-
-**Not here**: Developer docs, build instructions, or internal work notes
+- New user tutorials should be created directly on the GitHub Wiki.
+- In-repo `docs/HOWTO/` files serve as temporary redirection stubs.

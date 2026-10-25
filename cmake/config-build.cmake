@@ -11,9 +11,9 @@ option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON)
 
-# Linux/SDL3 and OpenAL options (Phase 1 Linux port)
+# Linux/macOS audio and windowing options
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
-option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS)" OFF)
+option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS) [LEGACY/DEPRECATED]" OFF)
 option(SAGE_USE_MINIAUDIO "Use MiniAudio for audio backend (Linux/macOS)" OFF)
 
 # GeneralsX @feature BenderAI 21/04/2026 In-game update checker via GitHub Releases API (SDL3+libcurl builds only)
@@ -30,6 +30,8 @@ option(SAGE_USE_MOLTENVK "Use MoltenVK for Vulkan on macOS (Phase 5 macOS port)"
 # brightness, camera/scroll INI overrides). Compiles to a separate shared lib
 # that is loaded via DYLD_INSERT_LIBRARIES (macOS) / LD_PRELOAD (Linux) at runtime.
 option(RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS/Linux, requires SDL3)" ON)
+cmake_dependent_option(RTS_BUILD_OPTION_TESTS "Build the unit tests." OFF "NOT IS_VS6_BUILD" OFF)
+cmake_dependent_option(RTS_BUILD_OPTION_BENCHMARKS "Build the benchmarks." OFF "NOT IS_VS6_BUILD" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -46,10 +48,13 @@ add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address s
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 add_feature_info(DeepCRC RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch")
-add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux)")
-add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Linux)")
+add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux/macOS)")
+add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Legacy/Deprecated)")
+add_feature_info(MiniAudioAudio SAGE_USE_MINIAUDIO "Using MiniAudio for audio (Linux/macOS - Primary)")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
+add_feature_info(Tests RTS_BUILD_OPTION_TESTS "Building the unit tests")
+add_feature_info(Benchmarks RTS_BUILD_OPTION_BENCHMARKS "Building the benchmarks")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 
@@ -73,16 +78,22 @@ if(RTS_BUILD_GENERALS)
     add_feature_info(GeneralsDocs RTS_BUILD_GENERALS_DOCS "Build Generals Documentation")
 endif()
 
+
 if(NOT IS_VS6_BUILD)
     # Because we set CMAKE_CXX_STANDARD_REQUIRED and CMAKE_CXX_EXTENSIONS in the compilers.cmake this should be enforced.
-    target_compile_features(core_config INTERFACE cxx_std_20)
+    target_compile_features(deps_config INTERFACE cxx_std_20)
 endif()
 
 if(IS_VS6_BUILD AND RTS_BUILD_OPTION_VC6_FULL_DEBUG)
-    target_compile_options(core_config INTERFACE ${RTS_FLAGS} /Zi)
+    target_compile_options(deps_config INTERFACE ${RTS_FLAGS} /Zi)
 else()
-    target_compile_options(core_config INTERFACE ${RTS_FLAGS})
+    target_compile_options(deps_config INTERFACE ${RTS_FLAGS})
 endif()
+
+if(UNIX)
+    target_compile_definitions(deps_config INTERFACE _UNIX)
+endif()
+
 
 # This disables a lot of warnings steering developers to use windows only functions/function names.
 if(MSVC)
@@ -96,7 +107,6 @@ if(UNIX)
     target_compile_definitions(core_config INTERFACE 
         HAVE_STRLCPY HAVE_STRLCAT HAVE_WCSLCPY HAVE_WCSLCAT)
 endif()
-
 if(RTS_BUILD_OPTION_DEBUG)
     target_compile_definitions(core_config INTERFACE RTS_DEBUG WWDEBUG DEBUG)
 else()
@@ -106,7 +116,6 @@ endif()
 if(RTS_BUILD_OPTION_PROFILE)
     target_compile_definitions(core_config INTERFACE RTS_PROFILE_LEGACY)
 endif()
-
 # Define a dummy Tracy target when the build option is disabled.
 if(RTS_BUILD_OPTION_PROFILE_TRACY)
     include(cmake/tracy.cmake)
@@ -134,6 +143,18 @@ endif()
 if(SAGE_UPDATE_CHECK)
     target_compile_definitions(core_config INTERFACE SAGE_UPDATE_CHECK)
     message(STATUS "In-game update checker enabled")
+endif()
+
+# GeneralsX @feature GeneralsOnline NGMP protocol option
+if(IS_VS6_BUILD)
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" OFF)
+else()
+    option(SAGE_USE_NGMP "Use NGMP (GeneralsOnline) multiplayer protocol" ON)
+endif()
+add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (GeneralsOnline)")
+
+if(SAGE_USE_NGMP)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_NGMP)
 endif()
 
 if(SAGE_USE_GLM)

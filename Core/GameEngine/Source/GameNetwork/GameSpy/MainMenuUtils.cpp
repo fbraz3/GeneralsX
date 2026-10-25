@@ -378,7 +378,7 @@ static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
 	configBuffer[bufferLen-1] = 0;
 
 	AsciiString fname;
-	fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+	fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 	FILE *fp = fopen(fname.str(), "wb");
 	if (fp)
 	{
@@ -433,7 +433,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 				Int serverLen = atoi(val.str());
 				Int fileLen = 0;
 				AsciiString fname;
-				fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+				fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 				FILE *fp = fopen(fname.str(), "rb");
 				if (fp)
 				{
@@ -457,7 +457,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 					configBuffer = nullptr;
 
 					AsciiString fname;
-					fname.format("%sGeneralsOnline\\Config.txt", TheGlobalData->getPath_UserData().str());
+					fname.format("%sGeneralsOnline/Config.txt", TheGlobalData->getPath_UserData().str());
 					FILE *fp = fopen(fname.str(), "rb");
 					if (fp)
 					{
@@ -755,6 +755,7 @@ int asyncGethostbyname(char * szName)
 			/* Thread finished */
 			stat = 0;
 			s_asyncDNSLookupInProgress = FALSE;
+			CloseHandle(s_asyncDNSThreadHandle);
 			s_asyncDNSThreadHandle = nullptr;
 			return( (s_asyncDNSThreadSucceeded)?LOOKUP_SUCCEEDED:LOOKUP_FAILED );
 		}
@@ -812,6 +813,7 @@ void StopAsyncDNSCheck()
 		MAYBE_UNUSED Int res = TerminateThread(s_asyncDNSThreadHandle, 0);
 		(void)res;
 		DEBUG_ASSERTCRASH(res, ("Could not terminate the Async DNS Lookup thread!"));	// Thread still not killed!
+		CloseHandle(s_asyncDNSThreadHandle);
 	}
 	s_asyncDNSThreadHandle = nullptr;
 	s_asyncDNSLookupInProgress = FALSE;

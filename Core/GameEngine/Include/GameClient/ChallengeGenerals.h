@@ -76,9 +76,13 @@ private:
 
 
 public:
+	// GeneralsX @bugfix felipebraz 06/10/2026 Initialize m_bStartsEnabled and image pointers to eliminate garbage memory reads
 	GeneralPersona() :
+		m_bStartsEnabled(FALSE),
 		m_imageBioPortraitSmall(nullptr),
-		m_imageBioPortraitLarge(nullptr)
+		m_imageBioPortraitLarge(nullptr),
+		m_imageDefeated(nullptr),
+		m_imageVictorious(nullptr)
 	{
 	}
 //	~GeneralPersona();

@@ -110,7 +110,6 @@ static ShaderClass detailOpaqueShader(SC_DETAIL_BLEND);
 #define DEFAULT_MAX_MAP_SHORELINE_TILES		4096	//default size of array allocated to hold all map shoreline tiles.
 
 #define ADJUST_FROM_INDEX_TO_REAL(k) ((k-m_map->getBorderSizeInline())*MAP_XY_FACTOR)
-inline Int IABS(Int x) {	if (x>=0) return x; return -x;};
 
 //-----------------------------------------------------------------------------
 //         Private Functions
@@ -203,13 +202,28 @@ UnsignedInt HeightMapRenderObjClass::doTheDynamicLight(VERTEX_FORMAT *vb, VERTEX
 				double range, midRange;
 				pLight->Get_Far_Attenuation_Range(midRange, range);
 				Real dist = lightDirection.Length();
-				if (dist >= range) continue;
-				if (midRange < 0.1) continue;
-				factor = 1.0f - (dist - midRange) / (range - midRange);
-				factor = WWMath::Clamp(factor,0.0f,1.0f);
+				// GeneralsX @bugfix fbraz3 08/10/2026 Allow dynamic lights with zero or small inner radius
+				if (range <= 0.1 || range <= midRange) continue;
+				if (midRange < 0.0) midRange = 0.0;
+				if (dist <= midRange)
+				{
+					factor = 1.0f;
+				}
+				else
+				{
+					factor = 1.0f - (dist - midRange) / (range - midRange);
+					factor = WWMath::Clamp(factor, 0.0f, 1.0f);
+				}
 
 				// (gth) normalize here since we have the length
-				lightDirection /= dist;
+				if (dist > 0.0001f)
+				{
+					lightDirection /= dist;
+				}
+				else
+				{
+					lightDirection.Set(0.0f, 0.0f, 1.0f);
+				}
 			}
 			break;
 		case LightClass::DIRECTIONAL:
@@ -909,7 +923,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 	}
 
 	if (!m_extraBlendTilePositions)
-	{	//Need to allocate memory
+	{
+		//Need to allocate memory
 		m_extraBlendTilePositions = NEW Int[DEFAULT_MAX_MAP_EXTRABLEND_TILES];
 		m_extraBlendTilePositionsSize = DEFAULT_MAX_MAP_EXTRABLEND_TILES;
 	}
@@ -924,7 +939,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 		Int y = m_extraBlendTilePositions[j] >> 16;
 		if (x >= partialRange.lo.x && x < partialRange.hi.x &&
 			y >= partialRange.lo.y && y < partialRange.hi.y)
-		{	//this tile is inside region being updated so remove it by shifting tile array
+		{
+			//this tile is inside region being updated so remove it by shifting tile array
 			memcpy(m_extraBlendTilePositions+j,m_extraBlendTilePositions+j+1,(m_numExtraBlendTiles-1-j)*sizeof(Int));
 			m_numExtraBlendTiles--;
 			j--;	//need to look at index j again because this tile was removed
@@ -940,7 +956,8 @@ void HeightMapRenderObjClass::doPartialUpdate(const IRegion2D &partialRange, Wor
 			Bool flipState,cliffState;
 			if (htMap->getExtraAlphaUVData(i,j,U,V,alpha,&flipState, &cliffState))
 			{	if (m_numExtraBlendTiles >= m_extraBlendTilePositionsSize)
-				{	//no more room to store extra blend tiles so enlarge the buffer.
+				{
+					//no more room to store extra blend tiles so enlarge the buffer.
 					Int *tempPositions=NEW Int[m_extraBlendTilePositionsSize+512];
 					memcpy(tempPositions, m_extraBlendTilePositions, m_extraBlendTilePositionsSize*sizeof(Int));
 					delete [] m_extraBlendTilePositions;
@@ -1232,7 +1249,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 			Int m_mapDX=pMap->getXExtent();
 			Int m_mapDY=pMap->getYExtent();
 			if (!m_extraBlendTilePositions)
-			{	//Need to allocate memory
+			{
+				//Need to allocate memory
 				m_extraBlendTilePositions = NEW Int[DEFAULT_MAX_MAP_EXTRABLEND_TILES];
 				m_extraBlendTilePositionsSize = DEFAULT_MAX_MAP_EXTRABLEND_TILES;
 			}
@@ -1247,7 +1265,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 					Bool flipState,cliffState;
 					if (pMap->getExtraAlphaUVData(i,j,U,V,alpha,&flipState, &cliffState))
 					{	if (m_numExtraBlendTiles >= m_extraBlendTilePositionsSize)
-						{	//no more room to store extra blend tiles so enlarge the buffer.
+						{
+							//no more room to store extra blend tiles so enlarge the buffer.
 							Int *tempPositions=NEW Int[m_extraBlendTilePositionsSize+512];
 							memcpy(tempPositions, m_extraBlendTilePositions, m_extraBlendTilePositionsSize*sizeof(Int));
 							delete [] m_extraBlendTilePositions;
@@ -1274,7 +1293,8 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 		needToAllocate = true;
 	}
 	if (data && needToAllocate && m_treeBuffer != nullptr)
-	{	//requested heightmap different from old one.
+	{
+		//requested heightmap different from old one.
 		freeIndexVertexBuffers();
 		//Create static index buffers.  These will index the vertex buffers holding the map.
 		m_indexBuffer=NEW_REF(DX8IndexBufferClass,(VERTEX_BUFFER_TILE_LENGTH*VERTEX_BUFFER_TILE_LENGTH*2*3));
@@ -1884,7 +1904,6 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		W3DShaderManager::updateCloud();
 	}
 
-	Matrix3D tm(Transform);
 #if 0 // There is some weirdness sometimes with the dx8 static buffers.
 			// This usually fixes terrain flashing.  jba.
 	static Int delay = 1;
@@ -1926,8 +1945,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	ShaderClass::Invalidate();
 
-	//	tm.Scale(ObjSpaceExtent);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
+	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 
 	//Apply the shader and material
 
@@ -1939,7 +1957,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		((SceneClass *)rinfo.Camera.Get_User_Data())->Get_Extra_Pass_Polygon_Mode() == SceneClass::EXTRA_PASS_CLEAR_LINE)
 	{
 			if (WW3D::Is_Texturing_Enabled())
-			{	//first pass where we just fill the z-buffer
+			{
+				//first pass where we just fill the z-buffer
 
 				devicePasses=1;	//one pass solid, next in wireframe.
 				doMultiPassWireFrame=TRUE;
@@ -1953,7 +1972,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 				}
 			}
 			else
-			{	//wireframe pass
+			{
+				//wireframe pass
 				//Set to vertex diffuse lighting
 				DX8Wrapper::Set_Material(m_vertexMaterialClass);
 				//Set shader to non-textured solid color from vertex
@@ -1977,23 +1997,27 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
  		//set correct shader based on current settings
  		if (!ShaderClass::Is_Backface_Culling_Inverted())
- 		{	//not reflection pass
+ 		{
+ 			//not reflection pass
  			if (TheGlobalData->m_useLightMap && doCloud)
  			{	st=W3DShaderManager::ST_TERRAIN_BASE_NOISE12;
  			}
  			else
  			if (TheGlobalData->m_useLightMap)
- 			{	//lightmap only
+ 			{
+ 				//lightmap only
  				st=W3DShaderManager::ST_TERRAIN_BASE_NOISE2;
  			}
  			else
  			if (doCloud)
- 			{	//cloudmap only
+ 			{
+ 				//cloudmap only
  				st=W3DShaderManager::ST_TERRAIN_BASE_NOISE1;
  			}
  		}
  		else
- 		{	//reflection pass, just do base texture
+ 		{
+ 			//reflection pass, just do base texture
  			st=W3DShaderManager::ST_TERRAIN_BASE;
  		}
 
@@ -2014,7 +2038,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	}
 
 	Int pass;
- 	for (pass=0; pass<devicePasses; pass++) {
+	// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out (Reforged pattern)
+ 	for (pass=0; pass<devicePasses && !ShaderClass::Is_Backface_Culling_Inverted(); pass++) {
 #ifdef TIMING_TESTS
 #endif
 		if (!doMultiPassWireFrame)	//multi-pass wireframe doesn't use regular shaders.
@@ -2060,12 +2085,16 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		if (pass)	//shader was applied at least once?
  			W3DShaderManager::resetShader(st);
 
-		//Draw feathered shorelines
-		renderShoreLines(&rinfo.Camera);
+		// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out, and everything drawn onto it
+		if (!ShaderClass::Is_Backface_Culling_Inverted())
+		{
+			//Draw feathered shorelines
+			renderShoreLines(&rinfo.Camera);
 
-		//Do additional pass over any tiles that have 3 textures blended together.
-		if (TheGlobalData->m_use3WayTerrainBlends)
-			renderExtraBlendTiles();
+			//Do additional pass over any tiles that have 3 textures blended together.
+			if (TheGlobalData->m_use3WayTerrainBlends)
+				renderExtraBlendTiles();
+		}
 
 		Int yCoordMin = m_map->getDrawOrgY();
 		Int yCoordMax = m_y+m_map->getDrawOrgY()-1;
@@ -2094,7 +2123,10 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		DX8Wrapper::Set_Texture(1,nullptr);
 		m_stageTwoTexture->restore();
 
-		drawScorches();
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip scorches during reflection pass (inverted culling)
+		if (!ShaderClass::Is_Backface_Culling_Inverted()) {
+			drawScorches();
+		}
 
 		DX8Wrapper::Set_Texture(0,nullptr);
 		DX8Wrapper::Set_Texture(1,nullptr);
@@ -2104,10 +2136,12 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 		m_bridgeBuffer->drawBridges(&rinfo.Camera, m_disableTextures, doCloud?m_stageTwoTexture:nullptr);
 
-		if (TheTerrainTracksRenderObjClassSystem)
+		// GeneralsX @bugfix fbraz3 08/10/2026 Skip terrain tracks during reflection pass (inverted culling)
+		if (TheTerrainTracksRenderObjClassSystem && !ShaderClass::Is_Backface_Culling_Inverted())
 			TheTerrainTracksRenderObjClassSystem->flush();
 
-		if (m_shroud && rinfo.Additional_Pass_Count())
+		// The water a reflection lands on is shrouded already; avoid double shroud in mirror
+		if (m_shroud && rinfo.Additional_Pass_Count() && !ShaderClass::Is_Backface_Culling_Inverted())
 		{
 			rinfo.Peek_Additional_Pass(0)->Install_Materials();
 			renderTerrainPass(&rinfo.Camera);
@@ -2123,7 +2157,8 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
   if ( m_waypointBuffer )
 	  m_waypointBuffer->drawWaypoints(rinfo);
 
-	m_bibBuffer->renderBibs();
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		m_bibBuffer->renderBibs();
 
 	// We do some custom blending, so tell the shader class to reset everything.
 	DX8Wrapper::Set_Texture(0,nullptr);
@@ -2230,7 +2265,8 @@ void HeightMapRenderObjClass::renderExtraBlendTiles()
 			if (x >= drawStartX && x < drawEdgeX &&
 				y >= drawStartY && y < drawEdgeY &&
 				m_map->getExtraAlphaUVData(x,y,U,V,alpha,&flipState, &cliffState))
-			{	//this tile is inside visible region and has 3rd blend layer.
+			{
+				//this tile is inside visible region and has 3rd blend layer.
 
 				Int idx = x+y*xExtent;
 
@@ -2360,11 +2396,13 @@ void HeightMapRenderObjClass::renderExtraBlendTiles()
 				st = W3DShaderManager::ST_ROAD_BASE_NOISE12;
  			}
  			else if (TheGlobalData->m_useLightMap)
- 			{	//lightmap only
+ 			{
+ 				//lightmap only
  				st = W3DShaderManager::ST_ROAD_BASE_NOISE2;
  			}
  			else if (doCloud)
- 			{	//cloudmap only
+ 			{
+ 				//cloudmap only
  				st = W3DShaderManager::ST_ROAD_BASE_NOISE1;
  			}
 

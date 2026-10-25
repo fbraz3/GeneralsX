@@ -1,0 +1,198 @@
+diff --git a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
+index de4b490..6fdf126 100644
+--- a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
++++ b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_ice_client.cpp
+@@ -956,7 +956,10 @@ void CSteamNetworkingSocketsSTUNRequest::Think( SteamNetworkingMicroseconds usec
+         }
+ 
+         // Immediate failure to send is actually very common, e.g. unroutable between two different private subnets.
++        // Schedule backoff before retrying so unroutable / virtual interfaces do not spin-lock the thinker queue.
+         m_usecLastSentTime = 0;
++        SetNextThinkTime( usecNow + usecInterval );
++        return;
+     }
+     else
+     {
+@@ -1019,6 +1022,8 @@ void CSteamNetworkingSocketsSTUNRequest::ReplyPacketReceived( const RecvPktInfo_
+ void ICESessionInterface::QueueBindRequest( const netadr_t &addrSTUNServer, RecvSTUNPacketCallback_t cb, int nEncoding )
+ {
+     Assert( !m_pPendingSTUNRequest );
++    if ( m_boundAddr.IsValid() && addrSTUNServer.IsValid() && m_boundAddr.GetType() != addrSTUNServer.GetType() )
++        return;
+ 
+     m_pPendingSTUNRequest = new CSteamNetworkingSocketsSTUNRequest( this );
+     m_pPendingSTUNRequest->Queue( k_nSTUN_BindingRequest, nEncoding, addrSTUNServer, cb );
+@@ -1027,6 +1032,9 @@ void ICESessionInterface::QueueBindRequest( const netadr_t &addrSTUNServer, Recv
+ bool ICESessionInterface::QueueTURNRequest( uint32 nMsgType, int nEncoding, const netadr_t &addrTURNServer, RecvSTUNPacketCallback_t cb, STUNAttribute *pExtraAttrs, int nExtraAttrs )
+ {
+     Assert( !m_pPendingSTUNRequest );
++    if ( m_boundAddr.IsValid() && addrTURNServer.IsValid() && m_boundAddr.GetType() != addrTURNServer.GetType() )
++        return false;
++
+     m_pPendingSTUNRequest = new CSteamNetworkingSocketsSTUNRequest( this );
+ 
+     if ( m_strTURNRealm.empty() )
+@@ -1105,6 +1113,11 @@ void ICESessionInterface::QueueRefreshRequest( RecvSTUNPacketCallback_t cb, int
+ // BSendRawPacketGather.
+ bool ICESessionInterface::SendPacketGather( int nChunks, const iovec *pChunks, int cbPayload, const netadr_t &addrPeer, const netadr_t &addrRelay )
+ {
++    // If bound to a specific IP family and destination family doesn't match, drop immediately without OS socket error
++    const netadr_t &destAddr = addrRelay.IsValid() ? addrRelay : addrPeer;
++    if ( m_boundAddr.IsValid() && destAddr.IsValid() && m_boundAddr.GetType() != destAddr.GetType() )
++        return false;
++
+     if ( !addrRelay.IsValid() )
+         return m_pSocket->BSendRawPacketGather( nChunks, pChunks, addrPeer );
+ 
+@@ -2049,9 +2062,13 @@ void CSteamNetworkingICESession::STUNRequestCallback_AllocateRelay( const RecvST
+         return;
+     }
+ 
+-    // Timed out -- try the next TURN server if available.
++    // Timed out -- try the next TURN server matching this interface's address family.
+     const int nTURNServerIdx = index_of( m_vecTURNServers, info.m_pRequest->m_remoteAddr );
+-    const int nNextTURNServerIdx = nTURNServerIdx + 1;
++    int nNextTURNServerIdx = nTURNServerIdx + 1;
++    while ( nNextTURNServerIdx < len( m_vecTURNServers ) && m_vecTURNServers[nNextTURNServerIdx].GetType() != pIntf->m_boundAddr.GetType() )
++    {
++        ++nNextTURNServerIdx;
++    }
+     if ( nTURNServerIdx < 0 || nNextTURNServerIdx >= len( m_vecTURNServers ) )
+     {
+         // Exhausted all TURN servers. Mark failed.
+@@ -2060,6 +2077,10 @@ void CSteamNetworkingICESession::STUNRequestCallback_AllocateRelay( const RecvST
+         return;
+     }
+ 
++    // Reset realm/nonce so the next server can challenge afresh
++    pIntf->m_strTURNRealm.clear();
++    pIntf->m_strTURNNonce.clear();
++
+     // Try the next TURN server.
+     pIntf->QueueAllocateRequest( m_vecTURNServers[nNextTURNServerIdx], &CSteamNetworkingICESession::STUNRequestCallback_AllocateRelay, m_nEncoding );
+ }
+@@ -2262,9 +2283,13 @@ void CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveCandidate( c
+         return;
+     }
+ 
+-    // Timed out to this STUN server -- try the next one if available.
++    // Timed out to this STUN server -- try the next one matching this interface's address family.
+     const int nSTUNServerIdx = index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr );
+-    const int nNextSTUNServerIdx = nSTUNServerIdx + 1;
++    int nNextSTUNServerIdx = nSTUNServerIdx + 1;
++    while ( nNextSTUNServerIdx < len( m_vecSTUNServers ) && m_vecSTUNServers[nNextSTUNServerIdx].GetType() != pIntf->m_boundAddr.GetType() )
++    {
++        ++nNextSTUNServerIdx;
++    }
+     if ( nSTUNServerIdx < 0 || nNextSTUNServerIdx >= len( m_vecSTUNServers ) )
+     {
+         // Exhausted all STUN servers.  Mark failed so Think_DiscoverServerReflexiveCandidates
+@@ -2294,12 +2319,23 @@ void CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive( c
+         return;
+     }
+ 
+-    // Timed out -- try the next STUN server (cycling through the list).
++    // Timed out -- try the next STUN server matching this interface's address family (cycling through the list).
+     if ( m_vecSTUNServers.empty() )
+         return;
+ 
+     const int nSTUNServerIdx = std::max( 0, index_of( m_vecSTUNServers, info.m_pRequest->m_remoteAddr ) );
+-    const int nNextSTUNServerIdx = ( nSTUNServerIdx + 1 ) % len( m_vecSTUNServers );
++    int nNextSTUNServerIdx = -1;
++    for ( int i = 1; i <= len( m_vecSTUNServers ); ++i )
++    {
++        int candIdx = ( nSTUNServerIdx + i ) % len( m_vecSTUNServers );
++        if ( m_vecSTUNServers[ candIdx ].GetType() == pIntf->m_boundAddr.GetType() )
++        {
++            nNextSTUNServerIdx = candIdx;
++            break;
++        }
++    }
++    if ( nNextSTUNServerIdx < 0 )
++        return;
+     pIntf->QueueBindRequest( m_vecSTUNServers[ nNextSTUNServerIdx ], &CSteamNetworkingICESession::STUNRequestCallback_ServerReflexiveKeepAlive, m_nEncoding );
+ }
+ 
+diff --git a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
+index d7dd408..b06d1a8 100644
+--- a/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
++++ b/src/steamnetworkingsockets/clientlib/steamnetworkingsockets_socketthread.cpp
+@@ -532,19 +532,27 @@ public:
+ 			#if !IsXbox()
+ 				if ( !bResult )
+ 				{
+-					const char *lpMsgBuf = nullptr;
+-					FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+-								NULL, GetLastSocketError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+-								// Default language
+-								(LPTSTR) & lpMsgBuf, 0, NULL);
+-					if ( lpMsgBuf == nullptr )
++					DWORD dwErr = GetLastSocketError();
++					if ( dwErr == 10051 /* WSAENETUNREACH */ || dwErr == 10047 /* WSAEAFNOSUPPORT */ )
+ 					{
+-						SpewWarning( "WSASendTo %s failed, returned %d, last error=0x%x\n", CUtlNetAdrRender( adrTo ).String(), r, GetLastSocketError() );
++						SpewVerbose( "WSASendTo %s failed (unroutable interface or unsupported family): 0x%x\n", CUtlNetAdrRender( adrTo ).String(), dwErr );
+ 					}
+ 					else
+ 					{
+-						SpewWarning( "WSASendTo %s failed, returned %d, last error=0x%x %s", CUtlNetAdrRender( adrTo ).String(), r, GetLastSocketError(), lpMsgBuf );
+-						LocalFree( (LPVOID)lpMsgBuf );
++						const char *lpMsgBuf = nullptr;
++						FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
++									NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
++									// Default language
++									(LPTSTR) & lpMsgBuf, 0, NULL);
++						if ( lpMsgBuf == nullptr )
++						{
++							SpewWarning( "WSASendTo %s failed, returned %d, last error=0x%x\n", CUtlNetAdrRender( adrTo ).String(), r, dwErr );
++						}
++						else
++						{
++							SpewWarning( "WSASendTo %s failed, returned %d, last error=0x%x %s", CUtlNetAdrRender( adrTo ).String(), r, dwErr, lpMsgBuf );
++							LocalFree( (LPVOID)lpMsgBuf );
++						}
+ 					}
+ 				}
+ 			#endif
+@@ -3979,6 +3987,7 @@ bool ResolveHostname( const char* pszHostname, CUtlVector< SteamNetworkingIPAddr
+ 	}
+ 
+ 	char szHostnameBuffer[256];
++	char szPortBuffer[32];
+ 	const char* pszPortStr = V_strchr( (char*)pszHostname, ':' );
+ 	if ( pszPortStr != nullptr )
+ 	{
+@@ -3989,6 +3998,33 @@ bool ResolveHostname( const char* pszHostname, CUtlVector< SteamNetworkingIPAddr
+ 		szHostnameBuffer[ nChars ] = '\0';
+ 		pszPortStr = pszPortStr + 1;
+ 		pszHostname = szHostnameBuffer;
++
++		// Strip query parameters if present (e.g. ?transport=udp in TURN URIs)
++		const char* pszQuery = V_strchr( (char*)pszPortStr, '?' );
++		if ( pszQuery != nullptr )
++		{
++			const int nPortChars = ( pszQuery - pszPortStr );
++			if ( nPortChars < (int)sizeof( szPortBuffer ) )
++			{
++				V_memcpy( szPortBuffer, pszPortStr, nPortChars );
++				szPortBuffer[ nPortChars ] = '\0';
++				pszPortStr = szPortBuffer;
++			}
++		}
++	}
++	else
++	{
++		const char* pszQuery = V_strchr( (char*)pszHostname, '?' );
++		if ( pszQuery != nullptr )
++		{
++			const int nHostChars = ( pszQuery - pszHostname );
++			if ( nHostChars < (int)sizeof( szHostnameBuffer ) )
++			{
++				V_memcpy( szHostnameBuffer, pszHostname, nHostChars );
++				szHostnameBuffer[ nHostChars ] = '\0';
++				pszHostname = szHostnameBuffer;
++			}
++		}
+ 	}
+ 
+ 	addrinfo hints;

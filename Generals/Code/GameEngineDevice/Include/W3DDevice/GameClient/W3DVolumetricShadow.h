@@ -37,6 +37,8 @@ struct Geometry;	//forward reference
 struct PolyNeighbor;	//forward reference
 class W3DVolumetricShadow;	//forward reference
 class Drawable;	//forward reference
+class MeshClass;	//forward reference
+class W3DShadowGeometryMesh;	//forward reference
 
 struct W3DVolumetricShadowRenderTask : public W3DBufferManager::W3DRenderTask
 {
@@ -121,7 +123,11 @@ class W3DVolumetricShadow	: public Shadow
 		// called once per frame, updates shadow volume when necessary
 		void Update();
 		void updateVolumes(Real zoffset);	///<update shadow volumes of all meshes in this model
-		void updateMeshVolume(Int meshIndex, Int lightIndex, const Matrix3D *meshXform, const AABoxClass &meshBox, float floorZ);///<update shadow volume of this mesh.
+		void updateMeshVolume(Int meshIndex, Int lightIndex, MeshClass *mesh, const Matrix3D *meshXform, const AABoxClass &meshBox, float floorZ);///<update shadow volume of this mesh.
+
+		// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Support volumetric shadows for skinned meshes
+		static Bool poseSkinMesh(W3DShadowGeometryMesh *geomMesh, MeshClass *mesh);
+		static void releaseSkinScratch(void);	///<free the shared skinning scratch buffers.
 
 		// rendering interface
 		void RenderVolume(Int meshIndex, Int lightIndex);	///<renders a specifc volume from the model hierarchy
@@ -139,7 +145,7 @@ class W3DVolumetricShadow	: public Shadow
 		void addSilhouetteEdge(Int meshIndex, PolyNeighbor *visible, PolyNeighbor *hidden );
 		void addNeighborlessEdges(Int meshIndex, PolyNeighbor *us );
 		void addSilhouetteIndices(Int meshIndex, Short edgeStart, Short edgeEnd );
-		Bool allocateSilhouette(Int meshIndex, Int numVertices );  // allocate memory for sil
+		Bool allocateSilhouette(Int meshIndex, Int numVertices, Int numPolygons );  // allocate memory for sil
 		void deleteSilhouette(Int meshIndex );  // resets and frees silhouette memory
 		void resetSilhouette( Int meshIndex );  // reset silhouette to empty
 
@@ -178,11 +184,15 @@ class W3DVolumetricShadow	: public Shadow
 		Short *m_silhouetteIndex[MAX_SHADOW_CASTER_MESHES];  // silhouette vertex index list, edges occur
 									 // as disjoint pairs.  The actual size of this
 									 // piece of memory must accommodate #vertices*2
-		Short m_numSilhouetteIndices[MAX_SHADOW_CASTER_MESHES];  // total number of edge indices in the index
+		// GeneralsX @bugfix elmeriniemela 18/10/2026 Int instead of Short: the silhouette of a mesh with more than
+		// 5461 polygons or 6553 vertices needs more than 32767 entries.
+		Int m_numSilhouetteIndices[MAX_SHADOW_CASTER_MESHES];  // total number of edge indices in the index
 									   // array, these are pairs and therefore
 									   // always a multiple of two
-		Short m_maxSilhouetteEntries[MAX_SHADOW_CASTER_MESHES];  // how big the silhouette index can hold max
+		Int m_maxSilhouetteEntries[MAX_SHADOW_CASTER_MESHES];  // how big the silhouette index can hold max
 
 		Int	  m_numIndicesPerMesh[MAX_SHADOW_CASTER_MESHES];	///<silhouette indices from each mesh.
+		UnsignedInt m_skinRebuiltOnFrame[ MAX_SHADOW_LIGHTS ][MAX_SHADOW_CASTER_MESHES];	///<render frame a skinned volume was last rebuilt on
+		Vector3 m_skinLastPos[ MAX_SHADOW_LIGHTS ][MAX_SHADOW_CASTER_MESHES];	///<last mesh translation when skinned volume was rebuilt
 
 };

@@ -26,6 +26,9 @@ copy_ldd_deps() {
         case "${dep}" in
             linux-vdso.so.1 | \
             /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /usr/lib/libc.so.* | /usr/lib/libm.so.* | /usr/lib/libpthread.so.* | /usr/lib/librt.so.* | /usr/lib/libdl.so.* | \
+            */libmvec.so.* | */libresolv.so.* | */libutil.so.* | */libanl.so.* | */libnsl.so.1 | */libnss_*.so.* | \
+            */libthread_db.so.* | */libBrokenLocale.so.* | */libc_malloc_debug.so.* | */libmemusage.so | */libpcprofile.so | \
             /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
             /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
             /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
@@ -179,6 +182,11 @@ fi
 # DXVK HUD is disabled by default because Generals has a native FPS counter.
 export DXVK_HUD="${DXVK_HUD:-0}"
 
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${SCRIPT_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${SCRIPT_DIR}/dxvk.conf"
+fi
+
 # Auto-detect base Generals install path
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
     export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"
@@ -212,23 +220,16 @@ if [[ -z "${VK_DRIVER_FILES:-}" && -z "${VK_ICD_FILENAMES:-}" ]]; then
     fi
 fi
 
-# GeneralsX @bugfix 09/03/2026 - Work around openal-soft 1.25.1 movaps alignment crash
-# alcOpenDevice() crashes with SIGSEGV in a 'movaps %xmm1, 0x26260(%rbx)' instruction
-# inside openal-soft's device initializer. movaps requires 16-byte alignment; if the
-# ALCdevice struct is not aligned correctly, it faults regardless of which backend is
-# selected. Disabling CPU extensions forces openal-soft to use scalar code paths that
-# do not have alignment requirements. The pipewire backend is also excluded because it
-# has its own crash at device-open time on PipeWire 1.4.x.
-# These env vars are read by openal-soft's static constructor at library load time,
-# so they must be set here in the launcher before the binary starts.
-# User can override by setting ALSOFT_DISABLE_CPU_EXTS or ALSOFT_DRIVERS explicitly.
-if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
-    export ALSOFT_DISABLE_CPU_EXTS="all"
-    echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
-fi
-if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
-    export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
-    echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+# Legacy OpenAL workaround (only applied if executable links to libopenal.so)
+if ldd "${SCRIPT_DIR}/GeneralsXZH" 2>/dev/null | grep -q 'libopenal\.so'; then
+    if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
+        export ALSOFT_DISABLE_CPU_EXTS="all"
+        echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
+    fi
+    if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
+        export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
+        echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+    fi
 fi
 
 exec "${SCRIPT_DIR}/GeneralsXZH" "$@"

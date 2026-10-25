@@ -32,6 +32,8 @@
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
 #include "GameClient/ClientInstance.h"
+#include "GameClient/MapUtil.h"
+#include "GameClient/MessageBox.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/InGameUI.h"
@@ -47,37 +49,21 @@
 #include "Common/CRCDebug.h"
 #include "Common/OptionPreferences.h"
 #include "Common/version.h"
+#include "Lib/PathUtil.h"
 
-// TheSuperHackers @build fighter19 11/02/2026 POSIX CopyFile implementation for Linux
-#ifndef _WIN32
-#include <fstream>
-#include <sys/stat.h>
-
-static inline bool CopyFile(const char* source, const char* dest, bool failIfExists)
-{
-	if (failIfExists) {
-		struct stat buffer;
-		if (stat(dest, &buffer) == 0) {
-			// File exists
-			return false;
-		}
-	}
-
-	std::ifstream src(source, std::ios::binary);
-	if (!src) {
-		return false;
-	}
-
-	std::ofstream dst(dest, std::ios::binary);
-	if (!dst) {
-		return false;
-	}
-
-	dst << src.rdbuf();
-
-	return src.good() && dst.good();
-}
+// GeneralsX @feature fbraz3 04/10/2026 Upload replay to NGMP storage on game end
+#if defined(SAGE_USE_NGMP)
+#if defined(min)
+#undef min
 #endif
+#if defined(max)
+#undef max
+#endif
+#include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
+class NGMPGame;
+extern NGMPGame* TheNGMPGame;
+#endif
+
 
 constexpr const char s_genrep[] = "GENREP";
 constexpr const UnsignedInt replayBufferBytes = 8192;
@@ -403,15 +389,16 @@ void RecorderClass::update() {
  * Do the update for the next frame of this playback.
  */
 void RecorderClass::updatePlayback() {
+
 	// Remove any bad commands that have been inserted by the local user that shouldn't be
 	// executed during playback.
 	CullBadCommandsResult result = cullBadCommands();
 
-	if (result.hasClearGameDataMessage) {
-		// TheSuperHackers @bugfix Stop appending more commands if the replay playback is about to end.
-		// Previously this would be able to append more commands, which could have unintended consequences,
-		// such as crashing the game when a MSG_PLACE_BEACON is appended after MSG_CLEAR_GAME_DATA.
-		// MSG_CLEAR_GAME_DATA is supposed to be processed later this frame, which will then stop this playback.
+	// GeneralsX @bugfix fbraz3 22/09/2026 Defer queuing frame 0 replay commands while MSG_NEW_GAME is pending (#315).
+	// When playback starts, MSG_NEW_GAME sits in TheCommandList. Appending frame 0 commands behind it causes
+	// them to execute in processCommandList before the map script engine updates, which corrupts initial AIGroup IDs.
+	// Also stop appending more commands if MSG_CLEAR_GAME_DATA is pending at match completion.
+	if (result.hasClearGameDataMessage || result.hasNewGameMessage) {
 		return;
 	}
 
@@ -442,6 +429,9 @@ void RecorderClass::updatePlayback() {
  * reaching the end of the playback file.
  */
 void RecorderClass::stopPlayback() {
+	// GeneralsX @bugfix fbraz3 22/09/2026 Reset playback frame state and mode on termination (#315, #325)
+	m_nextFrame = -1;
+	m_mode = RECORDERMODETYPE_NONE;
 	if (m_file != nullptr) {
 		m_file->close();
 		m_file = nullptr;
@@ -469,7 +459,7 @@ void RecorderClass::updateRecord()
 			 msg->getArgument(0)->integer != GAME_SINGLE_PLAYER && // Due to the massive amount of scripts that use <local player> in GC and single player, replays have been cut for them.
 			 msg->getArgument(0)->integer != GAME_NONE)
 		{
-			m_originalGameMode = msg->getArgument(0)->integer;
+			m_originalGameMode = (GameMode)msg->getArgument(0)->integer;
 			DEBUG_LOG(("RecorderClass::updateRecord() - original game is mode %d", m_originalGameMode));
 			lastFrame = 0;
 			GameDifficulty diff = DIFFICULTY_NORMAL;
@@ -514,7 +504,7 @@ void RecorderClass::updateRecord()
  * Start a new file for recording. This will always overwrite the "LastReplay.rep" file with the new one.
  * So don't call this unless you really mean it.
  */
-void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, Int rankPoints, Int maxFPS) {
+void RecorderClass::startRecording(GameDifficulty diff, GameMode originalGameMode, Int rankPoints, Int maxFPS) {
 	DEBUG_ASSERTCRASH(m_file == nullptr, ("Starting to record game while game is in progress."));
 
 	reset();
@@ -669,7 +659,7 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	// Write maxFPS chosen
 	m_file->write(&maxFPS, sizeof(maxFPS));
 
-	DEBUG_LOG(("RecorderClass::startRecording() - diff=%d, mode=%d, FPS=%d", diff, originalGameMode, maxFPS));
+	DEBUG_LOG(("RecorderClass::startRecording() - diff=%d, mode=%d, FPS=%d", diff, (Int)originalGameMode, maxFPS));
 
 	/*
 	// Write the map name.
@@ -701,6 +691,20 @@ void RecorderClass::stopRecording() {
 
 		if (m_archiveReplays)
 			archiveReplay(m_fileName);
+
+		// GeneralsX @feature fbraz3 04/10/2026 Upload replay to NGMP storage on game end
+#if defined(SAGE_USE_NGMP)
+		if (TheNGMPGame != nullptr)
+		{
+			AsciiString absoluteReplayPath = getReplayDir();
+			absoluteReplayPath.concat(m_fileName);
+			if (!absoluteReplayPath.endsWith(getReplayExtention())) {
+				absoluteReplayPath.concat(getReplayExtention());
+			}
+
+			NGMP_OnlineServicesManager::getInstance().commitReplay(absoluteReplayPath.str());
+		}
+#endif
 	}
 	m_fileName.clear();
 }
@@ -842,45 +846,17 @@ void RecorderClass::writeArgument(GameMessageArgumentDataType type, const GameMe
  * Read in a replay header, for (1) populating a replay listbox or (2) starting playback.  In
  * case (2), set FILE *m_file.
  */
-Bool RecorderClass::readReplayHeader(ReplayHeader& header)
+Bool RecorderClass::readReplayHeader(ReplayHeader& header, const AsciiString& filename, Bool forPlayback)
 {
-	AsciiString filepath;
-	const char* replayFilename = header.filename.str();
-	const size_t replayFilenameLen = replayFilename != nullptr ? strlen(replayFilename) : 0;
-	const bool isUnixAbsolute = replayFilenameLen >= 1 && replayFilename[0] == '/';
-	const bool isWindowsDriveAbsolute = replayFilenameLen >= 3
-		&& ((replayFilename[0] >= 'A' && replayFilename[0] <= 'Z') || (replayFilename[0] >= 'a' && replayFilename[0] <= 'z'))
-		&& replayFilename[1] == ':'
-		&& (replayFilename[2] == '\\' || replayFilename[2] == '/');
-	const bool isUncAbsolute = replayFilenameLen >= 2 && replayFilename[0] == '\\' && replayFilename[1] == '\\';
-
-	// GeneralsX @bugfix BenderAI 13/04/2026 Accept absolute replay paths passed via -replay instead of forcing ReplayDir prefix.
-	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories, like "GeneralsReplays/...") and replay-dir relative (bare filenames like "replay.rep").
-	const bool containsDirectorySeparator = strchr(replayFilename, '/') != NULL || strchr(replayFilename, '\\') != NULL;
-
-	if (isUnixAbsolute || isWindowsDriveAbsolute || isUncAbsolute)
-	{
-		filepath = header.filename;
-	}
-	else if (containsDirectorySeparator)
-	{
-		// Path from CLI with directory structure (e.g., "GeneralsReplays/ZH/...") - relative to CWD where binary runs
-		filepath = header.filename;
-	}
-	else
-	{
-		// Bare filename (e.g., "!Golden Replay #1.rep") - resolve from replay directory
-		filepath = getReplayDir();
-		filepath.concat(header.filename.str());
-	}
+	header.filename = getReplayPathForRead(filename);
 
 	// TheSuperHackers @performance More buffered data reduces disk overhead and will improve fast forward playback
-	const UnsignedInt buffersize = header.forPlayback ? replayBufferBytes : File::BUFFERSIZE;
-	m_file = TheFileSystem->openFile(filepath.str(), File::READ | File::BINARY, buffersize);
+	const UnsignedInt buffersize = forPlayback ? replayBufferBytes : File::BUFFERSIZE;
+	m_file = TheFileSystem->openFile(header.filename.str(), File::READ | File::BINARY, buffersize);
 
 	if (m_file == nullptr)
 	{
-		DEBUG_LOG(("Can't open %s (%s)", filepath.str(), header.filename.str()));
+		DEBUG_LOG(("Can't open %s (%s)", header.filename.str(), filename.str()));
 		return FALSE;
 	}
 
@@ -957,13 +933,15 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header)
 		m_file = nullptr;
 		return FALSE;
 	}
+	// TheSuperHackers @bugfix bobtista 17/09/2026 Preserve the recorded local slot, including -1 for no local player.
+	m_gameInfo.setLocalSlotNum(header.localPlayerIndex);
 	if (header.localPlayerIndex >= 0)
 	{
 		Int localIP = m_gameInfo.getSlot(header.localPlayerIndex)->getIP();
 		m_gameInfo.setLocalIP(localIP);
 	}
 
-	if (!header.forPlayback)
+	if (!forPlayback)
 	{
 		m_gameInfo.endGame();
 		m_gameInfo.reset();
@@ -1102,9 +1080,17 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 	if (isLocalPlayer)
 	{
 		UnsignedInt playbackCRC = m_crcInfo->readCRC();
-		//DEBUG_LOG(("RecorderClass::handleCRCMessage() - Comparing CRCs of InGame:%8.8X Replay:%8.8X Frame:%d from Player %d",
-		//	playbackCRC, newCRC, TheGameLogic->getFrame()-m_crcInfo->GetQueueSize()-1, playerIndex));
-		if (TheGameLogic->getFrame() > 0 && newCRC != playbackCRC && !m_crcInfo->sawCRCMismatch())
+		// TheSuperHackers @info helmutbuhler 03/04/2025
+		// Note: We subtract the queue size from the frame number. This way we calculate the correct frame
+		// the mismatch first happened in case the NetCRCInterval is set to 1 during the game.
+		const UnsignedInt mismatchFrame = (TheGameLogic->getFrame() > m_crcInfo->GetQueueSize())
+			? (TheGameLogic->getFrame() - m_crcInfo->GetQueueSize() - 1)
+			: 0;
+
+		// GeneralsX @bugfix fbraz3 22/09/2026 Require mismatchFrame > 0 to report desync (#315).
+		// Frame 0 CRC compares uninitialized pre-simulation state where subtle mode differences
+		// (e.g. GAME_SKIRMISH vs GAME_REPLAY AIGroup allocation order) cause false positive mismatches.
+		if (mismatchFrame > 0 && newCRC != playbackCRC && !m_crcInfo->sawCRCMismatch())
 		{
 			//Kris: Patch 1.01 November 10, 2003 (integrated changes from Matt Campbell)
 			// Since we don't seem to have any *visible* desyncs when replaying games, but get this warning
@@ -1114,12 +1100,10 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			//
 			// TheSuperHackers @tweak helmutbuhler 03/04/2025
 			// More than 20 years later, but finally fixed and re-enabled!
-			TheInGameUI->message("GUI:CRCMismatch");
-
-			// TheSuperHackers @info helmutbuhler 03/04/2025
-			// Note: We subtract the queue size from the frame number. This way we calculate the correct frame
-			// the mismatch first happened in case the NetCRCInterval is set to 1 during the game.
-			const UnsignedInt mismatchFrame = TheGameLogic->getFrame() - m_crcInfo->GetQueueSize() - 1;
+			// GeneralsX @bugfix Copilot 20/09/2026 Replay CRC failures are not live multiplayer connection failures.
+			TheInGameUI->messageNoFormat(TheGameText->FETCH_OR_SUBSTITUTE(
+				"GUI:ReplayCRCMismatch",
+				L"This replay is out of sync with the recorded game. Playback may no longer match the original."));
 
 			// Now also prints a UI message for it.
 			const UnicodeString mismatchDetailsStr = TheGameText->FETCH_OR_SUBSTITUTE("GUI:CRCMismatchDetails", L"InGame:%8.8X Replay:%8.8X Frame:%d");
@@ -1134,6 +1118,10 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			fprintf(stderr, "[GeneralsX] REPLAY_CRC_MISMATCH frame=%u inGame=0x%08X replay=0x%08X\n",
 				mismatchFrame, playbackCRC, newCRC);
 			fprintf(stderr, "[GeneralsX] This replay is incompatible with the current map/game-code state.\n");
+			fflush(stderr);
+#if DEEP_CRC_TO_MEMORY
+			TheGameLogic->writeCRCBuffersToDisk(mismatchFrame);
+#endif
 
 			// TheSuperHackers @tweak Pause the game on mismatch.
 			// But not when a window with focus is opened, because that can make resuming difficult.
@@ -1160,9 +1148,7 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 Bool RecorderClass::replayMatchesGameVersion(AsciiString filename)
 {
 	ReplayHeader header;
-	header.forPlayback = TRUE;
-	header.filename = filename;
-	if ( readReplayHeader( header ) )
+	if ( readReplayHeader( header, filename, TRUE ) )
 	{
 		return replayMatchesGameVersion( header );
 	}
@@ -1183,6 +1169,61 @@ Bool RecorderClass::replayMatchesGameVersion(const ReplayHeader& header)
 	return true;
 }
 
+static void showQueuedReplayLoadFailure()
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayLoadFailedTitle", L"REPLAY CANNOT BE LOADED");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayLoadFailed", L"The replay file could not be opened or is invalid.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
+static void showQueuedReplayMapNotFound()
+{
+	UnicodeString title = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayMapNotFoundTitle", L"MAP NOT FOUND");
+	UnicodeString body = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ReplayMapNotFound", L"This replay cannot be loaded because the map was not found on this device.");
+
+	MessageBoxOk(title, body, nullptr);
+}
+
+/**
+ * Play the replay requested on startup, after the shell has been initialized
+ */
+void RecorderClass::loadQueuedReplay()
+{
+	const AsciiString filename = TheGlobalData->m_loadReplayGame;
+	TheWritableGlobalData->m_loadReplayGame.clear();
+
+	ReplayHeader header;
+	if (!readReplayHeader(header, filename, FALSE))
+	{
+		DEBUG_LOG(("Replay '%s' could not be read", filename.str()));
+		showQueuedReplayLoadFailure();
+		return;
+	}
+
+	// A replay whose map is missing starts a game that cannot load, so reject it here instead
+	ReplayGameInfo gameInfo;
+	if (!ParseAsciiStringToGameInfo(&gameInfo, header.gameOptions))
+	{
+		DEBUG_LOG(("Replay '%s' contains invalid game options", filename.str()));
+		showQueuedReplayLoadFailure();
+		return;
+	}
+
+	if (TheMapCache == nullptr || TheMapCache->findMap(gameInfo.getMap()) == nullptr)
+	{
+		DEBUG_LOG(("Replay '%s' requires unavailable map '%s'", filename.str(), gameInfo.getMap().str()));
+		showQueuedReplayMapNotFound();
+		return;
+	}
+
+	if (!playbackFile(filename))
+	{
+		DEBUG_LOG(("Failed to play replay '%s'", filename.str()));
+		showQueuedReplayLoadFailure();
+	}
+}
+
 /**
  * Start playback of the file. Return true or false depending on if the file is
  * a valid replay file or not.
@@ -1198,9 +1239,7 @@ Bool RecorderClass::playbackFile(AsciiString filename)
 	}
 
 	ReplayHeader header;
-	header.forPlayback = TRUE;
-	header.filename = filename;
-	Bool success = readReplayHeader( header );
+	Bool success = readReplayHeader( header, filename, TRUE );
 	if (!success)
 	{
 		return FALSE;
@@ -1262,15 +1301,21 @@ Bool RecorderClass::playbackFile(AsciiString filename)
 	}
 #endif
 
-	Bool isMultiplayer = m_gameInfo.getSlot(header.localPlayerIndex)->getIP() != 0;
-	m_crcInfo = NEW CRCInfo(header.localPlayerIndex, isMultiplayer);
 	REPLAY_CRC_INTERVAL = m_gameInfo.getCRCInterval();
-	DEBUG_LOG(("Player index is %d, replay CRC interval is %d", m_crcInfo->getLocalPlayer(), REPLAY_CRC_INTERVAL));
 
 	Int difficulty = 0;
 	m_file->read(&difficulty, sizeof(difficulty));
 
 	m_file->read(&m_originalGameMode, sizeof(m_originalGameMode));
+
+	const Bool isMultiplayer = rts::isMultiplayerGame(m_originalGameMode);
+	if (m_crcInfo)
+	{
+		delete m_crcInfo;
+		m_crcInfo = nullptr;
+	}
+	m_crcInfo = NEW CRCInfo(header.localPlayerIndex, isMultiplayer);
+	DEBUG_LOG(("Player index is %d, replay CRC interval is %d", m_crcInfo->getLocalPlayer(), REPLAY_CRC_INTERVAL));
 
 	Int rankPoints = 0;
 	m_file->read(&rankPoints, sizeof(rankPoints));
@@ -1628,7 +1673,8 @@ void RecorderClass::readArgument(GameMessageArgumentDataType type, GameMessage *
 #endif
 			break;
 		}
-		case ARGUMENTDATATYPE_TIMESTAMP: {  // Not to be confused with Terrance Stamp... Kneel before Zod!!!
+		case ARGUMENTDATATYPE_TIMESTAMP: {
+			// Not to be confused with Terrance Stamp... Kneel before Zod!!!
 			UnsignedInt stamp;
 			m_file->read(&stamp, sizeof(stamp));
 			msg->appendTimestampArgument(stamp);
@@ -1680,6 +1726,11 @@ RecorderClass::CullBadCommandsResult RecorderClass::cullBadCommands() {
 		{
 			result.hasClearGameDataMessage = true;
 		}
+		// GeneralsX @bugfix fbraz3 22/09/2026 Track pending MSG_NEW_GAME to defer frame 0 replay commands (#315, #325)
+		else if (msg->getType() == GameMessage::MSG_NEW_GAME)
+		{
+			result.hasNewGameMessage = true;
+		}
 
 		msg = next;
 	}
@@ -1699,6 +1750,27 @@ AsciiString RecorderClass::getReplayDir()
 #else
 	tmp.concat("Replays/");
 #endif
+	return tmp;
+}
+
+/**
+ * returns the path to open for a replay filename in the replay directory or an absolute replay path.
+ */
+AsciiString RecorderClass::getReplayPathForRead(const AsciiString& filenameOrPath)
+{
+	if (isAbsolutePath(filenameOrPath.str()))
+	{
+		return filenameOrPath;
+	}
+
+	// GeneralsX @bugfix BenderAI 20/02/2026 Distinguish between CWD-relative paths (with directories) and bare filenames
+	if (strchr(filenameOrPath.str(), '/') != nullptr || strchr(filenameOrPath.str(), '\\') != nullptr)
+	{
+		return filenameOrPath;
+	}
+
+	AsciiString tmp = getReplayDir();
+	tmp.concat(filenameOrPath);
 	return tmp;
 }
 

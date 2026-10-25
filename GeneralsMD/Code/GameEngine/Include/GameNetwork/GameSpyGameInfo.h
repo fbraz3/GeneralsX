@@ -67,6 +67,7 @@ private:
 
 public:
 	GameSpyGameInfo();
+	virtual ~GameSpyGameInfo() override {}
 
 	inline void setServer(SBServer server) { m_server = server; }
 	inline SBServer getServer() { return m_server; }

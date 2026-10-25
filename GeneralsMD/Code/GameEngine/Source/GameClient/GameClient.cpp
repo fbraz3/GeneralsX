@@ -36,8 +36,10 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/ActionManager.h"
+#include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
+#include "Common/Recorder.h"
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -462,18 +464,18 @@ void GameClient::init()
 /** Reset the game client for a new game */
 void GameClient::reset()
 {
-	Drawable *draw, *nextDraw;
-//	m_drawableHash.clear();
-//	m_drawableHash.resize(DRAWABLE_HASH_SIZE);
-
-	m_drawableVector.clear();
-	m_drawableVector.resize(DRAWABLE_HASH_SIZE, nullptr);
+	m_drawableHash.clear();
+#if USING_STLPORT
+	m_drawableHash.resize(DRAWABLE_HASH_SIZE);
+#else
+	m_drawableHash.reserve(DRAWABLE_HASH_SIZE);
+#endif
 
 	// need to reset the in game UI to clear drawables before they are destroyed
 	TheInGameUI->reset();
 
 	// destroy all Drawables
-	for( draw = m_drawableList; draw; draw = nextDraw )
+	for( Drawable *draw = m_drawableList, *nextDraw = nullptr; draw; draw = nextDraw )
 	{
 		nextDraw = draw->getNextDrawable();
 		destroyDrawable( draw );
@@ -551,6 +553,10 @@ void GameClient::update()
 			if (TheGlobalData->m_loadSaveGame.isNotEmpty())
 			{
 				TheGameState->loadQueuedSaveGame();
+			}
+			else if (TheGlobalData->m_loadReplayGame.isNotEmpty())
+			{
+				TheRecorder->loadQueuedReplay();
 			}
 		}
 	}
@@ -648,9 +654,11 @@ void GameClient::update()
 
 
 		// call the update for all client drawables
+		const Real timeScale = TheFramePacer->getActualLogicTimeScaleOverFpsRatio();
 		Drawable* draw = firstDrawable();
 		while (draw)
-		{	// update() could free the Drawable, so go ahead and grab 'next'
+		{
+			// update() could free the Drawable, so go ahead and grab 'next'
 			Drawable* next = draw->getNextDrawable();
 #if ENABLE_CONFIGURABLE_SHROUD
 			if (TheGlobalData->m_shroudOn)
@@ -695,7 +703,7 @@ void GameClient::update()
 					draw->setFullyObscuredByShroud(ss >= OBJECTSHROUD_FOGGED);
 				}
 			}
-			draw->updateDrawable();
+			draw->updateDrawable(timeScale);
 			draw = next;
 		}
 	}
@@ -708,15 +716,6 @@ void GameClient::update()
 	}
 #endif
 
-	// update all particle systems
-	if( !freezeTime )
-	{
-		// update particle systems
-		TheParticleSystemManager->setLocalPlayerIndex(localPlayerIndex);
-//		TheParticleSystemManager->update();
-
-	}
-
 	// update the terrain visuals
 	{
 		TheTerrainVisual->UPDATE();
@@ -725,6 +724,15 @@ void GameClient::update()
 	// update display
 	{
 		TheDisplay->UPDATE();
+	}
+
+	// update all particle systems
+	// TheSuperHackers @info The particle update follows the display update, because that
+	// moves bone-attached particle systems to the current client bone transforms of their drawables.
+	if( !freezeTime && TheGameLogic->hasUpdated() )
+	{
+		TheParticleSystemManager->setLocalPlayerIndex(localPlayerIndex);
+		TheParticleSystemManager->UPDATE();
 	}
 
 	{
@@ -855,6 +863,22 @@ void GameClient::updateFakeDrawables()
 }
 
 /** -----------------------------------------------------------------------------------------------
+ * Given an object id, return the associated object.
+ * This method is the primary interface for accessing objects, and should be used
+ * instead of pointers to "attach" objects to each other.
+ */
+Drawable* GameClient::findDrawableByID( const DrawableID id )
+{
+	DrawablePtrHashIt it = m_drawableHash.find(id);
+	if (it == m_drawableHash.end()) {
+		// no such drawable
+		return nullptr;
+	}
+
+	return (*it).second;
+}
+
+/** -----------------------------------------------------------------------------------------------
  * Destroy the drawable immediately.
  */
 void GameClient::destroyDrawable( Drawable *draw )
@@ -898,13 +922,8 @@ void GameClient::addDrawableToLookupTable(Drawable *draw )
 	if( draw == nullptr )
 		return;
 
-	// add to lookup
-//	m_drawableHash[ draw->getID() ] = draw;
-	DrawableID newID = draw->getID();
-	while( newID >= m_drawableVector.size() ) // Fail case is hella rare, so faster to double up on size() call
-		m_drawableVector.resize(m_drawableVector.size() * 2, nullptr);
-
-	m_drawableVector[ newID ] = draw;
+	// add to lookup table
+	m_drawableHash[ draw->getID() ] = draw;
 
 }
 
@@ -915,13 +934,11 @@ void GameClient::removeDrawableFromLookupTable( Drawable *draw )
 {
 
 	// sanity
-	// TheSuperHackers @fix Mauller/Xezon 24/04/2025 Prevent out of range access to vector lookup table
-	if( draw == nullptr || static_cast<size_t>(draw->getID()) >= m_drawableVector.size() )
+	if( draw == nullptr )
 		return;
 
-	// remove from table
-//	m_drawableHash.erase( draw->getID() );
-	m_drawableVector[ draw->getID() ] = nullptr;
+	// remove from lookup table
+	m_drawableHash.erase( draw->getID() );
 
 }
 

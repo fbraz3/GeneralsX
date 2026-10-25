@@ -53,3 +53,15 @@ enum GameSortType CPP_11(: Int)
 
 Bool HandleSortButton( NameKeyType sortButton );
 void PopulateLobbyPlayerListbox();
+
+enum LobbyGameModeFilter CPP_11(: Int)
+{
+    LOBBY_FILTER_ALL = 0,
+    LOBBY_FILTER_1V1,
+    LOBBY_FILTER_TEAM,
+    LOBBY_FILTER_FFA,
+    LOBBY_FILTER_AOD,
+};
+
+extern LobbyGameModeFilter theLobbyFilter;
+LobbyGameModeFilter detectGameMode(const std::string& name);

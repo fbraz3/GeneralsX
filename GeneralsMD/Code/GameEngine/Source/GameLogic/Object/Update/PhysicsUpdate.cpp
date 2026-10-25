@@ -445,9 +445,9 @@ void PhysicsBehavior::applyGravitationalForces()
 void PhysicsBehavior::applyFrictionalForces()
 {
 	//Are we a plane that is taxiing on a deck with a height offset?
-	Bool deckTaxiing = getObject()->testStatus( OBJECT_STATUS_DECK_HEIGHT_OFFSET )
-										 && getObject()->getAI()
-										 && getObject()->getAI()->getCurLocomotorSetType() == LOCOMOTORSET_TAXIING;
+	Bool deckTaxiing = getObject()->testStatus( OBJECT_STATUS_DECK_HEIGHT_OFFSET ) &&
+										 getObject()->getAI() &&
+										 getObject()->getAI()->getCurLocomotorSetType() == LOCOMOTORSET_TAXIING;
 
 	if (getFlag(APPLY_FRICTION2D_WHEN_AIRBORNE) || !getObject()->isSignificantlyAboveTerrain() || deckTaxiing )
 	{
@@ -687,8 +687,7 @@ UpdateSleepTime PhysicsBehavior::update()
 		{
 			if ( (fabs(m_vel.x) < STUN_RELIEF_EPSILON &&
 				    fabs(m_vel.y) < STUN_RELIEF_EPSILON &&
-				    fabs(m_vel.z) < STUN_RELIEF_EPSILON)
-          ||
+				    fabs(m_vel.z) < STUN_RELIEF_EPSILON) ||
            obj->isSignificantlyAboveTerrain() == FALSE )
 			{
 				setStunned(false);
@@ -917,14 +916,14 @@ UpdateSleepTime PhysicsBehavior::update()
 UpdateSleepTime PhysicsBehavior::calcSleepTime() const
 {
 #ifdef SLEEPY_PHYSICS
-	if (isZero3D(m_vel)
-			&& isZero3D(m_accel)
-			&& !getFlag(HAS_PITCHROLLYAW)
-			&& !isMotive()
-			&& (getObject()->getLayer() == LAYER_GROUND && !getObject()->isAboveTerrain())
-			&& getCurrentOverlap() == INVALID_ID
-			&& getPreviousOverlap() == INVALID_ID
-			&& getFlag(UPDATE_EVER_RUN))
+	if (isZero3D(m_vel) &&
+			isZero3D(m_accel) &&
+			!getFlag(HAS_PITCHROLLYAW) &&
+			!isMotive() &&
+			(getObject()->getLayer() == LAYER_GROUND && !getObject()->isAboveTerrain()) &&
+			getCurrentOverlap() == INVALID_ID &&
+			getPreviousOverlap() == INVALID_ID &&
+			getFlag(UPDATE_EVER_RUN))
 	{
 		return UPDATE_SLEEP_FOREVER;
 	}
@@ -953,21 +952,24 @@ Real PhysicsBehavior::getVelocityMagnitude() const
 Real PhysicsBehavior::getForwardSpeed2D() const
 {
 	const Coord3D *dir = getObject()->getUnitDirectionVector2D();
-
 	Real vx = m_vel.x * dir->x;
 	Real vy = m_vel.y * dir->y;
-
 	Real dot = vx + vy;
 
-	Real speedSquared = vx*vx + vy*vy;
-//	DEBUG_ASSERTCRASH( speedSquared != 0, ("zero speedSquared will overflow WWMath::SqrtfOrigin()!") );// lorenzen... sanity check
+	if (useLegacyForwardSpeed())
+	{
+		Real speed = (Real)WWMath::SqrtfOrigin( vx*vx + vy*vy );
+		if (dot >= 0.0f)
+			return speed;
+		return -speed;
+	}
 
-	Real speed = (Real)WWMath::SqrtfOrigin( speedSquared );
-
-	if (dot >= 0.0f)
-		return speed;
-
-	return -speed;
+	// TheSuperHackers @bugfix xezon 30/07/2026 Now returns the dot product instead of +-sqrtf(vx*vx+vy*vy).
+	// The retail formula understates the forward speed by up to 1/sqrt(2) on diagonal headings, which made
+	// the Locomotor overshoot its goal speed there. The dot product is the true projection of the velocity
+	// onto the facing vector, so this now reports real distance per logic frame and can be used for distance
+	// and time calculations. The speeds the Locomotor commands are compensated to match, in LocomotorTemplate.
+	return dot;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -978,20 +980,33 @@ Real PhysicsBehavior::getForwardSpeed2D() const
 Real PhysicsBehavior::getForwardSpeed3D() const
 {
 	Vector3 dir = getObject()->getTransformMatrix()->Get_X_Vector();
-
 	Real vx = m_vel.x * dir.X;
 	Real vy = m_vel.y * dir.Y;
 	Real vz = m_vel.z * dir.Z;
-
 	Real dot = vx + vy + vz;
 
-	Real speed = (Real)WWMath::SqrtfOrigin( vx*vx + vy*vy + vz*vz );
+	if (useLegacyForwardSpeed())
+	{
+		Real speed = (Real)WWMath::SqrtfOrigin( vx*vx + vy*vy + vz*vz );
+		if (dot >= 0.0f)
+			return speed;
+		return -speed;
+	}
 
-	if (dot >= 0.0f)
-		return speed;
-
-	return -speed;
+	// TheSuperHackers @bugfix xezon 30/07/2026 Now returns the dot product instead of
+	// +-sqrtf(vx*vx+vy*vy+vz*vz). See getForwardSpeed2D for the rationale.
+	return dot;
 }
+
+#if USE_RETAIL_PHYSICS_FORWARD_SPEED_DISCREPANCY_IN_CINEMATICS()
+//-------------------------------------------------------------------------------------------------
+Bool PhysicsBehavior::useLegacyForwardSpeedInCinematics()
+{
+	// TheSuperHackers @info The retail speeds are kept for the duration of a cinematic, because
+	// legacy missions time their cinematics against them.
+	return TheScriptEngine->isLetterBoxActive();
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------
 Bool PhysicsBehavior::isCurrentlyOverlapped(Object *obj) const
@@ -1598,8 +1613,8 @@ Bool PhysicsBehavior::checkForOverlapCollision(Object *other)
 			// Now find the shortest.  Use the straightline distance to crush point as tie breaker
 			if( (frontPerpLength <= centerPerpLength)  && (frontPerpLength <= backPerpLength) )
 			{
-				if( perpsLogicallyEqual(frontPerpLength, centerPerpLength)
-					|| perpsLogicallyEqual(frontPerpLength, backPerpLength)
+				if( perpsLogicallyEqual(frontPerpLength, centerPerpLength) ||
+					perpsLogicallyEqual(frontPerpLength, backPerpLength)
 					)
 				{
 					Real frontVectorLength = frontVector.length();
@@ -1627,8 +1642,8 @@ Bool PhysicsBehavior::checkForOverlapCollision(Object *other)
 			}
 			else if( (backPerpLength <= centerPerpLength)  && (backPerpLength <= frontPerpLength) )
 			{
-				if( perpsLogicallyEqual(backPerpLength, centerPerpLength)
-					|| perpsLogicallyEqual(backPerpLength, frontPerpLength)
+				if( perpsLogicallyEqual(backPerpLength, centerPerpLength) ||
+					perpsLogicallyEqual(backPerpLength, frontPerpLength)
 					)
 				{
 					Real backVectorLength = backVector.length();
@@ -1656,8 +1671,8 @@ Bool PhysicsBehavior::checkForOverlapCollision(Object *other)
 			}
 			else // centerperp is shortest
 			{
-				if( perpsLogicallyEqual(centerPerpLength, backPerpLength)
-					|| perpsLogicallyEqual(centerPerpLength, frontPerpLength)
+				if( perpsLogicallyEqual(centerPerpLength, backPerpLength) ||
+					perpsLogicallyEqual(centerPerpLength, frontPerpLength)
 					)
 				{
 					Real centerVectorLength = centerVector.length();

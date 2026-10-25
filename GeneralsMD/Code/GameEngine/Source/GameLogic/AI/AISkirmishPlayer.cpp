@@ -162,7 +162,8 @@ void AISkirmishPlayer::processBaseBuilding()
 							Object* myDozer = TheGameLogic->findObjectByID(builder);
 
               if (myDozer && ( myDozer->getControllingPlayer() != m_player || myDozer->isDisabledByType( DISABLED_UNMANNED ) ) )
-              {//I don't expect this dozer to work well with me.
+              {
+                //I don't expect this dozer to work well with me.
                 myDozer = nullptr;
                 bldg->setBuilder( nullptr );
               }
@@ -900,7 +901,8 @@ void AISkirmishPlayer::doBaseBuilding()
 			if (m_readyToBuildStructure) {
 				processBaseBuilding();
 			}
-			if (m_buildDelay<1) {	// processBaseBuilding may reset m_buildDelay.
+			if (m_buildDelay<1) {
+				// processBaseBuilding may reset m_buildDelay.
 				m_buildDelay = 2*LOGICFRAMES_PER_SECOND; // check again in 2 seconds.
 			}
 			// Note that this timer gets shortcut when a building is completed.

@@ -66,7 +66,7 @@ public:
 		static const FieldParse dataFieldParse[] =
 		{
 			{ "TimeForFullHeal", INI::parseDurationReal, nullptr, offsetof( TunnelContainModuleData, m_framesForFullHeal ) },
-			{ 0, 0, 0, 0 }
+			{ nullptr, nullptr, nullptr, 0 }
 		};
     p.add(dataFieldParse);
 	}
@@ -94,7 +94,9 @@ public:
 	virtual void onContaining( Object *obj ) override;		///< object now contains 'obj'
 	virtual void onRemoving( Object *obj ) override;			///< object no longer contains 'obj'
 	virtual void onSelling() override;///< Container is being sold.  Tunnel responds by kicking people out if this is the last tunnel.
+#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	virtual void onCapture( Player *oldOwner, Player *newOwner ) override; // Need to change who we are registered with.
+#endif
 
 	virtual void orderAllPassengersToExit( CommandSourceType commandSource ) override; ///< All of the smarts of exiting are in the passenger's AIExit. removeAllFrommContain is a last ditch system call, this is the game Evacuate
 

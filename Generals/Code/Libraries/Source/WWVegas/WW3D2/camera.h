@@ -192,6 +192,9 @@ public:
 	void								Transform_To_View_Space(Vector3 & dest,const Vector3 & ws_point) const;
 	void								Rotate_To_View_Space(Vector3 & dest,const Vector3 & ws_vector) const;
 
+	// GeneralsX @feature BenderAI 08/10/2026 Oblique near plane for water reflection clipping
+	void								Set_Oblique_Near_Plane(const PlaneClass * world_plane);
+
 	// Viewport control
 	void								Set_Viewport(const Vector2 & min,const Vector2 & max);
 	void								Get_Viewport(Vector2 & set_min,Vector2 & set_max) const;
@@ -253,6 +256,9 @@ protected:
 	mutable OBBoxClass			NearClipBBox;					// obbox which bounds the near clip plane
 	mutable Matrix4x4				ProjectionTransform;
 	mutable Matrix3D				CameraInvTransform;
+
+	bool							ObliqueNearPlaneEnabled;
+	PlaneClass						ObliqueNearPlane;
 };
 
 

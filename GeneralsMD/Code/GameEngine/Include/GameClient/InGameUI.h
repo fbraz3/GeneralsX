@@ -369,6 +369,7 @@ public:  // ********************************************************************
 	virtual void update() override;														///< Update the UI by calling preDraw(), draw(), and postDraw()
 	virtual void reset() override;															///< Reset
 	//-----------------------------------------------------------------------------------------------
+	void validate();
 
 	// interface for the popup messages
 	virtual void popupMessage( const AsciiString& message, Int x, Int y, Int width, Bool pause, Bool pauseMusic);
@@ -584,6 +585,10 @@ public:  // ********************************************************************
 	void setDrawRMBScrollAnchor(Bool b) { m_drawRMBScrollAnchor = b; }
 	void setMoveRMBScrollAnchor(Bool b) { m_moveRMBScrollAnchor = b; }
 
+	void showReplayControls();
+	void hideReplayControls();
+	void toggleReplayControls();
+
 private:
 	virtual Int getIdleWorkerCount();
 	virtual Object *findIdleWorker( Object *obj);
@@ -696,7 +701,9 @@ protected:
 	void expireHint( HintType type, UnsignedInt hintIndex );
 
 	void createControlBar();			///< create the control bar user interface
+	void destroyControlBar();
 	void createReplayControl();		///< create the replay control window
+	void destroyReplayControl();
 
 	void setMouseCursor(Mouse::MouseCursor c);
 
@@ -960,6 +967,9 @@ protected:
 	Bool												m_moveRMBScrollAnchor;
 	Bool												m_clientQuiet;         ///< When the user clicks exit,restart, etc. this is set true
 																												///< to skip some client sounds/fx during shutdown
+
+	GameWindow *m_controlBarWindow;
+	GameWindow *m_replayWindow;
 
 	// World Animation Data
 	WorldAnimationList					m_worldAnimationList;		///< the list of world animations

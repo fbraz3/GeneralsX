@@ -35,7 +35,6 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////
 #include "Resource.h"
-#include "Lib/BaseType.h"
 
 // DEFINES ////////////////////////////////////////////////////////////////////
 // TYPE DEFINES ///////////////////////////////////////////////////////////////
@@ -46,7 +45,7 @@ class MoreParmsDialog : public CDialog
 	public:
 		enum { IDD = IDD_PSEd_EditMoreParms };
 		MoreParmsDialog(UINT nIDTemplate = MoreParmsDialog::IDD, CWnd* pParentWnd = nullptr);
-		virtual ~MoreParmsDialog();
+		virtual ~MoreParmsDialog() override;
 
 		void InitPanel();
 

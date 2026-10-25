@@ -786,7 +786,8 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 			si.selectMineBuildings = TRUE;
 		}
 		else if ( si.newCountMineBuildings > 0 )////////////// SO SORRY, I KNOW THIS IS MICKEY MOUSE ///////////////////
-		{ // What we are after here is to allow the drag select to get the building,
+		{
+			// What we are after here is to allow the drag select to get the building,
 			// if the other things in the list are going to be ignored anyway
 			// so we find out whether the other things are not selectable
 			// this came up with the new AmericaBuildingFireBase, which shows its contained
@@ -799,7 +800,8 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 			{
 				const Drawable *d = *it;
 				if ( d->isKindOf( KINDOF_STRUCTURE ) )
-				{// make sure there is really only the one building in the list, as it may be multiply listed
+				{
+					// make sure there is really only the one building in the list, as it may be multiply listed
 
 					if ( buildingID == INVALID_DRAWABLE_ID ) // this is the first building
 						buildingID = d->getID();
@@ -1176,7 +1178,7 @@ GameMessageDisposition SelectionTranslator::onMetaSelectTeam(MAYBE_UNUSED const 
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					if (numObjs > 0)
 					{
@@ -1201,7 +1203,7 @@ GameMessageDisposition SelectionTranslator::onMetaSelectTeam(MAYBE_UNUSED const 
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					for (Int i = 0; i < numObjs; ++i)
 					{
@@ -1244,7 +1246,7 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 					if (numObjs > 0)
 					{
@@ -1275,7 +1277,7 @@ GameMessageDisposition SelectionTranslator::onMetaAddTeam(MAYBE_UNUSED const Gam
 				Squad *selectedSquad = player->getHotkeySquad(group);
 				if (selectedSquad != nullptr)
 				{
-					VecObjectPtr objlist = selectedSquad->getLiveObjects();
+					const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 					Int numObjs = objlist.size();
 
 					// TheSuperHackers @bugfix skyaero 22/07/2025 Can't select other units if you have a structure selected. So deselect the structure to prevent group force attack exploit.
@@ -1311,7 +1313,7 @@ GameMessageDisposition SelectionTranslator::onMetaViewTeam(MAYBE_UNUSED const Ga
 			Squad *selectedSquad = player->getHotkeySquad(group);
 			if (selectedSquad != nullptr)
 			{
-				VecObjectPtr objlist = selectedSquad->getLiveObjects();
+				const VecObjectPtr& objlist = selectedSquad->getLiveObjects();
 				Int numObjs = objlist.size();
 				if (numObjs > 0)
 				{

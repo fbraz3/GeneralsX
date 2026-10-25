@@ -236,11 +236,13 @@ void W3DTerrainVisual::init()
 #pragma MESSAGE("********************* WARNING- Doing UNIT TIMINGS. ")
 #else
 		if (TheGlobalData->m_waterType == WaterRenderObjClass::WATER_TYPE_1_FB_REFLECTION)
-		{	// add water render object to the pre-pass scene (to be rendered before main scene)
+		{
+ 			// add water render object to the pre-pass scene (to be rendered before main scene)
  			//W3DDisplay::m_prePass3DScene->Add_Render_Object( m_waterRenderObject);
 		}
 		else
-		{	// add water render object to the post-pass scene (to be rendered after main scene)
+		{
+			// add water render object to the post-pass scene (to be rendered after main scene)
 			W3DDisplay::m_3DScene->Add_Render_Object( m_waterRenderObject);
 		}
 #endif
@@ -644,7 +646,7 @@ Bool W3DTerrainVisual::load( AsciiString filename )
 #ifdef DO_UNIT_TIMINGS
 #pragma MESSAGE("********************* WARNING- Doing UNIT TIMINGS. ")
 #else
-	if (m_waterRenderObject)
+	if (m_waterRenderObject && W3DDisplay::m_3DScene)
 	{
 		W3DDisplay::m_3DScene->Add_Render_Object( m_waterRenderObject);
 		m_waterRenderObject->enableWaterGrid(false);
@@ -879,7 +881,8 @@ Bool W3DTerrainVisual::getWaterGridHeight( Real worldX, Real worldY, Real *heigh
 
 	if (m_isWaterGridRenderingEnabled && m_waterRenderObject &&
 		m_waterRenderObject->worldToGridSpace(worldX, worldY, gridX, gridY))
-	{	//point falls within grid, return correct height
+	{
+		//point falls within grid, return correct height
 		m_waterRenderObject->getGridVertexHeight(REAL_TO_INT(gridX),REAL_TO_INT(gridY),height);
 		return TRUE;
 	}
@@ -991,7 +994,7 @@ void W3DTerrainVisual::addFactionBib(Object *factionBuilding, Bool highlight, Re
 		pos.set(0,0,0);
 		Real exitWidth = factionBuilding->getTemplate()->getFactoryExitWidth();
 		Real extraWidth = factionBuilding->getTemplate()->getFactoryExtraBibWidth() + extra;
-		const GeometryInfo info = factionBuilding->getGeometryInfo();
+		const GeometryInfo &info = factionBuilding->getGeometryInfo();
 		Real sizeX = info.getMajorRadius();
 		Real sizeY = info.getMinorRadius();
 		if (info.getGeomType() != GEOMETRY_BOX) {

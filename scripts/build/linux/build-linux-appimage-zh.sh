@@ -57,6 +57,9 @@ copy_ldd_deps() {
             # GeneralsX @bugfix GitHubCopilot 10/04/2026 Exclude glibc loader/runtime files across common Linux layouts to preserve AppImage portability.
             linux-vdso.so.1 | \
             /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /usr/lib/libc.so.* | /usr/lib/libm.so.* | /usr/lib/libpthread.so.* | /usr/lib/librt.so.* | /usr/lib/libdl.so.* | \
+            */libmvec.so.* | */libresolv.so.* | */libutil.so.* | */libanl.so.* | */libnsl.so.1 | */libnss_*.so.* | \
+            */libthread_db.so.* | */libBrokenLocale.so.* | */libc_malloc_debug.so.* | */libmemusage.so | */libpcprofile.so | \
             /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
             /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
             /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
@@ -228,6 +231,9 @@ export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 export DXVK_WSI_DRIVER="SDL3"
 export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 export DXVK_HUD="${DXVK_HUD:-0}"
+if [[ -f "${APPDIR}/usr/share/generalsxzh/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${APPDIR}/usr/share/generalsxzh/dxvk.conf"
+fi
 
 has_big_files() {
     local dir="$1"

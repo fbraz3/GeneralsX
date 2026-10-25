@@ -106,7 +106,6 @@ static ShaderClass detailOpaqueShader(SC_DETAIL_BLEND);
 #define DEFAULT_MAX_MAP_SHORELINE_TILES		4096	//default size of array allocated to hold all map shoreline tiles.
 
 #define ADJUST_FROM_INDEX_TO_REAL(k) ((k-m_map->getBorderSizeInline())*MAP_XY_FACTOR)
-inline Int IABS(Int x) {	if (x>=0) return x; return -x;};
 
 const Int CELLS_PER_TILE = 16; // In order to be efficient in texture, needs to be a power of 2. [3/24/2003]
 
@@ -179,6 +178,7 @@ void FlatHeightMapRenderObjClass::adjustTerrainLOD(Int adj)
 //=============================================================================
 void FlatHeightMapRenderObjClass::ReleaseResources()
 {
+	releaseTiles();
 	BaseHeightMapRenderObjClass::ReleaseResources();
 }
 
@@ -468,7 +468,6 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 		W3DShaderManager::updateCloud();
 	}
 
-	Matrix3D tm(Transform);
 	// If there are trees, tell them to draw at the transparent time to draw.
 	if (m_treeBuffer) {
 		m_treeBuffer->setIsTerrain();
@@ -494,8 +493,7 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	ShaderClass::Invalidate();
 
-	//	tm.Scale(ObjSpaceExtent);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
+	DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
 
 
 	DX8Wrapper::Set_Material(m_vertexMaterialClass);
@@ -509,12 +507,14 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
  	}
  	else
  	if (TheGlobalData->m_useLightMap)
- 	{	//lightmap only
+ 	{
+ 		//lightmap only
  		st=W3DShaderManager::ST_FLAT_TERRAIN_BASE_NOISE2;
  	}
  	else
  	if (doCloud)
- 	{	//cloudmap only
+ 	{
+ 		//cloudmap only
  		st=W3DShaderManager::ST_FLAT_TERRAIN_BASE_NOISE1;
  	}
 
@@ -525,6 +525,10 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
  	if (m_disableTextures)
  		devicePasses=1;	//force to 1 lighting-only pass
+
+	// GeneralsX @bugfix fbraz3 08/10/2026 A water mirror leaves the ground out (Reforged pattern)
+	if (ShaderClass::Is_Backface_Culling_Inverted())
+		devicePasses=0;
 
  	//Specify all textures that this shader may need.
  	W3DShaderManager::setTexture(0,m_stageZeroTexture);
@@ -586,7 +590,8 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 #if 1
 
 	//Draw feathered shorelines
-	renderShoreLines(&rinfo.Camera);
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		renderShoreLines(&rinfo.Camera);
 
 #ifdef DO_ROADS
 	DX8Wrapper::Set_Texture(0,nullptr);
@@ -609,7 +614,9 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	DX8Wrapper::Set_Texture(1,nullptr);
 	m_stageTwoTexture->restore();
 
-	drawScorches();
+	if (!ShaderClass::Is_Backface_Culling_Inverted()) {
+		drawScorches();
+	}
 
 	DX8Wrapper::Set_Texture(0,nullptr);
 	DX8Wrapper::Set_Texture(1,nullptr);
@@ -619,15 +626,18 @@ void FlatHeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 	m_bridgeBuffer->drawBridges(&rinfo.Camera, m_disableTextures, m_stageTwoTexture);
 
-	if (TheTerrainTracksRenderObjClassSystem)
+	if (TheTerrainTracksRenderObjClassSystem && !ShaderClass::Is_Backface_Culling_Inverted())
 		TheTerrainTracksRenderObjClassSystem->flush();
 
 	ShaderClass::Invalidate();
 	DX8Wrapper::Apply_Render_State_Changes();
 
-	m_waypointBuffer->drawWaypoints(rinfo);
+	// GeneralsX @bugfix fbraz3 09/10/2026 Skip waypoint buffer during reflection pass (inverted culling)
+	if (m_waypointBuffer && !ShaderClass::Is_Backface_Culling_Inverted())
+		m_waypointBuffer->drawWaypoints(rinfo);
 
-	m_bibBuffer->renderBibs();
+	if (!ShaderClass::Is_Backface_Culling_Inverted())
+		m_bibBuffer->renderBibs();
 #endif
 	// We do some custom blending, so tell the shader class to reset everything.
 	DX8Wrapper::Set_Texture(0,nullptr);

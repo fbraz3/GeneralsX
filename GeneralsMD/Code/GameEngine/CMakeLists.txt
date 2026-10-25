@@ -65,7 +65,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/LocalFile.h
 #    Include/Common/LocalFileSystem.h
 #    Include/Common/MapObject.h
-    Include/Common/MapReaderWriterInfo.h
+#    Include/Common/MapReaderWriterInfo.h
 #    Include/Common/MessageStream.h
 #    Include/Common/MiniLog.h
 #    Include/Common/MiscAudio.h
@@ -119,7 +119,7 @@ set(GAMEENGINE_SRC
     Include/Common/Thing.h
     Include/Common/ThingFactory.h
     Include/Common/ThingSort.h
-    Include/Common/ThingTemplate.h
+#    Include/Common/ThingTemplate.h
     Include/Common/TunnelTracker.h
 #    Include/Common/UnicodeString.h
     Include/Common/UnitTimings.h
@@ -135,7 +135,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/XferLoad.h
 #    Include/Common/XferSave.h
 #    Include/GameClient/Anim2D.h
-    Include/GameClient/AnimateWindowManager.h
+#    Include/GameClient/AnimateWindowManager.h
     Include/GameClient/CampaignManager.h
 #    Include/GameClient/ChallengeGenerals.h
 #    Include/GameClient/ClientInstance.h
@@ -177,8 +177,8 @@ set(GAMEENGINE_SRC
 #    Include/GameClient/GameText.h
 #    Include/GameClient/GameWindow.h
 #    Include/GameClient/GameWindowGlobal.h
-    Include/GameClient/GameWindowID.h
-    Include/GameClient/GameWindowManager.h
+#    Include/GameClient/GameWindowID.h
+#    Include/GameClient/GameWindowManager.h
 #    Include/GameClient/GameWindowTransitions.h
 #    Include/GameClient/GlobalLanguage.h
 #    Include/GameClient/GraphDraw.h
@@ -493,16 +493,16 @@ set(GAMEENGINE_SRC
     Include/GameLogic/ObjectScriptStatusBits.h
     Include/GameLogic/ObjectTypes.h
     Include/GameLogic/PartitionManager.h
-    Include/GameLogic/PolygonTrigger.h
+#    Include/GameLogic/PolygonTrigger.h
     Include/GameLogic/Powers.h
 #    Include/GameLogic/RankInfo.h
     Include/GameLogic/ScriptActions.h
     Include/GameLogic/ScriptConditions.h
     Include/GameLogic/ScriptEngine.h
     Include/GameLogic/Scripts.h
-    Include/GameLogic/SidesList.h
+#    Include/GameLogic/SidesList.h
     Include/GameLogic/Squad.h
-    Include/GameLogic/TerrainLogic.h
+#    Include/GameLogic/TerrainLogic.h
     Include/GameLogic/TurretAI.h
     Include/GameLogic/VictoryConditions.h
     Include/GameLogic/Weapon.h
@@ -675,7 +675,6 @@ set(GAMEENGINE_SRC
     Source/Common/System/StackDump.cpp
 #    Source/Common/System/StreamingArchiveFile.cpp
 #    Source/Common/System/SubsystemInterface.cpp
-    Source/Common/System/Trig.cpp
 #    Source/Common/System/UnicodeString.cpp
     Source/Common/System/Upgrade.cpp
 #    Source/Common/System/Xfer.cpp
@@ -688,7 +687,7 @@ set(GAMEENGINE_SRC
     Source/Common/Thing/ModuleFactory.cpp
     Source/Common/Thing/Thing.cpp
     Source/Common/Thing/ThingFactory.cpp
-    Source/Common/Thing/ThingTemplate.cpp
+#    Source/Common/Thing/ThingTemplate.cpp
 #    Source/Common/UserPreferences.cpp
 #    Source/Common/version.cpp
 #    Source/Common/WorkerProcess.cpp
@@ -710,7 +709,7 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GameText.cpp
 #    Source/GameClient/GlobalLanguage.cpp
 #    Source/GameClient/GraphDraw.cpp
-    Source/GameClient/GUI/AnimateWindowManager.cpp
+#    Source/GameClient/GUI/AnimateWindowManager.cpp
     Source/GameClient/GUI/AutopilotPanel.cpp
 #    Source/GameClient/GUI/ChallengeGenerals.cpp
 #    Source/GameClient/GUI/ControlBar/ControlBar.cpp
@@ -741,10 +740,10 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/GameFont.cpp
 #    Source/GameClient/GUI/GameWindow.cpp
 #    Source/GameClient/GUI/GameWindowGlobal.cpp
-    Source/GameClient/GUI/GameWindowManager.cpp
-    Source/GameClient/GUI/GameWindowManagerScript.cpp
+#    Source/GameClient/GUI/GameWindowManager.cpp
+#    Source/GameClient/GUI/GameWindowManagerScript.cpp
 #    Source/GameClient/GUI/GameWindowTransitions.cpp
-    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
+#    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
 #    Source/GameClient/GUI/GUICallbacks/ControlBarCallback.cpp
 #    Source/GameClient/GUI/GUICallbacks/ControlBarPopupDescription.cpp
 #    Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
@@ -865,9 +864,9 @@ set(GAMEENGINE_SRC
     Source/GameLogic/AI/AITNGuard.cpp
     Source/GameLogic/AI/Squad.cpp
     Source/GameLogic/AI/TurretAI.cpp
-    Source/GameLogic/Map/PolygonTrigger.cpp
-    Source/GameLogic/Map/SidesList.cpp
-    Source/GameLogic/Map/TerrainLogic.cpp
+#    Source/GameLogic/Map/PolygonTrigger.cpp
+#    Source/GameLogic/Map/SidesList.cpp
+#    Source/GameLogic/Map/TerrainLogic.cpp
     Source/GameLogic/Object/Armor.cpp
     Source/GameLogic/Object/Behavior/AutoHealBehavior.cpp
     Source/GameLogic/Object/Behavior/BattleBusSlowDeathBehavior.cpp
@@ -1141,6 +1140,18 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp
 #    Source/GameNetwork/GameSpyOverlay.cpp
     Source/GameNetwork/GUIUtil.cpp
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Manager.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Auth.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.h
+    Include/GameNetwork/GeneralsOnline/NGMP_types.h
+    Include/GameNetwork/GeneralsOnline/NGMP_interfaces.h
+    Include/GameNetwork/GeneralsOnline/NGMPGame.h
+    Include/GameNetwork/GeneralsOnline/NGMP_Helpers.h
+    Include/GameNetwork/GeneralsOnline/NGMPWebSocket.h
+    Include/GameNetwork/GeneralsOnline/ngmp_curl_utils.h
 #    Source/GameNetwork/IPEnumeration.cpp
 #    Source/GameNetwork/LANAPI.cpp
 #    Source/GameNetwork/LANAPICallbacks.cpp
@@ -1162,22 +1173,22 @@ set(GAMEENGINE_SRC
 #    Source/Precompiled/PreRTS.cpp
 )
 
-if(RTS_GAMEMEMORY_ENABLE)
-    # Uses the original Game Memory implementation.
+if(SAGE_USE_NGMP)
     list(APPEND GAMEENGINE_SRC
-#        Source/Common/System/GameMemory.cpp
-#        Source/Common/System/GameMemoryInitDMA_GeneralsMD.inl
-#        Source/Common/System/GameMemoryInitPools_GeneralsMD.inl
-#        Source/Common/System/MemoryInit.cpp
-    )
-else()
-    # Uses the null implementation when disabled.
-    list(APPEND GAMEENGINE_SRC
-#        Source/Common/System/GameMemoryNull.cpp
-#        Include/Common/GameMemoryNull.h
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Init.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_Manager.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_WebSocket.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.cpp
+        Source/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.cpp
+        Source/GameNetwork/GeneralsOnline/NGMPGame.cpp
+        Source/GameNetwork/GeneralsOnline/NGMP_Helpers.cpp
+        Source/GameNetwork/GeneralsOnline/NetworkMesh.cpp
+        Source/GameNetwork/GeneralsOnline/NextGenTransport.cpp
     )
 endif()
-
 
 add_library(z_gameengine STATIC)
 
@@ -1216,6 +1227,5 @@ target_link_libraries(z_gameengine PUBLIC
 )
 
 target_precompile_headers(z_gameengine PRIVATE
-    [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
-#    Include/Precompiled/PreRTS.h
+    [["Precompiled/BasePrecomp.h"]] # Must be first
 )

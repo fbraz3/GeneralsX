@@ -622,14 +622,14 @@ Bool Drawable::getShouldAnimate( Bool considerPower ) const
          ! obj->isKindOf( KINDOF_PRODUCED_AT_HELIPAD )  &&
         // mal sez: helicopters just look goofy if they stop animating, so keep animating them, anyway
 
-        (  obj->isDisabledByType( DISABLED_HACKED )
-				|| obj->isDisabledByType( DISABLED_PARALYZED )
-				|| obj->isDisabledByType( DISABLED_EMP )
-				|| obj->isDisabledByType( DISABLED_SUBDUED )
+        (  obj->isDisabledByType( DISABLED_HACKED ) ||
+				obj->isDisabledByType( DISABLED_PARALYZED ) ||
+				obj->isDisabledByType( DISABLED_EMP ) ||
+				obj->isDisabledByType( DISABLED_SUBDUED ) ||
 				// srj sez: unmanned things also should not animate. (eg, gattling tanks,
 				// which have a slight barrel animation even when at rest). if this causes
 				// a problem, we will need to fix gattling tanks in another way.
-				|| obj->isDisabledByType( DISABLED_UNMANNED ) )
+				obj->isDisabledByType( DISABLED_UNMANNED ) )
 
 				)
 				return FALSE;
@@ -1126,7 +1126,7 @@ void Drawable::imitateStealthLook( Drawable& otherDraw )
 /** update is called once per frame */
 //-------------------------------------------------------------------------------------------------
 //DECLARE_PERF_TIMER(updateDrawable)
-void Drawable::updateDrawable()
+void Drawable::updateDrawable(Real timeScale)
 {
 	//USE_PERF_TIMER(updateDrawable)
 
@@ -1143,15 +1143,23 @@ void Drawable::updateDrawable()
 	{
 
 		// handle fading in or out
+		// TheSuperHackers @tweak bobtista 15/09/2026 Decouple Drawable fade timing from render updates.
 		if (m_fadeMode != FADING_NONE)
 		{
-			Real numer = (m_fadeMode == FADING_IN) ? (m_timeElapsedFade) : (m_timeToFade-m_timeElapsedFade);
+			m_timeElapsedFade += timeScale;
 
-			setDrawableOpacity(numer/(Real)m_timeToFade);
-			++m_timeElapsedFade;
-
-			if (m_timeElapsedFade > m_timeToFade)
+			Real opacity;
+			if (m_timeElapsedFade >= m_timeToFade)
+			{
+				opacity = m_fadeMode == FADING_IN ? 1.0f : 0.0f;
 				m_fadeMode = FADING_NONE;
+			}
+			else
+			{
+				Real numer = (m_fadeMode == FADING_IN) ? (m_timeElapsedFade) : (m_timeToFade-m_timeElapsedFade);
+				opacity = numer/(Real)m_timeToFade;
+			}
+			setDrawableOpacity(opacity);
 		}
 	}
 
@@ -1162,11 +1170,11 @@ void Drawable::updateDrawable()
 
 		if (*dm)
 		{
+			// TheSuperHackers @tweak bobtista 15/09/2026 Decouple decal opacity fade timing from render updates.
 			if (m_decalOpacityFadeRate != 0)
 			{
 				//LERP
-				(*dm)->setTerrainDecalOpacity(m_decalOpacity);
-				m_decalOpacity += m_decalOpacityFadeRate;
+				m_decalOpacity += m_decalOpacityFadeRate * timeScale;
 			}
 			//---------------
 
@@ -1180,6 +1188,10 @@ void Drawable::updateDrawable()
 			{
 				m_decalOpacity = 1.0f;
 				m_decalOpacityFadeRate = 0.0f;
+				(*dm)->setTerrainDecalOpacity(m_decalOpacity);
+			}
+			else if (m_decalOpacityFadeRate != 0)
+			{
 				(*dm)->setTerrainDecalOpacity(m_decalOpacity);
 			}
 
@@ -1350,17 +1362,33 @@ void Drawable::applyPhysicsXform(Matrix3D* mtx)
 {
 	if (m_physicsXform != nullptr)
 	{
-		// TheSuperHackers @tweak Update the physics transform on every WW Sync only.
-		// All calculations are originally catered to a 30 fps logic step.
+		// TheSuperHackers @tweak Advance physics only on WW Sync frames.
 		if (WW3D::Get_Sync_Frame_Time() != 0)
 		{
+			m_physicsXform->setPrevTotals();
 			calcPhysicsXform(*m_physicsXform);
+
+			// New or previously undrawn objects have no result from the previous logic step.
+			if (m_physicsXform->m_syncTime != WW3D::Get_Previous_Sync_Time())
+			{
+				m_physicsXform->setPrevTotals();
+			}
+			m_physicsXform->m_syncTime = WW3D::Get_Sync_Time();
 		}
 
-		mtx->Translate(0.0f, 0.0f, m_physicsXform->m_totalZ);
-		mtx->Rotate_Y( m_physicsXform->m_totalPitch );
-		mtx->Rotate_X( -m_physicsXform->m_totalRoll );
-		mtx->Rotate_Z( m_physicsXform->m_totalYaw );
+		// TheSuperHackers @tweak bobtista 14/09/2026 Interpolate the rendered transform between
+		// logic frames, so the motion stays smooth when the render rate is above the logic rate.
+		const Real t = TheFramePacer->getLogicFramePhase();
+
+		const Real interpPitch = WWMath::Lerp(m_physicsXform->m_prevTotalPitch, m_physicsXform->m_totalPitch, t);
+		const Real interpRoll = WWMath::Lerp(m_physicsXform->m_prevTotalRoll, m_physicsXform->m_totalRoll, t);
+		const Real interpYaw = WWMath::Lerp(m_physicsXform->m_prevTotalYaw, m_physicsXform->m_totalYaw, t);
+		const Real interpZ = WWMath::Lerp(m_physicsXform->m_prevTotalZ, m_physicsXform->m_totalZ, t);
+
+		mtx->Translate(0.0f, 0.0f, interpZ);
+		mtx->Rotate_Y( interpPitch );
+		mtx->Rotate_X( -interpRoll );
+		mtx->Rotate_Z( interpYaw );
 	}
 }
 
@@ -1795,36 +1823,6 @@ void Drawable::calcPhysicsXformTreads( const Locomotor *locomotor, PhysicsXformI
 		m_locoInfo->m_accelerationRollRate += -(LATERAL_ACCEL_COEFF * lateralAccel);
 	}
 
-#ifdef RECOIL_FROM_BEING_DAMAGED
-	// recoil from being hit
-	/// @todo Recoil needs to be based on sane damage amounts (MSB)
-	const DamageInfo *damageInfo = obj->getBodyModule()->getLastDamageInfo();
-	if (damageInfo)
-	{
-		if (obj->getBodyModule()->getLastDamageTimestamp() > m_lastDamageTimestamp && damageInfo->in.m_amount > RECOIL_DAMAGE)
-		{
-			Object *attacker = TheGameLogic->getObject( damageInfo->in.m_sourceID );
-			if (attacker)
-			{
-				Coord3D to;
-				ThePartitionManager->getVectorTo( obj, attacker, FROM_CENTER_2D, &to );
-
-				to.normalize();
-
-				Real forward = dir->x * to.x + dir->y * to.y;
-				Real lateral = perp.x * to.x + perp.y * to.y;
-
-				Real recoil = PI/16.0f * GameClientRandomValueReal( 0.5f, 1.0f );
-
-				m_locoInfo->m_accelerationPitchRate -= recoil * forward;
-				m_locoInfo->m_accelerationRollRate -= recoil * lateral;
-			}
-
-			m_lastDamageTimestamp = obj->getBodyModule()->getLastDamageTimestamp();
-		}
-	}
-#endif
-
 	// limit recoil pitch and roll
 
 	if (m_locoInfo->m_accelerationPitch > DECEL_PITCH_LIMIT)
@@ -2073,23 +2071,27 @@ void Drawable::calcPhysicsXformWheels( const Locomotor *locomotor, PhysicsXformI
 		m_locoInfo->m_wheelInfo.m_wheelAngle += (newInfo.m_wheelAngle - m_locoInfo->m_wheelInfo.m_wheelAngle)/WHEEL_SMOOTHNESS;
 
 		const Real SPRING_FACTOR = 0.9f;
-		if (pitchHeight<0) {	// Front raising up
+		if (pitchHeight<0) {
+			// Front raising up
 			newInfo.m_frontLeftHeightOffset = SPRING_FACTOR*(pitchHeight/3+pitchHeight/2);
 			newInfo.m_frontRightHeightOffset = SPRING_FACTOR*(pitchHeight/3+pitchHeight/2);
 			newInfo.m_rearLeftHeightOffset = -pitchHeight/2 + pitchHeight/4;
 			newInfo.m_rearRightHeightOffset = -pitchHeight/2 + pitchHeight/4;
-		}	else {	// Back rasing up.
+		}	else {
+			// Back rasing up.
 			newInfo.m_frontLeftHeightOffset = (-pitchHeight/4+pitchHeight/2);
 			newInfo.m_frontRightHeightOffset = (-pitchHeight/4+pitchHeight/2);
 			newInfo.m_rearLeftHeightOffset = SPRING_FACTOR*(-pitchHeight/2 + -pitchHeight/3);
 			newInfo.m_rearRightHeightOffset = SPRING_FACTOR*(-pitchHeight/2 + -pitchHeight/3);
 		}
-		if (rollHeight>0) {	// Right raising up
+		if (rollHeight>0) {
+			// Right raising up
 			newInfo.m_frontRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_rearRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_rearLeftHeightOffset += rollHeight/2 - rollHeight/4;
 			newInfo.m_frontLeftHeightOffset += rollHeight/2 - rollHeight/4;
-		}	else {	// Left rasing up.
+		}	else {
+			// Left rasing up.
 			newInfo.m_frontRightHeightOffset += -rollHeight/2 + rollHeight/4;
 			newInfo.m_rearRightHeightOffset += -rollHeight/2 + rollHeight/4;
 			newInfo.m_rearLeftHeightOffset += SPRING_FACTOR*(rollHeight/3+rollHeight/2);
@@ -2397,10 +2399,12 @@ void Drawable::calcPhysicsXformMotorcycle( const Locomotor *locomotor, PhysicsXf
 			newInfo.m_rearRightHeightOffset		= newInfo.m_rearLeftHeightOffset;
 		}
 		/*
-		if (rollHeight>0) {	// Right raising up
+		if (rollHeight>0) {
+			// Right raising up
 			newInfo.m_frontRightHeightOffset += -SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 			newInfo.m_rearLeftHeightOffset += rollHeight/2 - rollHeight/4;
-		}	else {	// Left raising up.
+		}	else {
+			// Left raising up.
 			newInfo.m_frontRightHeightOffset += -rollHeight/2 + rollHeight/4;
 			newInfo.m_rearLeftHeightOffset += SPRING_FACTOR*(rollHeight/3+rollHeight/2);
 		}
@@ -3166,8 +3170,10 @@ void Drawable::drawHealing(const IRegion2D* healthBarRegion)
 //		if( lastDamage != nullptr && lastDamage->in.m_damageType == DAMAGE_HEALING
 //			&&(TheGameLogic->getFrame() - body->getLastHealingTimestamp()) <= HEALING_ICON_DISPLAY_TIME
 //			)
+		const UnsignedInt *lastHealingTimestamp = body->getLastHealingTimestamp();
 		if ( TheGameLogic->getFrame() > HEALING_ICON_DISPLAY_TIME && // because so many things init health early in game
-			(TheGameLogic->getFrame() - body->getLastHealingTimestamp() <= HEALING_ICON_DISPLAY_TIME) )
+			lastHealingTimestamp != nullptr &&
+			(TheGameLogic->getFrame() - *lastHealingTimestamp <= HEALING_ICON_DISPLAY_TIME) )
 
 			showHealing = TRUE;
 	}
@@ -3558,11 +3564,11 @@ void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 	//
 	// Disabled Emoticon /Lightning
 	//                   7/
-	if( obj->isDisabledByType( DISABLED_HACKED )
-		|| obj->isDisabledByType( DISABLED_PARALYZED )
-		|| obj->isDisabledByType( DISABLED_EMP )
-		|| obj->isDisabledByType( DISABLED_SUBDUED )
-		|| obj->isDisabledByType( DISABLED_UNDERPOWERED )
+	if( obj->isDisabledByType( DISABLED_HACKED ) ||
+		obj->isDisabledByType( DISABLED_PARALYZED ) ||
+		obj->isDisabledByType( DISABLED_EMP ) ||
+		obj->isDisabledByType( DISABLED_SUBDUED ) ||
+		obj->isDisabledByType( DISABLED_UNDERPOWERED )
 		)
 	{
 		// create icon if necessary
@@ -3842,12 +3848,14 @@ void Drawable::drawHealthBar(const IRegion2D* healthBarRegion)
 			outColor.green =inColor.green * 0.5f;
 
 			if( m_conditionState.test( MODELCONDITION_REALLY_DAMAGED ) == TRUE )
-			{//average the above color with red
+			{
+				//average the above color with red
 				inColor.red = (1.0f + inColor.red) * 0.5f;
 				inColor.green *= 0.5f;
 			}
 			else if ( m_conditionState.test( MODELCONDITION_DAMAGED ) == FALSE )
-			{//average the above color with green
+			{
+				//average the above color with green
 				inColor.green = (1.0f + inColor.green) * 0.5f;
 				inColor.red *= 0.5f;
 			}
@@ -4846,6 +4854,7 @@ void Drawable::xferDrawableModules( Xfer *xfer )
 	* 6: Added m_ambientSoundEnabledFromScript flag (Added in Zero Hour)
 	* 7: Save the customize ambient sound info (Added in Zero Hour)
 	* 8: TheSuperHackers @bugfix Removed m_prevTintStatus because loading its value is unnecessary and undesirable
+	* 9: TheSuperHackers @tweak m_timeElapsedFade is now serialized as Real instead of UnsignedInt
 	*/
 // ------------------------------------------------------------------------------------------------
 void Drawable::xfer( Xfer *xfer )
@@ -4857,7 +4866,7 @@ void Drawable::xfer( Xfer *xfer )
 #elif RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 7;
 #else
-	const XferVersion currentVersion = 8;
+	const XferVersion currentVersion = 9;
 #endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
@@ -5031,7 +5040,19 @@ void Drawable::xfer( Xfer *xfer )
 	xfer->xferUser( &m_fadeMode, sizeof( FadingMode ) );
 
 	// time elapsed fade
-	xfer->xferUnsignedInt( &m_timeElapsedFade );
+	if (version >= 9)
+	{
+		xfer->xferReal( &m_timeElapsedFade );
+	}
+	else
+	{
+		UnsignedInt timeElapsedFadeFrames = static_cast<UnsignedInt>(m_timeElapsedFade);
+		xfer->xferUnsignedInt( &timeElapsedFadeFrames );
+		if (xfer->getXferMode() == XFER_LOAD)
+		{
+			m_timeElapsedFade = static_cast<Real>(timeElapsedFadeFrames);
+		}
+	}
 
 	// time to fade
 	xfer->xferUnsignedInt( &m_timeToFade );
@@ -5568,7 +5589,7 @@ void TintEnvelope::crc( Xfer *xfer )
 /** Xfer Method
 	* Version Info;
 	* 1: Initial version
-	* 2: TheSuperHackers @tweak Serialize sustain counter as float instead of integer
+	* 2: TheSuperHackers @tweak Serialize sustain counter as double instead of integer
 	*/
 // ------------------------------------------------------------------------------------------------
 void TintEnvelope::xfer( Xfer *xfer )
@@ -5598,13 +5619,17 @@ void TintEnvelope::xfer( Xfer *xfer )
 	// sustain counter
 	if (version <= 1)
 	{
+		// TheSuperHackers @info bobtista 23/09/2026 The double counter can represent SUSTAIN_INDEFINITELY exactly.
 		UnsignedInt sustainCounter = (UnsignedInt)m_sustainCounter;
 		xfer->xferUnsignedInt( &sustainCounter );
-		m_sustainCounter = (Real)sustainCounter;
+		if( xfer->getXferMode() == XFER_LOAD )
+		{
+			m_sustainCounter = sustainCounter;
+		}
 	}
 	else
 	{
-		xfer->xferReal( &m_sustainCounter );
+		xfer->xferDouble( &m_sustainCounter );
 	}
 
 	// affect

@@ -69,6 +69,7 @@ struct PlayingAudio
 	Short m_framesFaded;
 	Bool m_fade;
 	volatile Bool m_rerequestOnNextUpdate;
+	volatile Bool m_requestStop; // Let the audio finish but stop looping if it is looping
 
 	PlayingAudio()
 		: m_sample(nullptr)
@@ -79,7 +80,18 @@ struct PlayingAudio
 		, m_framesFaded(0)
 		, m_fade(false)
 		, m_rerequestOnNextUpdate(false)
+		, m_requestStop(false)
 	{}
+
+	Bool isPlaying() const
+	{
+		return m_status == PS_Playing;
+	}
+
+	Bool isPlayingOrRequested() const
+	{
+		return m_status == PS_Playing || m_rerequestOnNextUpdate;
+	}
 
 	static_assert(sizeof(m_status) == sizeof(long), "Must be size of long, because it is used with Interlocked functions");
 };
@@ -229,10 +241,6 @@ class MilesAudioManager : public AudioManager
 
 		virtual void closeAnySamplesUsingFile( const void *fileToClose ) override;
 
-
-    virtual Bool has3DSensitiveStreamsPlaying() const override;
-
-
 	protected:
 		// 3-D functions
 		virtual void setDeviceListenerPosition() override;
@@ -241,7 +249,7 @@ class MilesAudioManager : public AudioManager
 		Real getEffectiveVolume(AudioEventRTS *event) const;
 
 		// Looping functions
-		Bool startNextLoop( PlayingAudio *looping );
+		Bool startNextLoop( PlayingAudio *playing );
 
 		void playStream( AudioEventRTS *event, HSTREAM stream );
 		// Returns the file handle for attachment to the PlayingAudio structure
@@ -263,9 +271,9 @@ class MilesAudioManager : public AudioManager
 		void closeFile( void *fileRead );
 
 		PlayingAudio *allocatePlayingAudio();
-		void releaseMilesHandles( PlayingAudio *release );
-		void releasePlayingAudio( PlayingAudio *release );
-		void stopPlayingAudio( PlayingAudio *release );
+		void releaseMilesHandles( PlayingAudio *playing );
+		void releasePlayingAudio( PlayingAudio *playing );
+		void stopPlayingAudio( PlayingAudio *playing );
 		void rerequestPlayingAudio( PlayingAudio *playing );
 		void rerequestPlayingAudioWhenSignalled( PlayingAudio *playing );
 		void fadePlayingAudio( PlayingAudio *playing );
@@ -332,6 +340,9 @@ class MilesAudioManager : public AudioManager
 		UnsignedInt m_num3DSamples;
 		UnsignedInt m_numStreams;
 
+		Bool m_deviceOpened;
+		Bool m_milesLoaded;
+
 #if defined(RTS_DEBUG)
 		typedef std::set<AsciiString> SetAsciiString;
 		typedef SetAsciiString::iterator SetAsciiStringIt;
@@ -382,7 +393,6 @@ class MilesAudioManagerDummy : public MilesAudioManager
 	virtual void adjustVolumeOfPlayingAudio(AsciiString eventName, Real newVolume) override {}
 	virtual void removePlayingAudio(AsciiString eventName) override {}
 	virtual void removeAllDisabledAudio() override {}
-	virtual Bool has3DSensitiveStreamsPlaying() const override { return false; }
 	virtual void* getHandleForBink() override { return nullptr; }
 	virtual void releaseHandleForBink() override {}
 	virtual void friend_forcePlayAudioEventRTS(const AudioEventRTS* eventToPlay) override {}

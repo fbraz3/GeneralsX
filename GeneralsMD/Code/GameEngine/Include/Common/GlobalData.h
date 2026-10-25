@@ -54,6 +54,8 @@ constexpr const Int MAX_GLOBAL_LIGHTS = 3;
 constexpr const Int SIMULATE_REPLAYS_SEQUENTIAL = -1;
 
 //-------------------------------------------------------------------------------------------------
+// Command-line parsing state is stored here instead of in CommandLine because
+// the parsing result belongs to the GlobalData instance created during startup.
 class CommandLineData
 {
 	friend class CommandLine;
@@ -66,6 +68,7 @@ class CommandLineData
 
 	Bool m_hasParsedCommandLineForStartup;
 	Bool m_hasParsedCommandLineForEngineInit;
+	BoolVector m_parsedArguments;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -115,6 +118,8 @@ public:
 	Bool m_useFpsLimit;
 	Bool m_dumpAssetUsage;
 	Int m_framesPerSecondLimit;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	Int m_skirmishTickRate;
 	Int	m_chipSetType;	///<See W3DShaderManager::ChipsetType for options
 
 	// TheSuperHackers @feature helmutbuhler 11/04/2025
@@ -151,6 +156,43 @@ public:
 	Bool m_useWaterPlane;
 	Bool m_useCloudPlane;
 	Bool m_useShadowVolumes;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Also cast volume shadows off skinned meshes
+	Bool m_useShadowVolumesForSkins;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
+	Bool m_shadowsForProjectiles;
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
+	Bool m_shadowsForProps;
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	Bool m_advancedShadows;
+	Bool m_advancedLighting;
+	Bool m_extendedShadowFrustumCulling;
+	Bool m_naturalSunElevation;
+	Bool m_bridgeShadows;
+	Bool m_waterReflections;
+	Bool m_explosionDynamicLights;
+	Bool m_vehicleHeadlights;
+	Bool m_enablePostProcessing;
+	Bool m_postProcessBloom;
+	Bool m_postProcessHDR;
+	Bool m_postProcessFXAA;
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	Bool m_airUnitGroundIndicator;
+
+	Bool isUseShadowVolumesForSkins() const { return m_advancedShadows && m_useShadowVolumesForSkins; }
+	Bool isShadowsForProjectiles() const { return m_advancedShadows && m_shadowsForProjectiles; }
+	Bool isShadowsForProps() const { return m_advancedShadows && m_shadowsForProps; }
+	Bool isExtendedShadowFrustumCulling() const { return m_advancedShadows && m_extendedShadowFrustumCulling; }
+	Bool isNaturalSunElevation() const { return m_advancedShadows && m_naturalSunElevation; }
+	Bool isBridgeShadows() const { return m_advancedShadows && m_bridgeShadows; }
+	// GeneralsX @feature fbraz3 08/10/2026 Water reflection toggle via INI/Options
+	Bool isWaterReflections() const { return m_waterReflections; }
+	Bool isExplosionDynamicLights() const { return m_advancedLighting && m_explosionDynamicLights; }
+	Bool isVehicleHeadlights() const { return m_advancedLighting && m_vehicleHeadlights; }
+	Bool isEnablePostProcessing() const { return m_enablePostProcessing && (m_postProcessBloom || m_postProcessHDR || m_postProcessFXAA); }
+	Bool isPostProcessBloom() const { return m_enablePostProcessing && m_postProcessBloom; }
+	Bool isPostProcessHDR() const { return m_enablePostProcessing && m_postProcessHDR; }
+	Bool isPostProcessFXAA() const { return m_enablePostProcessing && m_postProcessFXAA; }
+	Bool isAirUnitGroundIndicator() const { return m_airUnitGroundIndicator; }
 	Bool m_useShadowDecals;
 	Int  m_textureReductionFactor;	//how much to cut texture resolution: 2 is half, 3 is quarter, etc.
 	Bool m_enableBehindBuildingMarkers;
@@ -358,6 +400,7 @@ public:
 	AsciiString m_initialFile;				///< If this is specified, load a specific map from the command-line
 	AsciiString m_pendingFile;				///< If this is specified, use this map at the next game start
 	AsciiString m_loadSaveGame;				///< If this is specified, load a save game file from the command-line
+	AsciiString m_loadReplayGame;			///< If this is specified, play a replay file from the command-line
 
 	std::vector<AsciiString> m_simulateReplays; ///< If not empty, simulate this list of replays and exit.
 
@@ -390,6 +433,8 @@ public:
 	Bool m_loadScreenRender;						///< flag to disallow rendering of almost everything during a loadscreen
 
 	Real m_keyboardScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
+	// GeneralsX @feature Gabriel Petry 30/09/2026 Add configurable mouse scrolling speed.
+	Real m_mouseScrollFactor;				///< Factor applied to game scrolling speed via mouse scrolling
 	Real m_keyboardDefaultScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
 	Bool m_drawScrollAnchor;					///< Set that the scroll anchor should be enabled
 	Bool m_moveScrollAnchor;					///< set that the scroll anchor should move

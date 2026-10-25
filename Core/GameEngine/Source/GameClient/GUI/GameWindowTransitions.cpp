@@ -509,6 +509,10 @@ void GameWindowTransitionsHandler::setGroup(AsciiString groupName, Bool immediat
 void GameWindowTransitionsHandler::reverse( AsciiString groupName )
 {
 	TransitionGroup *g = findGroup(groupName);
+	// GeneralsX @bugfix fbraz3 18/09/2026 Guard against null transition group to prevent crash
+	if (!g)
+		return;
+
 	if( m_currentGroup == g )
 	{
 		m_currentGroup->reverse();
@@ -533,7 +537,13 @@ void GameWindowTransitionsHandler::reverse( AsciiString groupName )
 
 void GameWindowTransitionsHandler::remove( AsciiString groupName,  Bool skipPending )
 {
-	TransitionGroup *g = findGroup(groupName);
+	TransitionGroup* g = findGroup(groupName);
+
+	if (!g)
+	{
+		return;
+	}
+
 	if(m_pendingGroup == g)
 	{
 		if(skipPending)

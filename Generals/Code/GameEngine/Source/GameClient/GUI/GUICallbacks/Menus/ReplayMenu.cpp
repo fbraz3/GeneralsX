@@ -31,7 +31,6 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 
-#include "Lib/BaseType.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -107,10 +106,7 @@ UnicodeString GetReplayFilenameFromListbox(GameWindow *listbox, Int index)
 
 static Bool readReplayMapInfo(const AsciiString& filename, RecorderClass::ReplayHeader &header, ReplayGameInfo &info, const MapMetaData *&mapData)
 {
-	header.forPlayback = FALSE;
-	header.filename = filename;
-
-	if (TheRecorder != nullptr && TheRecorder->readReplayHeader(header))
+	if (TheRecorder != nullptr && TheRecorder->readReplayHeader(header, filename, FALSE))
 	{
 		if (ParseAsciiStringToGameInfo(&info, header.gameOptions))
 		{

@@ -16,6 +16,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/BattleHonors.h
     Include/Common/BezFwdIterator.h
     Include/Common/BezierSegment.h
+    Include/Common/BIGFileSystem.h
 #    Include/Common/BitFlags.h
 #    Include/Common/BitFlagsIO.h
 #    Include/Common/BorderColors.h
@@ -50,6 +51,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/GameEngine.h
 #    Include/Common/GameLOD.h
     Include/Common/GameMemory.h
+    Include/Common/GameMemoryNull.inl
     Include/Common/GameMusic.h
     Include/Common/GameSounds.h
 #    Include/Common/GameSpyMiscPreferences.h
@@ -71,9 +73,8 @@ set(GAMEENGINE_SRC
     Include/Common/LocalFile.h
     Include/Common/LocalFileSystem.h
     Include/Common/MapObject.h
-#    Include/Common/MapReaderWriterInfo.h
+    Include/Common/MapReaderWriterInfo.h
     Include/Common/MessageStream.h
-    Include/Common/MiniDumper.h
     Include/Common/MiniLog.h
     Include/Common/MiscAudio.h
 #    Include/Common/MissionStats.h
@@ -130,7 +131,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/Thing.h
 #    Include/Common/ThingFactory.h
 #    Include/Common/ThingSort.h
-#    Include/Common/ThingTemplate.h
+    Include/Common/ThingTemplate.h
 #    Include/Common/TunnelTracker.h
     Include/Common/UnicodeString.h
 #    Include/Common/UnitTimings.h
@@ -140,13 +141,14 @@ set(GAMEENGINE_SRC
     Include/Common/version.h
 #    Include/Common/WellKnownKeys.h
     Include/Common/WorkerProcess.h
+    Include/Common/WorkingDirectory.h
     Include/Common/Xfer.h
     Include/Common/XferCRC.h
     Include/Common/XferDeepCRC.h
     Include/Common/XferLoad.h
     Include/Common/XferSave.h
     Include/GameClient/Anim2D.h
-#    Include/GameClient/AnimateWindowManager.h
+    Include/GameClient/AnimateWindowManager.h
 #    Include/GameClient/CampaignManager.h
     Include/GameClient/ChallengeGenerals.h
     Include/GameClient/ClientInstance.h
@@ -188,8 +190,8 @@ set(GAMEENGINE_SRC
     Include/GameClient/GameText.h
     Include/GameClient/GameWindow.h
     Include/GameClient/GameWindowGlobal.h
-#    Include/GameClient/GameWindowID.h
-#    Include/GameClient/GameWindowManager.h
+    Include/GameClient/GameWindowID.h
+    Include/GameClient/GameWindowManager.h
     Include/GameClient/GameWindowTransitions.h
     Include/GameClient/GlobalLanguage.h
     Include/GameClient/GraphDraw.h
@@ -258,6 +260,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/FiringTracker.h
 #    Include/GameLogic/FPUControl.h
 #    Include/GameLogic/GameLogic.h
+    Include/GameLogic/GameMode.h
 #    Include/GameLogic/GhostObject.h
 #    Include/GameLogic/Locomotor.h
 #    Include/GameLogic/LocomotorSet.h
@@ -489,17 +492,26 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/ObjectIter.h
 #    Include/GameLogic/ObjectScriptStatusBits.h
 #    Include/GameLogic/ObjectTypes.h
+     Include/GameLogic/Pathfinder/Path.h
+     Include/GameLogic/Pathfinder/PathfindCell.h
+     Include/GameLogic/Pathfinder/PathfindCellInfo.h
+     Include/GameLogic/Pathfinder/PathfindCellList.h
+     Include/GameLogic/Pathfinder/PathfindConstants.h
+     Include/GameLogic/Pathfinder/PathfindLayer.h
+     Include/GameLogic/Pathfinder/PathfindZoneManager.h
+     Include/GameLogic/Pathfinder/PathNode.h
+     Include/GameLogic/Pathfinder/ZoneBlock.h
 #    Include/GameLogic/PartitionManager.h
-#    Include/GameLogic/PolygonTrigger.h
+    Include/GameLogic/PolygonTrigger.h
 #    Include/GameLogic/Powers.h
     Include/GameLogic/RankInfo.h
 #    Include/GameLogic/ScriptActions.h
 #    Include/GameLogic/ScriptConditions.h
 #    Include/GameLogic/ScriptEngine.h
 #    Include/GameLogic/Scripts.h
-#    Include/GameLogic/SidesList.h
+    Include/GameLogic/SidesList.h
 #    Include/GameLogic/Squad.h
-#    Include/GameLogic/TerrainLogic.h
+    Include/GameLogic/TerrainLogic.h
 #    Include/GameLogic/TurretAI.h
 #    Include/GameLogic/VictoryConditions.h
 #    Include/GameLogic/Weapon.h
@@ -544,6 +556,7 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/LANAPI.h
     Include/GameNetwork/LANAPICallbacks.h
     Include/GameNetwork/LANGameInfo.h
+    Include/GameNetwork/LANInterfaceDevice.h
     Include/GameNetwork/LANPlayer.h
     Include/GameNetwork/NAT.h
     Include/GameNetwork/NetCommandList.h
@@ -652,6 +665,7 @@ set(GAMEENGINE_SRC
     Source/Common/System/ArchiveFile.cpp
     Source/Common/System/ArchiveFileSystem.cpp
     Source/Common/System/AsciiString.cpp
+    Source/Common/System/BIGFileSystem.cpp
 #    Source/Common/System/BuildAssistant.cpp
 #    Source/Common/System/CriticalSection.cpp
 #    Source/Common/System/DataChunk.cpp
@@ -663,15 +677,19 @@ set(GAMEENGINE_SRC
     Source/Common/System/FileSystem.cpp
 #    Source/Common/System/FunctionLexicon.cpp
     Source/Common/System/GameCommon.cpp
-    #Source/Common/System/GameMemory.cpp # is conditionally appended
-    #Source/Common/System/GameMemoryInit.cpp # is conditionally appended
+    Source/Common/System/GameMemory.cpp
+    Source/Common/System/GameMemoryInit.cpp
+    Source/Common/System/GameMemoryInitDMA_Generals.inl
+    Source/Common/System/GameMemoryInitDMA_GeneralsMD.inl
+    Source/Common/System/GameMemoryInitPools_Generals.inl
+    Source/Common/System/GameMemoryInitPools_GeneralsMD.inl
+    Source/Common/System/GameMemoryNull.cpp
     Source/Common/System/GameType.cpp
 #    Source/Common/System/Geometry.cpp
 #    Source/Common/System/KindOf.cpp
 #    Source/Common/System/List.cpp
     Source/Common/System/LocalFile.cpp
     Source/Common/System/LocalFileSystem.cpp
-    Source/Common/System/MiniDumper.cpp
     Source/Common/System/ObjectStatusTypes.cpp
 #    Source/Common/System/QuotedPrintable.cpp
     Source/Common/System/Radar.cpp
@@ -683,7 +701,6 @@ set(GAMEENGINE_SRC
 #    Source/Common/System/StackDump.cpp
     Source/Common/System/StreamingArchiveFile.cpp
     Source/Common/System/SubsystemInterface.cpp
-#    Source/Common/System/Trig.cpp
     Source/Common/System/UnicodeString.cpp
 #    Source/Common/System/Upgrade.cpp
     Source/Common/System/Xfer.cpp
@@ -696,10 +713,11 @@ set(GAMEENGINE_SRC
 #    Source/Common/Thing/ModuleFactory.cpp
 #    Source/Common/Thing/Thing.cpp
 #    Source/Common/Thing/ThingFactory.cpp
-#    Source/Common/Thing/ThingTemplate.cpp
+    Source/Common/Thing/ThingTemplate.cpp
     Source/Common/UserPreferences.cpp
     Source/Common/version.cpp
     Source/Common/WorkerProcess.cpp
+    Source/Common/WorkingDirectory.cpp
     Source/GameClient/ClientInstance.cpp
     Source/GameClient/Color.cpp
     Source/GameClient/Credits.cpp
@@ -718,7 +736,7 @@ set(GAMEENGINE_SRC
     Source/GameClient/GameText.cpp
     Source/GameClient/GlobalLanguage.cpp
     Source/GameClient/GraphDraw.cpp
-#    Source/GameClient/GUI/AnimateWindowManager.cpp
+    Source/GameClient/GUI/AnimateWindowManager.cpp
     Source/GameClient/GUI/ChallengeGenerals.cpp
     Source/GameClient/GUI/ControlBar/ControlBar.cpp
     Source/GameClient/GUI/ControlBar/ControlBarBeacon.cpp
@@ -748,10 +766,10 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GameFont.cpp
     Source/GameClient/GUI/GameWindow.cpp
     Source/GameClient/GUI/GameWindowGlobal.cpp
-#    Source/GameClient/GUI/GameWindowManager.cpp
-#    Source/GameClient/GUI/GameWindowManagerScript.cpp
+    Source/GameClient/GUI/GameWindowManager.cpp
+    Source/GameClient/GUI/GameWindowManagerScript.cpp
     Source/GameClient/GUI/GameWindowTransitions.cpp
-#    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
+    Source/GameClient/GUI/GameWindowTransitionsStyles.cpp
     Source/GameClient/GUI/GUICallbacks/ControlBarCallback.cpp
     Source/GameClient/GUI/GUICallbacks/ControlBarPopupDescription.cpp
     Source/GameClient/GUI/GUICallbacks/Diplomacy.cpp
@@ -858,11 +876,20 @@ set(GAMEENGINE_SRC
 #    Source/GameLogic/AI/AISkirmishPlayer.cpp
 #    Source/GameLogic/AI/AIStates.cpp
 #    Source/GameLogic/AI/AITNGuard.cpp
+    Source/GameLogic/AI/Pathfinder/Path.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindCell.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindCellInfo.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindCellList.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindConstants.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindLayer.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindZoneManager.cpp
+    Source/GameLogic/AI/Pathfinder/PathNode.cpp
+    Source/GameLogic/AI/Pathfinder/ZoneBlock.cpp
 #    Source/GameLogic/AI/Squad.cpp
 #    Source/GameLogic/AI/TurretAI.cpp
-#    Source/GameLogic/Map/PolygonTrigger.cpp
-#    Source/GameLogic/Map/SidesList.cpp
-#    Source/GameLogic/Map/TerrainLogic.cpp
+    Source/GameLogic/Map/PolygonTrigger.cpp
+    Source/GameLogic/Map/SidesList.cpp
+    Source/GameLogic/Map/TerrainLogic.cpp
 #    Source/GameLogic/Object/Armor.cpp
 #    Source/GameLogic/Object/Behavior/AutoHealBehavior.cpp
 #    Source/GameLogic/Object/Behavior/BattleBusSlowDeathBehavior.cpp
@@ -1158,24 +1185,6 @@ set(GAMEENGINE_SRC
     Source/Precompiled/PreRTS.cpp
 )
 
-if(RTS_GAMEMEMORY_ENABLE)
-    # Uses the original Game Memory implementation.
-    list(APPEND GAMEENGINE_SRC
-        Source/Common/System/GameMemory.cpp
-        Source/Common/System/GameMemoryInit.cpp
-        Source/Common/System/GameMemoryInitDMA_Generals.inl
-        Source/Common/System/GameMemoryInitDMA_GeneralsMD.inl
-        Source/Common/System/GameMemoryInitPools_Generals.inl
-        Source/Common/System/GameMemoryInitPools_GeneralsMD.inl
-    )
-else()
-    # Uses the null implementation when disabled.
-    list(APPEND GAMEENGINE_SRC
-        Source/Common/System/GameMemoryNull.cpp
-        Include/Common/GameMemoryNull.h
-    )
-endif()
-
 
 add_library(corei_gameengine_private INTERFACE)
 add_library(corei_gameengine_public INTERFACE)
@@ -1188,7 +1197,6 @@ target_include_directories(corei_gameengine_private INTERFACE
 
 target_link_libraries(corei_gameengine_private INTERFACE
     corei_always
-    core_profile_legacy
 )
 
 target_compile_definitions(corei_gameengine_private INTERFACE
@@ -1206,8 +1214,11 @@ target_include_directories(corei_gameengine_public INTERFACE
 target_link_libraries(corei_gameengine_public INTERFACE
     core_compression
     core_browserdispatch
+    core_minidumper
     #core_wwvegas
+    corei_platform
     d3d8lib
+    deps_dbghelp
     gamespy::gamespy
     stlport
 )

@@ -250,7 +250,7 @@ void PopulateCustomLadderComboBox()
 	CustomMatchPreferences pref;
 	AsciiString userPrefFilename;
 	Int localProfile = TheGameSpyInfo->getLocalProfileID();
-	userPrefFilename.format("GeneralsOnline\\CustomPref%d.ini", localProfile);
+	userPrefFilename.format("GeneralsOnline/CustomPref%d.ini", localProfile);
 	pref.load(userPrefFilename);
 
 	std::set<const LadderInfo *> usedLadders;

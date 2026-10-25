@@ -137,8 +137,6 @@ static UnicodeString formatIncomeValue(UnsignedInt cashPerMin)
 /// The InGameUI singleton instance.
 InGameUI *TheInGameUI = nullptr;
 
-GameWindow *m_replayWindow = nullptr;
-
 // ------------------------------------------------------------------------------------------------
 struct KindOfSelectionData
 {
@@ -163,13 +161,13 @@ static Bool kindOfUnitSelection( Drawable *test, void *userData )
 		Bool isKindOfMatch = object->isKindOfMulti(data->m_mustbeSet, data->m_mustbeClear);
 
 		// only select objects if not already selected
-		if( object && isKindOfMatch
-					&& object->isLocallyControlled()
-					&& !object->isContained()
-					&& !object->getDrawable()->isSelected()
-					&& !object->isEffectivelyDead()
-					&& object->isMassSelectable()
-					&& !object->isOffMap()
+		if( object && isKindOfMatch &&
+					object->isLocallyControlled() &&
+					!object->isContained() &&
+					!object->getDrawable()->isSelected() &&
+					!object->isEffectivelyDead() &&
+					object->isMassSelectable() &&
+					!object->isOffMap()
 				)
 		{
 			// enforce optional unit cap
@@ -223,12 +221,12 @@ static Bool similarUnitSelection( Drawable *test, void *userData )
 		}
 
 		// only select objects if not already selected
-		if( object && isEquivalent
-			  && object->isLocallyControlled()
-				&& !object->isContained()
-				&& !( object->getDrawable()->isSelected() )
-				&& object->isMassSelectable() // And only if they can be multiply selected. (otherwise the drawable will be, but the object will not be)
-				&& !object->isOffMap()
+		if( object && isEquivalent &&
+			  object->isLocallyControlled() &&
+				!object->isContained() &&
+				!( object->getDrawable()->isSelected() ) &&
+				object->isMassSelectable() && // And only if they can be multiply selected. (otherwise the drawable will be, but the object will not be)
+				!object->isOffMap()
 				)
 		{
 			// enforce optional unit cap
@@ -252,38 +250,6 @@ static Bool similarUnitSelection( Drawable *test, void *userData )
 		}
 	}
 	return FALSE;
-}
-
-// ------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------
-void showReplayControls()
-{
-	if (m_replayWindow)
-	{
-		Bool show = TheGameLogic->isInReplayGame();
-		m_replayWindow->winHide(!show);
-	}
-}
-
-// ------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------
-void hideReplayControls()
-{
-	if (m_replayWindow)
-	{
-		m_replayWindow->winHide(TRUE);
-	}
-}
-
-// ------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------
-void toggleReplayControls()
-{
-	if (m_replayWindow)
-	{
-		Bool show = TheGameLogic->isInReplayGame() && m_replayWindow->winIsHidden();
-		m_replayWindow->winHide(!show);
-	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -467,7 +433,7 @@ void InGameUI::xfer( Xfer *xfer )
 					xfer->xferBool(&swInfo->m_hiddenByScript);
 					xfer->xferBool(&swInfo->m_hiddenByScience);
 					xfer->xferBool(&swInfo->m_ready);
-          if ( currentVersion >= 3 )
+          if ( version >= 3 )
           {
             xfer->xferBool( &swInfo->m_evaReadyPlayed );
           }
@@ -514,7 +480,7 @@ void InGameUI::xfer( Xfer *xfer )
 			xfer->xferBool(&hiddenByScript);
 			xfer->xferBool(&hiddenByScience);
 			xfer->xferBool(&ready);
-      if ( currentVersion >= 3 )
+      if ( version >= 3 )
       {
         xfer->xferBool( &evaReadyPlayed );
       }
@@ -955,7 +921,21 @@ void INI::parseInGameUIDefinition( INI* ini )
 	{
 		// parse the ini weapon definition
 		ini->initFromINI( TheInGameUI, TheInGameUI->getFieldParse() );
+		TheInGameUI->validate();
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+void InGameUI::validate()
+{
+#if ENABLE_GUI_HACKS
+	// TheSuperHackers @bugfix bobtista 02/09/2026 Correct the known retail InGameUI.ini message delay typo
+	if (m_messageDelayMS == 75000)
+	{
+		m_messageDelayMS = 7500;
+	}
+#endif
+	m_messageDelayMS = max(0, m_messageDelayMS);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1151,6 +1131,7 @@ InGameUI::InGameUI()
 
 	}
 
+	m_controlBarWindow = nullptr;
 	m_replayWindow = nullptr;
 	m_messagesOn = TRUE;
 
@@ -1303,6 +1284,9 @@ InGameUI::~InGameUI()
 	// clear world animations
 	clearWorldAnimations();
 	resetIdleWorker();
+
+	destroyReplayControl();
+	destroyControlBar();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1890,7 +1874,8 @@ void InGameUI::update()
 	// frame
 	//
 	UnsignedInt currLogicFrame = TheGameLogic->getFrame();
-	const int messageTimeout = m_messageDelayMS / static_cast<float>(LOGICFRAMES_PER_SECOND) / 1000;
+	// TheSuperHackers @bugfix bobtista 13/08/2026 Convert milliseconds to logic frames
+	const int messageTimeout = REAL_TO_INT_CEIL( ConvertDurationFromMsecsToFrames( (Real)m_messageDelayMS ) );
 	UnsignedByte r, g, b, a;
 	Int amount;
 	for( i = MAX_UI_MESSAGES - 1; i >= 0; i-- )
@@ -4194,7 +4179,7 @@ void InGameUI::expireHint( HintType type, UnsignedInt hintIndex )
 void InGameUI::createControlBar()
 {
 
-	TheWindowManager->winCreateFromScript( "ControlBar.wnd" );
+	m_controlBarWindow = TheWindowManager->winCreateFromScript( "ControlBar.wnd" );
 	HideControlBar();
 /*
 	// hide all windows created from this layout
@@ -4203,6 +4188,16 @@ void InGameUI::createControlBar()
 		window->winHide( TRUE );
 */
 
+}
+
+void InGameUI::destroyControlBar()
+{
+	if (m_controlBarWindow != nullptr)
+	{
+		TheWindowManager->winDestroy(m_controlBarWindow);
+		m_controlBarWindow = nullptr;
+		m_idleWorkerWin = nullptr; // This window belongs to the Control Bar and is implicitly deleted as well.
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -4220,6 +4215,41 @@ void InGameUI::createReplayControl()
 		window->winHide( TRUE );
 */
 
+}
+
+void InGameUI::destroyReplayControl()
+{
+	if (m_replayWindow != nullptr)
+	{
+		TheWindowManager->winDestroy(m_replayWindow);
+		m_replayWindow = nullptr;
+	}
+}
+
+void InGameUI::showReplayControls()
+{
+	if (m_replayWindow)
+	{
+		Bool show = TheGameLogic->isInReplayGame();
+		m_replayWindow->winHide(!show);
+	}
+}
+
+void InGameUI::hideReplayControls()
+{
+	if (m_replayWindow)
+	{
+		m_replayWindow->winHide(TRUE);
+	}
+}
+
+void InGameUI::toggleReplayControls()
+{
+	if (m_replayWindow)
+	{
+		Bool show = TheGameLogic->isInReplayGame() && m_replayWindow->winIsHidden();
+		m_replayWindow->winHide(!show);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -4673,8 +4703,8 @@ Bool InGameUI::canSelectedObjectsDoAction( ActionType action, const Object *obje
 			case ACTIONTYPE_REPAIR_OBJECT:
 			{
 				ObjectID currentRepairer = objectToInteractWith->getSoleHealingBenefactor();
-				success = ( TheActionManager->canRepairObject( other->getObject(), objectToInteractWith, CMD_FROM_PLAYER )
-										&& ( currentRepairer == INVALID_ID || currentRepairer == other->getObject()->getID() ) );
+				success = ( TheActionManager->canRepairObject( other->getObject(), objectToInteractWith, CMD_FROM_PLAYER ) &&
+										( currentRepairer == INVALID_ID || currentRepairer == other->getObject()->getID() ) );
 											// unless someone else is already healing it...
 											// please note that this add'l test is left out of canRepairObject() since canRepairObject
 											// gets called from within the Dozer/WorkerAIUpdates' stateMachines as they continue the repair process.
@@ -5446,9 +5476,9 @@ void InGameUI::drawFloatingText()
 		ThePartitionManager->worldToCell(ftd->m_pos3D.x, ftd->m_pos3D.y, &pCX, &pCY);
 
 		// translate it's 3d pos into a 2d screen pos
-		if( TheTacticalView->worldToScreen(&ftd->m_pos3D, &pos)
-			&& ftd->m_dString
-			&& ThePartitionManager->getShroudStatusForPlayer(playerIndex, pCX, pCY) == CELLSHROUD_CLEAR )
+		if( TheTacticalView->worldToScreen(&ftd->m_pos3D, &pos) &&
+			ftd->m_dString &&
+			ThePartitionManager->getShroudStatusForPlayer(playerIndex, pCX, pCY) == CELLSHROUD_CLEAR )
 		{
 			pos.y -= ftd->m_frameCount * m_floatingTextMoveUpSpeed;
 			Color dropColor;
@@ -5976,11 +6006,7 @@ void InGameUI::resetIdleWorker()
 
 void InGameUI::recreateControlBar()
 {
-	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd"));
-	deleteInstance(win);
-
-	m_idleWorkerWin = nullptr;
-
+	destroyControlBar();
 	createControlBar();
 
 	delete TheControlBar;
@@ -6298,7 +6324,13 @@ void InGameUI::drawPlayerInfoList()
 		const UnsignedInt xpValue = static_cast<UnsignedInt>(player->getSkillPoints());
 		const UnicodeString nameValue = player->getPlayerDisplayName();
 
-		const UnsignedInt currentValues[] = {teamValue, moneyValue, moneyPerMinuteValue, rankValue, xpValue};
+		const UnsignedInt currentValues[] = {
+			teamValue,
+			moneyValue,
+			moneyPerMinuteValue,
+			rankValue,
+			xpValue
+		};
 		for (column = 0; column < ARRAY_SIZE(currentValues); ++column)
 		{
 			UnsignedInt &lastValue = m_playerInfoList.lastValues.values[column][row];

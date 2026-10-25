@@ -96,6 +96,12 @@ if [[ -f "${GAMESPY_LIB}" ]]; then
     cp -v "${GAMESPY_LIB}" "${RUNTIME_DIR}/"
 fi
 
+# Copy GameNetworkingSockets library (for NGMP P2P multiplayer)
+if compgen -G "${BUILD_DIR}/bin/libGameNetworkingSockets.so*" > /dev/null || compgen -G "${BUILD_DIR}/lib/libGameNetworkingSockets.so*" > /dev/null; then
+    echo "  Copying GameNetworkingSockets library..."
+    cp -v "${BUILD_DIR}"/bin/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || cp -v "${BUILD_DIR}"/lib/libGameNetworkingSockets.so* "${RUNTIME_DIR}/" 2>/dev/null || true
+fi
+
 copy_ldd_deps() {
     local root="$1"
     [[ -e "${root}" ]] || return 0
@@ -104,6 +110,9 @@ copy_ldd_deps() {
         case "${dep}" in
             linux-vdso.so.1 | \
             /lib64/ld-linux* | /lib/*/ld-linux* | /usr/lib/*/ld-linux* | /usr/lib64/ld-linux* | \
+            /usr/lib/libc.so.* | /usr/lib/libm.so.* | /usr/lib/libpthread.so.* | /usr/lib/librt.so.* | /usr/lib/libdl.so.* | \
+            */libmvec.so.* | */libresolv.so.* | */libutil.so.* | */libanl.so.* | */libnsl.so.1 | */libnss_*.so.* | \
+            */libthread_db.so.* | */libBrokenLocale.so.* | */libc_malloc_debug.so.* | */libmemusage.so | */libpcprofile.so | \
             /lib/*/libc.so.* | /lib64/libc.so.* | /usr/lib/*/libc.so.* | /usr/lib64/libc.so.* | \
             /lib/*/libm.so.* | /lib64/libm.so.* | /usr/lib/*/libm.so.* | /usr/lib64/libm.so.* | \
             /lib/*/libpthread.so.* | /lib64/libpthread.so.* | /usr/lib/*/libpthread.so.* | /usr/lib64/libpthread.so.* | \
@@ -174,6 +183,28 @@ if [[ -f "${EXTRAS_WND_SRC}" ]]; then
     cp -v "${EXTRAS_WND_SRC}" "${RUNTIME_DIR}/Window/Menus/ExtrasMenu.wnd"
 fi
 
+# GeneralsX @feature fbraz3 08/10/2026 Deploy FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    mkdir -p "${RUNTIME_DIR}/Data/INI"
+    cp -v "${FXLIST_GENERALSX_SRC}" "${RUNTIME_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
+echo "  Deploying fonts..."
+mkdir -p "${RUNTIME_DIR}/fonts"
+if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
+    cp -v "${PROJECT_ROOT}/assets/fonts"/*.ttf "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.liberation" "${RUNTIME_DIR}/fonts/"
+    cp -v "${PROJECT_ROOT}/assets/fonts/LICENSE.fontawesome" "${RUNTIME_DIR}/fonts/"
+fi
+
+# GeneralsX @bugfix fbraz3 12/10/2026 Deploy dxvk.conf for DXVK D3D8 device reset and shader settings
+echo "  Deploying dxvk.conf..."
+DXVK_CONF_SRC="${PROJECT_ROOT}/resources/dxvk/dxvk.conf"
+if [[ -f "${DXVK_CONF_SRC}" ]]; then
+    cp -v "${DXVK_CONF_SRC}" "${RUNTIME_DIR}/dxvk.conf"
+fi
+
 # Copy run wrapper script
 echo "  Copying run.sh wrapper..."
 cat > "${RUNTIME_DIR}/run.sh" << 'EOF'
@@ -192,6 +223,13 @@ export DXVK_LOG_LEVEL="${DXVK_LOG_LEVEL:-info}"
 # DXVK HUD is disabled by default because Generals has a native FPS counter.
 # Set DXVK_HUD=fps,memory,version or similar to customize. See DXVK docs for full list.
 export DXVK_HUD="${DXVK_HUD:-0}"
+
+# GeneralsX @bugfix fbraz3 12/10/2026 Point DXVK to local config file if present
+if [[ -f "${SCRIPT_DIR}/dxvk.conf" && -z "${DXVK_CONFIG_FILE:-}" ]]; then
+    export DXVK_CONFIG_FILE="${SCRIPT_DIR}/dxvk.conf"
+fi
+EOF
+cat >> "${RUNTIME_DIR}/run.sh" << 'EOF'
 
 # SagePatch (optional QoL features). Loaded via LD_PRELOAD so it can interpose
 # SDL3 functions for hot-keys (F11 screenshot, Scroll Lock cursor lock,
@@ -252,14 +290,16 @@ fi
 # has its own crash at device-open time on PipeWire 1.4.x.
 # These env vars are read by openal-soft's static constructor at library load time,
 # so they must be set here in the launcher before the binary starts.
-# User can override by setting ALSOFT_DISABLE_CPU_EXTS or ALSOFT_DRIVERS explicitly.
-if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
-    export ALSOFT_DISABLE_CPU_EXTS="all"
-    echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
-fi
-if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
-    export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
-    echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+# Legacy OpenAL workaround (only applied if executable links to libopenal.so)
+if ldd "${SCRIPT_DIR}/GeneralsXZH" 2>/dev/null | grep -q 'libopenal\.so'; then
+    if [[ -z "${ALSOFT_DISABLE_CPU_EXTS:-}" ]]; then
+        export ALSOFT_DISABLE_CPU_EXTS="all"
+        echo "INFO: OpenAL: ALSOFT_DISABLE_CPU_EXTS=all (movaps alignment crash workaround)"
+    fi
+    if [[ -z "${ALSOFT_DRIVERS:-}" ]]; then
+        export ALSOFT_DRIVERS="pulse,alsa,oss,jack,null,wave"
+        echo "INFO: OpenAL: ALSOFT_DRIVERS=$ALSOFT_DRIVERS (pipewire excluded)"
+    fi
 fi
 
 # The engine resolves Local FS lookups (Data/INI/Default/... overrides, etc.)
@@ -285,7 +325,8 @@ echo "   DXVK d3d8:  ${RUNTIME_DIR}/libdxvk_d3d8.so*"
 echo "   Vulkan:     system loader (not deployed by this script)"
 echo "   MoltenVK:   n/a on Linux"
 echo "   VK ICD:     system JSONs (/usr/share/vulkan/icd.d or /etc/vulkan/icd.d)"
-echo "   DXVK conf:  not deployed (DXVK defaults/environment)"
+echo "   DXVK conf:  ${RUNTIME_DIR}/dxvk.conf"
+
 echo "   Wrapper:    ${RUNTIME_DIR}/run.sh"
 echo ""
 # GeneralsX @tweak BenderAI 28/04/2026 Keep Linux deploy run instructions aligned across Generals and Zero Hour scripts.

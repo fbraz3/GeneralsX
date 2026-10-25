@@ -13,6 +13,7 @@ set(WW3D2_SRC
     #assetmgr.h
     assetstatus.cpp
     assetstatus.h
+    Backend/DX8Backend.cpp
     bitmaphandler.cpp
     bitmaphandler.h
     bmp2d.cpp
@@ -160,6 +161,7 @@ set(WW3D2_SRC
     #render2d.h
     render2dsentence.cpp
     render2dsentence.h
+    Renderer.h
     renderobjectrecycler.cpp
     renderobjectrecycler.h
     rendobj.cpp
@@ -273,6 +275,7 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
     core_wwmath
+    corei_platform
     $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
     $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>

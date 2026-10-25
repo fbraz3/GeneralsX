@@ -402,6 +402,7 @@ void TunnelContain::onBuildComplete()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
+#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 void TunnelContain::onCapture( Player *oldOwner, Player *newOwner )
 {
 	if( m_isCurrentlyRegistered )
@@ -423,6 +424,7 @@ void TunnelContain::onCapture( Player *oldOwner, Player *newOwner )
 	// extend base class
 	OpenContain::onCapture( oldOwner, newOwner );
 }
+#endif
 
 //-------------------------------------------------------------------------------------------------
 void TunnelContain::orderAllPassengersToExit( CommandSourceType commandSource )
@@ -464,7 +466,8 @@ UpdateSleepTime TunnelContain::update()
 		if (body) {
 			const DamageInfo *info = body->getLastDamageInfo();
 			if (info) {
-				if (body->getLastDamageTimestamp() + LOGICFRAMES_PER_SECOND > TheGameLogic->getFrame()) {
+				const UnsignedInt *lastDamageTimestamp = body->getLastDamageTimestamp();
+				if (lastDamageTimestamp && *lastDamageTimestamp + LOGICFRAMES_PER_SECOND > TheGameLogic->getFrame()) {
 					// winner.
 					ObjectID attackerID = info->in.m_sourceID;
 					Object *attacker = TheGameLogic->findObjectByID(attackerID);

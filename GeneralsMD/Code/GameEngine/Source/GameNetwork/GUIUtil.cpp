@@ -259,10 +259,12 @@ void PopulatePlayerTemplateComboBox(Int comboBox, GameWindow *comboArray[], Game
 
 		// Prevent players from selecting the disabled Generals for use.
 		// This is also enforced at game loading (GameLogic.cpp and UserPreferences.cpp).
-		// @todo: unlock these when something rad happens
+		// GeneralsX @bugfix felipebraz 06/10/2026 Guard TheChallengeGenerals null-dereference and prevent FactionBossGeneral in multiplayer GUI dropdown
 		Bool disallowLockedGenerals = TRUE;
-		const GeneralPersona *general = TheChallengeGenerals->getGeneralByTemplateName(fac->getName());
+		const GeneralPersona *general = TheChallengeGenerals ? TheChallengeGenerals->getGeneralByTemplateName(fac->getName()) : nullptr;
 		Bool startsLocked = general ? !general->isStartingEnabled() : FALSE;
+		if (fac->getName().compareNoCase("FactionBossGeneral") == 0)
+			startsLocked = TRUE;
 		if (disallowLockedGenerals && startsLocked)
 			continue;
 
@@ -460,17 +462,24 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 				GadgetComboBoxSetSelectedPos(comboPlayer[i], slot->getState(), TRUE);
         if( buttonAccept &&  buttonAccept[i] )
 				  buttonAccept[i]->winHide(TRUE);
+
+				// GeneralsX @refactor fbraz3 25/08/2026 Support host migration and AI slot names
+				GadgetComboBoxSetText(comboPlayer[i], slot->getName());
 			}
-/*
-			if (myGame->getLocalSlotNum() == i && i!=0)
-			{
-				if (comboPlayer[i])
-					comboPlayer[i]->winEnable( TRUE );
-			}
-			else*/ if (!myGame->amIHost())
+			if (myGame->getLocalSlotNum() == i)
 			{
 				if (comboPlayer[i])
 					comboPlayer[i]->winEnable( FALSE );
+			}
+			else if (!myGame->amIHost())
+			{
+				if (comboPlayer[i])
+					comboPlayer[i]->winEnable( FALSE );
+			}
+			else
+			{
+				if (comboPlayer[i])
+					comboPlayer[i]->winEnable( TRUE );
 			}
 			//if( i == myGame->getLocalSlotNum())
       if((comboColor[i] != nullptr) && BitIsSet(comboColor[i]->winGetStatus(), WIN_STATUS_ENABLED))

@@ -27,6 +27,8 @@ if(SAGE_USE_MINIAUDIO)
         elseif(UNIX)
             target_compile_definitions(miniaudio_lib INTERFACE
                 MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM MA_NO_COREAUDIO)
+            find_package(Threads REQUIRED)
+            target_link_libraries(miniaudio_lib INTERFACE Threads::Threads ${CMAKE_DL_LIBS} m)
         endif()
     else()
         message(STATUS "Configuring miniaudio via FetchContent...")
@@ -56,6 +58,8 @@ if(SAGE_USE_MINIAUDIO)
             # Use ALSA on Linux (PulseAudio/PipeWire via ALSA compat)
             target_compile_definitions(miniaudio_lib INTERFACE
                 MA_NO_WASAPI MA_NO_DSOUND MA_NO_WINMM MA_NO_COREAUDIO)
+            find_package(Threads REQUIRED)
+            target_link_libraries(miniaudio_lib INTERFACE Threads::Threads ${CMAKE_DL_LIBS} m)
         endif()
 
         message(STATUS "miniaudio configured: target miniaudio_lib available")

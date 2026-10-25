@@ -31,8 +31,8 @@ if(SAGE_USE_DX8)
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK
   # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port (Session 61)
-  find_program(MESON_EXECUTABLE meson HINTS /usr/local/bin /opt/homebrew/bin)
-  find_program(NINJA_EXECUTABLE ninja HINTS /usr/local/bin /opt/homebrew/bin)
+  find_program(MESON_EXECUTABLE meson HINTS /opt/homebrew/bin /usr/local/bin)
+  find_program(NINJA_EXECUTABLE ninja HINTS /opt/homebrew/bin /usr/local/bin)
 
   if(NOT MESON_EXECUTABLE)
     message(FATAL_ERROR "DXVK macOS build requires meson: brew install meson")
@@ -61,14 +61,23 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
 
   include(ExternalProject)
   # GeneralsX @build BenderAI 13/03/2026 Add explicit source mode to keep remote branch updates deterministic by default.
-  set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk")
-  option(SAGE_DXVK_USE_LOCAL_FORK "Build DXVK from local references/fbraz3-dxvk checkout" OFF)
+  # GeneralsX @build fbraz 25/09/2026 Default local DXVK fork to workspace generalsx-dxvk repository.
+  if(NOT DEFINED DXVK_LOCAL_FORK_DIR)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/../generalsx-dxvk/.git")
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/../generalsx-dxvk")
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk/.git")
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/references/fbraz3-dxvk")
+    else()
+      set(DXVK_LOCAL_FORK_DIR "${CMAKE_SOURCE_DIR}/../generalsx-dxvk")
+    endif()
+  endif()
+  option(SAGE_DXVK_USE_LOCAL_FORK "Build DXVK from local generalsx-dxvk checkout" OFF)
 
   if(SAGE_DXVK_USE_LOCAL_FORK AND EXISTS "${DXVK_LOCAL_FORK_DIR}/.git")
     set(DXVK_SOURCE_DIR "${DXVK_LOCAL_FORK_DIR}")
     message(STATUS "DXVK macOS build: using local fork source at ${DXVK_SOURCE_DIR}")
   else()
-    set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-fbraz3")
+    set(DXVK_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/dxvk-src-generalsx")
     message(STATUS "DXVK macOS build: using GitHub source clone at ${DXVK_SOURCE_DIR}")
   endif()
   set(DXVK_BUILD_DIR  "${CMAKE_BINARY_DIR}/_deps/dxvk-build-macos")
@@ -137,10 +146,12 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   else()
     # GeneralsX @build copilot 01/04/2026 Pin remote DXVK to immutable commit produced by fix/macos-size_t-cstddef.
     # GeneralsX @build 12/07/2026 Bumped to the merged commit that includes the macOS HiDPI WSI fix upstream.
-    set(DXVK_REMOTE_REF 1132d306e36c932fb4d062bce7c5602c45913ac8)
+    # GeneralsX @build BenderAI 11/09/2026 Bump DXVK commit to fix libc++ try_key_extraction on modern macOS
+    set(DXVK_REMOTE_REF f66da559fd48cd55ddfebca38ed0f708c0f76a24)
     ExternalProject_Add(dxvk_macos_build
       # GeneralsX @build BenderAI 08/04/2026 Consume pre-patched source from pinned fork commit.
-      GIT_REPOSITORY    https://github.com/fbraz3/dxvk.git
+      # GeneralsX @build 17/09/2026 Migrate DXVK remote repository to generalsx-project org.
+      GIT_REPOSITORY    https://github.com/generalsx-project/dxvk.git
       GIT_TAG           ${DXVK_REMOTE_REF}
       # GeneralsX @build copilot 01/04/2026 Keep pinned commit fetch reliable across clean CI builds.
       GIT_SHALLOW       FALSE

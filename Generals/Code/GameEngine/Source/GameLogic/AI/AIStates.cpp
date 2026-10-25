@@ -818,7 +818,7 @@ void AIStateMachine::loadPostProcess()
  */
 void AIStateMachine::setGoalPath( std::vector<Coord3D>* path )
 {
-	stl::move_or_swap(m_goalPath, *path);
+	MOVE_TO(m_goalPath) = std::move(*path);
 }
 
 #ifdef STATE_MACHINE_DEBUG
@@ -3849,7 +3849,7 @@ void AIFollowWaypointPathState::computeGoal(Bool useGroupOffsets)
 	}
 	Region3D extent;
 	TheTerrainLogic->getMaximumPathfindExtent(&extent);
-	if (!extent.isInRegionNoZ(m_goalPosition)) {
+	if (!extent.containsWithin(m_goalPosition.asCoord2D())) {
 		setAdjustsDestination(false); // moving off the map.
 		ai->getCurLocomotor()->setAllowInvalidPosition(true); // allow it to move off the map.
 		m_appendGoalPosition = true; // Moving off the map.
@@ -5339,6 +5339,7 @@ StateReturnType AIAttackState::onEnter()
 	if (m_attackParameters && m_attackParameters->shouldExit(getMachine()))
 		return STATE_SUCCESS;
 
+#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	//Kris: Jan 12, 2005
 	//Don't allow units under construction to attack! The selection/action manager system was responsible for preventing this
 	//from ever happening, but failed in two cases which I fixed. This is an extra check to mitigate cheats.
@@ -5346,6 +5347,7 @@ StateReturnType AIAttackState::onEnter()
 	{
 		return STATE_FAILURE;
 	}
+#endif
 
 	// if all of our weapons are out of ammo, can't attack.
 	// (this can happen for units which never auto-reload, like the Raptor)
@@ -5794,7 +5796,7 @@ Object *AIAttackSquadState::chooseVictim()
 		case DIFFICULTY_EASY:
 		{
 			// pick a random unit
-			VecObjectPtr objects = victimSquad->getLiveObjects();
+			const VecObjectPtr& objects = victimSquad->getLiveObjects();
 			Int numUnits = objects.size();
 			if (numUnits == 0)
 			{
@@ -5822,7 +5824,7 @@ Object *AIAttackSquadState::chooseVictim()
 		case DIFFICULTY_HARD:
 		{
 			// everyone picks the same unit
-			VecObjectPtr objects = victimSquad->getLiveObjects();
+			const VecObjectPtr& objects = victimSquad->getLiveObjects();
 			if (!objects.empty())
 			{
 				return objects[0];

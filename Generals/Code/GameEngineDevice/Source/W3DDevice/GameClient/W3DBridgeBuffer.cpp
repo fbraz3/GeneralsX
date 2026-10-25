@@ -255,7 +255,7 @@ Bool W3DBridge::load(BodyDamageType curDamageState)
 	Int i;
 	for (i=0; i<pObj->Get_Num_Sub_Objects(); i++) {
 		RenderObjClass *pSub = pObj->Get_Sub_Object(i);
-		Matrix3D mtx = pSub->Get_Transform();
+		const Matrix3D& mtx = pSub->Get_Transform();
 		if (0==strnicmp(left, pSub->Get_Name(), strlen(left))) {
 			m_leftMtx = mtx;
 			strlcpy(left, pSub->Get_Name(), ARRAY_SIZE(left));
@@ -518,13 +518,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	if (m_sectionMesh == nullptr) {
 		numV = getModelVerticesFixed(destination_vb, *curVertexP, m_leftMtx, m_leftMesh, pLightsIterator);
 		if (!numV)
-		{	//not enough room for vertices
+		{
+			//not enough room for vertices
 			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 			return;
 		}
 		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 		if (!numI)
-		{	//not enough room for indices
+		{
+			//not enough room for indices
 			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 			return;
 		}
@@ -568,13 +570,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	numV = getModelVertices(destination_vb, *curVertexP, xOffset, vec, vecNormal, vecZ, m_start,
 		m_leftMtx, m_leftMesh, pLightsIterator);
 	if (!numV)
-	{	//not enough room for vertices
+	{
+		//not enough room for vertices
 		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 		return;
 	}
 	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_leftMesh);
 	if (!numI)
-	{	//not enough room for indices
+	{
+		//not enough room for indices
 		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 		return;
 	}
@@ -589,13 +593,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 		numV = getModelVertices(destination_vb, *curVertexP, xOffset+i*spanLength, vec, vecNormal, vecZ, m_start,
 			m_sectionMtx, m_sectionMesh, pLightsIterator);
 		if (!numV)
-		{	//not enough room for vertices
+		{
+			//not enough room for vertices
 			DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 			return;
 		}
 		numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_sectionMesh);
 		if (!numI)
-		{	//not enough room for indices
+		{
+			//not enough room for indices
 			DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 			return;
 		}
@@ -609,13 +615,15 @@ void W3DBridge::getIndicesNVertices(UnsignedShort *destination_ib, VertexFormatX
 	numV = getModelVertices(destination_vb, *curVertexP, xOffset+(numSpans-1)*spanLength, vec, vecNormal, vecZ, m_start,
 		m_rightMtx, m_rightMesh, pLightsIterator);
 	if (!numV)
-	{	//not enough room for vertices
+	{
+		//not enough room for vertices
 		DEBUG_ASSERTCRASH( numV, ("W3DBridge::GetIndicesNVertices(). Vertex overflow.") );
 		return;
 	}
 	numI = getModelIndices( destination_ib, *curIndexP, *curVertexP, m_rightMesh);
 	if (!numI)
-	{	//not enough room for indices
+	{
+		//not enough room for indices
 		DEBUG_ASSERTCRASH( numI, ("W3DBridge::GetIndicesNVertices(). Index overflow.") );
 		return;
 	}
@@ -1161,7 +1169,8 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	if (!wireframe && cloudTexture)
-	{	//Force a cloud texture projection into stage 1
+	{
+		//Force a cloud texture projection into stage 1
 		W3DShaderManager::setTexture(1,cloudTexture);
 		W3DShaderManager::setShader(W3DShaderManager::ST_CLOUD_TEXTURE,1);
 	}
@@ -1199,4 +1208,36 @@ void W3DBridgeBuffer::drawBridges(CameraClass * camera, Bool wireframe, TextureC
 	}
 }
 
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Bridge shadow caster rendering
+//=============================================================================
+// W3DBridgeBuffer::drawBridgeShadowCasters
+//=============================================================================
+/** The decks again, into the sun's depth map.  A deck that is not in the map lets the sun through
+		it, so a tank crossing a bridge shadowed the deck and the ground under the bridge as well.
+		The same shader as the frame's own draw, because its alpha test is what cuts the holes in a
+		truss, and the same textures for that alpha.  The enabled flags are the ones drawBridges set
+		on the frame before, which is what keeps a destroyed span out of the map. */
+//=============================================================================
+void W3DBridgeBuffer::drawBridgeShadowCasters(void)
+{
+	if (TheGlobalData && !TheGlobalData->isBridgeShadows()) {
+		return;
+	}
+	if (m_curNumBridgeIndices == 0) {
+		return;
+	}
 
+	// The vertices are in world space; the frame's terrain draw sets this before drawBridges.
+	DX8Wrapper::Set_Transform(D3DTS_WORLD, Matrix3D(1));
+	DX8Wrapper::Set_Material(m_vertexMaterial);
+	DX8Wrapper::Set_Index_Buffer(m_indexBridge,0);
+	DX8Wrapper::Set_Vertex_Buffer(m_vertexBridge);
+	DX8Wrapper::Set_Shader(detailAlphaShader);
+	DX8Wrapper::Set_Texture(1,nullptr);
+
+	for (Int curBridge=0; curBridge<m_numBridges; curBridge++) {
+		if (m_bridges[curBridge].isEnabled() && m_bridges[curBridge].isVisible()) {
+			m_bridges[curBridge].renderBridge(FALSE);
+		}
+	}
+}

@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "Lib/BaseType.h"
-
 // For miscellaneous game utility functions.
 
 class Player;
@@ -35,5 +33,7 @@ PlayerIndex getObservedOrLocalPlayerIndex_Safe(); ///< Get the current observed 
 
 void changeLocalPlayer(Player* player); //< Change local player during game. Must not pass null.
 void changeObservedPlayer(Player* player); ///< Change observed player during game. Can pass null: is identical to passing the "ReplayObserver" player.
+
+void enableLetterBox(Bool enable); ///< Enable or disable the letter box for cinematics. Hides the control bar.
 
 } // namespace rts

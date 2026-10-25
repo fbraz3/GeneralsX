@@ -543,7 +543,10 @@ void DockUpdate::crc( Xfer *xfer )
 }
 
 // ------------------------------------------------------------------------------------------------
-/** Xfer Method */
+/** Xfer Method
+	* Version Info:
+	* 1: Initial version
+	*/
 // ------------------------------------------------------------------------------------------------
 void DockUpdate::xfer( Xfer *xfer )
 {
@@ -602,6 +605,7 @@ void DockUpdate::xfer( Xfer *xfer )
 		// Vector of Bool gets packed as bitfield internally
 		Bool unpack = m_approachPositionReached[vectorIndex];
 		xfer->xferBool( &unpack );
+		m_approachPositionReached[vectorIndex] = unpack;
 	}
 
 	// active docker
@@ -626,6 +630,12 @@ void DockUpdate::loadPostProcess()
 
 	// call base class
 	UpdateModule::loadPostProcess();
+
+	// TheSuperHackers @bugfix bobtista 30/09/2026 Restore the unsaved approach bone count.
+	if( m_positionsLoaded )
+	{
+		loadDockPositions();
+	}
 
 }
 

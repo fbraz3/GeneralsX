@@ -26,11 +26,13 @@
 
 #include "WWMath/matrix4.h"
 #include "GameClient/Shadow.h"
+#include "WW3D2/dx8wrapper.h"
 
 class Drawable;	//forward reference
 
 // ShadowManager -------------------------------------------------------------
-class W3DShadowManager
+// GeneralsX @bugfix fbraz3 12/10/2026 Register W3DShadowManager as DX8_CleanupHook to release/reacquire D3D resources across resets
+class W3DShadowManager : public DX8_CleanupHook
 {
 
 public:
@@ -57,14 +59,21 @@ public:
 
 	// rendering
 	void RenderShadows();
-	void ReleaseResources();
-	Bool ReAcquireResources();
+	virtual void ReleaseResources() override;
+	virtual void ReAcquireResources() override;
 
 protected:
 
 		Bool	m_isShadowScene;	///<flag if current scene needs shadows.  No shadows on pre-pass and 2D.
 		UnsignedInt m_shadowColor;	///<color and alpha for all shadows in scene.
 		Int m_stencilShadowMask;
+
 };
 
 extern W3DShadowManager *TheW3DShadowManager;
+
+// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
+class FrustumClass;
+class SphereClass;
+Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY );
+Bool volumeShadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ );

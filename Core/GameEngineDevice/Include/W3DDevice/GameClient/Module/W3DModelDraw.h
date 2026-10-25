@@ -57,7 +57,9 @@ public:
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
+class ThingTemplate;
 class RenderObjClass;
+class W3DDynamicLight;
 class Shadow;
 class TerrainTracksRenderObjClass;
 class HAnimClass;
@@ -344,6 +346,13 @@ class W3DModelDraw : public DrawModule, public ObjectDrawInterface
 
 public:
 
+	// Tactical ground indicator altitude thresholds and sizing
+	static constexpr Real MIN_AIR_GROUND_INDICATOR_HEIGHT = 15.0f;
+	static constexpr Real BLEND_AIR_GROUND_INDICATOR_HEIGHT = 35.0f;
+	static constexpr Real DEFAULT_AIR_GROUND_INDICATOR_SIZE = 50.0f;
+
+	static Real calculateAirGroundIndicatorSize(const ThingTemplate *tmplate);
+
 	W3DModelDraw( Thing *thing, const ModuleData* moduleData );
 	// virtual destructor prototype provided by memory pool declaration
 
@@ -355,6 +364,10 @@ public:
 	virtual void setShadowsEnabled(Bool enable) override;
 	virtual void releaseShadows() override;	///< frees all shadow resources used by this module - used by Options screen.
 	virtual void allocateShadows() override; ///< create shadow resources if not already present. Used by Options screen.
+
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Model shadow handover to tree buffer
+	Bool registerModelShadow(void);			///< hand this model's shape to the tree buffer to cast; TRUE if it took it
+	void unregisterModelShadow(void);		///< take it back when the model changes or the drawable goes
 
 #if defined(RTS_DEBUG)
 	virtual void getRenderCost(RenderCost & rc) const override;  ///< estimates the render cost of this draw module
@@ -498,13 +511,18 @@ private:
 	Bool													m_needRecalcBoneParticleSystems;
 	Bool													m_fullyObscuredByShroud;
 	Bool													m_shadowEnabled;	///< cached state of shadow.  Used to determine if shadows should be enabled via options screen.
+	Bool													m_hasModelShadow;	///< this drawable's shape is being cast by the tree buffer, so it wants no decal of its own
 	RenderObjClass*								m_renderObject;										///< W3D Render object for this drawable
 	Shadow*												m_shadow;													///< Updates/Renders shadows of this object
 	Shadow*												m_terrainDecal;
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	Shadow*												m_airGroundIndicator;
 	TerrainTracksRenderObjClass*	m_trackRenderObject;							///< This is rendered under object
 	ParticleSystemIDVec						m_particleSystemIDs;							///< The ID numbers of the particle systems currently running.
 	std::vector<ModelConditionInfo::HideShowSubObjInfo>		m_subObjectVec;
 	Bool													m_hideHeadlights;
+	Bool													m_hasHeadlights;								///< the model has a HEADLIGHT sub-object
+	W3DDynamicLight*										m_headlightDynamicLight;						///< native dynamic light for active headlights
 	Bool													m_pauseAnimation;
 	Int														m_animationMode;
 
@@ -519,6 +537,9 @@ private:
 	void adjustAnimSpeedToMovementSpeed();
 	static void hideAllMuzzleFlashes(const ModelConditionInfo* state, RenderObjClass* renderObject);
 	void hideAllHeadlights(Bool hide);
+	Bool headlightBeam(Vector3& origin, Vector3& direction, Real& reach) const;
+	void updateHeadlightDynamicLight();
+	void updateAirGroundIndicator();
 #if defined(RTS_DEBUG)	//art wants to see buildings without flags as a test.
 	void hideGarrisonFlags(Bool hide);
 #endif

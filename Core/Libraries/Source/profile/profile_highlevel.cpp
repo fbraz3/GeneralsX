@@ -27,12 +27,13 @@
 // High level profiling
 //////////////////////////////////////////////////////////////////////////////
 
-#include "profile.h"
+#include "profile/profile.h"
 #include "internal.h"
 #include <new>
 // GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux
 #include <cstring>
-#include <WWLib/WWCommon.h>
+#include <Utility/stdio_adapter.h>
+#include <Utility/stringex.h>
 
 // our own fast critical section
 static ProfileFastCS cs;

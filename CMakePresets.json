@@ -2,7 +2,7 @@
     "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 25,
+        "minor": 28,
         "patch": 0
     },
     "configurePresets": [
@@ -84,7 +84,8 @@
                 "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "$<$<CONFIG:Release,Debug,RelWithDebInfo>:Embedded>",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
+                "VCPKG_OVERLAY_PORTS": "${sourceDir}/cmake/ports",
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets"
             }
         },
         {
@@ -195,7 +196,7 @@
         },
         {
             "name": "linux64-deploy",
-            "displayName": "Linux 64-bit DXVK/SDL3/OpenAL Release",
+            "displayName": "Linux 64-bit DXVK/SDL3/MiniAudio Release",
             "inherits": "default-vcpkg",
             "generator": "Ninja",
             "hidden": false,
@@ -205,8 +206,8 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "SAGE_USE_DX8": "OFF",
                 "SAGE_USE_SDL3": "ON",
-                "SAGE_USE_OPENAL": "ON",
-                "SAGE_USE_MINIAUDIO": "OFF",
+                "SAGE_USE_OPENAL": "OFF",
+                "SAGE_USE_MINIAUDIO": "ON",
                 "SAGE_USE_GLM": "ON",
                 "SAGE_UPDATE_CHECK": "ON",
                 "RTS_CRASHDUMP_ENABLE": "OFF",
@@ -302,7 +303,7 @@
                 "SAGE_USE_OPENAL": "OFF",
                 "SAGE_USE_MINIAUDIO": "ON"
             },
-            "description": "Experimental: Linux build with miniaudio audio backend instead of OpenAL+FFmpeg. Single-header library for audio playback/capture."
+            "description": "Linux build with MiniAudio audio backend."
         }
     ],
     "buildPresets": [
@@ -406,8 +407,8 @@
         {
             "name": "linux64-deploy",
             "configurePreset": "linux64-deploy",
-            "displayName": "Build Linux 64-bit DXVK/SDL3/OpenAL Release",
-            "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and OpenAL audio"
+            "displayName": "Build Linux 64-bit DXVK/SDL3/MiniAudio Release",
+            "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and MiniAudio audio (recommended)"
         },
         {
             "name": "linux64-openal",
@@ -419,7 +420,69 @@
             "name": "linux64-miniaudio",
             "configurePreset": "linux64-miniaudio",
             "displayName": "Build Linux 64-bit DXVK/SDL3/MiniAudio Release",
-            "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and MiniAudio audio (experimental)"
+            "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and MiniAudio audio"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "default",
+            "displayName": "Default Test (don't use directly!)",
+            "hidden": true,
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "timeout": 300
+            }
+        },
+        {
+            "name": "win32",
+            "inherits": "default",
+            "configurePreset": "win32",
+            "displayName": "Test Windows 32bit Release",
+            "description": "Test Windows 32bit Release",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32-profile",
+            "inherits": "default",
+            "configurePreset": "win32-profile",
+            "displayName": "Test Windows 32bit Profile",
+            "description": "Test Windows 32bit Profile",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32-debug",
+            "inherits": "default",
+            "configurePreset": "win32-debug",
+            "displayName": "Test Windows 32bit Debug",
+            "description": "Test Windows 32bit Debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "win32-vcpkg",
+            "inherits": "default",
+            "configurePreset": "win32-vcpkg",
+            "displayName": "Test Windows 32bit VCPKG Release",
+            "description": "Test Windows 32bit VCPKG Release",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32-vcpkg-profile",
+            "inherits": "default",
+            "configurePreset": "win32-vcpkg-profile",
+            "displayName": "Test Windows 32bit VCPKG Profile",
+            "description": "Test Windows 32bit VCPKG Profile",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32-vcpkg-debug",
+            "inherits": "default",
+            "configurePreset": "win32-vcpkg-debug",
+            "displayName": "Test Windows 32bit VCPKG Debug",
+            "description": "Test Windows 32bit VCPKG Debug",
+            "configuration": "Debug"
         }
     ],
     "workflowPresets": [

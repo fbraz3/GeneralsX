@@ -204,7 +204,7 @@ private:
 	Vector3							m_decayRate;			///< step amount to make tint turn off slow or fast
 	Vector3							m_peakColor;			///< um, the peak color, what color we are headed toward during attack
 	Vector3							m_currentColor;		///< um, the current color, how we are colored, now
-	Real								m_sustainCounter;
+	double							m_sustainCounter;
 	Byte								m_envState;				///< a randomly switchable SUSTAIN state, release is compliment
 	Bool								m_affect;         ///< set TRUE if this has any effect (has a non 0,0,0 color).
 };
@@ -412,7 +412,7 @@ public:
 	const Matrix3D *getTransformMatrix() const;	///< return the world transform
 
 	void draw();													///< render the drawable to the given view
-	void updateDrawable();														///< update the drawable
+	void updateDrawable(Real timeScale);														///< update the drawable
 
 	void drawIconUI();													///< draw "icon"(s) needed on drawable (health bars, veterency, etc)
 
@@ -622,7 +622,23 @@ protected:
 		Real m_totalYaw;						///< Current total yaw for this frame
 		Real m_totalZ;
 
-		PhysicsXformInfo() : m_totalPitch(0), m_totalRoll(0), m_totalYaw(0), m_totalZ(0) { }
+		Real m_prevTotalPitch;
+		Real m_prevTotalRoll;
+		Real m_prevTotalYaw;
+		Real m_prevTotalZ;
+
+		UnsignedInt m_syncTime;			///< WW3D sync time of the last calculation.
+
+		PhysicsXformInfo() : m_totalPitch(0), m_totalRoll(0), m_totalYaw(0), m_totalZ(0),
+			m_prevTotalPitch(0), m_prevTotalRoll(0), m_prevTotalYaw(0), m_prevTotalZ(0), m_syncTime(~0u) { }
+
+		void setPrevTotals()
+		{
+			m_prevTotalPitch = m_totalPitch;
+			m_prevTotalRoll = m_totalRoll;
+			m_prevTotalYaw = m_totalYaw;
+			m_prevTotalZ = m_totalZ;
+		}
 	};
 
 	Bool calcPhysicsXform(PhysicsXformInfo& info);
@@ -687,7 +703,7 @@ private:
 		FADING_OUT
 	};
 	FadingMode		m_fadeMode;
-	UnsignedInt		m_timeElapsedFade;			///< for how many frames have i been fading
+	Real			m_timeElapsedFade;			///< for how many logic frames - incl. fractional ones - have i been fading
 	UnsignedInt		m_timeToFade;						///< how slowly am I fading
 
 	UnsignedInt		m_shroudClearFrame;						///< Last frame the local player saw this drawable "OBJECTSHROUD_CLEAR"

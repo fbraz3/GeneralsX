@@ -36,6 +36,7 @@ the original GenTool available.
 | Camera zoom range | (passive) | `MaxCameraHeight=800`, `MinCameraHeight=60`, `EnforceMaxCameraHeight=No`. |
 | Camera pitch | (passive) | `CameraPitch=50` (vanilla ~63). |
 | Keyboard scroll speed | (passive) | `KeyboardScrollSpeedFactor=1.0` (vanilla 0.5). |
+| Mouse wheel zoom speed | (passive) | `MouseScrollSpeedFactor=1.0` (default 1.0 preserves retail wheel speed). |
 
 Hot-key collisions: SagePatch eats the events it handles, so they do not
 also reach the game.

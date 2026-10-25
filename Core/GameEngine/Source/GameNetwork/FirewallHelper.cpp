@@ -597,12 +597,16 @@ Short FirewallHelperClass::getSourcePortAllocationDelta() {
 	return m_sourcePortAllocationDelta;
 }
 
-/* static */ void FirewallHelperClass::getManglerName(Int manglerIndex, Char *nameBuf)
+/* static */ AsciiString FirewallHelperClass::getManglerName(Int manglerIndex)
 {
 	AsciiString host;
 	UnsignedShort port;
-	TheGameSpyConfig->getManglerLocation(manglerIndex, host, port);
-	strcpy(nameBuf, host.str());
+	if (TheGameSpyConfig->getManglerLocation(manglerIndex, host, port))
+	{
+		return host;
+	}
+
+	return AsciiString::TheEmptyString;
 }
 
 Bool FirewallHelperClass::detectionBeginUpdate() {
@@ -1476,6 +1480,8 @@ Bool FirewallHelperClass::openSpareSocket(UnsignedShort port) {
 
 	if (m_spareSockets[i].udp->Bind((UnsignedInt)0, port) != 0) {
 		DEBUG_CRASH(("FirewallHelperClass::openSpareSocket - Failed to init spare socket"));
+		delete m_spareSockets[i].udp;
+		m_spareSockets[i].udp = nullptr;
 		return FALSE;
 	}
 

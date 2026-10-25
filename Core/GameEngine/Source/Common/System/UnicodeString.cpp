@@ -251,9 +251,6 @@ void UnicodeString::ensureUniqueBufferOfSize(int numCharsNeeded, Bool preserveDa
 	UnicodeStringData* newData = (UnicodeStringData*)TheDynamicMemoryAllocator->allocateBytesDoNotZero(actualBytes, "STR_UnicodeString::ensureUniqueBufferOfSize");
 	newData->m_refCount = 1;
 	newData->m_numCharsAllocated = (actualBytes - sizeof(UnicodeStringData))/sizeof(WideChar);
-#if defined(RTS_DEBUG)
-	newData->m_debugptr = newData->peek();	// just makes it easier to read in the debugger
-#endif
 
 	if (m_data && preserveData)
 		wcscpy(newData->peek(), m_data->peek());
@@ -622,20 +619,25 @@ Bool UnicodeString::endsWithNoCase(const WideChar* p) const
 }
 
 //-----------------------------------------------------------------------------
-Bool UnicodeString::nextToken(UnicodeString* tok, UnicodeString delimiters)
+Bool UnicodeString::nextToken(UnicodeString* tok, const WideChar* separators)
 {
-	if (this->isEmpty() || tok == this)
-		return false;
+	DEBUG_ASSERTCRASH(tok != this, ("Tokenizer and Token cannot be the same object"));
 
-	if (delimiters.isEmpty())
-		delimiters = L" \t\n\r";
+	if (this->isEmpty())
+	{
+		tok->clear();
+		return false;
+	}
+
+	if (separators == nullptr)
+		separators = L" \t\n\r";
 
 	Int offset;
 
-	offset = wcsspn(peek(), delimiters.str());
+	offset = wcsspn(peek(), separators);
 	WideChar* start = peek() + offset;
 
-	offset = wcscspn(start, delimiters.str());
+	offset = wcscspn(start, separators);
 	WideChar* end = start + offset;
 
 	if (end > start)

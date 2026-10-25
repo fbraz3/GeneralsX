@@ -98,6 +98,9 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseFPSLimit",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useFpsLimit ) },
 	{ "DumpAssetUsage",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_dumpAssetUsage ) },
 	{ "FramesPerSecondLimit",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_framesPerSecondLimit ) },
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	{ "SkirmishTickRate",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
+	{ "TickRate",									INI::parseInt,				nullptr,			offsetof( GlobalData, m_skirmishTickRate ) },
 	{ "ChipsetType",							INI::parseInt,				nullptr,			offsetof( GlobalData, m_chipSetType ) },
 	{ "MaxShellScreens",					INI::parseInt,				nullptr,			offsetof( GlobalData, m_maxShellScreens ) },
 	{ "UseCloudMap",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useCloudMap ) },
@@ -119,6 +122,27 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "UseCloudPlane",							INI::parseBool,				nullptr,			offsetof( GlobalData, m_useCloudPlane ) },
 	{ "DownwindAngle",							INI::parseReal,				nullptr,			offsetof( GlobalData, m_downwindAngle ) },
 	{ "UseShadowVolumes",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowVolumes ) },
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Also cast volume shadows off skinned meshes
+	{ "UseShadowVolumesForSkins",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowVolumesForSkins ) },
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Missiles and bombs get decal shadows
+	{ "ShadowsForProjectiles",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProjectiles ) },
+	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Scenery and props without shadows get one
+	{ "ShadowsForProps",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_shadowsForProps ) },
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options
+	{ "AdvancedShadows",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_advancedShadows ) },
+	{ "AdvancedLighting",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_advancedLighting ) },
+	{ "ExtendedShadowFrustumCulling",	INI::parseBool,				nullptr,			offsetof( GlobalData, m_extendedShadowFrustumCulling ) },
+	{ "NaturalSunElevation",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_naturalSunElevation ) },
+	{ "BridgeShadows",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_bridgeShadows ) },
+	{ "WaterReflections",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_waterReflections ) },
+	{ "ExplosionDynamicLights",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_explosionDynamicLights ) },
+	{ "VehicleHeadlights",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_vehicleHeadlights ) },
+	{ "EnablePostProcessing",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_enablePostProcessing ) },
+	{ "PostProcessBloom",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessBloom ) },
+	{ "PostProcessHDR",					INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessHDR ) },
+	{ "PostProcessFXAA",				INI::parseBool,				nullptr,			offsetof( GlobalData, m_postProcessFXAA ) },
+	// GeneralsX @feature Mr. Meeseeks 16/10/2026 Tactical ground indicator for airborne units (C&C3 style ground ring)
+	{ "AirUnitGroundIndicator",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_airUnitGroundIndicator ) },
 	{ "UseShadowDecals",						INI::parseBool,				nullptr,			offsetof( GlobalData, m_useShadowDecals ) },
 	{ "TextureReductionFactor",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_textureReductionFactor ) },
 	{ "UseBehindBuildingMarker",		INI::parseBool,				nullptr,			offsetof( GlobalData, m_enableBehindBuildingMarkers ) },
@@ -422,6 +446,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "CameraAdjustSpeed",					INI::parseReal,				nullptr,			offsetof( GlobalData, m_cameraAdjustSpeed ) },
 	{ "EnforceMaxCameraHeight",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_enforceMaxCameraHeight ) },
 	{ "KeyboardScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardScrollFactor ) },
+	// GeneralsX @feature Gabriel Petry 30/09/2026 Load configurable mouse scrolling speed.
+	{ "MouseScrollSpeedFactor",		INI::parseReal,				nullptr,			offsetof( GlobalData, m_mouseScrollFactor ) },
 	{ "KeyboardDefaultScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardDefaultScrollFactor ) },
 	{ "KeyboardCameraRotateSpeed", INI::parseReal, nullptr, offsetof( GlobalData, m_keyboardCameraRotateSpeed ) },
 	{ "MovementPenaltyDamageState",	INI::parseIndexList,	TheBodyDamageTypeNames,	 offsetof( GlobalData, m_movementPenaltyDamageState ) },
@@ -652,6 +678,8 @@ GlobalData::GlobalData()
 	m_useFpsLimit = TRUE;
 	m_dumpAssetUsage = FALSE;
 	m_framesPerSecondLimit = 60;
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	m_skirmishTickRate = LOGICFRAMES_PER_SECOND;
 	m_chipSetType = 0;
 	m_headless = FALSE;
 	m_checkForUpdates = TRUE;
@@ -678,6 +706,23 @@ GlobalData::GlobalData()
 	m_useCloudPlane = FALSE;
 	m_downwindAngle = ( -0.785f );//Northeast!
 	m_useShadowVolumes = FALSE;
+	m_useShadowVolumesForSkins = TRUE;
+	m_shadowsForProjectiles = TRUE;
+	m_shadowsForProps = TRUE;
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting toggleable options defaults
+	m_advancedShadows = TRUE;
+	m_advancedLighting = TRUE;
+	m_extendedShadowFrustumCulling = TRUE;
+	m_naturalSunElevation = TRUE;
+	m_bridgeShadows = TRUE;
+	m_waterReflections = TRUE;
+	m_explosionDynamicLights = TRUE;
+	m_vehicleHeadlights = TRUE;
+	m_enablePostProcessing = TRUE;
+	m_postProcessBloom = TRUE;
+	m_postProcessHDR = TRUE;
+	m_postProcessFXAA = FALSE;
+	m_airUnitGroundIndicator = TRUE;
 	m_useShadowDecals = FALSE;
 	m_textureReductionFactor = -1;
 	m_enableBehindBuildingMarkers = TRUE;
@@ -1048,6 +1093,8 @@ GlobalData::GlobalData()
 	m_loadScreenRender = FALSE;
 
 	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
+	// GeneralsX @bugfix Gabriel Petry 30/09/2026 Preserve retail mouse-wheel zoom speed by default.
+	m_mouseScrollFactor = 1.0f;
 	m_drawScrollAnchor = FALSE;
 	m_moveScrollAnchor = FALSE;
 	m_scrollAmountCutoff = 10.0f;
@@ -1254,6 +1301,26 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_playerInfoListFontSize = optionPref.getPlayerInfoListFontSize();
 	TheWritableGlobalData->m_showMoneyPerMinute = optionPref.getShowMoneyPerMinute();
 	TheWritableGlobalData->m_gameWindowTransitionSpeedMultiplier = optionPref.getGameWindowTransitionSpeedMultiplier();
+	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
+	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
+
+	// GeneralsX @feature fbraz3 08/10/2026 Enhanced graphics & lighting options overridden from Options.ini
+	TheWritableGlobalData->m_advancedShadows = optionPref.getAdvancedShadows(TheWritableGlobalData->m_advancedShadows);
+	TheWritableGlobalData->m_advancedLighting = optionPref.getAdvancedLighting(TheWritableGlobalData->m_advancedLighting);
+	TheWritableGlobalData->m_useShadowVolumesForSkins = optionPref.getUseShadowVolumesForSkins(TheWritableGlobalData->m_useShadowVolumesForSkins);
+	TheWritableGlobalData->m_extendedShadowFrustumCulling = optionPref.getExtendedShadowFrustumCulling(TheWritableGlobalData->m_extendedShadowFrustumCulling);
+	TheWritableGlobalData->m_naturalSunElevation = optionPref.getNaturalSunElevation(TheWritableGlobalData->m_naturalSunElevation);
+	TheWritableGlobalData->m_shadowsForProjectiles = optionPref.getShadowsForProjectiles(TheWritableGlobalData->m_shadowsForProjectiles);
+	TheWritableGlobalData->m_shadowsForProps = optionPref.getShadowsForProps(TheWritableGlobalData->m_shadowsForProps);
+	TheWritableGlobalData->m_bridgeShadows = optionPref.getBridgeShadows(TheWritableGlobalData->m_bridgeShadows);
+	TheWritableGlobalData->m_waterReflections = optionPref.getWaterReflections(TheWritableGlobalData->m_waterReflections);
+	TheWritableGlobalData->m_explosionDynamicLights = optionPref.getExplosionDynamicLights(TheWritableGlobalData->m_explosionDynamicLights);
+	TheWritableGlobalData->m_vehicleHeadlights = optionPref.getVehicleHeadlights(TheWritableGlobalData->m_vehicleHeadlights);
+	TheWritableGlobalData->m_enablePostProcessing = optionPref.getEnablePostProcessing(TheWritableGlobalData->m_enablePostProcessing);
+	TheWritableGlobalData->m_postProcessBloom = optionPref.getPostProcessBloom(TheWritableGlobalData->m_postProcessBloom);
+	TheWritableGlobalData->m_postProcessHDR = optionPref.getPostProcessHDR(TheWritableGlobalData->m_postProcessHDR);
+	TheWritableGlobalData->m_postProcessFXAA = optionPref.getPostProcessFXAA(TheWritableGlobalData->m_postProcessFXAA);
+	TheWritableGlobalData->m_airUnitGroundIndicator = optionPref.getAirUnitGroundIndicator(TheWritableGlobalData->m_airUnitGroundIndicator);
 
 	TheWritableGlobalData->m_antiAliasLevel = optionPref.getAntiAliasing();
 	TheWritableGlobalData->m_textureFilteringMode = optionPref.getTextureFilterMode();
@@ -1262,7 +1329,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	Int val=optionPref.getGammaValue();
 	//generate a value between 0.6 and 2.0.
 	if (val < 50)
-	{	//darker gamma
+	{
+		//darker gamma
 		if (val <= 0)
 			TheWritableGlobalData->m_displayGamma = 0.6f;
 		else
@@ -1461,9 +1529,11 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 	{
 		const char* home = getenv("HOME");
 		if (home) {
-			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH" / "";
+			std::filesystem::path path = std::filesystem::path(home) / "Library" / "Application Support" / "GeneralsX" / "GeneralsZH";
 			std::filesystem::create_directories(path);
 			userDataDir = path.string().c_str();
+			if (!userDataDir.endsWith("/"))
+				userDataDir.concat('/');
 		} else {
 			userDataDir = "./";
 		}
@@ -1485,9 +1555,11 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 			path = "./";
 		}
 
-		path = path / "GeneralsX" / "GeneralsZH" / "";
+		path = path / "GeneralsX" / "GeneralsZH";
 		std::filesystem::create_directories(path);
 		userDataDir = path.string().c_str();
+		if (!userDataDir.endsWith("/"))
+			userDataDir.concat('/');
 	}
 #endif
 

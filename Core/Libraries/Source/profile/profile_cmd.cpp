@@ -27,7 +27,7 @@
 // Profile module command interface
 //////////////////////////////////////////////////////////////////////////////
 
-#include "profile.h"
+#include "profile/profile.h"
 // GeneralsX @build fbraz 03/02/2026 Add C string functions for Linux (strcmp, strlen, strcpy)
 #include <cstring>
 #include "internal.h"

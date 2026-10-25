@@ -892,12 +892,16 @@ void AIUpdateInterface::chooseGoodLocomotorFromCurrentSet()
 }
 
 //----------------------------------------------------------------------------------------------------------
+// TheSuperHackers @bugfix WebbontheWeb 07/10/2026 The function can now return the crate object.
 Object* AIUpdateInterface::checkForCrateToPickup()
 {
 	if (m_crateCreated != INVALID_ID)
 	{
+#if RETAIL_COMPATIBLE_CRC
 		m_crateCreated = INVALID_ID; // we have processed it, so clear it.
+#endif
 		Object* crate = TheGameLogic->findObjectByID(m_crateCreated);
+		m_crateCreated = INVALID_ID; // we have processed it, so clear it.
 		if (crate)
 		{
 			for (BehaviorModule** m = crate->getBehaviorModules(); *m; ++m)
@@ -1681,10 +1685,10 @@ Bool AIUpdateInterface::computePath( PathfindServicesInterface *pathServices, Co
 	m_retryPath = false;
 	Region3D extent;
 	TheTerrainLogic->getMaximumPathfindExtent(&extent);
-	if (!extent.isInRegionNoZ(*destination)) {
+	if (!extent.containsWithin(destination->asCoord2D())) {
 		// We're going off the map.
 		Coord3D pos = *getObject()->getPosition();
-		if (!extent.isInRegionNoZ(pos))	{
+		if (!extent.containsWithin(pos.asCoord2D()))	{
 			// We're starting off the map.  Since we're off the map, we can't pathfind so just build a path.
 			return computeQuickPath(destination);
 		}
@@ -2303,11 +2307,11 @@ UpdateSleepTime AIUpdateInterface::doLocomotor()
 		m_curMaxBlockedSpeed = FAST_AS_POSSIBLE;
 	}
 
-	if (m_curLocomotor != nullptr
-			&& m_locomotorGoalType == NONE
-			&& m_doFinalPosition == FALSE
-			&& m_isBlocked == FALSE
-			&& requiresConstantCalling == FALSE)
+	if (m_curLocomotor != nullptr &&
+			m_locomotorGoalType == NONE &&
+			m_doFinalPosition == FALSE &&
+			m_isBlocked == FALSE &&
+			requiresConstantCalling == FALSE)
 	{
 		return UPDATE_SLEEP_FOREVER;
 	}
@@ -2361,8 +2365,8 @@ void AIUpdateInterface::setLocomotorGoalNone()
 Bool AIUpdateInterface::isDoingGroundMovement() const
 {
 
-  if (getObject()->isDisabledByType( DISABLED_UNMANNED )
-   && getObject()->isKindOf( KINDOF_PRODUCED_AT_HELIPAD ) )
+  if (getObject()->isDisabledByType( DISABLED_UNMANNED ) &&
+   getObject()->isKindOf( KINDOF_PRODUCED_AT_HELIPAD ) )
   {
     return TRUE; // an unmanned helicopter gets grounded, eventually.
   }
@@ -3556,7 +3560,13 @@ void AIUpdateInterface::privateAttackPosition( const Coord3D *pos, Int maxShotsT
 	// this fixes an obscure bug with mine-clearing: if you tell someone to clear mines and put the centerpoint
 	// inside a building, the dozer/worker will just go thru the building to that spot. ick. so if you find that
 	// this clause (below) is problematic, you'll probably have to find another way to fix this mine-clearing bug. (srj)
+#if RETAIL_COMPATIBLE_CRC
 	if (weapon && weapon->isContactWeapon() && !isPathAvailable(&localPos))
+#else
+  // TheSuperHackers @bugfix Stubbjax 23/08/2026 Only find a new position if the target is not within the attack range of the weapon.
+	// This allows contact weapons such as suicide bombs to immediately detonate without first pathing to a nearby position.
+	if (weapon && weapon->isContactWeapon() && !weapon->isWithinAttackRange(getObject(), &localPos) && !isPathAvailable(&localPos))
+#endif
 	{
 		FindPositionOptions fpOptions;
 		fpOptions.minRadius = 0.0f;
@@ -4077,7 +4087,7 @@ void AIUpdateInterface::privateGuardPosition( const Coord3D *pos, GuardMode guar
 		// Clip to playable area.
 		Region3D r;
 		TheTerrainLogic->getExtent(&r);
-		if (!r.isInRegionNoZ(adjPos))
+		if (!r.containsWithin(adjPos.asCoord2D()))
 			adjPos = TheTerrainLogic->findClosestEdgePoint(&adjPos);
 	}
 	m_locationToGuard = adjPos;
@@ -4659,9 +4669,9 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 
 	// Instead of shroud affecting the ability to attack, it affects the ability to target.
 	// The same checks apply as the old WeaponSet check (now commented out, search for getShroudedStatus)
-	if( calledByAI
-			&& obj->getControllingPlayer()
-			&& obj->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN
+	if( calledByAI &&
+			obj->getControllingPlayer() &&
+			obj->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN
 		)
 	{
 		flags |= AI::UNFOGGED;

@@ -139,6 +139,41 @@ static void showSortIcons()
 		}
 	}
 }
+LobbyGameModeFilter theLobbyFilter = LOBBY_FILTER_ALL;
+
+LobbyGameModeFilter detectGameMode(const std::string& name)
+{
+	std::string modeName = name;
+	std::transform(modeName.begin(), modeName.end(), modeName.begin(), ::tolower);
+
+	// remove spaces
+	modeName.erase(std::remove(modeName.begin(), modeName.end(), ' '), modeName.end());
+
+	// handle common variations
+	for (size_t i = 0; i < modeName.size(); ++i)
+	{
+		if (modeName.compare(i, 2, "vs") == 0)
+		{
+			modeName.erase(i + 1, 1);
+			continue;
+		}
+
+		if (modeName[i] == 'x')
+			modeName[i] = 'v';
+	}
+
+	if (modeName.find("aod") != std::string::npos)
+		return LOBBY_FILTER_AOD;
+	if (modeName.find("ffa") != std::string::npos || modeName.find("1v1v1") != std::string::npos)
+		return LOBBY_FILTER_FFA;
+	if (modeName.find("1v1") != std::string::npos)
+		return LOBBY_FILTER_1V1;
+	if (modeName.find("2v2") != std::string::npos || modeName.find("3v3") != std::string::npos || modeName.find("4v4") != std::string::npos)
+		return LOBBY_FILTER_TEAM;
+
+	return LOBBY_FILTER_ALL;
+}
+
 void setSortMode( GameSortType sortType ) { theGameSortType = sortType; showSortIcons(); RefreshGameListBoxes(); }
 void sortByBuddies( Bool doSort ) { sortBuddies = doSort; showSortIcons(); RefreshGameListBoxes(); }
 

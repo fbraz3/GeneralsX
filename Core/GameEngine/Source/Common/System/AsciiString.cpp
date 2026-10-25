@@ -187,9 +187,6 @@ void AsciiString::ensureUniqueBufferOfSize(int numCharsNeeded, Bool preserveData
 	AsciiStringData* newData = (AsciiStringData*)TheDynamicMemoryAllocator->allocateBytesDoNotZero(actualBytes, "STR_AsciiString::ensureUniqueBufferOfSize");
 	newData->m_refCount = 1;
 	newData->m_numCharsAllocated = (actualBytes - sizeof(AsciiStringData))/sizeof(char);
-#if defined(RTS_DEBUG)
-	newData->m_debugptr = newData->peek();	// just makes it easier to read in the debugger
-#endif
 
 	if (m_data && preserveData)
 		strcpy(newData->peek(), m_data->peek());
@@ -580,16 +577,21 @@ Bool AsciiString::isNone() const
 }
 
 //-----------------------------------------------------------------------------
-Bool AsciiString::nextToken(AsciiString* tok, const char* seps)
+Bool AsciiString::nextToken(AsciiString* tok, const char* separators)
 {
-	if (this->isEmpty() || tok == this)
+	DEBUG_ASSERTCRASH(tok != this, ("Tokenizer and Token cannot be the same object"));
+
+	if (this->isEmpty())
+	{
+		tok->clear();
 		return false;
+	}
 
-	if (seps == nullptr)
-		seps = " \n\r\t";
+	if (separators == nullptr)
+		separators = " \n\r\t";
 
-	char* start = skipSeps(peek(), seps);
-	char* end = skipNonSeps(start, seps);
+	char* start = skipSeps(peek(), separators);
+	char* end = skipNonSeps(start, separators);
 
 	if (end > start)
 	{

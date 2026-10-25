@@ -314,6 +314,36 @@ void UpdateChecker::start()
         return;
     }
 
+#if defined(NGMP_DEFAULT_HOST)
+    // In local development environments, skip update check
+    std::string ngmpHost = NGMP_DEFAULT_HOST;
+    if (ngmpHost == "localhost" || ngmpHost == "127.0.0.1" ||
+        ngmpHost.rfind("192.168.", 0) == 0 ||
+        ngmpHost.rfind("10.", 0) == 0 ||
+        ngmpHost.rfind("172.16.", 0) == 0 ||
+        ngmpHost.rfind("172.17.", 0) == 0 ||
+        ngmpHost.rfind("172.18.", 0) == 0 ||
+        ngmpHost.rfind("172.19.", 0) == 0 ||
+        ngmpHost.rfind("172.20.", 0) == 0 ||
+        ngmpHost.rfind("172.21.", 0) == 0 ||
+        ngmpHost.rfind("172.22.", 0) == 0 ||
+        ngmpHost.rfind("172.23.", 0) == 0 ||
+        ngmpHost.rfind("172.24.", 0) == 0 ||
+        ngmpHost.rfind("172.25.", 0) == 0 ||
+        ngmpHost.rfind("172.26.", 0) == 0 ||
+        ngmpHost.rfind("172.27.", 0) == 0 ||
+        ngmpHost.rfind("172.28.", 0) == 0 ||
+        ngmpHost.rfind("172.29.", 0) == 0 ||
+        ngmpHost.rfind("172.30.", 0) == 0 ||
+        ngmpHost.rfind("172.31.", 0) == 0)
+    {
+        fprintf(stderr, "[UpdateChecker] start() aborted. Running in local development environment (%s).\n", ngmpHost.c_str());
+        fflush(stderr);
+        SDL_SetAtomicInt(&s_done, 1);
+        return;
+    }
+#endif
+
     SDL_SetAtomicInt(&s_done, 0);
     SDL_SetAtomicInt(&s_hasUpdate, 0);
     s_latestTag[0] = '\0';
@@ -353,6 +383,21 @@ bool UpdateChecker::poll(const char** outLatestTag)
         *outLatestTag = s_latestTag;
 
     return true;
+}
+
+bool UpdateChecker::isDone()
+{
+    return SDL_GetAtomicInt(&s_done) != 0;
+}
+
+bool UpdateChecker::hasUpdate()
+{
+    return SDL_GetAtomicInt(&s_hasUpdate) != 0;
+}
+
+const char* UpdateChecker::getLatestTag()
+{
+    return s_latestTag;
 }
 
 #endif // SAGE_UPDATE_CHECK

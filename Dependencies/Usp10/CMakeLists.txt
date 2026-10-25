@@ -1,0 +1,19 @@
+set(USP10_SRC
+    Usp10Loader.cpp
+    Usp10Loader.h
+    usp10_adapter.h
+    usp10_subset.h
+)
+
+add_library(deps_usp10 STATIC)
+
+target_sources(deps_usp10 PRIVATE ${USP10_SRC})
+
+target_include_directories(deps_usp10 PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(deps_usp10 PRIVATE
+    depsi_always # Gives force included headers. Link early.
+    deps_utility
+)

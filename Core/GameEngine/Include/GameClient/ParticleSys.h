@@ -180,8 +180,10 @@ public:
 
 	Particle( ParticleSystem *system, const ParticleInfo *data );
 
-	Bool update();												///< update this particle's behavior - return false if dead
-	void doWindMotion();									///< do wind motion (if present) from particle system
+	Bool update(); ///< update this particle's behavior - return false if dead
+
+	void draw( Real timeScale ); ///< render update
+	void doWindMotion( Real timeScale ); ///< do wind motion (if present) from particle system
 
 	void applyForce( const Coord3D *force );		///< add the given acceleration
 
@@ -204,6 +206,8 @@ public:
 
 	UnsignedInt getPersonality() { return m_personality; };
 	void setPersonality(UnsignedInt p) { m_personality = p; };
+
+	UnsignedInt getElapsedFrames() const;
 
 protected:
 
@@ -228,7 +232,6 @@ protected:
 	// most of the particle data is derived from ParticleInfo
 
 	Coord3D						m_accel;														///< current acceleration
-	Coord3D						m_lastPos;													///< previous position
 	UnsignedInt				m_lifetimeLeft;									///< lifetime remaining, if zero -> destroy
 	UnsignedInt				m_createTimestamp;							///< frame this particle was created
 
@@ -269,6 +272,8 @@ public:
 	virtual void crc( Xfer *xfer ) override;
 	virtual void xfer( Xfer *xfer ) override;
 	virtual void loadPostProcess() override;
+
+	void validate();
 
 	Bool m_isOneShot;														///< if true, destroy system after one burst has occurred
 
@@ -320,7 +325,7 @@ public:
 	};
 
 
-	RandomKeyframe m_alphaKey[ MAX_KEYFRAMES ];
+	RandomKeyframe m_alphaKey[ MAX_KEYFRAMES ];	///< alpha of particle
 	RGBColorKeyframe m_colorKey[ MAX_KEYFRAMES ];	///< color of particle
 
 	typedef Int Color;
@@ -431,7 +436,15 @@ public:
 	m_emissionVolume;														///< the dimensions of the emission volume
 
 	Bool m_isEmissionVolumeHollow;							///< if true, only create particles at boundary of volume
-	Bool m_isGroundAligned;											///< if true, align with the ground. if false, then do the normal billboarding.
+
+	enum ParticleAlignmentType CPP_11(: Int)
+	{
+		PARTICLE_ALIGNMENT_BILLBOARD = 0,		///< Align the particle toward the camera.
+		PARTICLE_ALIGNMENT_XYPLANAR,		///< Align the particle on a flat horizontal surface.
+		PARTICLE_ALIGNMENT_CONFORMING,		///< Align the particle as projected on the terrain.
+		PARTICLE_ALIGNMENT_TYPE_COUNT
+	};
+	ParticleAlignmentType m_particleAlignment;		///< align particles toward the camera or with the XY plane.
 	Bool m_isEmitAboveGroundOnly;								///< if true, only emit particles when the system is above ground.
 	Bool m_isParticleUpTowardsEmitter;					///< if true, align the up direction to be towards the emitter.
 
@@ -467,37 +480,87 @@ public:
 
 static const char *const ParticleShaderTypeNames[] =
 {
-	"NONE", "ADDITIVE", "ALPHA", "ALPHA_TEST", "MULTIPLY", nullptr
+	"NONE",
+	"ADDITIVE",
+	"ALPHA",
+	"ALPHA_TEST",
+	"MULTIPLY",
+	nullptr
 };
 static_assert(ARRAY_SIZE(ParticleShaderTypeNames) == ParticleSystemInfo::PARTICLE_SHADER_TYPE_COUNT + 1, "Incorrect array size");
 
 static const char *const ParticleTypeNames[] =
 {
-	"NONE", "PARTICLE", "DRAWABLE", "STREAK", "VOLUME_PARTICLE", "SMUDGE", nullptr
+	"NONE",
+	"PARTICLE",
+	"DRAWABLE",
+	"STREAK",
+	"VOLUME_PARTICLE",
+	"SMUDGE",
+	nullptr
 };
 static_assert(ARRAY_SIZE(ParticleTypeNames) == ParticleSystemInfo::PARTICLE_TYPE_COUNT + 1, "Incorrect array size");
 
 static const char *const EmissionVelocityTypeNames[] =
 {
-	"NONE", "ORTHO", "SPHERICAL", "HEMISPHERICAL", "CYLINDRICAL", "OUTWARD", nullptr
+	"NONE",
+	"ORTHO",
+	"SPHERICAL",
+	"HEMISPHERICAL",
+	"CYLINDRICAL",
+	"OUTWARD",
+	nullptr
 };
 static_assert(ARRAY_SIZE(EmissionVelocityTypeNames) == ParticleSystemInfo::EMISSION_VELOCITY_TYPE_COUNT + 1, "Incorrect array size");
 
 static const char *const EmissionVolumeTypeNames[] =
 {
-	"NONE", "POINT", "LINE", "BOX", "SPHERE", "CYLINDER", nullptr
+	"NONE",
+	"POINT",
+	"LINE",
+	"BOX",
+	"SPHERE",
+	"CYLINDER",
+	nullptr
 };
 static_assert(ARRAY_SIZE(EmissionVolumeTypeNames) == ParticleSystemInfo::EMISSION_VOLUME_TYPE_COUNT + 1, "Incorrect array size");
 
 static const char *const ParticlePriorityNames[] =
 {
-	"NONE", "WEAPON_EXPLOSION","SCORCHMARK","DUST_TRAIL","BUILDUP","DEBRIS_TRAIL","UNIT_DAMAGE_FX","DEATH_EXPLOSION","SEMI_CONSTANT","CONSTANT","WEAPON_TRAIL","AREA_EFFECT","CRITICAL", "ALWAYS_RENDER", nullptr
+	"NONE",
+	"WEAPON_EXPLOSION",
+	"SCORCHMARK",
+	"DUST_TRAIL",
+	"BUILDUP",
+	"DEBRIS_TRAIL",
+	"UNIT_DAMAGE_FX",
+	"DEATH_EXPLOSION",
+	"SEMI_CONSTANT",
+	"CONSTANT",
+	"WEAPON_TRAIL",
+	"AREA_EFFECT",
+	"CRITICAL",
+	"ALWAYS_RENDER",
+	nullptr
 };
 static_assert(ARRAY_SIZE(ParticlePriorityNames) == NUM_PARTICLE_PRIORITIES + 1, "Incorrect array size");
 
+static const char *const GroundAlignmentTypeNames[] =
+{
+	"No",
+	"Yes",
+	"Conforming",
+	nullptr
+};
+static_assert(ARRAY_SIZE(GroundAlignmentTypeNames) == ParticleSystemInfo::PARTICLE_ALIGNMENT_TYPE_COUNT + 1, "Incorrect array size");
+
 static const char *const WindMotionNames[] =
 {
-	"NONE", "Unused", "PingPong", "Circular", nullptr
+	"NONE",
+	"Unused",
+	"PingPong",
+	"Circular",
+	nullptr
 };
 static_assert(ARRAY_SIZE(WindMotionNames) == ParticleSystemInfo::WIND_MOTION_COUNT + 1, "Incorrect array size");
 
@@ -515,7 +578,7 @@ public:
 
 	void validate();
 
-	AsciiString getName() const { return m_name; }
+	const AsciiString& getName() const { return m_name; }
 
 	// This function was made const because of update modules' module data being all const.
 	ParticleSystem *createSlaveSystem( Bool createSlaves = TRUE ) const ;					///< if returns non-null, it is a slave system for use
@@ -583,6 +646,8 @@ public:
 	virtual Bool update( Int localPlayerIndex );								///< update this particle system, return false if dead
 	void updateWindMotion();							///< update wind motion
 
+	void draw( Real timeScale ); ///< render update
+
 	void setControlParticle( Particle *p );			///< set control particle
 
 	void start();													///< (re)start a stopped particle system
@@ -607,15 +672,17 @@ public:
 	void setInitialDelay( UnsignedInt delay ) { m_delayLeft = delay; }
 
 	const AsciiString& getParticleTypeName() const { return m_particleTypeName; }	///< return the name of the particles
-	const Bool isUsingDrawables() const { return m_particleType == DRAWABLE; }
-	const Bool isUsingStreak() const { return m_particleType == STREAK; }
-	const Bool isUsingSmudge() const { return m_particleType == SMUDGE; }
-	const Bool isUsingVolumeParticles() const { return m_particleType == VOLUME_PARTICLE; }
-	const UnsignedInt getVolumeParticleDepth() const { return m_volumeParticleDepth; }
+	Bool isUsingParticles() const { return m_particleType == PARTICLE; }
+	Bool isUsingDrawables() const { return m_particleType == DRAWABLE; }
+	Bool isUsingStreak() const { return m_particleType == STREAK; }
+	Bool isUsingSmudge() const { return m_particleType == SMUDGE; }
+	Bool isUsingVolumeParticles() const { return m_particleType == VOLUME_PARTICLE; }
+	UnsignedInt getVolumeParticleDepth() const { return m_volumeParticleDepth; }
 
-	Bool shouldBillboard() { return !m_isGroundAligned; }
+	ParticleAlignmentType getParticleAlignment() const { return m_particleAlignment; }
+	Bool isFieldParticle() const { return m_particleAlignment != PARTICLE_ALIGNMENT_BILLBOARD; }
 
-	ParticleShaderType getShaderType() { return m_shaderType; }
+	ParticleShaderType getShaderType() const { return m_shaderType; }
 
 	void setSlave( ParticleSystem *slave );			///< set a slave system for us
 	ParticleSystem *getSlave() { return m_slaveSystem; }
@@ -666,6 +733,12 @@ public:
 
 protected:
 
+	struct VisibilityState
+	{
+		VisibilityState() : isShrouded(false) {}
+		Bool isShrouded;
+	};
+
 	// snapshot methods
 	virtual void crc( Xfer *xfer ) override;
 	virtual void xfer( Xfer *xfer ) override;
@@ -675,6 +748,11 @@ protected:
 																		ParticlePriorityType priority,
 																		Bool forceCreate = FALSE );	///< factory method for particles
 
+	void updateTransform();
+	void applyParentTransform(const Matrix3D &parentXfrm);
+	void applyLocalTransform();
+
+	VisibilityState updateVisibility( Int localPlayerIndex );
 
 	const ParticleInfo *generateParticleInfo( Int particleNum, Int particleCount );	///< generate a new, random set of ParticleInfo
 	const Coord3D *computeParticlePosition();		///< compute a position based on emission properties
@@ -740,6 +818,11 @@ protected:
 /**
  * The particle system manager, responsible for maintaining all ParticleSystems
  */
+// TheSuperHackers @tweak The particle render update is now decoupled from the logic step.
+// The lifetime management and the velocity and rate changes remain coupled to the logic step.
+// The render updates integrate exactly one logic time step per logic frame, regardless of how many render updates
+// fall into it, so the particles follow the same course as in the original update.
+//
 class ParticleSystemManager : public SubsystemInterface,
 															public Snapshot
 {
@@ -756,7 +839,8 @@ public:
 
 	virtual void init() override;									///< initialize the manager
 	virtual void reset() override;									///< reset the manager and all particle systems
-	virtual void update() override;								///< update all particle systems
+	virtual void update() override;								///< logic update for all particle systems
+	virtual void draw() override;									///< render update for all particle systems
 
 	virtual Bool isDummy() const { return false; }
 
@@ -826,6 +910,9 @@ protected:
 	virtual void xfer( Xfer *xfer ) override;
 	virtual void loadPostProcess() override;
 
+	void completeLogicFrameDrawUpdate(); ///< render update for the rest of the current logic frame
+	void drawSystems( Real timeScale ); ///< render update for all particle systems
+
 	Particle *m_allParticlesHead[ NUM_PARTICLE_PRIORITIES ];
 	Particle *m_allParticlesTail[ NUM_PARTICLE_PRIORITIES ];
 
@@ -837,8 +924,8 @@ protected:
 	UnsignedInt m_fieldParticleCount; ///< this does not need to be xfered, since it is evaluated every frame
 	UnsignedInt m_particleSystemCount;
 	Int m_onScreenParticleCount;                ///< number of particles displayed on screen per frame
-	UnsignedInt m_lastLogicFrameUpdate;
 	Int m_localPlayerIndex;	///<used to tell particle systems which particles can be skipped due to player shroud status
+	Real m_drawnLogicFramePhase; ///< How far the render updates have integrated the current logic frame, ranging 0 to 1.
 
 private:
 	TemplateMap m_templateMap;		///< a hash map of all particle system templates
@@ -864,6 +951,7 @@ public:
 	virtual void reset() override {}
 #endif
 	virtual void update() override {}
+	virtual void draw() override {}
 
 	virtual Bool isDummy() const override { return true; }
 

@@ -10,9 +10,22 @@
 
 #include "d3dx8math.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#if defined(__has_include) && __has_include("gmath.h")
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
+#endif
+#include "gmath.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#define USE_DETERMINISTIC_MATH (1)
+#endif
 
+#include <cmath>
+#include <glm/glm.hpp>
+
+// GeneralsX @bugfix fbraz 27/09/2026 Direct D3DX row-major matrix operations to fix cloud shadows, UV animation, and transformations
 
 static void ConvertGLMToD3DX (const glm::mat4x4 &glm, D3DXMATRIX &d3dx)
 {
@@ -60,8 +73,19 @@ static void ConvertD3DXToGLM (const D3DXMATRIX &d3dx, glm::mat4x4 &glm)
 	glm[3][3] = d3dx._44;
 }
 
+D3DXMATRIX *WINAPI D3DXMatrixIdentity(D3DXMATRIX *pOut)
+{
+	if (!pOut) return nullptr;
+	pOut->m[0][0] = 1.0f; pOut->m[0][1] = 0.0f; pOut->m[0][2] = 0.0f; pOut->m[0][3] = 0.0f;
+	pOut->m[1][0] = 0.0f; pOut->m[1][1] = 1.0f; pOut->m[1][2] = 0.0f; pOut->m[1][3] = 0.0f;
+	pOut->m[2][0] = 0.0f; pOut->m[2][1] = 0.0f; pOut->m[2][2] = 1.0f; pOut->m[2][3] = 0.0f;
+	pOut->m[3][0] = 0.0f; pOut->m[3][1] = 0.0f; pOut->m[3][2] = 0.0f; pOut->m[3][3] = 1.0f;
+	return pOut;
+}
+
 D3DXMATRIX *WINAPI D3DXMatrixInverse(D3DXMATRIX *pOut, FLOAT *pDeterminant, CONST D3DXMATRIX *pM)
 {
+	if (!pOut || !pM) return nullptr;
 	glm::mat4x4 m;
 	ConvertD3DXToGLM(*pM, m);
 
@@ -76,72 +100,91 @@ D3DXMATRIX *WINAPI D3DXMatrixInverse(D3DXMATRIX *pOut, FLOAT *pDeterminant, CONS
 
 D3DXMATRIX *WINAPI D3DXMatrixScaling(D3DXMATRIX *pOut, FLOAT sx, FLOAT sy, FLOAT sz)
 {
-	glm::mat4x4 m = glm::scale(glm::mat4x4(1.0f), glm::vec3(sx, sy, sz));
-	ConvertGLMToD3DX(m, *pOut);
+	if (!pOut) return nullptr;
+	pOut->m[0][0] = sx;   pOut->m[0][1] = 0.0f; pOut->m[0][2] = 0.0f; pOut->m[0][3] = 0.0f;
+	pOut->m[1][0] = 0.0f; pOut->m[1][1] = sy;   pOut->m[1][2] = 0.0f; pOut->m[1][3] = 0.0f;
+	pOut->m[2][0] = 0.0f; pOut->m[2][1] = 0.0f; pOut->m[2][2] = sz;   pOut->m[2][3] = 0.0f;
+	pOut->m[3][0] = 0.0f; pOut->m[3][1] = 0.0f; pOut->m[3][2] = 0.0f; pOut->m[3][3] = 1.0f;
 	return pOut;
 }
 
 D3DXMATRIX *WINAPI D3DXMatrixTranslation(D3DXMATRIX *pOut, FLOAT x, FLOAT y, FLOAT z)
 {
-	glm::mat4x4 m = glm::translate(glm::mat4x4(1.0f), glm::vec3(x, y, z));
-	ConvertGLMToD3DX(m, *pOut);
+	if (!pOut) return nullptr;
+	pOut->m[0][0] = 1.0f; pOut->m[0][1] = 0.0f; pOut->m[0][2] = 0.0f; pOut->m[0][3] = 0.0f;
+	pOut->m[1][0] = 0.0f; pOut->m[1][1] = 1.0f; pOut->m[1][2] = 0.0f; pOut->m[1][3] = 0.0f;
+	pOut->m[2][0] = 0.0f; pOut->m[2][1] = 0.0f; pOut->m[2][2] = 1.0f; pOut->m[2][3] = 0.0f;
+	pOut->m[3][0] = x;    pOut->m[3][1] = y;    pOut->m[3][2] = z;    pOut->m[3][3] = 1.0f;
 	return pOut;
 }
 
 D3DXMATRIX *WINAPI D3DXMatrixMultiply(D3DXMATRIX *pOut, CONST D3DXMATRIX *pM1, CONST D3DXMATRIX *pM2)
 {
-	glm::mat4x4 m1, m2;
-	ConvertD3DXToGLM(*pM1, m1);
-	ConvertD3DXToGLM(*pM2, m2);
-
-	glm::mat4x4 m = m1 * m2;
-	ConvertGLMToD3DX(m, *pOut);
+	if (!pOut || !pM1 || !pM2) return nullptr;
+	D3DXMATRIX temp;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			temp.m[i][j] = pM1->m[i][0] * pM2->m[0][j] +
+			               pM1->m[i][1] * pM2->m[1][j] +
+			               pM1->m[i][2] * pM2->m[2][j] +
+			               pM1->m[i][3] * pM2->m[3][j];
+		}
+	}
+	*pOut = temp;
 	return pOut;
 }
 
 D3DXVECTOR4 *WINAPI D3DXVec3Transform(D3DXVECTOR4 *pOut, CONST D3DXVECTOR3 *pV, CONST D3DXMATRIX *pM)
 {
-	glm::vec4 v(pV->x, pV->y, pV->z, 1.0f);
-	glm::mat4x4 m;
-	ConvertD3DXToGLM(*pM, m);
-
-	glm::vec4 result = m * v;
-	pOut->x = result.x;
-	pOut->y = result.y;
-	pOut->z = result.z;
-	pOut->w = result.w;
+	if (!pOut || !pV || !pM) return nullptr;
+	D3DXVECTOR4 temp;
+	temp.x = pV->x * pM->m[0][0] + pV->y * pM->m[1][0] + pV->z * pM->m[2][0] + pM->m[3][0];
+	temp.y = pV->x * pM->m[0][1] + pV->y * pM->m[1][1] + pV->z * pM->m[2][1] + pM->m[3][1];
+	temp.z = pV->x * pM->m[0][2] + pV->y * pM->m[1][2] + pV->z * pM->m[2][2] + pM->m[3][2];
+	temp.w = pV->x * pM->m[0][3] + pV->y * pM->m[1][3] + pV->z * pM->m[2][3] + pM->m[3][3];
+	*pOut = temp;
 	return pOut;
 }
 
 D3DXMATRIX *WINAPI D3DXMatrixTranspose(D3DXMATRIX *pOut, CONST D3DXMATRIX *pM)
 {
-	glm::mat4x4 m;
-	ConvertD3DXToGLM(*pM, m);
-
-	glm::mat4x4 mTransposed;
-	mTransposed = glm::transpose(m);
-
-	ConvertGLMToD3DX(mTransposed, *pOut);
+	if (!pOut || !pM) return nullptr;
+	D3DXMATRIX temp;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			temp.m[i][j] = pM->m[j][i];
+		}
+	}
+	*pOut = temp;
 	return pOut;
 }
 
 D3DXMATRIX *WINAPI D3DXMatrixRotationZ(D3DXMATRIX *pOut, FLOAT Angle)
 {
-	glm::mat4x4 m = glm::rotate(glm::mat4x4(1.0f), Angle, glm::vec3(0.0f, 0.0f, 1.0f));
-	ConvertGLMToD3DX(m, *pOut);
+	if (!pOut) return nullptr;
+#if defined(USE_DETERMINISTIC_MATH)
+	FLOAT fSin = gm_sinf(Angle);
+	FLOAT fCos = gm_cosf(Angle);
+#else
+	FLOAT fSin = sinf(Angle);
+	FLOAT fCos = cosf(Angle);
+#endif
+
+	pOut->m[0][0] = fCos;  pOut->m[0][1] = fSin; pOut->m[0][2] = 0.0f; pOut->m[0][3] = 0.0f;
+	pOut->m[1][0] = -fSin; pOut->m[1][1] = fCos; pOut->m[1][2] = 0.0f; pOut->m[1][3] = 0.0f;
+	pOut->m[2][0] = 0.0f;  pOut->m[2][1] = 0.0f; pOut->m[2][2] = 1.0f; pOut->m[2][3] = 0.0f;
+	pOut->m[3][0] = 0.0f;  pOut->m[3][1] = 0.0f; pOut->m[3][2] = 0.0f; pOut->m[3][3] = 1.0f;
 	return pOut;
 }
 
 D3DXVECTOR4 *WINAPI D3DXVec4Transform(D3DXVECTOR4 *pOut, CONST D3DXVECTOR4 *pV, CONST D3DXMATRIX *pM)
 {
-	glm::vec4 v(pV->x, pV->y, pV->z, pV->w);
-	glm::mat4x4 m;
-	ConvertD3DXToGLM(*pM, m);
-
-	glm::vec4 result = m * v;
-	pOut->x = result.x;
-	pOut->y = result.y;
-	pOut->z = result.z;
-	pOut->w = result.w;
+	if (!pOut || !pV || !pM) return nullptr;
+	D3DXVECTOR4 temp;
+	temp.x = pV->x * pM->m[0][0] + pV->y * pM->m[1][0] + pV->z * pM->m[2][0] + pV->w * pM->m[3][0];
+	temp.y = pV->x * pM->m[0][1] + pV->y * pM->m[1][1] + pV->z * pM->m[2][1] + pV->w * pM->m[3][1];
+	temp.z = pV->x * pM->m[0][2] + pV->y * pM->m[1][2] + pV->z * pM->m[2][2] + pV->w * pM->m[3][2];
+	temp.w = pV->x * pM->m[0][3] + pV->y * pM->m[1][3] + pV->z * pM->m[2][3] + pV->w * pM->m[3][3];
+	*pOut = temp;
 	return pOut;
-}
+}

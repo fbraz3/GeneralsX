@@ -5,6 +5,9 @@
 set -euo pipefail
 
 PRESET="${1:-linux64-deploy}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+cd "$PROJECT_ROOT"
 LOG_FILE="logs/configure_${PRESET}_docker.log"
 DOCKER_IMAGE="generalsx/linux-builder:latest"
 CONTAINER_NAME="generalsx-configure-${PRESET}"
@@ -40,30 +43,38 @@ if ! docker image inspect "$DOCKER_IMAGE" &> /dev/null; then
     ./scripts/env/docker/docker-build-images.sh linux
 fi
 
+# GeneralsX @bugfix Mr. Meeseeks 10/10/2026 Mount external realpath if build is a symlink outside PROJECT_ROOT
+BUILD_REAL="$(realpath "$PROJECT_ROOT/build" 2>/dev/null || true)"
+BUILD_MOUNT=()
+if [[ -n "$BUILD_REAL" && "$BUILD_REAL" != "$PROJECT_ROOT/build" && -d "$BUILD_REAL" ]]; then
+    BUILD_MOUNT=(-v "$BUILD_REAL:$BUILD_REAL:z")
+fi
+
 docker run --rm \
     --name "$CONTAINER_NAME" \
     --platform linux/amd64 \
     --user "${HOST_UID}:${HOST_GID}" \
     -e HOME=/tmp/generalsx-home \
     -e XDG_CACHE_HOME=/tmp/generalsx-cache \
-    -v "$PWD:/work" \
-    -v "$VCPKG_DIR:/opt/vcpkg" \
+    -v "$PROJECT_ROOT:/work:z" \
+    ${BUILD_MOUNT[@]+"${BUILD_MOUNT[@]}"} \
+    -v "$VCPKG_DIR:/opt/vcpkg:z" \
     -w /work \
     "$DOCKER_IMAGE" \
     bash -c "
         set -e
         mkdir -p \"\$HOME\" \"\$XDG_CACHE_HOME\"
         
-        # Bootstrap vcpkg in Docker volume if not exists
-        if [ ! -f /opt/vcpkg/vcpkg ]; then
+        # GeneralsX @build Gabriel Petry 30/09/2026 Reuse or bootstrap the host-cached vcpkg executable.
+        if [ ! -x /opt/vcpkg/vcpkg ]; then
             echo '📦 Bootstrapping vcpkg (first time, will be cached in Docker volume)...'
-            # Clean up if directory exists but is incomplete
-            if [ -d /opt/vcpkg ]; then
-                echo '🧹 Cleaning incomplete vcpkg directory...'
-                rm -rf /opt/vcpkg/* /opt/vcpkg/.git 2>/dev/null || true
+            if [ -f /opt/vcpkg/bootstrap-vcpkg.sh ]; then
+                /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+            else
+                git clone https://github.com/microsoft/vcpkg.git /tmp/vcpkg-bootstrap
+                cp -a /tmp/vcpkg-bootstrap/. /opt/vcpkg/
+                /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
             fi
-            git clone https://github.com/microsoft/vcpkg.git /opt/vcpkg
-            /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
         fi
         
         export VCPKG_ROOT=/opt/vcpkg

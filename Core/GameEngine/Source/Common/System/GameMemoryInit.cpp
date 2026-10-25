@@ -43,10 +43,11 @@
 // ----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifndef DISABLE_GAMEMEMORY
+
 // SYSTEM INCLUDES
 
 // USER INCLUDES
-#include "Lib/BaseType.h"
 #include "Common/GameMemory.h"
 
 struct PoolSizeRec
@@ -146,3 +147,4 @@ void userMemoryManagerInitPools()
 	}
 }
 
+#endif // DISABLE_GAMEMEMORY

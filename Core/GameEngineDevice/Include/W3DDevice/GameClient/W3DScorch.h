@@ -22,7 +22,6 @@
 
 #include "WWMath/vector3.h"
 #include "Common/GameType.h"
-#include "Lib/BaseTypeCore.h"
 
 struct VertexFormatXYZDUV1;
 class TextureClass;
@@ -68,17 +67,24 @@ private:
 
 	enum
 	{
-		MAX_SCORCH_VERTEX = 8194,
-		MAX_SCORCH_INDEX = 6 * 8194,
+		MAX_SCORCH_VERTEX = 32768,
+		MAX_SCORCH_INDEX = 65535,
 		MAX_SCORCH_MARKS = 500,
 		SCORCH_MARKS_IN_TEXTURE = 9,
-		SCORCH_PER_ROW = 3
+		SCORCH_PER_ROW = 3,
+	};
+
+	enum WriteScorchResult
+	{
+		SCORCH_WRITTEN,
+		SCORCH_SKIPPED,
+		SCORCH_BUFFER_FULL,
 	};
 
 	Bool isDuplicate(const TScorch& scorch) const;
 	void updateScorches(WorldHeightMap& map);    ///< Update m_vertexScorch and m_indexScorch so all scorches will be drawn.
-	Bool writeScorchToBuffer(const TScorch& scorch, WorldHeightMap& map, UnsignedInt diffuse,
-	                         VertexFormatXYZDUV1* curVb, UnsignedShort* curIb);
+	WriteScorchResult writeScorchToBuffer(const TScorch& scorch, WorldHeightMap& map, UnsignedInt diffuse,
+	                                      VertexFormatXYZDUV1* curVb, UnsignedShort* curIb);
 
 	DX8VertexBufferClass* m_vertexScorch;    ///< Scorch vertex buffer.
 	DX8IndexBufferClass* m_indexScorch;    ///< indices defining a triangles for the scorch drawing.

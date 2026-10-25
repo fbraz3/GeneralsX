@@ -720,7 +720,8 @@ static void saveOptions()
 		Real gammaval=1.0f;
 		//generate a value between 0.6 and 2.0.
 		if (val < 50)
-		{	//darker gamma
+		{
+			//darker gamma
 			if (val <= 0)
 				gammaval = 0.6f;
 			else
@@ -1206,7 +1207,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	Int selectedYRes=DEFAULT_DISPLAY_HEIGHT;
 	Int selectedResIndex=-1;
 	if (!selectedResolution.isEmpty())
-	{	//try to parse 2 integers out of string
+	{
+		//try to parse 2 integers out of string
 		if (sscanf(selectedResolution.str(),"%d%d", &selectedXRes, &selectedYRes) != 2)
 		{
 			selectedXRes=DEFAULT_DISPLAY_WIDTH;
@@ -1401,7 +1403,13 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 
-	if( (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL) || TheGameSpyInfo )
+	// GeneralsX @bugfix fbraz3 12/09/2026 TheGameSpyInfo is a persistent singleton in GeneralsX,
+	// so checking '|| TheGameSpyInfo' previously caused resolution and detail options to always
+	// be disabled, even in the main menu. Only disable them when actually in-game or in an online staging room.
+	Bool inGame = (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL);
+	Bool inOnlineStaging = (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() != nullptr);
+
+	if( inGame || inOnlineStaging )
 	{
 		// disable controls that you can't change the options for in game
 		comboBoxLANIP->winEnable(FALSE);

@@ -33,6 +33,7 @@
 #define DEFINE_OBJECT_STATUS_NAMES
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+#include "Common/FramePacer.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
 #include "Common/Player.h"
@@ -310,17 +311,20 @@ Bool StealthUpdate::allowedToStealth( Object *stealthOwner ) const
 		return FALSE;
 	}
 
-	if( flags & STEALTH_NOT_WHILE_TAKING_DAMAGE && self->getBodyModule()->getLastDamageTimestamp() >= now - 1 )
+	const UnsignedInt *lastDamageTimestamp = self->getBodyModule()->getLastDamageTimestamp();
+	if( flags & STEALTH_NOT_WHILE_TAKING_DAMAGE && lastDamageTimestamp && *lastDamageTimestamp >= now - 1 )
 	{
 #if PRESERVE_STRUCTURE_STEALTH_DURING_REPAIR
 		//Only if it's not healing damage.
 		if( self->getBodyModule()->getLastDamageInfo()->in.m_damageType != DAMAGE_HEALING )
 #endif
 		{
-			//Can't stealth if we just took damage in the last frame or two.
-			if( self->getBodyModule()->getLastDamageTimestamp() != 0xffffffff )
+#if RETAIL_COMPATIBLE_CRC
+			//But it's initialized to 0xffffffff so we don't think we took damage on the first frame.
+			if( *lastDamageTimestamp != 0xffffffff )
+#endif
 			{
-				//But it's initialized to 0xffffffff so we don't think we took damage on the first frame.
+				//Can't stealth if we just took damage in the last frame or two.
 				return FALSE;
 			}
 		}
@@ -1001,7 +1005,7 @@ void StealthUpdate::changeVisualDisguise()
 			draw->setPosition( self->getPosition() );
 			draw->setOrientation( self->getOrientation() );
 			draw->setModelConditionFlags( flags );
-			draw->updateDrawable();
+			draw->updateDrawable(TheFramePacer->getActualLogicTimeScaleOverFpsRatio());
 			self->getPhysics()->resetDynamicPhysics();
 			if( selected )
 			{
@@ -1059,7 +1063,7 @@ void StealthUpdate::changeVisualDisguise()
 			draw->setPosition( self->getPosition() );
 			draw->setOrientation( self->getOrientation() );
 			draw->setModelConditionFlags( flags );
-			draw->updateDrawable();
+			draw->updateDrawable(TheFramePacer->getActualLogicTimeScaleOverFpsRatio());
 			self->getPhysics()->resetDynamicPhysics();
 			if (TheGlobalData->m_timeOfDay == TIME_OF_DAY_NIGHT)
 				draw->setIndicatorColor( self->getNightIndicatorColor() );

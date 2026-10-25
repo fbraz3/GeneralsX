@@ -39,6 +39,10 @@ target_include_directories(d3dx8 PUBLIC
     ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
 
+if(SAGE_USE_DETERMINISTIC_MATH)
+    target_link_libraries(d3dx8 PUBLIC gamemath)
+endif()
+
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
 

@@ -41,7 +41,7 @@ Relative-path files present in Generals annotations but not in Zero Hour annotat
 ## Scope Rules
 
 Include:
-- Cross-platform backend changes (SDL3, DXVK integration points, OpenAL, FFmpeg glue, platform abstraction, file/path portability, deterministic timing guards).
+- Cross-platform backend changes (SDL3, DXVK integration points, MiniAudio, FFmpeg glue, platform abstraction, file/path portability, deterministic timing guards).
 - Shared stability fixes that do not alter faction/gameplay design.
 
 Exclude:
@@ -105,7 +105,7 @@ Target:
 Focus areas:
 - W3D rendering parity checks (including scene-light setup behavior).
 - SDL3 input path parity where applicable.
-- OpenAL/FFmpeg glue parity that is backend-only.
+- MiniAudio/FFmpeg glue parity that is backend-only.
 
 Acceptance:
 - No regressions in window/input/audio startup.

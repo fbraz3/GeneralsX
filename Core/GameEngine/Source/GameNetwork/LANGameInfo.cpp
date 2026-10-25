@@ -32,6 +32,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/GadgetListBox.h"
 #include "GameNetwork/LANGameInfo.h"
+#include "GameNetwork/LANInterfaceDevice.h"
 #include "GameNetwork/LANAPICallbacks.h"
 #include "Common/MultiplayerSettings.h"
 #include "WWLib/strtok_r.h"
@@ -81,7 +82,27 @@ Bool LANGameSlot::isUser( UnicodeString userName )
 
 Bool LANGameSlot::isLocalPlayer() const
 {
-	return isHuman() && TheLAN && TheLAN->GetLocalIP() == getIP();
+	if (!isHuman() || !TheLAN)
+	{
+		return FALSE;
+	}
+
+	if (TheLAN->GetLocalIP() == getIP())
+	{
+		return TRUE;
+	}
+
+	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 If the host recorded our IP from another active local interface
+	// (e.g. Ethernet vs Wi-Fi), match by player name and verify that the slot IP is a local host address.
+	if (!TheLAN->GetMyName().isEmpty() && TheLAN->GetMyName().compare(getName()) == 0)
+	{
+		if (LANInterfaceDevice::isLocalHostAddress(getIP()))
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }
 
 // LANGameInfo ----------------------------------------
