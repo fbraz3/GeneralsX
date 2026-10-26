@@ -23,6 +23,10 @@ namespace NGMP {
 #endif
 #endif
 
+// GeneralsX @feature fbraz3 07/10/2026 Client version and User-Agent helpers
+std::string GetClientVersion();
+std::string GetUserAgent();
+
 // Returns time in milliseconds since application start using SDL3/chrono primitives
 uint32_t GetTicks();
 
