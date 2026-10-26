@@ -114,6 +114,12 @@ cp "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${BUNDLE_DIR}/"
 echo "  + GameSpy library"
 cp "${GAMESPY_LIB}" "${BUNDLE_DIR}/"
 
+# GameMath library (if built as shared)
+if compgen -G "${BUILD_DIR}/_deps/gamemath-build/libgm.so*" > /dev/null 2>&1; then
+    echo "  + GameMath library (libgm.so)"
+    cp "${BUILD_DIR}"/_deps/gamemath-build/libgm.so* "${BUNDLE_DIR}/" 2>/dev/null || true
+fi
+
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
