@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/RandomValue.h"
 #include "Common/Xfer.h"
@@ -82,16 +83,13 @@ OCLUpdate::~OCLUpdate()
 //-------------------------------------------------------------------------------------------------
 UpdateSleepTime OCLUpdate::update()
 {
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix dizzyj/Caball009/Mauller 14/07/2025 prevent triggering supply drop when subdued while under construction
-	// When the construction is finished, we allow the timer to be initialized and then start shifting the timer while subdued
-	if ( m_timerStartedFrame > 0 && getObject()->isDisabled() )
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH stalls OCL when subdued after start (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && m_timerStartedFrame > 0 && getObject()->isDisabled())
 	{
 		m_nextCreationFrame++;
 		m_timerStartedFrame++;
 		return UPDATE_SLEEP_NONE;
 	}
-#endif
 
 /// @todo srj use SLEEPY_UPDATE here
 	if( shouldCreate() )

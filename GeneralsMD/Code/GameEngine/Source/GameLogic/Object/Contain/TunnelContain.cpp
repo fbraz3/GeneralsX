@@ -31,6 +31,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/Player.h"
 #include "Common/RandomValue.h"
 #include "Common/ThingTemplate.h"
@@ -240,20 +241,24 @@ void TunnelContain::onRemoving( Object *obj )
 	obj->clearDisabled( DISABLED_HELD );
 
 	/// place the object in the world at position of the container m_object
-#if RETAIL_COMPATIBLE_CRC
-	ThePartitionManager->registerObject( obj );
-	obj->setPosition( getObject()->getPosition() );
-	if( obj->getDrawable() )
+// GeneralsX @refactor cheviiot 24/10/2026 Retail partition register vs ZH addOrRemoveObjFromWorld (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
 	{
-		obj->setSafeOcclusionFrame(TheGameLogic->getFrame()+obj->getTemplate()->getOcclusionDelay());
-		obj->getDrawable()->setDrawableHidden( false );
+		ThePartitionManager->registerObject( obj );
+		obj->setPosition( getObject()->getPosition() );
+		if( obj->getDrawable() )
+		{
+			obj->setSafeOcclusionFrame(TheGameLogic->getFrame()+obj->getTemplate()->getOcclusionDelay());
+			obj->getDrawable()->setDrawableHidden( false );
+		}
 	}
-#else
-	// TheSuperHackers @bugfix Now correctly adds the objects to the world without issues with shrouded portable structures.
-	obj->setPosition(getObject()->getPosition());
-	obj->setSafeOcclusionFrame(TheGameLogic->getFrame() + obj->getTemplate()->getOcclusionDelay());
-	addOrRemoveObjFromWorld(obj, TRUE);
-#endif
+	else
+	{
+		// TheSuperHackers @bugfix Now correctly adds the objects to the world without issues with shrouded portable structures.
+		obj->setPosition(getObject()->getPosition());
+		obj->setSafeOcclusionFrame(TheGameLogic->getFrame() + obj->getTemplate()->getOcclusionDelay());
+		addOrRemoveObjFromWorld(obj, TRUE);
+	}
 
 	doUnloadSound();
 }
@@ -504,10 +509,11 @@ void TunnelContain::onBuildComplete()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 void TunnelContain::onCapture( Player *oldOwner, Player *newOwner )
 {
-	if( m_isCurrentlyRegistered )
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: ZH re-registers tunnels on capture;
+	// Generals retail omitted this (was #if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)).
+	if (!GameProfile::get().isGenerals() && m_isCurrentlyRegistered)
 	{
 		TunnelTracker *oldTunnelTracker = oldOwner->getTunnelSystem();
 		if( oldTunnelTracker )
@@ -526,7 +532,6 @@ void TunnelContain::onCapture( Player *oldOwner, Player *newOwner )
 	// extend base class
 	OpenContain::onCapture( oldOwner, newOwner );
 }
-#endif
 
 //-------------------------------------------------------------------------------------------------
 void TunnelContain::orderAllPassengersToExit( CommandSourceType commandSource, Bool instantly )

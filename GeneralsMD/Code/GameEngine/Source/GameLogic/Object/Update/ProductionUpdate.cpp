@@ -29,6 +29,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/BitFlagsIO.h"
 #include "Common/BuildAssistant.h"
@@ -1087,11 +1088,10 @@ Bool ProductionUpdate::cancelUnitCreate( ProductionEntry *production )
 
 	Player *player = getObject()->getControllingPlayer();
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix arcticdolphin 07/09/2026 No cancel once the batch has started producing.
-	if( production->getProductionQuantityRemaining() < production->getProductionQuantity() )
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH blocks mid-batch cancel (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals()
+			&& production->getProductionQuantityRemaining() < production->getProductionQuantity())
 		return FALSE;
-#endif
 
 	// give the player the cost of the object back
 	Money *money = player->getMoney();
@@ -1165,9 +1165,8 @@ void ProductionUpdate::cancelAndRefundAllProduction()
 		{
 			if( !cancelUnitCreate( production ) )
 			{
-#if RETAIL_COMPATIBLE_CRC
-				DEBUG_CRASH(("This code path cannot be reached"));
-#endif
+				if (GameProfile::get().isGenerals())
+					DEBUG_CRASH(("This code path cannot be reached"));
 				// Unable to cancel for a refund... delete anyway.
 				removeFromProductionQueue( production );
 				deleteInstance( production );
@@ -1177,14 +1176,12 @@ void ProductionUpdate::cancelAndRefundAllProduction()
 		{
 			if( !cancelUpgrade( production ) )
 			{
-#if RETAIL_COMPATIBLE_CRC
-				// Cannot cancel the head production... this loop is stuck now and can quit.
-				return;
-#else
+				// GeneralsX @refactor cheviiot 24/10/2026 Retail stuck-return vs ZH force-delete (was RETAIL_COMPATIBLE_CRC).
+				if (GameProfile::get().isGenerals())
+					return;
 				// Unable to cancel for a refund... delete anyway.
 				removeFromProductionQueue( production );
 				deleteInstance( production );
-#endif
 			}
 		}
 		else

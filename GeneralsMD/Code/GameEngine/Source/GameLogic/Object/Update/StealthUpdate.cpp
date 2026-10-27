@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #define DEFINE_STEALTHLEVEL_NAMES
 #define DEFINE_OBJECT_STATUS_NAMES
@@ -319,10 +320,8 @@ Bool StealthUpdate::allowedToStealth( Object *stealthOwner ) const
 		if( self->getBodyModule()->getLastDamageInfo()->in.m_damageType != DAMAGE_HEALING )
 #endif
 		{
-#if RETAIL_COMPATIBLE_CRC
-			//But it's initialized to 0xffffffff so we don't think we took damage on the first frame.
-			if( *lastDamageTimestamp != 0xffffffff )
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail skips sentinel 0xffffffff timestamp (was RETAIL_COMPATIBLE_CRC).
+			if (!GameProfile::get().isGenerals() || *lastDamageTimestamp != 0xffffffff)
 			{
 				//Can't stealth if we just took damage in the last frame or two.
 				return FALSE;

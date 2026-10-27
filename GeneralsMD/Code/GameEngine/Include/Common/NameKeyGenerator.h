@@ -105,26 +105,20 @@ public:
 	// Get a string out of the INI. Store it into a NameKeyType
 	static void parseStringAsNameKeyType( INI *ini, void *instance, void *store, const void* userData );
 
-#if RETAIL_COMPATIBLE_CRC
-#if RTS_ZEROHOUR
+	// GeneralsX @refactor cheviiot 24/10/2026 Always available; ZH sync gated in impl (was RETAIL_COMPATIBLE_CRC).
 	void syncNameKeyID();
-#endif
 	void verifyNameKeyID(UnsignedInt expectedNextID) const;
-#endif
 
 private:
 
-	enum
-	{
-		// socketcount should be prime, and not "close" to a power of 2, for best results.
-		SOCKET_COUNT = 45007
-	};
-
 	NameKeyType createNameKey(UnsignedInt hash, const AsciiString& name);
 
+	void allocateSockets();
 	void freeSockets();
 
-	Bucket*				m_sockets[SOCKET_COUNT];			///< Catalog of all Buckets already generated
+	// GeneralsX @feature cheviiot 23/10/2026 Socket table sized from GameProfile (6473 Generals / 45007 ZH).
+	UnsignedInt		m_socketCount;								///< Prime hash socket count for the selected profile
+	Bucket**			m_sockets;										///< Catalog of all Buckets already generated
 	UnsignedInt		m_nextID;											///< Next available ID
 
 };

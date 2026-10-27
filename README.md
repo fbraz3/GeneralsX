@@ -1,96 +1,82 @@
-<p align="center">
-  <img src="assets/generalsx-zh_icon.png" alt="GeneralsX Logo" width="128" height="128">
-</p>
+# Echelon
 
-<h1 align="center">GeneralsX</h1>
+**A unified game engine with an integrated launcher.**
 
-<p align="center">
-  <strong>Play Command & Conquer: Generals & Zero Hour on macOS, Linux, and Windows — with native cross-platform online multiplayer.</strong>
-</p>
+Echelon brings Command & Conquer: Generals and Zero Hour into one executable
+with game selection at startup and the original rules of each game. It builds
+on the Zero Hour engine from [GeneralsX](https://github.com/fbraz3/GeneralsX),
+retaining a traceable path for upstream updates.
 
-<p align="center">
-  <a href="https://deepwiki.com/fbraz3/GeneralsGameCode"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-  <a href="https://github.com/fbraz3/GeneralsX/actions/workflows/ci.yml"><img src="https://github.com/fbraz3/GeneralsX/actions/workflows/ci.yml/badge.svg?branch=main" alt="GeneralsX CI"></a>
-  <a href="https://github.com/fbraz3/GeneralsX/releases"><img src="https://img.shields.io/github/v/release/fbraz3/GeneralsX?include_prereleases&sort=date&display_name=tag&style=flat&label=Release" alt="GitHub Release"></a>
-  <a href="https://github.com/fbraz3/GeneralsX/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-blue.svg" alt="Project Wiki"></a>
-</p>
+The project is in development. The single executable and integrated launcher
+are the target architecture; the current build still produces separate
+Generals and Zero Hour executables.
 
----
+## Current progress
 
-**GeneralsX** lets you run **Command & Conquer: Generals** and **Zero Hour** natively on **macOS, Linux, and Windows**. Built on a modern open-source engine stack, it brings back smooth gameplay, seamless cross-platform online multiplayer, and full compatibility with original campaigns, mods, and replays on modern computers.
+- Zero Hour is the canonical foundation; Generals will use an explicit
+  compatibility profile for its original rules, assets, saves and replays.
+- Initial consolidation shares FPU declarations and three Zero Hour device
+  implementations between the existing builds.
+- A source provenance map and checker track both original game paths so
+  future upstream changes remain visible after consolidation.
+- Both Linux executables have built and passed headless initialization and
+  shutdown checks before and after this initial consolidation. Gameplay,
+  save/replay compatibility and macOS validation remain open migration gates.
 
-## ✨ Highlights
+See the [unified engine plan](docs/WORKDIR/planning/PLAN-023_UNIFIED_ENGINE.md)
+and [validated Stage 01 work](docs/WORKDIR/support/UNIFIED_ENGINE_STAGE01.md)
+for scope, evidence and remaining work.
 
-- 🌐 **Cross-Play Online Multiplayer**: Native online matchmaking and lobbies powered by **GeneralsOnline (NGMP)**. Play seamlessly across **macOS, Linux, and Windows** without GameSpy, Hamachi, or VLAN tools.
-- 💻 **Native Modern Performance**: Runs natively on **macOS** (Apple Silicon), **Linux** (x86_64), and **Windows**. No legacy 32-bit baggage.
-- 🌋 **Modern Graphics**: Replaces the ancient DirectX 8 backend with Vulkan translation via DXVK for smooth performance on modern monitors and GPUs.
-- 🔊 **Updated Audio & Video**: Crystal-clear cross-platform audio powered by **MiniAudio** and full video cinematics support via FFmpeg.
-- 🎯 **100% Retail Compatibility**: Full support for original singleplayer campaigns, Skirmish vs AI, replays, and community mods.
-- 📦 **Generals & Zero Hour**: Play both the base game and the expansion from a unified, modern codebase.
+## Engine foundation
 
----
+The inherited platform stack uses SDL3 for windowing and input, DXVK for
+DirectX 8 to Vulkan translation, MiniAudio for audio, and FFmpeg for video.
+Linux and macOS are the active platform targets. Online work targets
+GeneralsOnline (NGMP).
 
-## 🚀 Getting Started
+Deterministic simulation and original game compatibility are required during
+consolidation. The launcher will select a game profile before mounting assets
+or initializing the engine.
 
-### Download & Play
-Ready-to-run releases are available for macOS, Linux, and Windows:
+Original game data is required and is not distributed with Echelon.
 
-* 📦 **[Download GeneralsX Releases](https://github.com/fbraz3/GeneralsX/releases)** – Pre-built packages for macOS, Linux, and Windows
-* 📖 **[Installation & Game Data Setup Guide](https://github.com/fbraz3/GeneralsX/wiki)**
+## Building during migration
 
-> *Note: GeneralsX is an engine recreation and requires original game data files from a legitimate copy of Command & Conquer: Generals / Zero Hour (The First Decade, EA App, Steam, or retail CDs).*
-
-### 🌐 Cross-Platform Multiplayer
-GeneralsX includes integrated multiplayer powered by **GeneralsOnline**. Players on macOS, Linux, and Windows can host, join lobbies, and battle against each other online with zero network configuration hurdles.
-
----
-
-## 📱 Ecosystem & Community Ports
-
-The flexibility and modern foundation of GeneralsX have enabled several community-driven ports across mobile and web platforms:
-
-* **[Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad)** – iOS and iPadOS port by [@ammaarreshi](https://github.com/ammaarreshi)
-* **[Generals-Android](https://github.com/fadi-labib/Generals-Android)** – Android port by [@fadi-labib](https://github.com/fadi-labib)
-* **[wasm-generals](https://github.com/origami-ltd/wasm-generals)** – WebAssembly + WebGPU browser port by [@ebellumat](https://github.com/ebellumat) (playable at [generals.wasm.com.br](https://generals.wasm.com.br))
-
----
-
-## 🛠️ Building from Source
-
-GeneralsX uses CMake with predefined presets for supported platforms:
+Existing target names and source paths are retained while the engine is
+consolidated:
 
 ```bash
-# macOS (Apple Silicon)
-cmake --preset macos-vulkan
-cmake --build build/macos-vulkan --target z_generals
-
 # Linux (x86_64)
 cmake --preset linux64-deploy
-cmake --build build/linux64-deploy --target z_generals
+cmake --build build/linux64-deploy --target g_generals z_generals
+
+# macOS (Apple Silicon)
+cmake --preset macos-vulkan
+cmake --build build/macos-vulkan --target g_generals z_generals
 ```
 
-For complete prerequisites, Docker workflows, and packaging guides, check the Wiki:
-- 📖 [Building on macOS Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS)
-- 📖 [Building on Linux Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux)
+For prerequisites and platform setup, consult the upstream GeneralsX
+[Linux guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux) or
+[macOS guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS).
+These guides and upstream release packages use GeneralsX branding.
+Echelon does not yet have its own release packages.
 
----
+## Lineage and development
 
-## 📜 Project Lineage & Credits
+Echelon is an independent continuation of GeneralsX. Its name covers both the
+engine and the integrated launcher. The earlier Echelon prototype is retained
+separately as a source of ideas; its code has not been imported into this fork.
 
-GeneralsX stands on the shoulders of the RTS community and open-source pioneers:
+Read [UPSTREAM.md](UPSTREAM.md) for fork identity and update policy, and
+[CONTRIBUTING.md](CONTRIBUTING.md) for development guidance.
 
-* **[Westwood Studios & EA](https://www.ea.com/)** for creating the Command & Conquer: Generals universe.
-* **[TheSuperHackers](https://github.com/TheSuperHackers/GeneralsGameCode)** for foundational code modernization, stability fixes, and upstream preservation.
-* **[Fighter19](https://github.com/Fighter19) & [feliwir](https://github.com/feliwir)** for early reference work pioneering SDL3, DXVK, and OpenAL in Zero Hour.
+Credits include Westwood Studios and Electronic Arts for the original games,
+[TheSuperHackers](https://github.com/TheSuperHackers/GeneralsGameCode) for
+game-code modernization and preservation,
+[fbraz3 and GeneralsX contributors](https://github.com/fbraz3/GeneralsX) for the
+cross-platform port, and [Fighter19](https://github.com/Fighter19) and
+[feliwir](https://github.com/feliwir) for earlier platform reference work.
+Existing licenses and source attributions are preserved.
 
----
-
-## 💖 Support & Contributing
-
-- **[Sponsor on GitHub](https://github.com/sponsors/fbraz3)** – Help fund test hardware, server infrastructure, CI/CD pipelines, and active development.
-- **[Contributing Guide](CONTRIBUTING.md)** – Contributions are welcome! Check our issues and pull request guidelines before opening a PR.
-
-## 📄 License
-
-See the [LICENSE](./LICENSE.md) file for details.  
-*EA has not endorsed and does not support this product. Command & Conquer is a trademark of Electronic Arts Inc.*
+See [LICENSE.md](LICENSE.md). Electronic Arts has not endorsed and does not
+support this product. Command & Conquer is a trademark of Electronic Arts Inc.

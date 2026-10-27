@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
 #include "Common/RandomValue.h"
 #include "GameLogic/Module/WanderAIUpdate.h"
 #include "GameLogic/Object.h"
@@ -56,8 +57,18 @@ UpdateSleepTime WanderAIUpdate::update()
 	if (isIdle())
 	{
 		Coord3D dest = *(getObject()->getPosition());
-		dest.x += GameLogicRandomValue( 5, 50 );
-		dest.y += GameLogicRandomValue( 5, 50 );
+		// GeneralsX @bugfix cheviiot 24/10/2026 Adapt upstream #3544: ZH wanders about current pos; Generals retail keeps NE bias.
+		// (was #if RETAIL_COMPATIBLE_CRC NE-only / else random; GameProfile for dual-profile echelon)
+		if (GameProfile::get().isGenerals())
+		{
+			dest.x += GameLogicRandomValue( 5, 50 );
+			dest.y += GameLogicRandomValue( 5, 50 );
+		}
+		else
+		{
+			dest.x += GameLogicRandomValue(-50, 50);
+			dest.y += GameLogicRandomValue(-50, 50);
+		}
  		aiMoveToPosition( &dest, CMD_FROM_AI );
 	}
 

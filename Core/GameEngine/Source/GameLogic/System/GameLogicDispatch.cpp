@@ -34,6 +34,7 @@
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/GameProfile.h"
 #include "Common/GlobalData.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/ThingFactory.h"
@@ -874,18 +875,18 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 
 bool GameLogic::onNewGame(MAYBE_UNUSED GameMessage *msg)
 {
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @fix stephanmeesters 11/03/2026
-	// Make sure we're ready to start a new game. This prevents an issue where an infinite disconnect screen
-	// can be force-triggered in an online match by using cheats.
-	if ( isInGame() || isClearingGameData() || isLoadingMap() )
+	// GeneralsX @fix cheviiot 24/10/2026 PLAN-023: ZH readiness guard; Generals retail skips (CRC parity).
+	// Upstream reference: stephanmeesters / TheSuperHackers @fix 11/03/2026
+	if( !GameProfile::get().isGenerals() )
 	{
-		DEBUG_CRASH( ("Called MSG_NEW_GAME while game is not ready (inGame=%d, clearingData=%d, loadingMap=%d)",
-			isInGame(), isClearingGameData(), isLoadingMap()) );
+		if ( isInGame() || isClearingGameData() || isLoadingMap() )
+		{
+			DEBUG_CRASH( ("Called MSG_NEW_GAME while game is not ready (inGame=%d, clearingData=%d, loadingMap=%d)",
+				isInGame(), isClearingGameData(), isLoadingMap()) );
 
-		return false;
+			return false;
+		}
 	}
-#endif
 
 	//DEBUG_ASSERTCRASH(msg->getArgumentCount() == 1 || msg->getArgumentCount() == 2, ("%d arguments to MSG_NEW_GAME", msg->getArgumentCount()));
 	GameMode gameMode = (GameMode)msg->getArgument( 0 )->integer;
@@ -1002,18 +1003,20 @@ bool GameLogic::onSetRallyPoint(MAYBE_UNUSED GameMessage *msg)
 	if (!obj)
 		return false;
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @fix stephanmeesters 11/03/2026 Validate the owner of the source object
-	Player *msgPlayer = getMessagePlayer(msg);
-	if ( obj->getControllingPlayer() != msgPlayer )
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH owner validation (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
 	{
-		DEBUG_CRASH( ("MSG_SET_RALLY_POINT: Player '%ls' attempted to set the rally point of object '%s' owned by player '%ls'.",
-			msgPlayer->getPlayerDisplayName().str(),
-			obj->getTemplate()->getName().str(),
-			obj->getControllingPlayer()->getPlayerDisplayName().str()) );
-		return false;
+		// TheSuperHackers @fix stephanmeesters 11/03/2026 Validate the owner of the source object
+		Player *msgPlayer = getMessagePlayer(msg);
+		if ( obj->getControllingPlayer() != msgPlayer )
+		{
+			DEBUG_CRASH( ("MSG_SET_RALLY_POINT: Player '%ls' attempted to set the rally point of object '%s' owned by player '%ls'.",
+				msgPlayer->getPlayerDisplayName().str(),
+				obj->getTemplate()->getName().str(),
+				obj->getControllingPlayer()->getPlayerDisplayName().str()) );
+			return false;
+		}
 	}
-#endif
 
 	doSetRallyPoint( obj, dest );
 
@@ -1127,27 +1130,31 @@ bool GameLogic::onEnableRetaliationMode(MAYBE_UNUSED GameMessage *msg)
 {
 	Player *msgPlayer = getMessagePlayer(msg);
 
-#if RETAIL_COMPATIBLE_CRC
-	(void)msgPlayer;
-	//Logically turns on or off retaliation mode for a specified player.
-	const Int playerIndex = msg->getArgument( 0 )->integer;
-	const Bool enableRetaliation = msg->getArgument( 1 )->boolean;
-
-	Player *player = ThePlayerList->getNthPlayer( playerIndex );
-	if( player )
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail 2-arg vs ZH self-only (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
 	{
-		DEBUG_ASSERTCRASH(player == msgPlayer,
-			("Retaliation mode of player '%ls' was illegally set by player '%ls'. Before: '%d', after: '%d'.",
-				player->getPlayerDisplayName().str(), msgPlayer->getPlayerDisplayName().str(),
-				player->isLogicalRetaliationModeEnabled(), enableRetaliation) );
+		(void)msgPlayer;
+		//Logically turns on or off retaliation mode for a specified player.
+		const Int playerIndex = msg->getArgument( 0 )->integer;
+		const Bool enableRetaliation = msg->getArgument( 1 )->boolean;
 
-		player->setLogicalRetaliationModeEnabled( enableRetaliation );
+		Player *player = ThePlayerList->getNthPlayer( playerIndex );
+		if( player )
+		{
+			DEBUG_ASSERTCRASH(player == msgPlayer,
+				("Retaliation mode of player '%ls' was illegally set by player '%ls'. Before: '%d', after: '%d'.",
+					player->getPlayerDisplayName().str(), msgPlayer->getPlayerDisplayName().str(),
+					player->isLogicalRetaliationModeEnabled(), enableRetaliation) );
+
+			player->setLogicalRetaliationModeEnabled( enableRetaliation );
+		}
 	}
-#else
-	// TheSuperHackers @fix stephanmeesters 08/03/2026 Ensure that players can only set their own retaliation mode.
-	const Bool enableRetaliation = msg->getArgument( 0 )->boolean;
-	msgPlayer->setLogicalRetaliationModeEnabled( enableRetaliation );
-#endif
+	else
+	{
+		// TheSuperHackers @fix stephanmeesters 08/03/2026 Ensure that players can only set their own retaliation mode.
+		const Bool enableRetaliation = msg->getArgument( 0 )->boolean;
+		msgPlayer->setLogicalRetaliationModeEnabled( enableRetaliation );
+	}
 
 	return true;
 }
@@ -1182,18 +1189,20 @@ bool GameLogic::onDoSpecialPower(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &curr
 	Object* source = findObjectByID(sourceID);
 	if (source != nullptr)
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
-		Player *msgPlayer = getMessagePlayer(msg);
-		if ( source->getControllingPlayer() != msgPlayer )
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH owner validation (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
 		{
-			DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
-					msgPlayer->getPlayerDisplayName().str(),
-					source->getTemplate()->getName().str(),
-					source->getControllingPlayer()->getPlayerDisplayName().str()) );
-			return false;
+			// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
+			Player *msgPlayer = getMessagePlayer(msg);
+			if ( source->getControllingPlayer() != msgPlayer )
+			{
+				DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
+						msgPlayer->getPlayerDisplayName().str(),
+						source->getTemplate()->getName().str(),
+						source->getControllingPlayer()->getPlayerDisplayName().str()) );
+				return false;
+			}
 		}
-#endif
 
 		AIGroupPtr theGroup = TheAI->createGroup();
 		theGroup->add(source);
@@ -1242,18 +1251,20 @@ bool GameLogic::onDoSpecialPowerAtLocation(MAYBE_UNUSED GameMessage *msg, AIGrou
 	Object* source = findObjectByID( sourceID );
 	if (source != nullptr)
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
-		Player *msgPlayer = getMessagePlayer(msg);
-		if ( source->getControllingPlayer() != msgPlayer )
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH owner validation (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
 		{
-			DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_AT_LOCATION: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
-					msgPlayer->getPlayerDisplayName().str(),
-					source->getTemplate()->getName().str(),
-					source->getControllingPlayer()->getPlayerDisplayName().str()) );
-			return false;
+			// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
+			Player *msgPlayer = getMessagePlayer(msg);
+			if ( source->getControllingPlayer() != msgPlayer )
+			{
+				DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_AT_LOCATION: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
+						msgPlayer->getPlayerDisplayName().str(),
+						source->getTemplate()->getName().str(),
+						source->getControllingPlayer()->getPlayerDisplayName().str()) );
+				return false;
+			}
 		}
-#endif
 
 		AIGroupPtr theGroup = TheAI->createGroup();
 		theGroup->add(source);
@@ -1298,18 +1309,20 @@ bool GameLogic::onDoSpecialPowerAtObject(MAYBE_UNUSED GameMessage *msg, AIGroupP
 	Object* source = findObjectByID(sourceID);
 	if (source != nullptr)
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
-		Player *msgPlayer = getMessagePlayer(msg);
-		if ( source->getControllingPlayer() != msgPlayer )
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH owner validation (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
 		{
-			DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_AT_OBJECT: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
-					msgPlayer->getPlayerDisplayName().str(),
-					source->getTemplate()->getName().str(),
-					source->getControllingPlayer()->getPlayerDisplayName().str()) );
-			return false;
+			// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
+			Player *msgPlayer = getMessagePlayer(msg);
+			if ( source->getControllingPlayer() != msgPlayer )
+			{
+				DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_AT_OBJECT: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
+						msgPlayer->getPlayerDisplayName().str(),
+						source->getTemplate()->getName().str(),
+						source->getControllingPlayer()->getPlayerDisplayName().str()) );
+				return false;
+			}
 		}
-#endif
 
 		AIGroupPtr theGroup = TheAI->createGroup();
 		theGroup->add(source);
@@ -1708,18 +1721,20 @@ bool GameLogic::onDoSpecialPowerOverrideDestination(MAYBE_UNUSED GameMessage *ms
 
 	if (source != nullptr)
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
-		Player *msgPlayer = getMessagePlayer(msg);
-		if ( source->getControllingPlayer() != msgPlayer )
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH owner validation (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
 		{
-			DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_OVERRIDE_DESTINATION: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
-					msgPlayer->getPlayerDisplayName().str(),
-					source->getTemplate()->getName().str(),
-					source->getControllingPlayer()->getPlayerDisplayName().str()) );
-			return false;
+			// TheSuperHackers @fix stephanmeesters 01/03/2026 Validate the origin of the source object
+			Player *msgPlayer = getMessagePlayer(msg);
+			if ( source->getControllingPlayer() != msgPlayer )
+			{
+				DEBUG_CRASH( ("MSG_DO_SPECIAL_POWER_OVERRIDE_DESTINATION: Player '%ls' attempted to control the object '%s' owned by player '%ls'.",
+						msgPlayer->getPlayerDisplayName().str(),
+						source->getTemplate()->getName().str(),
+						source->getControllingPlayer()->getPlayerDisplayName().str()) );
+				return false;
+			}
 		}
-#endif
 
 		AIGroupPtr theGroup = TheAI->createGroup();
 		theGroup->add(source);

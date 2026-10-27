@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/INI.h"
+#include "Common/GameProfile.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/GameText.h"
 #include "GameNetwork/NetworkDefs.h"
@@ -158,37 +159,41 @@ void INI::parseMapCacheDefinition( INI* ini )
 
 	md.m_waypoints[TheNameKeyGenerator->keyToName(TheKey_InitialCameraPosition)] = mdr.m_initialCameraPosition;
 
-#if RTS_GENERALS
-	md.m_displayName = QuotedPrintableToUnicodeString(mdr.m_asciiDisplayName);
-#else
-	md.m_nameLookupTag = QuotedPrintableToAsciiString(mdr.m_asciiNameLookupTag);
-
-	if (md.m_nameLookupTag.isEmpty())
+	// GeneralsX @refactor cheviiot 23/10/2026 Map cache display fields by GameProfile (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
 	{
-		// maps without localized name tags
-		AsciiString tempdisplayname;
-		const char *displayNameStart = findLastPathSeparator(name);
-		tempdisplayname = displayNameStart ? displayNameStart + 1 : name;
-		md.m_displayName.translate(tempdisplayname);
-		if (md.m_numPlayers >= 2)
-		{
-			UnicodeString extension;
-			extension.format(L" (%d)", md.m_numPlayers);
-			md.m_displayName.concat(extension);
-		}
+		md.m_displayName = QuotedPrintableToUnicodeString(mdr.m_asciiDisplayName);
 	}
 	else
 	{
-		// official maps with name tags
-		md.m_displayName = TheGameText->fetch(md.m_nameLookupTag);
-		if (md.m_numPlayers >= 2)
+		md.m_nameLookupTag = QuotedPrintableToAsciiString(mdr.m_asciiNameLookupTag);
+
+		if (md.m_nameLookupTag.isEmpty())
 		{
-			UnicodeString extension;
-			extension.format(L" (%d)", md.m_numPlayers);
-			md.m_displayName.concat(extension);
+			// maps without localized name tags
+			AsciiString tempdisplayname;
+			const char *displayNameStart = findLastPathSeparator(name);
+			tempdisplayname = displayNameStart ? displayNameStart + 1 : name;
+			md.m_displayName.translate(tempdisplayname);
+			if (md.m_numPlayers >= 2)
+			{
+				UnicodeString extension;
+				extension.format(L" (%d)", md.m_numPlayers);
+				md.m_displayName.concat(extension);
+			}
+		}
+		else
+		{
+			// official maps with name tags
+			md.m_displayName = TheGameText->fetch(md.m_nameLookupTag);
+			if (md.m_numPlayers >= 2)
+			{
+				UnicodeString extension;
+				extension.format(L" (%d)", md.m_numPlayers);
+				md.m_displayName.concat(extension);
+			}
 		}
 	}
-#endif
 
 	AsciiString startingCamName;
 	for (Int i=0; i<md.m_numPlayers; ++i)

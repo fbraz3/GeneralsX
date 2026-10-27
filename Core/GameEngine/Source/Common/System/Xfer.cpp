@@ -33,6 +33,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/Upgrade.h"
 #include "Common/GameState.h"
+#include "Common/GameProfile.h"
 #include "Common/Xfer.h"
 #include "Common/BitFlagsIO.h"
 
@@ -818,16 +819,9 @@ void Xfer::xferUpgradeMask( UpgradeMaskType *upgradeMaskData )
 	else if( getXferMode() == XFER_CRC )
 	{
 
-		// just xfer implementation the data itself
-#if RETAIL_COMPATIBLE_CRC
-#if RTS_GENERALS
-		xferImplementation(upgradeMaskData, 8); // The original upgrade mask was 8 bytes in Generals.
-#else
-		xferImplementation(upgradeMaskData, 16); // The original upgrade mask was 16 bytes in Zero Hour.
-#endif
-#else
-		xferImplementation(upgradeMaskData, sizeof(UpgradeMaskType));
-#endif
+		// GeneralsX @feature cheviiot 24/10/2026 Retail CRC footprint always follows GameProfile (8 Generals / 16 ZH).
+		// (was gated on RETAIL_COMPATIBLE_CRC; dual-profile echelon needs this with CRC flag still 0)
+		xferImplementation(upgradeMaskData, GameProfile::get().isGenerals() ? 8 : 16);
 
 	}
 	else

@@ -35,6 +35,7 @@
 #include "Common/file.h"
 #include "Common/GameAudio.h"
 #include "Common/GameMemory.h"
+#include "Common/GameProfile.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Registry.h"
 
@@ -58,15 +59,10 @@ static const char *BIGFileIdentifier = "BIGF";
 
 namespace {
 
-static const char* kPrimaryAssetEnvGenerals = "CNC_GENERALS_PATH";
-static const char* kPrimaryAssetEnvZH = "CNC_GENERALS_ZH_PATH";
 static const char* kPrimaryAssetIniKey = "AssetPath";
 static const char* kAssetPathSection = "Paths";
-
-#if RTS_ZEROHOUR
 static const char* kBaseGeneralsAssetEnv = "CNC_GENERALS_PATH";
 static const char* kBaseGeneralsAssetIniKey = "GeneralsAssetPath";
-#endif
 
 // GeneralsX @bugfix UnicodeApocalypse 11/09/2026 True if the basename starts with "Patch" (e.g. PatchINI.big).
 static Bool isPatchArchiveFilename(const AsciiString& archivePath)
@@ -342,13 +338,10 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 	getExecutableDirectory(exeDirectory);
 
 	// GeneralsX @feature GitHubCopilot 16/03/2026 Resolve primary asset directory by ENV > INI > default > current.
-#if RTS_ZEROHOUR
-	const char* primaryEnvName = kPrimaryAssetEnvZH;
-	const char* primaryEnvValue = getenv(kPrimaryAssetEnvZH);
-#else
-	const char* primaryEnvName = kPrimaryAssetEnvGenerals;
-	const char* primaryEnvValue = getenv(kPrimaryAssetEnvGenerals);
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Route primary asset ENV through the process GameProfile.
+	const GameProfile &profile = GameProfile::get();
+	const char* primaryEnvName = profile.getPrimaryAssetEnvName();
+	const char* primaryEnvValue = getenv(primaryEnvName);
 	AsciiString sanitizedPrimaryEnvPath;
 	if (sanitizeConfiguredPath(primaryEnvValue, sanitizedPrimaryEnvPath)) {
 		fprintf(stderr, "[ASSET_ROOT] Trying env %s='%s'\n", primaryEnvName, sanitizedPrimaryEnvPath.str());
@@ -375,11 +368,7 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 		}
 	}
 
-#if RTS_ZEROHOUR
-	const char* legacyEnvValue = getenv("CNC_ZH_INSTALLPATH");
-#else
-	const char* legacyEnvValue = getenv("CNC_GENERALS_INSTALLPATH");
-#endif
+	const char* legacyEnvValue = getenv(profile.getLegacyInstallEnvName());
 	if (legacyEnvValue != nullptr && legacyEnvValue[0] != '\0') {
 		if (tryLoadBigFiles(fileSystem, AsciiString(legacyEnvValue), "legacy-env")) {
 			if (loadedDirectory != nullptr) {
@@ -412,8 +401,8 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 		}
 	}
 
-#if RTS_ZEROHOUR
-	if (exeDirectory.isNotEmpty()) {
+	// GeneralsX @feature cheviiot 23/10/2026 Zero Hour macOS/app-bundle Resources lookup is profile-gated.
+	if (profile.isZeroHour() && exeDirectory.isNotEmpty()) {
 		AsciiString resourcesPath = exeDirectory;
 		resourcesPath.concat("/../Resources");
 		if (tryLoadBigFiles(fileSystem, resourcesPath, "default-resources")) {
@@ -423,7 +412,6 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 			return TRUE;
 		}
 	}
-#endif
 
 	if (exeDirectory.isNotEmpty()) {
 		if (tryLoadBigFiles(fileSystem, exeDirectory, "default-exedir")) {
@@ -446,7 +434,6 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 	return FALSE;
 }
 
-#if RTS_ZEROHOUR
 template <typename TBigFileSystem>
 static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiString& zhAssetDirectory)
 {
@@ -502,7 +489,6 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 		}
 	}
 }
-#endif
 
 }
 
@@ -530,9 +516,10 @@ void BIGFileSystem::init() {
 	// fallback root previously set during initialization so the working directory remains authoritative.
 	TheLocalFileSystem->setAssetRootPath(primaryAssetsDirectory);
 
-#if RTS_ZEROHOUR
-    loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Base Generals BIG mount follows the selected profile.
+	if (GameProfile::get().loadsBaseGeneralsAssets()) {
+		loadBaseGeneralsAssetsForZH(this, primaryAssetsDirectory);
+	}
 }
 
 void BIGFileSystem::reset() {
@@ -710,15 +697,15 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
 	while (it != filenameList.end()) {
-#if RTS_ZEROHOUR
 		// TheSuperHackers @bugfix bobtista 18/11/2025 Skip duplicate INIZH.big in Data\INI to prevent CRC mismatches.
 		// English, Chinese, and Korean SKUs shipped with two INIZH.big files (one in Run directory, one in Run\Data\INI).
 		// The DeleteFile cleanup doesn't work on EA App/Origin installs because the folder is not writable, so we skip loading it instead.
-		if (it->endsWithNoCase("Data\\INI\\INIZH.big") || it->endsWithNoCase("Data/INI/INIZH.big")) {
+		// GeneralsX @feature cheviiot 23/10/2026 Gate the ZH-only INIZH skip on the selected GameProfile.
+		if (GameProfile::get().isZeroHour() &&
+			(it->endsWithNoCase("Data\\INI\\INIZH.big") || it->endsWithNoCase("Data/INI/INIZH.big"))) {
 			it++;
 			continue;
 		}
-#endif
 
 		if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);

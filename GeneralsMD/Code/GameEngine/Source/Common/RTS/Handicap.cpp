@@ -69,7 +69,8 @@ void Handicap::readFromDict(const Dict* d)
 	// this isn't very efficient, but is only called at load times,
 	// so it probably doesn't really matter.
 
-	const char* htNames[HANDICAP_TYPE_COUNT] =
+	// GeneralsX @refactor cheviiot 24/10/2026 Adapt upstream #3389 static_assert array sizing (ZH-canonical).
+	const char* htNames[] =
 	{
 		"BUILDCOST",
 		"BUILDTIME",
@@ -79,12 +80,14 @@ void Handicap::readFromDict(const Dict* d)
 //		"AIRSPEED",
 //		"INCOME"
 	};
+	static_assert(ARRAY_SIZE(htNames) == HANDICAP_TYPE_COUNT, "Incorrect array size");
 
-	const char* ttNames[THING_TYPE_COUNT] =
+	const char* ttNames[] =
 	{
 		"GENERIC",
 		"BUILDINGS",
 	};
+	static_assert(ARRAY_SIZE(ttNames) == THING_TYPE_COUNT, "Incorrect array size");
 
 // no, you should NOT call init() here.
 //init();

@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/AudioAffect.h"
 #include "Common/AudioHandleSpecialValues.h"
@@ -3048,20 +3049,20 @@ void ScriptActions::doCameraMotionBlur(Bool zoomIn, Bool saturate)
 
 static PlayerMaskType getHumanPlayerMask()
 {
-#if RETAIL_COMPATIBLE_CRC
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail &= vs ZH |= human mask (was RETAIL_COMPATIBLE_CRC).
 	PlayerMaskType mask;
-#else
-	PlayerMaskType mask = 0;
-#endif
+	if (!GameProfile::get().isGenerals())
+		mask = 0;
 	for (Int i=0; i<ThePlayerList->getPlayerCount(); ++i)
 	{
 		const Player *player = ThePlayerList->getNthPlayer(i);
 		if (player->getPlayerType() == PLAYER_HUMAN)
-#if RETAIL_COMPATIBLE_CRC
-			mask &= player->getPlayerMask();
-#else
-			mask |= player->getPlayerMask();
-#endif
+		{
+			if (GameProfile::get().isGenerals())
+				mask &= player->getPlayerMask();
+			else
+				mask |= player->getPlayerMask();
+		}
 	}
 
 	//DEBUG_LOG(("getHumanPlayerMask(): mask was %4.4X", mask));
@@ -5943,10 +5944,9 @@ void ScriptActions::doTeamUseCommandButtonOnNearestObjectType( const AsciiString
 		theGroup->getCenter(&pos);
 
 		bestObj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
-#if RETAIL_COMPATIBLE_CRC
-		if (!bestObj)
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail early-out if no closest object (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals() && !bestObj)
 			return;
-#endif
 	}
 	else
 	{
@@ -5991,10 +5991,9 @@ void ScriptActions::doTeamUseCommandButtonOnNearestObjectType( const AsciiString
 		}
 	}
 
-#if !RETAIL_COMPATIBLE_CRC
-	if (!bestObj)
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH early-out if no best object (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && !bestObj)
 		return;
-#endif
 
 	// already been checked for validity
 	theGroup->groupDoCommandButtonAtObject(commandButton, bestObj, CMD_FROM_SCRIPT);

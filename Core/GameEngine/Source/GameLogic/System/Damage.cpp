@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
 #include "Common/Xfer.h"
+#include "Common/GameProfile.h"
 #include "GameLogic/Damage.h"
 #include "Common/BitFlagsIO.h"
 #include "Common/ThingFactory.h"
@@ -39,8 +40,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+// GeneralsX @feature cheviiot 23/10/2026 Slot 31: Generals FLESHY_SNIPER vs ZH SUBDUAL_MISSILE (same retail id).
+// Name table is filled by ApplyDamageTypeNamesForProfile() after GameProfile selection.
 template<>
-const char* const DamageTypeFlags::s_bitNameList[] =
+const char* DamageTypeFlags::s_bitNameList[DamageTypeFlags::NumBits + 1] = {};
+
+namespace {
+
+const char* const kDamageNamesHead[] =
 {
 	"EXPLOSION",
 	"CRUSH",
@@ -73,9 +80,13 @@ const char* const DamageTypeFlags::s_bitNameList[] =
 	"STEALTHJET_MISSILES",
 	"MOLOTOV_COCKTAIL",
 	"COMANCHE_VULCAN",
+};
+
 #if RTS_GENERALS
+// Generals compile: FLESHY_SNIPER then ZH subdual/status types (DAMAGE_NUM_TYPES includes both).
+const char* const kDamageNamesTail[] =
+{
 	"FLESHY_SNIPER",
-#endif
 	"SUBDUAL_MISSILE",
 	"SUBDUAL_VEHICLE",
 	"SUBDUAL_BUILDING",
@@ -83,10 +94,60 @@ const char* const DamageTypeFlags::s_bitNameList[] =
 	"MICROWAVE",
 	"KILL_GARRISONED",
 	"STATUS",
-
 	nullptr
 };
-static_assert(ARRAY_SIZE(DamageTypeFlags::s_bitNameList) == DamageTypeFlags::NumBits + 1, "Incorrect array size");
+#else
+// ZH-canonical compile: slot 31 name follows GameProfile (FLESHY vs SUBDUAL_MISSILE).
+const char* const kDamageNamesTailZH[] =
+{
+	"SUBDUAL_MISSILE",
+	"SUBDUAL_VEHICLE",
+	"SUBDUAL_BUILDING",
+	"SUBDUAL_UNRESISTABLE",
+	"MICROWAVE",
+	"KILL_GARRISONED",
+	"STATUS",
+	nullptr
+};
+
+const char* const kDamageNamesTailGenerals[] =
+{
+	"FLESHY_SNIPER",
+	"SUBDUAL_VEHICLE",
+	"SUBDUAL_BUILDING",
+	"SUBDUAL_UNRESISTABLE",
+	"MICROWAVE",
+	"KILL_GARRISONED",
+	"STATUS",
+	nullptr
+};
+#endif
+
+void fillDamageTypeNameList(const char* const* tail)
+{
+	UnsignedInt i = 0;
+	for (; i < ARRAY_SIZE(kDamageNamesHead); ++i)
+	{
+		DamageTypeFlags::s_bitNameList[i] = kDamageNamesHead[i];
+	}
+	for (UnsignedInt t = 0; tail[t] != nullptr; ++t, ++i)
+	{
+		DamageTypeFlags::s_bitNameList[i] = tail[t];
+	}
+	DamageTypeFlags::s_bitNameList[i] = nullptr;
+	DEBUG_ASSERTCRASH(i == DamageTypeFlags::NumBits, ("DamageType name list size mismatch"));
+}
+
+} // namespace
+
+void ApplyDamageTypeNamesForProfile(void)
+{
+#if RTS_GENERALS
+	fillDamageTypeNameList(kDamageNamesTail);
+#else
+	fillDamageTypeNameList(GameProfile::get().isGenerals() ? kDamageNamesTailGenerals : kDamageNamesTailZH);
+#endif
+}
 
 DamageTypeFlags DAMAGE_TYPE_FLAGS_NONE; 	// inits to all zeroes
 DamageTypeFlags DAMAGE_TYPE_FLAGS_ALL(DamageTypeFlags::kInitSetAll);
@@ -123,11 +184,11 @@ void DamageInfo::xfer( Xfer *xfer )
 void DamageInfoInput::xfer( Xfer *xfer )
 {
 
-	// version
-#if RTS_GENERALS && RETAIL_COMPATIBLE_XFER_SAVE
-	XferVersion currentVersion = 1;
-#else
+	// GeneralsX @refactor cheviiot 23/10/2026 DamageInfoInput xfer version by profile (was #if RTS_GENERALS && RETAIL...).
 	XferVersion currentVersion = 3;
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	if (GameProfile::get().isGenerals())
+		currentVersion = 1;
 #endif
 
 	XferVersion version = currentVersion;

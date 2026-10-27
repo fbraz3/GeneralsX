@@ -41,6 +41,7 @@
 #include "Common/crc.h"
 #include "Common/CRCDebug.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/INI.h"
 #include "Common/PerfTimer.h"
@@ -609,21 +610,24 @@ Real WeaponTemplate::estimateWeaponTemplateDamage(
   // hmm.. must be shooting a firebase or such, if there is noone home to take the bullet, return 0!
   if ( victimObj->isKindOf( KINDOF_STRUCTURE) && damageType == DAMAGE_SNIPER )
   {
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail empty-contain; ZH also checks slaves (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals() || PRESERVE_SNIPING_EMPTY_STINGER_SITES)
+		{
+			if ( victimObj->getContain() )
+			{
+				if ( victimObj->getContain()->getContainCount() == 0 )
+					return 0.0f;
+			}
+		}
+		else
+		{
+			// TheSuperHackers @bugfix Stubbjax 22/06/2026 Only allow targeting Stinger Sites when they contain Soldiers.
+			const Bool hasOccupants = victimObj->getContain() && victimObj->getContain()->getContainCount() > 0;
+			const Bool hasSlaves = victimObj->getSpawnBehaviorInterface() && victimObj->getSpawnBehaviorInterface()->getSlaveCount() > 0;
 
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_SNIPING_EMPTY_STINGER_SITES
-    if ( victimObj->getContain() )
-    {
-      if ( victimObj->getContain()->getContainCount() == 0 )
-        return 0.0f;
-    }
-#else
-		// TheSuperHackers @bugfix Stubbjax 22/06/2026 Only allow targeting Stinger Sites when they contain Soldiers.
-		const Bool hasOccupants = victimObj->getContain() && victimObj->getContain()->getContainCount() > 0;
-		const Bool hasSlaves = victimObj->getSpawnBehaviorInterface() && victimObj->getSpawnBehaviorInterface()->getSlaveCount() > 0;
-
-		if (!hasOccupants && !hasSlaves)
-			return 0.0f;
-#endif
+			if (!hasOccupants && !hasSlaves)
+				return 0.0f;
+		}
   }
 
 
@@ -1191,46 +1195,47 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 }
 
 //-------------------------------------------------------------------------------------------------
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_UNRELIABLE_FIRESTORMS
 void WeaponTemplate::trimOldHistoricDamage() const
 {
-	UnsignedInt expirationDate = TheGameLogic->getFrame() - TheGlobalData->m_historicDamageLimit;
-	while (!m_historicDamage.empty())
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail global-limit trim vs ZH bonus-time trim (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals() || PRESERVE_UNRELIABLE_FIRESTORMS)
 	{
-		HistoricWeaponDamageInfo& h = m_historicDamage.front();
-		if (h.frame <= expirationDate)
+		UnsignedInt expirationDate = TheGameLogic->getFrame() - TheGlobalData->m_historicDamageLimit;
+		while (!m_historicDamage.empty())
 		{
-			m_historicDamage.pop_front();
-			continue;
+			HistoricWeaponDamageInfo& h = m_historicDamage.front();
+			if (h.frame <= expirationDate)
+			{
+				m_historicDamage.pop_front();
+				continue;
+			}
+			else
+			{
+				// since they are in strict chronological order,
+				// stop as soon as we get to a nonexpired one
+				break;
+			}
 		}
-		else
+	}
+	else
+	{
+		if (m_historicDamage.empty())
+			return;
+
+		const UnsignedInt currentFrame = TheGameLogic->getFrame();
+		const UnsignedInt expirationFrame = currentFrame - m_historicBonusTime;
+
+		HistoricWeaponDamageList::iterator it = m_historicDamage.begin();
+
+		while (it != m_historicDamage.end())
 		{
-			// since they are in strict chronological order,
-			// stop as soon as we get to a nonexpired one
-			break;
+			if (it->frame <= expirationFrame)
+				it = m_historicDamage.erase(it);
+			else
+				break;
 		}
 	}
 }
-#else
-void WeaponTemplate::trimOldHistoricDamage() const
-{
-	if (m_historicDamage.empty())
-		return;
-
-	const UnsignedInt currentFrame = TheGameLogic->getFrame();
-	const UnsignedInt expirationFrame = currentFrame - m_historicBonusTime;
-
-	HistoricWeaponDamageList::iterator it = m_historicDamage.begin();
-
-	while (it != m_historicDamage.end())
-	{
-		if (it->frame <= expirationFrame)
-			it = m_historicDamage.erase(it);
-		else
-			break;
-	}
-}
-#endif
 
 //-------------------------------------------------------------------------------------------------
 void WeaponTemplate::trimTriggeredHistoricDamage() const
@@ -1254,93 +1259,94 @@ static Bool is2DDistSquaredLessThan(const Coord3D& a, const Coord3D& b, Real dis
 }
 
 //-------------------------------------------------------------------------------------------------
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_UNRELIABLE_FIRESTORMS
 void WeaponTemplate::processHistoricDamage(const Object* source, const Coord3D* pos) const
 {
-	//
-	/** @todo We need to rewrite the historic stuff ... if you fire 5 missiles, and the 5th,
-	// one creates a firestorm ... and then half a second later another volley of 5 missiles
-	// come in, the second wave of 5 missiles would all do a historic weapon, making 5 more
-	// firestorms (CBD) */
-	//
-
-	if( m_historicBonusCount > 0 && m_historicBonusWeapon != this )
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail clear-list firestorm vs ZH trigger trim (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals() || PRESERVE_UNRELIABLE_FIRESTORMS)
 	{
-		trimOldHistoricDamage();
+		//
+		/** @todo We need to rewrite the historic stuff ... if you fire 5 missiles, and the 5th,
+		// one creates a firestorm ... and then half a second later another volley of 5 missiles
+		// come in, the second wave of 5 missiles would all do a historic weapon, making 5 more
+		// firestorms (CBD) */
+		//
 
-		Real radSqr = m_historicBonusRadius * m_historicBonusRadius;
-		Int count = 0;
-		UnsignedInt frameNow = TheGameLogic->getFrame();
-		UnsignedInt oldestThatWillCount = frameNow - m_historicBonusTime; // Anything before this frame is "more than two seconds ago" eg
-		for( HistoricWeaponDamageList::const_iterator it = m_historicDamage.begin(); it != m_historicDamage.end(); ++it )
+		if( m_historicBonusCount > 0 && m_historicBonusWeapon != this )
 		{
-			if( it->frame >= oldestThatWillCount &&
-					is2DDistSquaredLessThan( *pos, it->location, radSqr ) )
-			{
-				// This one is close enough in time and distance, so count it. This is tracked by template since it applies
-				// across units, so don't try to clear historicDamage on success in here.
-				++count;
-			}
-		}
+			trimOldHistoricDamage();
 
-		if( count >= m_historicBonusCount - 1 )	// minus 1 since we include ourselves implicitly
-		{
-		  TheWeaponStore->createAndFireTempWeapon(m_historicBonusWeapon, source, pos);
-
-			/** @todo E3 hack! Clear the list for now to make sure we don't have multiple firestorms
-				* remove this when the branches merge back into one.  What is causing the
-				* multiple firestorms, who is to say ... this is a plug, not a fix! */
-			m_historicDamage.clear();
-
-		}
-		else
-		{
-
-			// add AFTER checking for historic stuff
-			m_historicDamage.push_back( HistoricWeaponDamageInfo(frameNow, *pos) );
-
-		}
-
-	}
-}
-#else
-void WeaponTemplate::processHistoricDamage(const Object* source, const Coord3D* pos) const
-{
-	if (m_historicBonusCount > 0 && m_historicBonusWeapon != this)
-	{
-		trimOldHistoricDamage();
-
-		++m_historicDamageTriggerId;
-
-		const Int requiredCount = m_historicBonusCount - 1; // minus 1 since we include ourselves implicitly
-		if (m_historicDamage.size() >= requiredCount)
-		{
-			const Real radSqr = m_historicBonusRadius * m_historicBonusRadius;
+			Real radSqr = m_historicBonusRadius * m_historicBonusRadius;
 			Int count = 0;
-
-			for (HistoricWeaponDamageList::iterator it = m_historicDamage.begin(); it != m_historicDamage.end(); ++it)
+			UnsignedInt frameNow = TheGameLogic->getFrame();
+			UnsignedInt oldestThatWillCount = frameNow - m_historicBonusTime; // Anything before this frame is "more than two seconds ago" eg
+			for( HistoricWeaponDamageList::const_iterator it = m_historicDamage.begin(); it != m_historicDamage.end(); ++it )
 			{
-				if (is2DDistSquaredLessThan(*pos, it->location, radSqr))
+				if( it->frame >= oldestThatWillCount &&
+						is2DDistSquaredLessThan( *pos, it->location, radSqr ) )
 				{
 					// This one is close enough in time and distance, so count it. This is tracked by template since it applies
 					// across units, so don't try to clear historicDamage on success in here.
-					it->triggerId = m_historicDamageTriggerId;
+					++count;
+				}
+			}
 
-					if (++count == requiredCount)
+			if( count >= m_historicBonusCount - 1 )	// minus 1 since we include ourselves implicitly
+			{
+			  TheWeaponStore->createAndFireTempWeapon(m_historicBonusWeapon, source, pos);
+
+				/** @todo E3 hack! Clear the list for now to make sure we don't have multiple firestorms
+					* remove this when the branches merge back into one.  What is causing the
+					* multiple firestorms, who is to say ... this is a plug, not a fix! */
+				m_historicDamage.clear();
+
+			}
+			else
+			{
+
+				// add AFTER checking for historic stuff
+				m_historicDamage.push_back( HistoricWeaponDamageInfo(frameNow, *pos) );
+
+			}
+
+		}
+	}
+	else
+	{
+		if (m_historicBonusCount > 0 && m_historicBonusWeapon != this)
+		{
+			trimOldHistoricDamage();
+
+			++m_historicDamageTriggerId;
+
+			const Int requiredCount = m_historicBonusCount - 1; // minus 1 since we include ourselves implicitly
+			if (m_historicDamage.size() >= requiredCount)
+			{
+				const Real radSqr = m_historicBonusRadius * m_historicBonusRadius;
+				Int count = 0;
+
+				for (HistoricWeaponDamageList::iterator it = m_historicDamage.begin(); it != m_historicDamage.end(); ++it)
+				{
+					if (is2DDistSquaredLessThan(*pos, it->location, radSqr))
 					{
-						TheWeaponStore->createAndFireTempWeapon(m_historicBonusWeapon, source, pos);
-						trimTriggeredHistoricDamage();
-						return;
+						// This one is close enough in time and distance, so count it. This is tracked by template since it applies
+						// across units, so don't try to clear historicDamage on success in here.
+						it->triggerId = m_historicDamageTriggerId;
+
+						if (++count == requiredCount)
+						{
+							TheWeaponStore->createAndFireTempWeapon(m_historicBonusWeapon, source, pos);
+							trimTriggeredHistoricDamage();
+							return;
+						}
 					}
 				}
 			}
-		}
 
-		// add AFTER checking for historic stuff
-		m_historicDamage.push_back(HistoricWeaponDamageInfo(TheGameLogic->getFrame(), *pos));
+			// add AFTER checking for historic stuff
+			m_historicDamage.push_back(HistoricWeaponDamageInfo(TheGameLogic->getFrame(), *pos));
+		}
 	}
 }
-#endif
 
 //-------------------------------------------------------------------------------------------------
 void WeaponTemplate::dealDamageInternal(ObjectID sourceID, ObjectID victimID, const Coord3D *pos, const WeaponBonus& bonus, Bool isProjectileDetonation) const

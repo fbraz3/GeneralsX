@@ -88,11 +88,13 @@ jobs:
           NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
+          # GeneralsX @build cheviiot 24/10/2026 PLAN-023: product default migration OFF; CI keeps legacy targets.
           cmake --preset win32-vcpkg `
             -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
             -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" `
             -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
             -DRTS_BUILD_ZEROHOUR=${{ matrix.game.build_zh }} `
+            -DRTS_BUILD_MIGRATION_BINARIES=ON `
             -DRTS_BUILD_CORE_TOOLS=OFF `
             -DRTS_BUILD_ZEROHOUR_TOOLS=OFF `
             -DRTS_BUILD_GENERALS_TOOLS=OFF `
@@ -110,6 +112,16 @@ jobs:
       - name: Build
         shell: pwsh
         run: cmake --build --preset win32-vcpkg --target ${{ matrix.game.target }}
+
+      - name: Build echelon (unified binary)
+        if: matrix.game.id == 'generalsxzh'
+        shell: pwsh
+        run: |
+          cmake --build --preset win32-vcpkg --target echelon
+          $bin = "build/win32-vcpkg/GeneralsMD/Release/echelon.exe"
+          if (-not (Test-Path $bin)) { throw "echelon.exe missing: $bin" }
+          Get-Item $bin | Format-List FullName, Length
+          Write-Host "echelon ready"
 
       - name: Collect runtime
         shell: pwsh

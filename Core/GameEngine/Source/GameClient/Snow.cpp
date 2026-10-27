@@ -53,6 +53,13 @@ void SnowManager::init()
 
 void SnowManager::updateIniSettings()
 {
+	// GeneralsX @feature cheviiot 23/10/2026 Weather/snow INI is ZH-only; Generals profile leaves TheWeatherSetting null.
+	if( TheWeatherSetting == nullptr )
+	{
+		m_isVisible = FALSE;
+		return;
+	}
+
 	Real *dst=m_startingHeights;
 	//initialize a table of random starting positions for each particle.
 	Int boxDimensions = (Int)TheWeatherSetting->m_snowBoxDimensions;

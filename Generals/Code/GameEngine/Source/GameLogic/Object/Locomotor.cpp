@@ -36,6 +36,7 @@
 #define DEFINE_LOCO_Z_NAMES
 #define DEFINE_LOCO_APPEARANCE_NAMES
 
+#include "Common/GameProfile.h"
 #include "Common/INI.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/PartitionManager.h"
@@ -462,12 +463,11 @@ void LocomotorTemplate::validate()
 		}
 	}
 
-#if RTS_GENERALS
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals DecelerationPitchLimit heal via GameProfile (was #if RTS_GENERALS).
 	// TheSuperHackers @info DecelerationPitchLimit was just added in Zero Hour and is therefore defaulted to
 	// AccelerationPitchLimit when zero to preserve the original behavior of Generals.
-	if (m_decelPitchLimit == 0.0f)
+	if (GameProfile::get().isGenerals() && m_decelPitchLimit == 0.0f)
 		m_decelPitchLimit = m_accelPitchLimit;
-#endif
 
 #if USE_RETAIL_PHYSICS_FORWARD_SPEED_AVERAGE()
 	// TheSuperHackers @info THRUST is not scaled, see DiagonalCompensation2D.

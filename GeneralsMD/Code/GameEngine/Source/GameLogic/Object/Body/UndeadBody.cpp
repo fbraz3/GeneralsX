@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 #include "Common/Xfer.h"
 #include "GameLogic/Module/UndeadBody.h"
 
@@ -81,12 +82,11 @@ void UndeadBody::attemptDamage( DamageInfo *damageInfo )
 
 	if( damageInfo->in.m_damageType != DAMAGE_UNRESISTABLE &&
 			!m_isSecondLife &&
-#if RETAIL_COMPATIBLE_CRC || PRESERVE_PREMATURE_BATTLE_BUS_DEATH
-			damageInfo->in.m_amount >= getHealth() &&
-#else
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail raw amount vs ZH estimateDamage (was RETAIL_COMPATIBLE_CRC || PRESERVE).
 			// TheSuperHackers @bugfix Stubbjax 20/09/2025 Battle Buses now correctly apply damage modifiers when calculating lethal damage
-			estimateDamage(damageInfo->in) >= getHealth() &&
-#endif
+			((GameProfile::get().isGenerals() || PRESERVE_PREMATURE_BATTLE_BUS_DEATH)
+				? damageInfo->in.m_amount >= getHealth()
+				: estimateDamage(damageInfo->in) >= getHealth()) &&
 			IsHealthDamagingDamage(damageInfo->in.m_damageType)
 			)
 	{

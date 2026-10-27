@@ -53,7 +53,8 @@ private:
 
 public:
 	CPP_11(static constexpr size_t NumBits = NUMBITS);
-	static const char* const s_bitNameList[];
+	// GeneralsX @feature cheviiot 23/10/2026 Non-const pointers so DamageTypeFlags can swap Generals/ZH slot-31 names.
+	static const char* s_bitNameList[];
 
 	/*
 		just a little syntactic sugar so that there is no "foo = 0" compatible constructor

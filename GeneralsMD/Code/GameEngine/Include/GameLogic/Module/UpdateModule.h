@@ -32,6 +32,7 @@
 #include "Common/Module.h"
 #include "Common/GameType.h"
 #include "Common/DisabledTypes.h"
+#include "Common/Upgrade.h"
 #include "GameLogic/Module/BehaviorModule.h"
 
 #define DIRECT_UPDATEMODULE_ACCESS
@@ -358,4 +359,13 @@ public:
 	virtual Bool useSpawnRallyPoint() const { return FALSE; }
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const {rallyPoint.x=rallyPoint.y=rallyPoint.z=0; return false;}	///< get the natural "rally point" for units to move towards
 	virtual Bool getExitPosition( Coord3D& exitPosition ) const {exitPosition.x=exitPosition.y=exitPosition.z=0; return false;};					///< access to the "Door" position of the production object
+};
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature cheviiot 23/10/2026 Generals DelayedUpgrade update interface (PLAN-023 Gate 6).
+class DelayedUpgradeUpdateInterface
+{
+public:
+	virtual Bool isTriggeredBy( const UpgradeMaskType& potentialMask ) = 0;
+	virtual void setDelay( UnsignedInt startingDelay ) = 0;
 };

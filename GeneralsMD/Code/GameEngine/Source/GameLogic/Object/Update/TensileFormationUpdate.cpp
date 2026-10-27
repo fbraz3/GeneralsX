@@ -348,7 +348,8 @@ UpdateSleepTime TensileFormationUpdate::update()
 	else
 		draw->clearModelConditionFlags(MAKE_MODELCONDITION_MASK(MODELCONDITION_MOVING));
 
-	if ( fabs( pos->z - newPos.z ) > 0.2f && m_life < 100)
+	// GeneralsX @bugfix cheviiot 24/10/2026 Use WWMath::Fabs (upstream parity; cross-platform determinism).
+	if ( WWMath::Fabs( pos->z - newPos.z ) > 0.2f && m_life < 100)
 		draw->setModelConditionFlags(MAKE_MODELCONDITION_MASK(MODELCONDITION_FREEFALL));
 	else
 		draw->clearModelConditionFlags(MAKE_MODELCONDITION_MASK(MODELCONDITION_FREEFALL));

@@ -243,7 +243,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/Damage.h
     Include/GameLogic/ExperienceTracker.h
     Include/GameLogic/FiringTracker.h
-    Include/GameLogic/FPUControl.h
+#    Include/GameLogic/FPUControl.h
     Include/GameLogic/GameLogic.h
     Include/GameLogic/GhostObject.h
     Include/GameLogic/Locomotor.h
@@ -1039,6 +1039,8 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Update/SpyVisionUpdate.cpp
     Source/GameLogic/Object/Update/StealthDetectorUpdate.cpp
     Source/GameLogic/Object/Update/StealthUpdate.cpp
+    # GeneralsX @feature cheviiot 23/10/2026 Generals-only module for echelon -game generals.
+    Source/GameLogic/Object/Update/DelayedWeaponSetUpgradeUpdate.cpp
     Source/GameLogic/Object/Update/StickyBombUpdate.cpp
     Source/GameLogic/Object/Update/StructureCollapseUpdate.cpp
     Source/GameLogic/Object/Update/StructureToppleUpdate.cpp
@@ -1050,6 +1052,8 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Upgrade/ActiveShroudUpgrade.cpp
     Source/GameLogic/Object/Upgrade/ArmorUpgrade.cpp
     Source/GameLogic/Object/Upgrade/CommandSetUpgrade.cpp
+    # GeneralsX @feature cheviiot 23/10/2026 Generals-only module for echelon -game generals.
+    Source/GameLogic/Object/Upgrade/DelayedUpgrade.cpp
     Source/GameLogic/Object/Upgrade/CostModifierUpgrade.cpp
     Source/GameLogic/Object/Upgrade/ExperienceScalarUpgrade.cpp
     Source/GameLogic/Object/Upgrade/GrantScienceUpgrade.cpp

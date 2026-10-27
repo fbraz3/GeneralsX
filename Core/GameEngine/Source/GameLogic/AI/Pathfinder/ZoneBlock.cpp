@@ -16,6 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "Common/GameProfile.h"
 #include "GameLogic/Pathfinder/PathfindCell.h"
 #include "GameLogic/Pathfinder/PathfindZoneManager.h"
 #include "GameLogic/Pathfinder/ZoneBlock.h"
@@ -130,11 +131,15 @@ void ZoneBlock::blockCalculateZones(PathfindCell **map, PathfindLayer layers[], 
 zoneStorageType ZoneBlock::getEffectiveZone( LocomotorSurfaceTypeMask acceptableSurfaces,
 																					 Bool crusher, zoneStorageType zone) const
 {
-#if !(RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING)
-	if (zone==PathfindZoneManager::UNINITIALIZED_ZONE) {
-		return zone;
-	}
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals retail pathfind skips UNINITIALIZED early return (was #if !(RTS_GENERALS && RETAIL...)).
+#if RETAIL_COMPATIBLE_PATHFINDING
+	if (!GameProfile::get().isGenerals())
 #endif
+	{
+		if (zone==PathfindZoneManager::UNINITIALIZED_ZONE) {
+			return zone;
+		}
+	}
 
 	if (acceptableSurfaces&LOCOMOTORSURFACE_AIR) return 1; // air is all zone 1.
 

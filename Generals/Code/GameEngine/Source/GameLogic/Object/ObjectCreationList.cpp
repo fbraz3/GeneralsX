@@ -39,6 +39,7 @@
 #include "Common/DrawModule.h"
 #include "Common/GlobalData.h"
 #include "Common/INI.h"
+#include "Common/GameProfile.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ThingTemplate.h"
@@ -1312,9 +1313,8 @@ protected:
 				{
 					DEBUG_ASSERTCRASH(resultPos == *pos, ("Position should not have been changed"));
 
-#if RETAIL_COMPATIBLE_CRC
-					DEBUG_CRASH(("A mismatch is likely to happen if this code path is used in a match with unpatched clients."));
-#endif
+					if (GameProfile::get().isGenerals())
+						DEBUG_CRASH(("A mismatch is likely to happen if this code path is used in a match with unpatched clients."));
 				}
 				doStuffToObj( debris, m_names[pick], &resultPos, mtx, orientation, sourceObj, lifetimeFrames );
 			}
@@ -1341,10 +1341,12 @@ protected:
 			}
 		}
 
-#if !RETAIL_COMPATIBLE_CRC && !PRESERVE_NO_XP_FROM_OCL_KILLS
-		ObjectID sinkID = sourceObj->getExperienceTracker()->getExperienceSink();
-		firstObject->getExperienceTracker()->setExperienceSink(sinkID != INVALID_ID ? sinkID : sourceObj->getID());
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH propagates XP sink from OCL source (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals() && !PRESERVE_NO_XP_FROM_OCL_KILLS)
+		{
+			ObjectID sinkID = sourceObj->getExperienceTracker()->getExperienceSink();
+			firstObject->getExperienceTracker()->setExperienceSink(sinkID != INVALID_ID ? sinkID : sourceObj->getID());
+		}
 
 		if (container)
 			doStuffToObj( container, AsciiString::TheEmptyString, pos, mtx, orientation, sourceObj, lifetimeFrames );
@@ -1361,9 +1363,9 @@ protected:
 				debrisModelNamesGlobalHack.push_back(token);
 			debrisNugget->m_names.push_back(AsciiString(token));
 
-#if RETAIL_COMPATIBLE_CRC
-			token = ini->getNextTokenOrNull();
-#endif
+			// GeneralsX @refactor cheviiot 24/10/2026 Retail consumes leftover INI token (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals())
+				token = ini->getNextTokenOrNull();
 		}
 	}
 

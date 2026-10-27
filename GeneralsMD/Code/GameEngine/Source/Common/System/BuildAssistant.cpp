@@ -30,6 +30,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/BuildAssistant.h"
 #include "Common/GlobalData.h"
@@ -710,10 +711,11 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 				continue;
 		}
 
-#if !RETAIL_COMPATIBLE_CRC
-		if (builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH rejects fogged build sites (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals()
+				&& builderObject
+				&& them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
 			return LBC_SHROUD;
-#endif
 
 		//Kris: Patch 1.01 - November 5, 2003
 		//Prevent busy units (black lotus hacking from being moved by trying to place a building -- exploit).

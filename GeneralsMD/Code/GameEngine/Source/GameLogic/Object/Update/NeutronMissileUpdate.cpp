@@ -297,7 +297,8 @@ static Real calcTransform(const Object* obj, const Coord3D *pos, Real maxTurnRat
 	Real angle = (Real)ACos( c );
 
 	Vector3 newDir;
-	if (fabs(angle) < maxTurnRate)
+	// GeneralsX @bugfix cheviiot 24/10/2026 Use WWMath::Fabs (upstream parity; cross-platform determinism).
+	if (WWMath::Fabs(angle) < maxTurnRate)
 	{
 		// close enough -- point exactly in the right dir
 		newDir = otherDir;
@@ -355,7 +356,7 @@ void NeutronMissileUpdate::doAttack()
 			//
 			// Modulate speed according to turning. The more we have to turn, the slower we go
 			//
-			Real angleCoeff = (Real)fabs( relAngle ) / (PI / 2.0f);
+			Real angleCoeff = (Real)WWMath::Fabs( relAngle ) / (PI / 2.0f);
 			if (angleCoeff > 1.0f)
 				angleCoeff = 1.0;
 		}

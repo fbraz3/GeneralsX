@@ -49,6 +49,8 @@
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
+
 #include "Common/ActionManager.h"
 #include "Common/DiscreteCircle.h"
 #include "Common/GameEngine.h"
@@ -1836,14 +1838,10 @@ void PartitionData::doCircleFill(
 	Int y = cellRadius - 1;
 	Int dec = 3 - 2*cellRadius;
 
-#if RETAIL_COMPATIBLE_CRC
-	// Cell coverage diverges at radii >= 240 between algorithms.
+// GeneralsX @refactor cheviiot 24/10/2026 Retail circle endRef quirk (was RETAIL_COMPATIBLE_CRC).
 	Int end = cellRadius - 1;
 	Int& endRef = (cellRadius < 240) ? y : end;
-	for (Int x = 0; x <= endRef; ++x)
-#else
-	for (Int x = 0; x <= y; ++x)
-#endif
+	for (Int x = 0; x <= (GameProfile::get().isGenerals() ? endRef : y); ++x)
 	{
 		hLineCircle(cellCenterX - x, cellCenterX + x, cellCenterY + y);
 		hLineCircle(cellCenterX - x, cellCenterX + x, cellCenterY - y);
@@ -2097,12 +2095,15 @@ void PartitionData::updateCellsTouched()
 			case GEOMETRY_SPHERE:
 			case GEOMETRY_CYLINDER:
 			{
-#if RETAIL_COMPATIBLE_CRC || RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
+// GeneralsX @refactor cheviiot 24/10/2026 Retail/compat fill vs ZH precise (was RETAIL_COMPATIBLE_CRC || CIRCLE_FILL).
+#if RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
 				doCircleFill(pos.x, pos.y, majorRadius);
 #else
-				// TheSuperHackers @bugfix Stubbjax 29/01/2026 Use precise circle fill to improve
-				// collision accuracy, most notably for objects with geometry radii >= 20 and < 40.
-				doCircleFillPrecise(pos.x, pos.y, majorRadius);
+				if (GameProfile::get().isGenerals())
+					doCircleFill(pos.x, pos.y, majorRadius);
+				else
+					// TheSuperHackers @bugfix Stubbjax 29/01/2026 Use precise circle fill.
+					doCircleFillPrecise(pos.x, pos.y, majorRadius);
 #endif
 				break;
 			}
@@ -2192,9 +2193,9 @@ Int PartitionData::calcMaxCoiForShape(GeometryType geom, Real majorRadius, Real 
 				// this actually allocates a few too many, but that's ok.
 				Int cells = ThePartitionManager->worldToCellDist(majorRadius*2) + 1;
 				result = cells * cells;
-#if !RETAIL_COMPATIBLE_CRC
-				break;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH breaks after cylinder size; retail falls through (was !RETAIL_COMPATIBLE_CRC).
+				if (!GameProfile::get().isGenerals())
+					break;
 			}
 			case GEOMETRY_BOX:
 			{
@@ -3297,11 +3298,13 @@ Object *PartitionManager::getClosestObjects(
 	Object* closestObj = nullptr;
 	Real closestDistSqr = maxDist * maxDist;	// if it's not closer than this, we shouldn't consider it anyway...
 	Coord3D closestVec;
-#if !RETAIL_COMPATIBLE_CRC // TheSuperHackers @info This should be safe to initialize because it is unused, but let us be extra safe for now.
-	closestVec.x = maxDist;
-	closestVec.y = maxDist;
-	closestVec.z = maxDist;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 ZH zero-inits closestVec (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals())
+	{
+		closestVec.x = maxDist;
+		closestVec.y = maxDist;
+		closestVec.z = maxDist;
+	}
 
 #ifdef FASTER_GCO
 

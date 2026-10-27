@@ -207,9 +207,8 @@ enum GUICommandType CPP_11(: Int)
 	GUICOMMANDMODE_PLACE_BEACON,
 
 	GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT,			///< do a special power from localPlayer's command center, regardless of selection
-#if RTS_GENERALS
-	GUI_COMMAND_SPECIAL_POWER_FROM_COMMAND_CENTER = GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT, ///< Legacy name
-#endif
+	// GeneralsX @feature cheviiot 23/10/2026 Generals INI name; same slot as SHORTCUT (dual-profile).
+	GUI_COMMAND_SPECIAL_POWER_FROM_COMMAND_CENTER = GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT,
 	GUI_COMMAND_SPECIAL_POWER_CONSTRUCT,					///< do a special power using the construct building interface
 	GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT, ///< do a shortcut special power using the construct building interface
 
@@ -260,11 +259,8 @@ static const char *const TheGuiCommandNames[] =
 	"PICK_UP_PRISONER",
 #endif
 	"PLACE_BEACON",
-#if RTS_GENERALS
-	"SPECIAL_POWER_FROM_COMMAND_CENTER", ///< Legacy name
-#else
+	// Primary INI token for this slot; Generals "SPECIAL_POWER_FROM_COMMAND_CENTER" accepted in parseCommand.
 	"SPECIAL_POWER_FROM_SHORTCUT",
-#endif
 	"SPECIAL_POWER_CONSTRUCT",
 	"SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT",
 	"SELECT_ALL_UNITS_OF_TYPE",

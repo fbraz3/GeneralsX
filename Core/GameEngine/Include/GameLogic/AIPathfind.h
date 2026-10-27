@@ -252,6 +252,9 @@ public:
 	static void classifyMapCell( Int x, Int y, PathfindCell *cell);					///< Classify the given map cell
 	Int clearCellForDiameter( Bool crusher, Int cellX, Int cellY, PathfindLayerEnum layer, Int pathDiameter );		///< Return true if given position is a valid movement location
 
+	// GeneralsX @refactor cheviiot 24/10/2026 Public setter for Generals-profile destroy-list fence quirk.
+	void setClassifyFenceZeroInit( Bool v ) { m_classifyFenceZeroInit = v; }
+
 protected:
 	virtual Path *internalFindPath( Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from, const Coord3D *to);	///< Find a short, valid path between given locations
 	Path *findHierarchicalPath( Bool isHuman, const LocomotorSet& locomotorSet, const Coord3D *from, const Coord3D *to, Bool crusher);
@@ -388,10 +391,8 @@ private:
 	Int						m_queuePRTail;
 	Int						m_cumulativeCellsAllocated;
 
-#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
-public:
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 dual-layout (was RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC).
 	Bool					m_classifyFenceZeroInit;
-#endif
 };
 
 

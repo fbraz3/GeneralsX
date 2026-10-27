@@ -33,6 +33,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameAudio.h"
+#include "Common/GameProfile.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -1925,10 +1926,8 @@ void ConnectionManager::quitGame() {
 
 	disconnectMsg->detach();
 
-#if RTS_GENERALS
-	// if we get here, we hit Quit on the disconnect screen.  Mark everyone as having disconnected from us
-	// so the online stats can give us appropriate feedback.
-	if (TheGameInfo)
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals disconnect-screen stats marking (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals() && TheGameInfo)
 	{
 		for (Int i = 0; i < MAX_SLOTS; ++i)
 		{
@@ -1939,7 +1938,6 @@ void ConnectionManager::quitGame() {
 			}
 		}
 	}
-#endif
 
 	disconnectLocalPlayer();
 }

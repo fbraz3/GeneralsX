@@ -42,7 +42,12 @@ enum IterOrderType CPP_11(: Int)
 	ITER_SORTED_NEAR_TO_FAR,				///< iterate in nearest-to-farthest order (may be slower)
 	ITER_SORTED_FAR_TO_NEAR,				///< iterate in farthest-to-nearest order (may be slower)
 	ITER_SORTED_CHEAP_TO_EXPENSIVE,	///< iterate in cheapest-to-most-expensive order (slower)
-	ITER_SORTED_EXPENSIVE_TO_CHEAP	///< iterate in most-expensive-to-cheapest order (slower)
+	ITER_SORTED_EXPENSIVE_TO_CHEAP,	///< iterate in most-expensive-to-cheapest order (slower)
+
+	// GeneralsX @refactor cheviiot 24/10/2026 Adapt upstream #3389 enum count for static_assert sizing.
+	// Upstream reference: TheSuperHackers, PR #3389
+	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3389
+	ITER_ORDER_TYPE_COUNT
 };
 
 

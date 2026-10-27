@@ -43,6 +43,8 @@
 //----------------------------------------------------------------------------
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+
+#include "Common/GameProfile.h"
 #include "Common/GameAudio.h"
 
 #include "Common/AudioAffect.h"
@@ -425,11 +427,8 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 	// TheSuperHackers @info Scripted audio events are logical, i.e. synchronized across clients.
 	// In retail mode this early return cannot be taken for such audio events as it skips code that changes the logical game seed values.
 	// In non-retail mode logical audio events are decoupled from the CRC computation, so this early return is allowed.
-#if RETAIL_COMPATIBLE_CRC
-	const Bool logicalAudio = eventToAdd->getIsLogicalAudio();
-#else
-	const Bool logicalAudio = FALSE;
-#endif
+// GeneralsX @refactor cheviiot 24/10/2026 Retail keeps logical audio CRC-coupled (was RETAIL_COMPATIBLE_CRC).
+	const Bool logicalAudio = GameProfile::get().isGenerals() ? eventToAdd->getIsLogicalAudio() : FALSE;
 	const Bool notForLocal = !eventToAdd->getUninterruptible() && !shouldPlayLocally(eventToAdd);
 
 	if (!logicalAudio && notForLocal)
@@ -452,12 +451,11 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 		}
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	if (notForLocal)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail late-return for non-local after seed side effects (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals() && notForLocal)
 	{
 		return AHSV_NotForLocal;
 	}
-#endif
 
 	// cull muted audio
 	if (audioEvent->getVolume() < m_audioSettings->m_minVolume) {

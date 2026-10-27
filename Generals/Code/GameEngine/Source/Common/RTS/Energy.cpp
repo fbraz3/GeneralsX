@@ -43,6 +43,7 @@
 //-----------------------------------------------------------------------------
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/Energy.h"
 #include "Common/Player.h"
@@ -190,11 +191,9 @@ void Energy::removePowerBonus( Object *obj )
 	if( obj == nullptr )
 		return;
 
-	// TheSuperHackers @bugfix Caball009 14/11/2025 Don't remove power bonus for disabled power plants.
-#if !RETAIL_COMPATIBLE_CRC
-	if ( obj->isDisabled() )
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH skips disabled plants (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && obj->isDisabled())
 		return;
-#endif
 
 	addProduction( -obj->getTemplate()->getEnergyBonus() );
 

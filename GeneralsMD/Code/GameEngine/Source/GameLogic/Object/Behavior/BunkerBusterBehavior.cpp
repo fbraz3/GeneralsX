@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#include "Common/GameProfile.h"
 #include "Common/Upgrade.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
@@ -165,12 +166,11 @@ UpdateSleepTime BunkerBusterBehavior::update()
 // ------------------------------------------------------------------------------------------------
 void BunkerBusterBehavior::onDie( const DamageInfo *damageInfo )
 {
-#if !RETAIL_COMPATIBLE_CRC
-  // TheSuperHackers @bugfix Stubbjax 17/02/2026 Only bust the bunker if the missile kills itself
-  // by reaching its destination and not when killed via external sources such as a zap from a PDL.
-  if (!getObject()->testStatus(OBJECT_STATUS_MISSILE_KILLING_SELF))
-    return;
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 ZH only self-kill bunker bust (was !RETAIL_COMPATIBLE_CRC).
+	// TheSuperHackers @bugfix Stubbjax 17/02/2026 Only bust the bunker if the missile kills itself
+	// by reaching its destination and not when killed via external sources such as a zap from a PDL.
+	if (!GameProfile::get().isGenerals() && !getObject()->testStatus(OBJECT_STATUS_MISSILE_KILLING_SELF))
+		return;
 
   // do what we came here to do!
   bustTheBunker();

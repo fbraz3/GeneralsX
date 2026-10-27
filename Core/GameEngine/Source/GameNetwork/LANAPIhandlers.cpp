@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/crc.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/Registry.h"
 #include "Common/GlobalData.h"
@@ -364,21 +365,23 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 #if defined(RTS_DEBUG)
 			if (TheGlobalData->m_netMinPlayers > 0) {
 #endif
-// TheSuperHackers @todo Enable CRC checks!
-#if !RTS_ZEROHOUR
-			if (msg->GameToJoin.iniCRC != TheGlobalData->m_iniCRC ||
-					msg->GameToJoin.exeCRC != TheGlobalData->m_exeCRC)
+			// GeneralsX @refactor cheviiot 23/10/2026 Generals LAN CRC join check (was #if !RTS_ZEROHOUR).
+			// TheSuperHackers @todo Enable CRC checks for Zero Hour profile too.
+			if (GameProfile::get().isGenerals())
 			{
-				DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because of CRC mismatch. CRCs are them/us INI:%X/%X exe:%X/%X",
-					msg->GameToJoin.iniCRC, TheGlobalData->m_iniCRC,
-					msg->GameToJoin.exeCRC, TheGlobalData->m_exeCRC));
-				reply.messageType = LANMessage::MSG_JOIN_DENY;
-				reply.GameNotJoined.reason = LANAPIInterface::RET_CRC_MISMATCH;
-				reply.GameNotJoined.gameIP = replyGameIP;
-				reply.GameNotJoined.playerIP = senderIP;
-				canJoin = false;
+				if (msg->GameToJoin.iniCRC != TheGlobalData->m_iniCRC ||
+						msg->GameToJoin.exeCRC != TheGlobalData->m_exeCRC)
+				{
+					DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because of CRC mismatch. CRCs are them/us INI:%X/%X exe:%X/%X",
+						msg->GameToJoin.iniCRC, TheGlobalData->m_iniCRC,
+						msg->GameToJoin.exeCRC, TheGlobalData->m_exeCRC));
+					reply.messageType = LANMessage::MSG_JOIN_DENY;
+					reply.GameNotJoined.reason = LANAPIInterface::RET_CRC_MISMATCH;
+					reply.GameNotJoined.gameIP = replyGameIP;
+					reply.GameNotJoined.playerIP = senderIP;
+					canJoin = false;
+				}
 			}
-#endif
 #if defined(RTS_DEBUG)
 			}
 #endif

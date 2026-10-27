@@ -42,7 +42,9 @@ for sdk_candidate in "${HOME}/VulkanSDK"/*/macOS; do
         VULKAN_SDK_ROOT="${sdk_candidate}"
     fi
 done
-BINARY_SRC="${BUILD_DIR}/GeneralsMD/GeneralsXZH"
+# GeneralsX @build cheviiot 24/10/2026 Allow echelon deploy via BINARY_SRC / DEPLOY_BINARY_NAME overrides.
+BINARY_SRC="${BINARY_SRC:-${BUILD_DIR}/GeneralsMD/GeneralsXZH}"
+DEPLOY_BINARY_NAME="${DEPLOY_BINARY_NAME:-GeneralsXZH}"
 
 DXVK_D3D8_LIB="${DXVK_D3D8_LIB_INSTALL}"
 DXVK_D3D9_LIB="${DXVK_D3D9_LIB_INSTALL}"
@@ -53,11 +55,11 @@ if [[ ! -f "${DXVK_D3D9_LIB}" && -f "${DXVK_D3D9_LIB_MESON}" ]]; then
     DXVK_D3D9_LIB="${DXVK_D3D9_LIB_MESON}"
 fi
 
-echo "Deploying GeneralsXZH (macOS) to ${RUNTIME_DIR}"
+echo "Deploying ${DEPLOY_BINARY_NAME} (macOS) to ${RUNTIME_DIR}"
 
 if [[ ! -f "${BINARY_SRC}" ]]; then
     echo "ERROR: Binary not found at ${BINARY_SRC}"
-    echo "Build first: cmake --build build/macos-vulkan --target z_generals"
+    echo "Build first: cmake --build build/macos-vulkan --target z_generals  # or echelon"
     exit 1
 fi
 if [[ ! -s "${BINARY_SRC}" ]]; then
@@ -67,9 +69,9 @@ fi
 
 mkdir -p "${RUNTIME_DIR}"
 
-echo "  Copying GeneralsXZH..."
-cp -v "${BINARY_SRC}" "${RUNTIME_DIR}/GeneralsXZH"
-chmod +x "${RUNTIME_DIR}/GeneralsXZH"
+echo "  Copying ${DEPLOY_BINARY_NAME}..."
+cp -v "${BINARY_SRC}" "${RUNTIME_DIR}/${DEPLOY_BINARY_NAME}"
+chmod +x "${RUNTIME_DIR}/${DEPLOY_BINARY_NAME}"
 
 echo "  Copying SDL3 libraries..."
 cp -v "${SDL3_LIB_DIR}"/libSDL3.0.dylib "${RUNTIME_DIR}/"
@@ -267,14 +269,14 @@ fi
 cd "\${SCRIPT_DIR}" || exit 1
 
 LOG_FILE="\${SCRIPT_DIR}/game.log"
-"./GeneralsXZH" "\$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "\${LOG_FILE}"
+"./${DEPLOY_BINARY_NAME}" "\$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion" | tee "\${LOG_FILE}"
 exit \${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${RUNTIME_DIR}/run.sh"
 
 echo ""
 echo "Deploy complete"
-echo "   Executable: ${RUNTIME_DIR}/GeneralsXZH"
+echo "   Executable: ${RUNTIME_DIR}/${DEPLOY_BINARY_NAME}"
 echo "   SDL3 libs:  ${RUNTIME_DIR}/libSDL3*.dylib"
 echo "   GameSpy:    ${RUNTIME_DIR}/libgamespy.dylib"
 echo "   DXVK d3d9:  ${RUNTIME_DIR}/libdxvk_d3d9.0.dylib"

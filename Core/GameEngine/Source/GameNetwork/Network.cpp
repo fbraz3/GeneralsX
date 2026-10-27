@@ -33,6 +33,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
+#include "Common/GameProfile.h"
 #include "Common/MessageStream.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -695,11 +696,8 @@ void Network::processDestroyPlayerCommand(NetDestroyPlayerCommandMsg *msg)
 	if (pPlayer)
 	{
 		GameMessage *msg = newInstance(GameMessage)(GameMessage::MSG_SELF_DESTRUCT);
-#if RETAIL_COMPATIBLE_CRC
-		const Bool transferAssets = FALSE;
-#else
-		const Bool transferAssets = TRUE;
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 Generals retail: no asset transfer; ZH transfers (was RETAIL_COMPATIBLE_CRC).
+		const Bool transferAssets = !GameProfile::get().isGenerals();
 		msg->appendBooleanArgument(transferAssets);
 		msg->friend_setPlayerIndex(pPlayer->getPlayerIndex());
 		TheCommandList->appendMessage(msg);
@@ -989,11 +987,12 @@ void Network::quitGame() {
 		m_conMgr->quitGame();
 	}
 
-#if !RTS_GENERALS || !RETAIL_COMPATIBLE_CRC
-	// Blow up / Transfer your units when you quit.  Like a normal quit menu quit.
-	GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_SELF_DESTRUCT);
-	msg->appendBooleanArgument(TRUE);
-#endif
+	// GeneralsX @refactor cheviiot 24/10/2026 Self-destruct-on-quit: ZH always; Generals skips (was RETAIL_COMPATIBLE_CRC + GameProfile).
+	if (!GameProfile::get().isGenerals())
+	{
+		GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_SELF_DESTRUCT);
+		msg->appendBooleanArgument(TRUE);
+	}
 
 	TheGameLogic->exitGame();
 	m_localStatus = NETLOCALSTATUS_POSTGAME;

@@ -32,6 +32,7 @@
 #define DEFINE_PARTICLE_SYSTEM_NAMES
 
 #include "Common/FramePacer.h"
+#include "Common/GameProfile.h"
 #include "Common/GameState.h"
 #include "Common/INI.h"
 #include "Common/PerfTimer.h"
@@ -3817,5 +3818,19 @@ static Real angleBetween(const Coord2D *vecA, const Coord2D *vecB)
 	}
 
 	return -theta;
+}
+
+// ------------------------------------------------------------------------------------------------
+// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023: Generals retail loads templates for CRC; ZH headless no-ops.
+void ParticleSystemManagerDummy::init()
+{
+	if( GameProfile::get().isGenerals() )
+		ParticleSystemManager::init();
+}
+
+void ParticleSystemManagerDummy::reset()
+{
+	if( GameProfile::get().isGenerals() )
+		ParticleSystemManager::reset();
 }
 

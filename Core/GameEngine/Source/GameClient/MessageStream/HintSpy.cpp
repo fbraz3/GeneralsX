@@ -78,9 +78,8 @@ GameMessageDisposition HintSpyTranslator::translateGameMessage(const GameMessage
 		case GameMessage::MSG_RESUME_CONSTRUCTION_HINT:
 		case GameMessage::MSG_ENTER_HINT:
 		case GameMessage::MSG_HIJACK_HINT:
-#ifdef RTS_ZEROHOUR
+		// GeneralsX @refactor cheviiot 23/10/2026 Always compile sabotage hint handler; CommandXlat only emits for ZH.
 		case GameMessage::MSG_SABOTAGE_HINT:
-#endif
 		case GameMessage::MSG_CONVERT_TO_CARBOMB_HINT:
 #ifdef ALLOW_SURRENDER
 		case GameMessage::MSG_PICK_UP_PRISONER_HINT:

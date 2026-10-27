@@ -32,6 +32,7 @@
 
 #include "GameLogic/Module/StickyBombUpdate.h"
 
+#include "Common/GameProfile.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
@@ -273,21 +274,26 @@ void StickyBombUpdate::detonate()
 		}
 	}
 
-#if RETAIL_COMPATIBLE_CRC
-	if( getObject()->isKindOf(KINDOF_BOOBY_TRAP) && boobyTrappedObject )
+	// GeneralsX @refactor cheviiot 24/10/2026 PLAN-023 05.7: Generals retail clears on detonate; ZH clears onDelete.
+	if( GameProfile::get().isGenerals() )
 	{
-		// This kind of sticky bomb needs to set a status, so the poor victim can trigger us from assorted places
-		boobyTrappedObject->clearStatus( MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_BOOBY_TRAPPED) );
+		if( getObject()->isKindOf(KINDOF_BOOBY_TRAP) && boobyTrappedObject )
+		{
+			// This kind of sticky bomb needs to set a status, so the poor victim can trigger us from assorted places
+			boobyTrappedObject->clearStatus( MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_BOOBY_TRAPPED) );
+		}
 	}
-#endif
 
 	getObject()->kill();// Most things just fire weapons in their death modules
 }
 
-#if !RETAIL_COMPATIBLE_CRC
 void StickyBombUpdate::onDelete()
 {
-	// TheSuperHackers @bugfix Stubbjax 05/08/2026 Clear booby trap status when destroyed, not just when detonated.
+	// GeneralsX @bugfix cheviiot 24/10/2026 PLAN-023 05.7: ZH clears booby status on destroy (not only detonate).
+	// Upstream reference: Stubbjax / TheSuperHackers @bugfix 05/08/2026
+	if( GameProfile::get().isGenerals() )
+		return;
+
 	if (getObject()->isKindOf(KINDOF_BOOBY_TRAP))
 	{
 		Object* boobyTrappedObject = getTargetObject();
@@ -297,7 +303,6 @@ void StickyBombUpdate::onDelete()
 			boobyTrappedObject->clearStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_BOOBY_TRAPPED));
 	}
 }
-#endif
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */

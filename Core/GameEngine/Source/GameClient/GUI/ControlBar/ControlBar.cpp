@@ -37,6 +37,7 @@
 
 #include "Common/ActionManager.h"
 #include "Common/FramePacer.h"
+#include "Common/GameProfile.h"
 #include "Common/GameType.h"
 #include "Common/MultiplayerSettings.h"
 #include "Common/NameKeyGenerator.h"
@@ -416,16 +417,17 @@ void ControlBar::populatePurchaseScience( Player* player )
 		GadgetStaticTextSetText(win, tempUS);
 	}
 
-#if RTS_GENERALS
-	win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:StaticTextLevel" ) );
-	if(win)
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals science rank label (was #if RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
 	{
-		tempUS.format(TheGameText->fetch("SCIENCE:Rank"), player->getRankLevel());
-		GadgetStaticTextSetText(win, tempUS);
+		win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:StaticTextLevel" ) );
+		if(win)
+		{
+			tempUS.format(TheGameText->fetch("SCIENCE:Rank"), player->getRankLevel());
+			GadgetStaticTextSetText(win, tempUS);
+		}
 	}
-#else
-	// redundant to StaticTextTitle in the Zero Hour context
-#endif
+	// else ZH: redundant to StaticTextTitle
 
 	win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:ProgressBarExperience" ) );
 	if(win)
@@ -555,6 +557,15 @@ void CommandButton::parseCommand( INI* ini, void *instance, void *store, const v
 
 		}
 
+	}
+
+	// GeneralsX @feature cheviiot 23/10/2026 Generals CommandButton.ini uses SPECIAL_POWER_FROM_COMMAND_CENTER;
+	// Zero Hour renamed the same command to SPECIAL_POWER_FROM_SHORTCUT.
+	if( stricmp( token, "SPECIAL_POWER_FROM_COMMAND_CENTER" ) == 0 )
+	{
+		GUICommandType *command = (GUICommandType *)store;
+		*command = GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT;
+		return;
 	}
 
 	// if we're here the command was not found
@@ -3588,12 +3599,14 @@ Bool ControlBar::hasAnyShortcutSelection() const
 //-------------------------------------------------------------------------------------------------
 Bool ControlBar::canShowSpecialPowerShortcut() const
 {
-#ifdef RTS_GENERALS
-	// Special Powers in Generals do not have the ShortcutPower flag set and therefore this function
-	// is satisfied with the presence of a Command Center, which is supposed to host Special Powers.
-	if (ThePlayerList->getLocalPlayer()->findNaturalCommandCenter() != nullptr)
-		return true;
-#endif
+	// GeneralsX @refactor cheviiot 23/10/2026 Generals SP shortcuts via Command Center (was #ifdef RTS_GENERALS).
+	if (GameProfile::get().isGenerals())
+	{
+		// Special Powers in Generals do not have the ShortcutPower flag set and therefore this function
+		// is satisfied with the presence of a Command Center, which is supposed to host Special Powers.
+		if (ThePlayerList->getLocalPlayer()->findNaturalCommandCenter() != nullptr)
+			return true;
+	}
 
 	if (hasAnyShortcutSelection())
 		return true;

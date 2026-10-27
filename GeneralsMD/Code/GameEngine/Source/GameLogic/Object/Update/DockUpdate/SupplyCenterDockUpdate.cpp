@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/Player.h"
 #include "Common/Xfer.h"
@@ -82,9 +83,9 @@ SupplyCenterDockUpdate::~SupplyCenterDockUpdate()
 // TheSuperHackers @bugfix arcticdolphin 12/03/2026 Scale supply bonus proportionally to delivered boxes.
 static UnsignedInt getUpgradedSupplyBoostValue( SupplyTruckAIInterface* supplyTruckAI )
 {
-#if RETAIL_COMPATIBLE_CRC
-	return supplyTruckAI->getUpgradedSupplyBoost();
-#else
+	// GeneralsX @refactor cheviiot 24/10/2026 Retail full boost vs ZH proportional boxes (was RETAIL_COMPATIBLE_CRC).
+	if (GameProfile::get().isGenerals())
+		return supplyTruckAI->getUpgradedSupplyBoost();
 	const Int maxBoxes = supplyTruckAI->getMaxBoxes();
 	if (maxBoxes > 0)
 	{
@@ -93,7 +94,6 @@ static UnsignedInt getUpgradedSupplyBoostValue( SupplyTruckAIInterface* supplyTr
 		return (upgradedSupplyBoost * deliveredBoxes) / maxBoxes;
 	}
 	return 0;
-#endif
 }
 
 // ------------------------------------------------------------------------------------------------

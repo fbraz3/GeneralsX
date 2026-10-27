@@ -27,6 +27,7 @@
 // Desc:   Implementation of missile behavior
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/Thing.h"
 #include "Common/ThingTemplate.h"
@@ -521,19 +522,12 @@ void MissileAIUpdate::doAttackState(Bool turnOK)
 	if(curLoco && curLoco->getPreferredHeight() > 0)
 	{
 		// Am I close enough to the target to ignore my preferred height setting?
-#if RETAIL_COMPATIBLE_CRC
-		Real distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalPosition(), FROM_CENTER_2D);
-#else
-		// TheSuperHackers @bugfix Stubbjax 23/08/2026 Diving missiles now use their target's position to determine distance
-		// when applicable rather than the goal position. This allows them to properly determine when to dive on moving targets.
+		// GeneralsX @refactor cheviiot 24/10/2026 Retail goal-pos dive; ZH tracks live target (was RETAIL_COMPATIBLE_CRC).
 		Real distanceToTargetSquared;
-		if (m_isTrackingTarget && (getGoalObject() != nullptr)) {
+		if (!GameProfile::get().isGenerals() && m_isTrackingTarget && (getGoalObject() != nullptr))
 			distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalObject(), FROM_CENTER_2D);
-		}
-		else {
+		else
 			distanceToTargetSquared = ThePartitionManager->getDistanceSquared(getObject(), getGoalPosition(), FROM_CENTER_2D);
-		}
-#endif
 
 		Real diveDistanceSquared = d->m_diveDistance;
 		if (curLoco && curLoco->getPreferredHeight()) {

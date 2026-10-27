@@ -49,6 +49,7 @@
 
 // USER INCLUDES
 #include "Common/GameMemory.h"
+#include "Common/GameProfile.h"
 
 struct PoolSizeRec
 {
@@ -57,19 +58,47 @@ struct PoolSizeRec
 	Int overflow;
 };
 
-#if RTS_GENERALS
+// GeneralsX @refactor cheviiot 23/10/2026 Both pool tables in one binary; GameProfile picks at init.
+#define DefaultDMA DefaultDMA_Generals
+#define PoolSizes PoolSizes_Generals
 #include "GameMemoryInitDMA_Generals.inl"
 #include "GameMemoryInitPools_Generals.inl"
-#elif RTS_ZEROHOUR
+#undef DefaultDMA
+#undef PoolSizes
+
+#define DefaultDMA DefaultDMA_GeneralsMD
+#define PoolSizes PoolSizes_GeneralsMD
 #include "GameMemoryInitDMA_GeneralsMD.inl"
 #include "GameMemoryInitPools_GeneralsMD.inl"
-#endif
+#undef DefaultDMA
+#undef PoolSizes
+
+static Bool useGeneralsMemoryPools(void)
+{
+	// GeneralsX @bugfix cheviiot 23/10/2026 libhwy (and other .so ctors) may call operator new
+	// before main/selectForProcess via preMainInitMemoryManager. Do not call GameProfile::get()
+	// here — that would lock the compiled default. Unselected → ZH tables (safe superset).
+	return GameProfile::isSelected() && GameProfile::get().isGenerals();
+}
+
+static PoolSizeRec *activePoolSizes(void)
+{
+	return useGeneralsMemoryPools() ? PoolSizes_Generals : PoolSizes_GeneralsMD;
+}
 
 //-----------------------------------------------------------------------------
 void userMemoryManagerGetDmaParms(Int *numSubPools, const PoolInitRec **pParms)
 {
-	*numSubPools = ARRAY_SIZE(DefaultDMA);
-	*pParms = DefaultDMA;
+	if (useGeneralsMemoryPools())
+	{
+		*numSubPools = ARRAY_SIZE(DefaultDMA_Generals);
+		*pParms = DefaultDMA_Generals;
+	}
+	else
+	{
+		*numSubPools = ARRAY_SIZE(DefaultDMA_GeneralsMD);
+		*pParms = DefaultDMA_GeneralsMD;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -78,7 +107,7 @@ void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocationCount,
 	if (initialAllocationCount > 0)
 		return;
 
-	for (const PoolSizeRec* p = PoolSizes; p->name != nullptr; ++p)
+	for (const PoolSizeRec* p = activePoolSizes(); p->name != nullptr; ++p)
 	{
 		if (strcmp(p->name, poolName) == 0)
 		{
@@ -131,7 +160,7 @@ void userMemoryManagerInitPools()
 				continue;
 			if (sscanf(buf, "%s %d %d", poolName, &initial, &overflow ) == 3)
 			{
-				for (PoolSizeRec* p = PoolSizes; p->name != nullptr; ++p)
+				for (PoolSizeRec* p = activePoolSizes(); p->name != nullptr; ++p)
 				{
 					if (stricmp(p->name, poolName) == 0)
 					{

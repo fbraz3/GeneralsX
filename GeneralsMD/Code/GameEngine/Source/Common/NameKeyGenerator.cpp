@@ -30,18 +30,19 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
+
 // Public Data ////////////////////////////////////////////////////////////////////////////////////
 NameKeyGenerator *TheNameKeyGenerator = nullptr;  ///< name key gen. singleton
 
 //-------------------------------------------------------------------------------------------------
 NameKeyGenerator::NameKeyGenerator()
+	: m_socketCount(0)
+	, m_sockets(nullptr)
+	, m_nextID((UnsignedInt)NAMEKEY_INVALID)
 {
-
-	m_nextID = (UnsignedInt)NAMEKEY_INVALID;  // uninitialized system
-
-	for (Int i = 0; i < SOCKET_COUNT; ++i)
-		m_sockets[i] = nullptr;
-
+	// GeneralsX @feature cheviiot 23/10/2026 Allocate the retail-compatible socket table for the selected profile.
+	allocateSockets();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -50,7 +51,20 @@ NameKeyGenerator::~NameKeyGenerator()
 
 	// free all system data
 	freeSockets();
+	delete[] m_sockets;
+	m_sockets = nullptr;
+	m_socketCount = 0;
 
+}
+
+//-------------------------------------------------------------------------------------------------
+void NameKeyGenerator::allocateSockets()
+{
+	m_socketCount = GameProfile::get().getNameKeySocketCount();
+	DEBUG_ASSERTCRASH(m_socketCount > 0, ("NameKeyGenerator socket count must be positive"));
+	m_sockets = new Bucket*[m_socketCount];
+	for (UnsignedInt i = 0; i < m_socketCount; ++i)
+		m_sockets[i] = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -75,7 +89,10 @@ void NameKeyGenerator::reset()
 //-------------------------------------------------------------------------------------------------
 void NameKeyGenerator::freeSockets()
 {
-	for (Int i = 0; i < SOCKET_COUNT; ++i)
+	if (m_sockets == nullptr) {
+		return;
+	}
+	for (UnsignedInt i = 0; i < m_socketCount; ++i)
 	{
 		Bucket *next;
 		for (Bucket *b = m_sockets[i]; b; b = next)
@@ -111,7 +128,7 @@ inline UnsignedInt calcHashForLowercaseString(const char* p)
 //-------------------------------------------------------------------------------------------------
 AsciiString NameKeyGenerator::keyToName(NameKeyType key)
 {
-	for (Int i = 0; i < SOCKET_COUNT; ++i)
+	for (UnsignedInt i = 0; i < m_socketCount; ++i)
 	{
 		for (Bucket *b = m_sockets[i]; b; b = b->m_nextInSocket)
 		{
@@ -123,31 +140,32 @@ AsciiString NameKeyGenerator::keyToName(NameKeyType key)
 }
 
 //-------------------------------------------------------------------------------------------------
-#if RETAIL_COMPATIBLE_CRC
-#if RTS_ZEROHOUR
+// GeneralsX @refactor cheviiot 24/10/2026 Always compiled; ZH priming via GameProfile (was RETAIL_COMPATIBLE_CRC).
 // TheSuperHackers @bugfix Caball009 24/02/2026 Originally the game would hash three files
 // for the file exist cache of the file system in Zero Hour.
 // TheScienceStore and TheUpgradeCenter rely on having the exact same name key IDs across all clients.
 // That means that we still need to hash 3 dummy strings to keep the name key IDs synchronized with retail.
 void NameKeyGenerator::syncNameKeyID()
 {
+	// GeneralsX @feature cheviiot 23/10/2026 Only Zero Hour retail needs these three priming hashes.
+	if (!GameProfile::get().isZeroHour()) {
+		return;
+	}
 	nameToLowercaseKey("Data\\English\\Language9x.ini");
 	nameToLowercaseKey("Data\\Audio\\Tracks\\English\\GLA_02.mp3");
 	nameToLowercaseKey("Data\\Audio\\Tracks\\GLA_02.mp3");
 }
-#endif
 void NameKeyGenerator::verifyNameKeyID(UnsignedInt expectedNextID) const
 {
 	// this should only be called before the initialization of TheScienceStore and TheUpgradeCenter in GameEngine::init
 	DEBUG_ASSERTCRASH(expectedNextID == m_nextID,
 		("Retail client expects items to start with name key ID %d for unmodded files, but starts with %d", expectedNextID, m_nextID));
 }
-#endif
 
 //-------------------------------------------------------------------------------------------------
 NameKeyType NameKeyGenerator::nameToKey(const AsciiString& name)
 {
-	const UnsignedInt hash = calcHashForString(name.str()) % SOCKET_COUNT;
+	const UnsignedInt hash = calcHashForString(name.str()) % m_socketCount;
 
 	// do we have it already?
 	const Bucket *b;
@@ -164,7 +182,7 @@ NameKeyType NameKeyGenerator::nameToKey(const AsciiString& name)
 //-------------------------------------------------------------------------------------------------
 NameKeyType NameKeyGenerator::nameToLowercaseKey(const AsciiString& name)
 {
-	const UnsignedInt hash = calcHashForLowercaseString(name.str()) % SOCKET_COUNT;
+	const UnsignedInt hash = calcHashForLowercaseString(name.str()) % m_socketCount;
 
 	// do we have it already?
 	const Bucket *b;
@@ -185,7 +203,7 @@ NameKeyType NameKeyGenerator::nameToLowercaseKey(const AsciiString& name)
 //-------------------------------------------------------------------------------------------------
 NameKeyType NameKeyGenerator::nameToKey(const char* name)
 {
-	const UnsignedInt hash = calcHashForString(name) % SOCKET_COUNT;
+	const UnsignedInt hash = calcHashForString(name) % m_socketCount;
 
 	// do we have it already?
 	const Bucket *b;
@@ -202,7 +220,7 @@ NameKeyType NameKeyGenerator::nameToKey(const char* name)
 //-------------------------------------------------------------------------------------------------
 NameKeyType NameKeyGenerator::nameToLowercaseKey(const char *name)
 {
-	const UnsignedInt hash = calcHashForLowercaseString(name) % SOCKET_COUNT;
+	const UnsignedInt hash = calcHashForLowercaseString(name) % m_socketCount;
 
 	// do we have it already?
 	const Bucket *b;
@@ -235,7 +253,7 @@ NameKeyType NameKeyGenerator::createNameKey(UnsignedInt hash, const AsciiString&
 	// reality-check to be sure our hasher isn't going bad.
 	const Int maxThresh = 3;
 	Int numOverThresh = 0;
-	for (Int i = 0; i < SOCKET_COUNT; ++i)
+	for (UnsignedInt i = 0; i < m_socketCount; ++i)
 	{
 		Int numInThisSocket = 0;
 		for (b = m_sockets[i]; b; b = b->m_nextInSocket)
@@ -246,9 +264,9 @@ NameKeyType NameKeyGenerator::createNameKey(UnsignedInt hash, const AsciiString&
 	}
 
 	// if more than a small percent of the sockets are getting deep, probably want to increase the socket count.
-	if (numOverThresh > SOCKET_COUNT/20)
+	if (numOverThresh > static_cast<Int>(m_socketCount / 20))
 	{
-		DEBUG_CRASH(("hmm, might need to increase the number of bucket-sockets for NameKeyGenerator (numOverThresh %d = %f%%)",numOverThresh,(Real)numOverThresh/(Real)(SOCKET_COUNT/20)));
+		DEBUG_CRASH(("hmm, might need to increase the number of bucket-sockets for NameKeyGenerator (numOverThresh %d = %f%%)",numOverThresh,(Real)numOverThresh/(Real)(m_socketCount/20)));
 	}
 #endif
 

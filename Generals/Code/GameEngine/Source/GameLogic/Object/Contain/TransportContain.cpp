@@ -30,6 +30,8 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/GameProfile.h"
+
 #include "Common/Player.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
@@ -364,16 +366,9 @@ UpdateSleepTime TransportContain::update()
 
 	if (m_payloadCreated == FALSE)
 	{
-#if RETAIL_COMPATIBLE_CRC
-		createPayload();
-#else
-		// TheSuperHackers @bugfix Caball009 25/05/2026 Don't create payload
-		// for destroyed object to avoid leaving the payload in an invalid state.
-		if (!getObject()->isDestroyed())
-		{
+// GeneralsX @refactor cheviiot 24/10/2026 ZH skips payload on destroyed (was RETAIL_COMPATIBLE_CRC).
+		if (GameProfile::get().isGenerals() || !getObject()->isDestroyed())
 			createPayload();
-		}
-#endif
 	}
 
 	if( moduleData && moduleData->m_healthRegen )
@@ -467,17 +462,13 @@ Bool TransportContain::isSpecificRiderFreeToExit(Object* specificObject)
 	if (ai && ai->getAiFreeToExit(specificObject) != FREE_TO_EXIT)
 		return FALSE;
 
-#if !RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @bugfix Stubbjax/bobtista 01/08/2026 If our container is itself contained,
-	// then we are not free to exit.
-	// GeneralsX @bugfix UnicodeApocalypse 12/09/2026 Except for special Overlord-style containers (e.g. Battle Bunker).
-	if (me->isContained())
+// GeneralsX @refactor cheviiot 24/10/2026 ZH blocks exit when nested (was !RETAIL_COMPATIBLE_CRC).
+	if (!GameProfile::get().isGenerals() && me->isContained())
 	{
 		const ContainModuleInterface* outerContain = me->getContainedBy()->getContain();
 		if (outerContain == nullptr || !outerContain->isSpecialOverlordStyleContainer())
 			return FALSE;
 	}
-#endif
 
   // I can always kick people out if I am in the air, I know what I'm doing
   if (me->isUsingAirborneLocomotor())
@@ -526,13 +517,9 @@ void TransportContain::onCapture( Player *oldOwner, Player *newOwner )
 		else
 		{
 			//Use standard
-#if RETAIL_COMPATIBLE_CRC
-			orderAllPassengersToExit( CMD_FROM_AI );
-#else
-			// TheSuperHackers @bugfix Stubbjax 20/11/2025 Only eject passengers if the new owner is not allied with the old owner.
-			if (oldOwner->getRelationship(newOwner->getDefaultTeam()) != ALLIES)
+// GeneralsX @refactor cheviiot 24/10/2026 Retail always eject; ZH only vs non-allies (was RETAIL_COMPATIBLE_CRC).
+			if (GameProfile::get().isGenerals() || oldOwner->getRelationship(newOwner->getDefaultTeam()) != ALLIES)
 				orderAllPassengersToExit(CMD_FROM_AI);
-#endif
 		}
 	}
 }

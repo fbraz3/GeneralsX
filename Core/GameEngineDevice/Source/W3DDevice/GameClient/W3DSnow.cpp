@@ -52,6 +52,9 @@ W3DSnowManager::~W3DSnowManager()
 void W3DSnowManager::init()
 {
 	SnowManager::init();
+	// GeneralsX @feature cheviiot 23/10/2026 No Weather INI under Generals profile — skip D3D snow assets.
+	if (TheWeatherSetting == nullptr)
+		return;
 	ReAcquireResources();
 }
 
@@ -73,8 +76,8 @@ Bool W3DSnowManager::ReAcquireResources()
 {
 	ReleaseResources();
 
-	if (!TheWeatherSetting->m_snowEnabled)
-		return TRUE;	//no need for resources if snow is disabled.
+	if (TheWeatherSetting == nullptr || !TheWeatherSetting->m_snowEnabled)
+		return TRUE;	//no need for resources if snow is disabled / unavailable.
 
 	if (TheWeatherSetting->m_usePointSprites && DX8Wrapper::Get_Current_Caps()->Support_PointSprites())
 	{

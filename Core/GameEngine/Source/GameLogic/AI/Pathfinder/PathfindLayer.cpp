@@ -16,6 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "Common/GameProfile.h"
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
@@ -362,11 +363,13 @@ void PathfindLayer::classifyCells()
 						groundCell->setConnectLayer(LAYER_INVALID); // disconnect it.
 					}
 				}
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-				cell->setType(PathfindCell::CELL_IMPASSABLE);
-#else
-				cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
+				// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals bridge cells via GameProfile (was #if RTS_GENERALS && RETAIL...).
+#if RETAIL_COMPATIBLE_PATHFINDING
+				if (GameProfile::get().isGenerals())
+					cell->setType(PathfindCell::CELL_IMPASSABLE);
+				else
 #endif
+				cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
 			}
 		}
 	}
@@ -531,11 +534,13 @@ void PathfindLayer::classifyLayerMapCell( Int i, Int j , PathfindCell *cell, Bri
 		cell->setType(PathfindCell::CELL_CLEAR);
 	} else {
 		if (bridgeCount!=0) {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-			cell->setType(PathfindCell::CELL_CLIFF); // it's off the bridge.
-#else
-			cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE); // it's off the bridge.
+			// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals off-bridge cell via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+			if (GameProfile::get().isGenerals())
+				cell->setType(PathfindCell::CELL_CLIFF); // it's off the bridge.
+			else
 #endif
+			cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE); // it's off the bridge.
 		}
 
 		// check against the end lines.
@@ -544,35 +549,39 @@ void PathfindLayer::classifyLayerMapCell( Int i, Int j , PathfindCell *cell, Bri
 		cellBounds.lo = topLeftCorner.asCoord2D();
 		cellBounds.hi = bottomRightCorner.asCoord2D();
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-		if (m_bridge->isCellOnEnd(&cellBounds)) {
-			cell->setType(PathfindCell::CELL_CLEAR);
-		}
-		if (m_bridge->isCellOnSide(&cellBounds)) {
-			cell->setType(PathfindCell::CELL_CLIFF);
-		} else {
-			if (m_bridge->isCellEntryPoint(&cellBounds)) {
-				cell->setType(PathfindCell::CELL_CLEAR);
-				cell->setConnectLayer(LAYER_GROUND);
-				PathfindCell *groundCell = TheAI->pathfinder()->getCell(LAYER_GROUND, i, j );
-				groundCell->setConnectLayer(cell->getLayer());
-			}
-		}
-#else
-		if (m_bridge->isCellOnSide(&cellBounds)) {
-			cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
-		} else {
+		// GeneralsX @refactor cheviiot 23/10/2026 Bridge end/side classification by GameProfile when retail pathfind on.
+#if RETAIL_COMPATIBLE_PATHFINDING
+		if (GameProfile::get().isGenerals()) {
 			if (m_bridge->isCellOnEnd(&cellBounds)) {
 				cell->setType(PathfindCell::CELL_CLEAR);
 			}
-			if (m_bridge->isCellEntryPoint(&cellBounds)) {
-				cell->setType(PathfindCell::CELL_CLEAR);
-				cell->setConnectLayer(LAYER_GROUND);
-				PathfindCell *groundCell = TheAI->pathfinder()->getCell(LAYER_GROUND, i, j );
-				groundCell->setConnectLayer(cell->getLayer());
+			if (m_bridge->isCellOnSide(&cellBounds)) {
+				cell->setType(PathfindCell::CELL_CLIFF);
+			} else {
+				if (m_bridge->isCellEntryPoint(&cellBounds)) {
+					cell->setType(PathfindCell::CELL_CLEAR);
+					cell->setConnectLayer(LAYER_GROUND);
+					PathfindCell *groundCell = TheAI->pathfinder()->getCell(LAYER_GROUND, i, j );
+					groundCell->setConnectLayer(cell->getLayer());
+				}
+			}
+		} else
+#endif
+		{
+			if (m_bridge->isCellOnSide(&cellBounds)) {
+				cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
+			} else {
+				if (m_bridge->isCellOnEnd(&cellBounds)) {
+					cell->setType(PathfindCell::CELL_CLEAR);
+				}
+				if (m_bridge->isCellEntryPoint(&cellBounds)) {
+					cell->setType(PathfindCell::CELL_CLEAR);
+					cell->setConnectLayer(LAYER_GROUND);
+					PathfindCell *groundCell = TheAI->pathfinder()->getCell(LAYER_GROUND, i, j );
+					groundCell->setConnectLayer(cell->getLayer());
+				}
 			}
 		}
-#endif
 	}
 	Coord3D center = topLeftCorner;
 	center.x += PATHFIND_CELL_SIZE/2;
@@ -585,11 +594,13 @@ void PathfindLayer::classifyLayerMapCell( Int i, Int j , PathfindCell *cell, Bri
 			if (groundHeight+LAYER_Z_CLOSE_ENOUGH_F > bridgeHeight) {
 				PathfindCell *groundCell = TheAI->pathfinder()->getCell(LAYER_GROUND,i, j);
 				if (!(groundCell->getType()==PathfindCell::CELL_OBSTACLE)) {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-					groundCell->setType(PathfindCell::CELL_IMPASSABLE);
-#else
-					groundCell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
+					// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals ground under-bridge via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+					if (GameProfile::get().isGenerals())
+						groundCell->setType(PathfindCell::CELL_IMPASSABLE);
+					else
 #endif
+					groundCell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE);
 				}
 			}
 		}
@@ -665,11 +676,13 @@ void PathfindLayer::classifyWallMapCell( Int i, Int j , PathfindCell *cell, Obje
 		cell->setType(PathfindCell::CELL_CLEAR);
 	} else {
 		if (bridgeCount!=0) {
-#if RTS_GENERALS && RETAIL_COMPATIBLE_PATHFINDING
-			cell->setType(PathfindCell::CELL_CLIFF); // it's off the bridge.
-#else
-			cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE); // it's off the bridge.
+			// GeneralsX @refactor cheviiot 23/10/2026 Retail Generals wall off-bridge via GameProfile.
+#if RETAIL_COMPATIBLE_PATHFINDING
+			if (GameProfile::get().isGenerals())
+				cell->setType(PathfindCell::CELL_CLIFF); // it's off the bridge.
+			else
 #endif
+			cell->setType(PathfindCell::CELL_BRIDGE_IMPASSABLE); // it's off the bridge.
 		}
 
 	}

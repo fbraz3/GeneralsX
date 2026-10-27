@@ -168,7 +168,9 @@ jobs:
           NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           mkdir -p logs
-          cmake --preset "${PRESET}" 2>&1 | tee logs/configure_linux.log
+          # GeneralsX @build cheviiot 24/10/2026 PLAN-023: product default migration OFF;
+          # CI keeps GeneralsX/GeneralsXZH for existing artifacts and builds echelon on ZH leg.
+          cmake --preset "${PRESET}" -DRTS_BUILD_MIGRATION_BINARIES=ON 2>&1 | tee logs/configure_linux.log
           echo "CMake configuration complete."
 
       - name: Build ${{ matrix.game.value }}
@@ -178,6 +180,22 @@ jobs:
           mkdir -p logs
           cmake --build "build/${PRESET}" --target ${{ matrix.game.target }} 2>&1 | tee logs/build_${{ matrix.game.log_suffix }}_linux.log
           echo "Build complete."
+
+      - name: Build echelon (unified binary)
+        if: matrix.game.id == 'generalsxzh'
+        env:
+          PRESET: ${{ inputs.preset }}
+        run: |
+          mkdir -p logs
+          cmake --build "build/${PRESET}" --target echelon 2>&1 | tee logs/build_echelon_linux.log
+          BINARY="build/${PRESET}/GeneralsMD/echelon"
+          if [ ! -f "$BINARY" ]; then
+            echo "❌ echelon binary missing: $BINARY"
+            exit 1
+          fi
+          file "$BINARY"
+          ls -lh "$BINARY"
+          echo "✅ echelon ready"
 
       - name: Verify Build Artifacts
         env:

@@ -343,6 +343,8 @@ public:
 	virtual LANGameInfo * LookupGameByListOffset( Int offset ) override;														///< return a pointer to a game we know about
 	virtual LANGameInfo * LookupGameByHost( UnsignedInt hostIP ) override;													///< return a pointer to the most recent game associated to the host IP address
 	virtual LANPlayer * LookupPlayer( UnsignedInt playerIP );													///< return a pointer to a player we know about
+	// GeneralsX @feature cheviiot 24/10/2026 Expose lobby list for headless dual-instance LAN probe (non-virtual: avoid vtable churn).
+	LANPlayer * GetLobbyPlayers() { return m_lobbyPlayers; }
 	virtual Bool SetLocalIP( UnsignedInt localIP ) override;																		///< For multiple NIC machines
 	virtual void SetLocalIP( AsciiString localIP ) override;																		///< For multiple NIC machines
 	virtual Bool AmIHost() override;																											///< Am I hosting a game?

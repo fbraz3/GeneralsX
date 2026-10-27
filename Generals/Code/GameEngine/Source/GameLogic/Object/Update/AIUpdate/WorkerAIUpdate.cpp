@@ -29,6 +29,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/GameProfile.h"
 
 #include "Common/ActionManager.h"
 #include "Common/Team.h"
@@ -280,10 +281,9 @@ UpdateSleepTime WorkerAIUpdate::update()
 			if( currentTask == DOZER_TASK_REPAIR &&
 					TheActionManager->canRepairObject( getObject(), targetObject, getLastCommandSource() ) == FALSE )
 				invalidTask = TRUE;
-#if !RETAIL_COMPATIBLE_CRC
-			else if (currentTask == DOZER_TASK_BUILD && targetObject == nullptr)
+			// GeneralsX @refactor cheviiot 24/10/2026 ZH cancels BUILD with null target (was !RETAIL_COMPATIBLE_CRC).
+			else if (!GameProfile::get().isGenerals() && currentTask == DOZER_TASK_BUILD && targetObject == nullptr)
 				invalidTask = TRUE;
-#endif
 
 			// cancel the task if it's now invalid
 			if( invalidTask == TRUE )
@@ -977,10 +977,9 @@ void WorkerAIUpdate::onDisabledEdge(Bool nowDisabled)
 	}
 	else
 	{
-#if !RETAIL_COMPATIBLE_CRC
-		// TheSuperHackers @bugfix Stubbjax 17/11/2025 Resume previous task when re-enabled.
-		resumePreviousTask();
-#endif
+		// GeneralsX @refactor cheviiot 24/10/2026 ZH resumes previous task when re-enabled (was !RETAIL_COMPATIBLE_CRC).
+		if (!GameProfile::get().isGenerals())
+			resumePreviousTask();
 	}
 }
 

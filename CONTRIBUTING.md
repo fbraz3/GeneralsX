@@ -1,5 +1,11 @@
 # How to contribute as a developer
 
+This repository develops **Echelon**, the unified engine and integrated launcher
+derived from GeneralsX. Read [UPSTREAM.md](UPSTREAM.md) for the fork identity and
+upstream integration policy. Changes to this fork belong in the owner's
+repository; inherited upstream contribution guidance does not authorize
+publishing Echelon changes to fbraz3/GeneralsX.
+
 To contribute, fork this repository to create your own copy that you can clone locally and push back to. You can use your fork to create pull requests for your code to be merged into this repository.
 
 

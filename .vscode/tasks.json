@@ -2,6 +2,13 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "[Engine] Check consolidation provenance",
+			"type": "process",
+			"command": "python3",
+			"args": ["${workspaceFolder}/scripts/tooling/cpp/maintenance/check_unified_engine_provenance.py"],
+			"problemMatcher": []
+		},
+		{
 			"label": "[Platform] Configure",
 			"type": "shell",
 			"icon": {
