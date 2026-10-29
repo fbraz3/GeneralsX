@@ -935,8 +935,8 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow, Bool sunC
 			{
 				if (owner->isKindOf(KINDOF_AIRCRAFT))
 				{
-					const Real sunHoriz = WWMath::SqrtOrigin(toSun.X * toSun.X + toSun.Y * toSun.Y);
-					const Real minSunZ = sunHoriz * WWMath::TanTrig(30.0f / 180.0f * PI);
+					const Real sunHoriz = sqrtf(toSun.X * toSun.X + toSun.Y * toSun.Y);
+					const Real minSunZ = sunHoriz * tanf(30.0f / 180.0f * PI);
 					if (effectiveSunZ < minSunZ)
 						effectiveSunZ = minSunZ;
 				}
