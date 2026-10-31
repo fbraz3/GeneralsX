@@ -5460,7 +5460,9 @@ Bool Object::canProduceUpgrade( const UpgradeTemplate *upgrade )
 	// TheControlBar belongs to the client, we shouldn't depend on that to check this.
 
 	// We need to have the button to make the upgrade.  CommandSets are a weird Logic/Client hybrid.
-	const CommandSet *set = TheControlBar->findCommandSet(getCommandSetString());
+	const CommandSet *set = TheControlBar ? TheControlBar->findCommandSet(getCommandSetString()) : nullptr;
+	if (!set)
+		return FALSE;
 
  	for( Int buttonIndex = 0; buttonIndex < MAX_COMMANDS_PER_SET; buttonIndex++ )
  	{

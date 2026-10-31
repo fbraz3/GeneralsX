@@ -1809,9 +1809,82 @@ bool GameLogic::onDoForceAttackGround(MAYBE_UNUSED GameMessage *msg, AIGroupPtr 
 	return true;
 }
 
+// GeneralsX @bugfix fbraz3 31/10/2026 Resolve upgrade template from producer's CommandSet if NameKey drifted across platforms.
+static const UpgradeTemplate *resolveUpgradeForProducer(Object *producer, const UpgradeTemplate *upgradeT, NameKeyType receivedKey)
+{
+	if (!producer)
+		return upgradeT;
+
+	// If upgradeT is already valid for this producer, return it directly.
+	if (upgradeT && producer->canProduceUpgrade(upgradeT))
+	{
+		if (upgradeT->getUpgradeType() != UPGRADE_TYPE_OBJECT || producer->affectedByUpgrade(upgradeT))
+			return upgradeT;
+	}
+
+	// NameKey drifted across platforms (e.g. Windows MSVC vs Mac/Linux). Look through producer's CommandSet.
+	const CommandSet *cmdSet = TheControlBar ? TheControlBar->findCommandSet(producer->getCommandSetString()) : nullptr;
+	if (!cmdSet)
+		return upgradeT;
+
+	const UpgradeTemplate *bestCandidate = nullptr;
+	Int minDiff = 999999;
+	Int candidateCount = 0;
+
+	for (Int i = 0; i < MAX_COMMANDS_PER_SET; ++i)
+	{
+		const CommandButton *btn = cmdSet->getCommandButton(i);
+		if (!btn)
+			continue;
+
+		const UpgradeTemplate *btnUpgrade = btn->getUpgradeTemplate();
+		if (btnUpgrade && producer->canProduceUpgrade(btnUpgrade))
+		{
+			if (btnUpgrade->getUpgradeType() != UPGRADE_TYPE_OBJECT || producer->affectedByUpgrade(btnUpgrade))
+			{
+				candidateCount++;
+				Int diff = std::abs((Int)btnUpgrade->getUpgradeNameKey() - (Int)receivedKey);
+				if (diff < minDiff)
+				{
+					minDiff = diff;
+					bestCandidate = btnUpgrade;
+				}
+			}
+		}
+	}
+
+	if (bestCandidate != nullptr)
+	{
+		fprintf(stderr, "[RESOLVE_UPGRADE] Platform NameKey drift detected (received %d -> '%s')! Auto-resolved to '%s' (key %d) for producer %d (%s)\n",
+			receivedKey, upgradeT ? upgradeT->getUpgradeName().str() : "null",
+			bestCandidate->getUpgradeName().str(), bestCandidate->getUpgradeNameKey(),
+			producer->getID(), producer->getTemplate() ? producer->getTemplate()->getName().str() : "null");
+		fflush(stderr);
+		return bestCandidate;
+	}
+
+	return upgradeT;
+}
+
 bool GameLogic::onQueueUpgrade(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &currentlySelectedGroup)
 {
-	const UpgradeTemplate *upgradeT = TheUpgradeCenter->findUpgradeByKey( (NameKeyType)(msg->getArgument( 1 )->integer) );
+	NameKeyType receivedKey = (NameKeyType)(msg->getArgument( 1 )->integer);
+	const UpgradeTemplate *upgradeT = TheUpgradeCenter->findUpgradeByKey( receivedKey );
+
+	Object *producer = nullptr;
+	if (msg->getArgument(0) && msg->getArgument(0)->objectID != INVALID_ID)
+		producer = findObjectByID(msg->getArgument(0)->objectID);
+	if (!producer && currentlySelectedGroup && !currentlySelectedGroup->isEmpty())
+	{
+#if RETAIL_COMPATIBLE_AIGROUP
+		producer = getSingleObjectFromSelection(currentlySelectedGroup);
+#else
+		producer = getSingleObjectFromSelection(currentlySelectedGroup.Peek());
+#endif
+	}
+
+	upgradeT = resolveUpgradeForProducer(producer, upgradeT, receivedKey);
+
 	if (!upgradeT)	// sanity
 		return false;
 
@@ -1830,7 +1903,9 @@ bool GameLogic::onCancelUpgrade(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &curre
 #else
 	Object *producer = getSingleObjectFromSelection(currentlySelectedGroup.Peek());
 #endif
-	const UpgradeTemplate *upgradeT = TheUpgradeCenter->findUpgradeByKey( (NameKeyType)(msg->getArgument( 0 )->integer) );
+	NameKeyType receivedKey = (NameKeyType)(msg->getArgument( 0 )->integer);
+	const UpgradeTemplate *upgradeT = TheUpgradeCenter->findUpgradeByKey( receivedKey );
+	upgradeT = resolveUpgradeForProducer(producer, upgradeT, receivedKey);
 
 	// sanity
 	if( producer == nullptr || upgradeT == nullptr )

@@ -70,7 +70,12 @@ int ReplaySimulation::simulateReplaysInThisProcess(const std::vector<AsciiString
 		// If we are not in headless mode, we need to run the replay in the engine.
 		for (; s_replayIndex < s_replayCount; ++s_replayIndex)
 		{
-			TheRecorder->playbackFile(filenames[s_replayIndex]);
+			// GeneralsX @bugfix fbraz3 31/10/2026 Don't execute engine if replay playback failed to initialize (prevents black screen hang)
+			if (!TheRecorder->playbackFile(filenames[s_replayIndex]))
+			{
+				numErrors++;
+				continue;
+			}
 			TheGameEngine->execute();
 			if (TheRecorder->sawCRCMismatch())
 				numErrors++;
