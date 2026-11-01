@@ -161,6 +161,14 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail"
 fi
 
+# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    echo "  + Data/INI/FXListGeneralsX.ini"
+    mkdir -p "${BUNDLE_DIR}/Data/INI"
+    cp "${FXLIST_GENERALSX_SRC}" "${BUNDLE_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
 # Run wrapper
 echo "  + run.sh"
 cat > "${BUNDLE_DIR}/run.sh" << 'WRAPPER'

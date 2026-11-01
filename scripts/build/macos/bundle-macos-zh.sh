@@ -373,6 +373,14 @@ else
     exit 1
 fi
 
+# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    echo "  + Data/INI/FXListGeneralsX.ini"
+    mkdir -p "${RESOURCES_DIR}/Data/INI"
+    cp "${FXLIST_GENERALSX_SRC}" "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini"
+fi
+
 # App launcher wrapper
 echo "  + App launcher"
 cat > "${MACOS_DIR}/run.sh" << 'WRAPPER'
@@ -454,6 +462,11 @@ fi
 # Run from the detected Zero Hour asset root when available.
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"
+
+    if [[ -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" ]]; then
+        mkdir -p "Data/INI"
+        cp -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+    fi
 
     # SagePatch INI override: the engine now auto-creates SagePatch.ini with
     # defaults in the user data directory on first run.

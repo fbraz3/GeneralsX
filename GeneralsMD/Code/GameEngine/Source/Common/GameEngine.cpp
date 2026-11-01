@@ -726,9 +726,6 @@ void GameEngine::init()
 			TheNameKeyGenerator->verifyNameKeyID(2265);
 #endif
 
-		// GeneralsX @feature fbraz3 31/10/2026 Ensure TheUpgradeCenter starts at canonical ID 2268 matching retail Windows Zero Hour 1.04
-		TheNameKeyGenerator->syncUpgradeCenterID(2268);
-
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
 

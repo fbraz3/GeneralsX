@@ -876,6 +876,25 @@ const FXList *FXListStore::findFXList(const char* name) const
 {
 	// read the FXList name
 	const char *c = ini->getNextToken();
+
+	// GeneralsX @bugfix fbraz3 31/10/2026 Never allocate new NameKeys from optional visual override FXListGeneralsX.ini
+	if (ini->getFilename().endsWithNoCase("FXListGeneralsX.ini"))
+	{
+		for (FXListMap::iterator it = TheFXListStore->m_fxmap.begin(); it != TheFXListStore->m_fxmap.end(); ++it)
+		{
+			if (strcmp(TheNameKeyGenerator->keyToName(it->first).str(), c) == 0)
+			{
+				FXList& fxl = it->second;
+				fxl.clear();
+				ini->initFromINI(&fxl, TheFXListFieldParse);
+				return;
+			}
+		}
+		FXList ignoredFX;
+		ini->initFromINI(&ignoredFX, TheFXListFieldParse);
+		return;
+	}
+
 	NameKeyType key = TheNameKeyGenerator->nameToKey(c);
 	FXList& fxl = TheFXListStore->m_fxmap[key];
 	fxl.clear();

@@ -598,9 +598,6 @@ void GameEngine::init()
 			TheNameKeyGenerator->verifyNameKeyID(1586);
 #endif
 
-		// GeneralsX @feature fbraz3 31/10/2026 Ensure TheUpgradeCenter starts at canonical ID 1586 matching retail Windows Generals
-		TheNameKeyGenerator->syncUpgradeCenterID(1586);
-
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), nullptr);
 		initSubsystem(TheAI,"TheAI", MSGNEW("GameEngineSubsystem") AI(), &xferCRC,  "Data\\INI\\Default\\AIData", "Data\\INI\\AIData");

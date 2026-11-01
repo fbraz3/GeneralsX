@@ -29,6 +29,7 @@ jobs:
             folder: GeneralsMD
             exe: GeneralsXZH.exe
             pdb: GeneralsXZH.pdb
+            fxlist_ini: GeneralsZH/Data/INI/FXListGeneralsX.ini
             build_zh: "ON"
             build_generals: "OFF"
             artifact_name: windows-x86-GeneralsXZH.zip
@@ -39,6 +40,7 @@ jobs:
             folder: Generals
             exe: GeneralsX.exe
             pdb: GeneralsX.pdb
+            fxlist_ini: Generals/Data/INI/FXListGeneralsX.ini
             build_zh: "OFF"
             build_generals: "ON"
             artifact_name: windows-x86-GeneralsX.zip
@@ -133,6 +135,13 @@ jobs:
             Copy-Item assets/fonts/* artifacts/fonts/
             New-Item -ItemType Directory -Force ci-artifacts/fonts | Out-Null
             Copy-Item assets/fonts/* ci-artifacts/fonts/
+          }
+
+          if (Test-Path "${{ matrix.game.fxlist_ini }}") {
+            New-Item -ItemType Directory -Force artifacts/Data/INI | Out-Null
+            Copy-Item "${{ matrix.game.fxlist_ini }}" artifacts/Data/INI/FXListGeneralsX.ini
+            New-Item -ItemType Directory -Force ci-artifacts/Data/INI | Out-Null
+            Copy-Item "${{ matrix.game.fxlist_ini }}" ci-artifacts/Data/INI/FXListGeneralsX.ini
           }
 
           # Collect Desktop Release CRT DLLs (msvcp140.dll, vcruntime140.dll, etc.)

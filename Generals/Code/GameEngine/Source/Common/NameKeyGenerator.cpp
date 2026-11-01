@@ -144,31 +144,6 @@ void NameKeyGenerator::verifyNameKeyID(UnsignedInt expectedNextID) const
 }
 #endif
 
-// GeneralsX @feature fbraz3 31/10/2026 Synchronize NameKey generator ID before TheUpgradeCenter across platforms
-void NameKeyGenerator::syncUpgradeCenterID(UnsignedInt targetID)
-{
-	// Purge any keys that were allocated at or above targetID prior to TheUpgradeCenter
-	// (e.g. spurious tokens like 'FINAL' or orphan module tags that drifted across platforms/compilers).
-	for (Int i = 0; i < SOCKET_COUNT; ++i)
-	{
-		Bucket **prev = &m_sockets[i];
-		while (*prev)
-		{
-			Bucket *b = *prev;
-			if ((UnsignedInt)b->m_key >= targetID)
-			{
-				*prev = b->m_nextInSocket;
-				deleteInstance(b);
-			}
-			else
-			{
-				prev = &b->m_nextInSocket;
-			}
-		}
-	}
-	m_nextID = targetID;
-}
-
 //-------------------------------------------------------------------------------------------------
 NameKeyType NameKeyGenerator::nameToKey(const AsciiString& name)
 {
