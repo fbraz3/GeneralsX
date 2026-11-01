@@ -107,6 +107,9 @@ public:
 
 	UnsignedInt getNextID() const { return m_nextID; }
 
+	// GeneralsX @feature fbraz3 31/10/2026 Synchronize NameKey generator ID before TheUpgradeCenter across platforms
+	void syncUpgradeCenterID(UnsignedInt targetID);
+
 #if RETAIL_COMPATIBLE_CRC
 #if RTS_ZEROHOUR
 	void syncNameKeyID();
