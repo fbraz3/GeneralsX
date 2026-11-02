@@ -449,7 +449,7 @@ void MinefieldBehavior::onDamage( DamageInfo *damageInfo )
 
 	for (;;)
 	{
-		Real virtualMinesExpectedF = WWMath::Div_FixNaN((Real)d->m_numVirtualMines * body->getHealth(), body->getMaxHealth(), 0.0f);
+		Real virtualMinesExpectedF = WWMath::Div_Safe((Real)d->m_numVirtualMines * body->getHealth(), body->getMaxHealth());
 		Int virtualMinesExpected =
 			damageInfo->in.m_damageType == DAMAGE_HEALING ?
 			REAL_TO_INT_FLOOR(virtualMinesExpectedF) :
@@ -562,7 +562,7 @@ void MinefieldBehavior::setScootParms(const Coord3D& start, const Coord3D& end)
 	if (start.z > endOnGround.z)
 	{
 		// figure out how long it will take to fall, and replace scoot time with that
-		UnsignedInt fallingTime = REAL_TO_INT_CEIL(WWMath::SqrtfOrigin(2.0f * (start.z - endOnGround.z) / fabs(TheGlobalData->m_gravity)));
+		UnsignedInt fallingTime = REAL_TO_INT_CEIL(WWMath::Sqrtf(2.0f * (start.z - endOnGround.z) / WWMath::Fabs(TheGlobalData->m_gravity)));
 		// we can scoot after we land, but don't want to stop scooting before we land
 		if (scootFromStartingPointTime < fallingTime)
 			scootFromStartingPointTime = fallingTime;
@@ -580,8 +580,8 @@ void MinefieldBehavior::setScootParms(const Coord3D& start, const Coord3D& end)
 		Real dx = endOnGround.x - start.x;
 		Real dy = endOnGround.y - start.y;
 		Real dz = endOnGround.z - start.z;
-		Real dist = WWMath::SqrtOrigin(sqr(dx) + sqr(dy));
-		if (dist <= 0.1f && fabs(dz) <= 0.1f)
+		Real dist = WWMath::Sqrt(sqr(dx) + sqr(dy));
+		if (dist <= 0.1f && WWMath::Fabs(dz) <= 0.1f)
 		{
 			obj->setPosition(&endOnGround);
 			m_scootFramesLeft = 0;
@@ -590,7 +590,7 @@ void MinefieldBehavior::setScootParms(const Coord3D& start, const Coord3D& end)
 		{
 			Real t = (Real)scootFromStartingPointTime;
 			Real scootFromStartingPointSpeed = dist / t;
-			Real accelMag = fabs(2.0f * (dist - scootFromStartingPointSpeed*t)/sqr(t));
+			Real accelMag = WWMath::Fabs(2.0f * (dist - scootFromStartingPointSpeed*t)/sqr(t));
 			Real dxNorm = (dist <= 0.1f) ? 0.0f : (dx / dist);
 			Real dyNorm = (dist <= 0.1f) ? 0.0f : (dy / dist);
 			m_scootVel.x = dxNorm * scootFromStartingPointSpeed;

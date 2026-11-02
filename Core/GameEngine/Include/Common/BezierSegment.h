@@ -37,6 +37,7 @@
 #error "Missing a math library"
 #endif
 #include "Common/STLTypedefs.h"
+#include "Lib/BaseDefines.h"
 
 #define USUAL_TOLERANCE 1.0f
 

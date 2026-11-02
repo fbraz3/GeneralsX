@@ -202,8 +202,8 @@ UpdateSleepTime DeliverPayloadAIUpdate::update()
 				{
 					//Calc strafe ratio
 					Real startDiveDistance = getData()->m_diveStartDistance;
-					Real endDiveDistance = WWMath::SqrtOrigin( endDiveDistanceSquared );
-					Real currentDistance = WWMath::SqrtOrigin( currentDistanceSquared );
+					Real endDiveDistance = WWMath::Sqrt( endDiveDistanceSquared );
+					Real currentDistance = WWMath::Sqrt( currentDistanceSquared );
 
 					Real diveRatio = (startDiveDistance - currentDistance) / (startDiveDistance - endDiveDistance);
 
@@ -345,10 +345,14 @@ Real DeliverPayloadAIUpdate::calcMinTurnRadius(Real* timeToTravelThatDist) const
 		so we just eliminate the middleman:
 	*/
 	// determine required turn radius based on our current speed and max turn rate
-	Real minTurnRadius = WWMath::Div_FixNaN(maxSpeed, maxTurnRate, 999999.0f);
+#if RETAIL_COMPATIBLE_CRC
+	Real minTurnRadius = (maxTurnRate > 0.0f) ? (maxSpeed / maxTurnRate) : 999999.0f;
+#else
+	Real minTurnRadius = WWMath::Div_Safe(maxSpeed, maxTurnRate);
+#endif
 
 	if (timeToTravelThatDist)
-		*timeToTravelThatDist = WWMath::Div_FixNaN(minTurnRadius, maxSpeed, 999999.0f);
+		*timeToTravelThatDist = WWMath::Div_Safe(minTurnRadius, maxSpeed);
 
 	return minTurnRadius;
 }
@@ -369,7 +373,7 @@ Bool DeliverPayloadAIUpdate::isCloseEnoughToTarget()
 	if ( inBound )
 		allowedDistanceSqr = sqr(getAllowedDistanceToTarget() + getPreOpenDistance());
 
-	//DEBUG_LOG(("Dist to target is %f (allowed %f)",WWMath::SqrtOrigin(currentDistanceSqr),WWMath::SqrtOrigin(allowedDistanceSqr)));
+	//DEBUG_LOG(("Dist to target is %f (allowed %f)",WWMath::Sqrt(currentDistanceSqr),WWMath::Sqrt(allowedDistanceSqr)));
 
 
 	if ( allowedDistanceSqr > currentDistanceSqr )
@@ -1109,7 +1113,7 @@ StateReturnType RecoverFromOffMapState::update() // Success if we should try aga
 		enterCoord.z = owner->getPosition()->z;
 	owner->setPosition(&enterCoord);
 
-	Real enterAngle = WWMath::Atan2Origin(ai->getMoveToPos()->y - enterCoord.y, ai->getMoveToPos()->x - enterCoord.x);
+	Real enterAngle = WWMath::Atan2(ai->getMoveToPos()->y - enterCoord.y, ai->getMoveToPos()->x - enterCoord.x);
 	owner->setOrientation(enterAngle);
 
 	PhysicsBehavior* physics = owner->getPhysics();
@@ -1149,7 +1153,7 @@ StateReturnType HeadOffMapState::onEnter() // Give move order out of town
 	Region3D terrainExtent;
 	TheTerrainLogic->getExtent( &terrainExtent );
 	const Real FUDGE = 1.2f;
-	Real HUGE_DIST = FUDGE * WWMath::SqrtOrigin(sqr(terrainExtent.hi.x - terrainExtent.lo.x) + sqr(terrainExtent.hi.y - terrainExtent.lo.y));
+	Real HUGE_DIST = FUDGE * WWMath::Sqrt(sqr(terrainExtent.hi.x - terrainExtent.lo.x) + sqr(terrainExtent.hi.y - terrainExtent.lo.y));
 
 	exitCoord.x += dir->x * HUGE_DIST;
 	exitCoord.y += dir->y * HUGE_DIST;

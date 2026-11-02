@@ -13,7 +13,7 @@
       "author": "GeneralsX Team"
     },
     {
-      "content": "Cross-platform determinism between Linux x86_64 and macOS ARM64 is critical to prevent sync crashes (desyncs). Key rules: (1) Use deterministic WWMath equivalents for all math functions (WWMath::SqrtOrigin, SinTrig, CosTrig, Atan2Origin, etc.); (2) ScopedFPUGuard must wrap GameLogic::update(), audio callbacks, and mouse picking; (3) Guard all divisions against NaN/Inf integer cast divergences (WWMath::Div_FixNaN); (4) Disable FMA contraction (-ffp-contract=off); (5) Use scripts/qa/parse_deep_crc.py to diagnose deep CRC memory buffer dumps.",
+      "content": "Cross-platform determinism between Linux x86_64 and macOS ARM64 is critical to prevent sync crashes (desyncs). Key rules: (1) Use deterministic WWMath equivalents in GameLogic and simulation math (WWMath::Sqrt, Sin, Cos, Tan, Atan2, Pow, etc.); (2) ScopedFPUGuard must wrap GameLogic::update(), audio callbacks, and mouse picking; (3) Guard all divisions against NaN/Inf integer cast divergences (WWMath::Div_Safe); (4) Disable FMA contraction (-ffp-contract=off); (5) Use scripts/qa/parse_deep_crc.py to diagnose deep CRC memory buffer dumps.",
       "author": "GeneralsX Team"
     },
     {
@@ -78,7 +78,7 @@
     },
     {
       "title": "Cross-Platform Determinism & Anti-Desync",
-      "purpose": "Comprehensive guide to simulation determinism between Linux x86_64 and macOS ARM64: deterministic math replacements in WWMath (SqrtOrigin, SinTrig, CosTrig, Atan2Origin, etc.), ScopedFPUGuard usage around logic updates and audio, NaN/Inf integer cast guards (WWMath::Div_FixNaN), disabling FMA contraction (-ffp-contract=off), and deep CRC diagnostics (scripts/qa/parse_deep_crc.py).",
+      "purpose": "Comprehensive guide to simulation determinism between Linux x86_64 and macOS ARM64: deterministic math replacements in WWMath (Sqrt, Sin, Cos, Tan, Atan2, Pow, etc.), ScopedFPUGuard usage around logic updates and audio, NaN/Inf integer cast guards (WWMath::Div_Safe), disabling FMA contraction (-ffp-contract=off), and deep CRC diagnostics (scripts/qa/parse_deep_crc.py).",
       "parent": null
     },
     {

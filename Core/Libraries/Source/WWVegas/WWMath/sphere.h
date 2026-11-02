@@ -193,7 +193,6 @@ inline SphereClass::SphereClass(const Vector3 *Position,const int VertCount)
 	dz = dia2.Z - center.Z;
 
 	double radsqr = dx*dx + dy*dy + dz*dz;
-	// GeneralsX @bugfix Mr. Meeseeks 17/07/2026 Use deterministic WWMath::Sqrt instead of raw sqrt
 	double radius = WWMath::Sqrt(radsqr);
 
 

@@ -435,9 +435,8 @@ WWINLINE void Matrix4x4::Init_Perspective(float hfov,float vfov,float znear,floa
 	assert(zfar > znear);
 
 	Make_Identity();
-	// GeneralsX @bugfix Mr. Meeseeks 17/07/2026 Use deterministic WWMath::TanTrig instead of raw tan
-	Row[0][0] = static_cast<float>(1.0 / WWMath::TanTrig(hfov*0.5f));
-	Row[1][1] = static_cast<float>(1.0 / WWMath::TanTrig(vfov*0.5f));
+	Row[0][0] = static_cast<float>(1.0 / tan(hfov*0.5));
+	Row[1][1] = static_cast<float>(1.0 / tan(vfov*0.5));
 	Row[2][2] = -(zfar + znear) / (zfar - znear);
 	Row[2][3] = static_cast<float>(-(2.0*zfar*znear) / (zfar - znear));
 	Row[3][2] = -1.0f;
@@ -575,7 +574,7 @@ WWINLINE Matrix4x4* Matrix4x4::Inverse(Matrix4x4* out, float* detOut, const Matr
 	if (detOut)
 			*detOut = det;
 
-	if (fabsf(det) < 1e-8f)
+	if (WWMath::Fabsf(det) < 1e-8f)
 			return NULL;
 
 	const float invDet = 1.0f / det;

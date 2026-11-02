@@ -115,6 +115,7 @@ modules:
       - if [ -d build-flatpak/_deps/sdl3-build ]; then cp -a build-flatpak/_deps/sdl3-build/libSDL3.so* /app/lib/; fi
       - if [ -d build-flatpak/_deps/sdl3_image-build ]; then cp -a build-flatpak/_deps/sdl3_image-build/libSDL3_image.so* /app/lib/; fi
       - find build-flatpak -name "libgamespy.so*" -type f -exec cp -a {} /app/lib/ \;
+      - find build-flatpak -name "libgm.so*" -type f -exec cp -a {} /app/lib/ \;
       # SagePatch (optional QoL, gated by RTS_BUILD_OPTION_SAGE_PATCH at build).
       - if [ -f build-flatpak/Patches/SagePatch/libsage_patch.so ]; then cp -a build-flatpak/Patches/SagePatch/libsage_patch.so /app/lib/; fi
       - |

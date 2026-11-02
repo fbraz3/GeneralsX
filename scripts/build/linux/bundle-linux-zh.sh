@@ -114,6 +114,12 @@ cp "${SDL3_IMAGE_LIB_DIR}"/libSDL3_image.so* "${BUNDLE_DIR}/"
 echo "  + GameSpy library"
 cp "${GAMESPY_LIB}" "${BUNDLE_DIR}/"
 
+# GameMath library (if built as shared)
+if compgen -G "${BUILD_DIR}/_deps/gamemath-build/libgm.so*" > /dev/null 2>&1; then
+    echo "  + GameMath library (libgm.so)"
+    cp "${BUILD_DIR}"/_deps/gamemath-build/libgm.so* "${BUNDLE_DIR}/" 2>/dev/null || true
+fi
+
 # SagePatch (optional, gated by RTS_BUILD_OPTION_SAGE_PATCH at configure time).
 SAGE_PATCH_LIB="${BUILD_DIR}/Patches/SagePatch/libsage_patch.so"
 if [[ -f "${SAGE_PATCH_LIB}" ]]; then
@@ -153,6 +159,14 @@ if [[ -f "${DXVK_CONF_SRC}" ]]; then
     cp "${DXVK_CONF_SRC}" "${BUNDLE_DIR}/dxvk.conf"
 else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail"
+fi
+
+# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
+FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
+if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
+    echo "  + Data/INI/FXListGeneralsX.ini"
+    mkdir -p "${BUNDLE_DIR}/Data/INI"
+    cp "${FXLIST_GENERALSX_SRC}" "${BUNDLE_DIR}/Data/INI/FXListGeneralsX.ini"
 fi
 
 # Run wrapper

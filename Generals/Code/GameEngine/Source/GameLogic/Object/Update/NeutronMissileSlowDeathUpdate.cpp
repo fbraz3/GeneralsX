@@ -46,6 +46,7 @@
 #include "GameLogic/Module/NeutronMissileSlowDeathUpdate.h"
 #include "GameLogic/Module/ToppleUpdate.h"
 #include "GameLogic/TerrainLogic.h"
+#include "WWMath/wwmath.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,21 +300,16 @@ static void debugDrawBlastCircle( const Coord3D *center, Real radius, Real tileW
 
 	// space the icons roughly one tile apart along the circumference, within sane bounds
 	tileWidth = max( tileWidth, 1.0f );
-	// GeneralsX @bugfix arazmj 27/08/2026 Keep debug blast visualization deterministic across platforms.
-	// Upstream reference: xezon, PR #3160
-	// https://github.com/TheSuperHackers/GeneralsGameCode/pull/3160
-	Real segmentCount = WWMath::Ceil( (2.0f * PI * radius) / tileWidth * 0.5f );
-	if( !std::isfinite( segmentCount ) )
-		segmentCount = 256.0f;
-	Int segments = (Int)clamp( 1.0f, segmentCount, 256.0f );
+	Int segments = (Int)WWMath::Ceilf( (2.0f * PI * radius) / tileWidth * 0.5f );
+	segments = clamp(1, segments, 256);
 
 	for( Int i = 0; i < segments; ++i )
 	{
 		Real angle = (2.0f * PI * i) / segments;
 		Coord3D pos;
 
-		pos.x = center->x + radius * WWMath::Cos( angle );
-		pos.y = center->y + radius * WWMath::Sin( angle );
+		pos.x = center->x + radius * WWMath::Cosf( angle );
+		pos.y = center->y + radius * WWMath::Sinf( angle );
 		pos.z = TheTerrainLogic->getGroundHeight( pos.x, pos.y );
 
 		addIcon( &pos, tileWidth, frameDuration, color );

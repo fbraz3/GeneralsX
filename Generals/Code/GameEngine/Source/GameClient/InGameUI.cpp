@@ -1613,7 +1613,7 @@ void InGameUI::handleBuildPlacements()
 					if (isInForceAttackMode())
 					{
 						const Real snapRadians = DEG_TO_RADF(45);
-						angle = WWMath::Round(angle / snapRadians) * snapRadians;
+						angle = WWMath::Roundf(angle / snapRadians) * snapRadians;
 					}
 				}
 			}

@@ -98,6 +98,11 @@ endif()
 
 include(cmake/config.cmake)
 include(cmake/gamespy.cmake)
+if (IS_VS6_BUILD)
+    add_library(gamemath INTERFACE)
+else()
+    include(cmake/gamemath.cmake)
+endif()
 include(cmake/lzhl.cmake)
 include(cmake/stb.cmake)
 
@@ -117,14 +122,6 @@ include(cmake/curl.cmake)
 
 # GeneralsX @feature GeneralsOnline NGMP protocol dependency setup
 include(cmake/ngmp.cmake)
-
-# GeneralsX @feature fbraz 03/05/2026 Phase 4: Deterministic math library integration
-# gamemath.cmake integrates fdlibm-based GameMath for cross-platform replay validation.
-# Upstream reference: Okladnoj, PR #2670
-# https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
-# Self-guarded with if(SAGE_USE_DETERMINISTIC_MATH), so always safe to include.
-include(cmake/gamemath.cmake)
-
 
 if(RTS_BUILD_OPTION_TESTS)
     # Must come before the subdirectories that add tests.

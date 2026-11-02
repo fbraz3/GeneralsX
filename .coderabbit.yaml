@@ -60,10 +60,12 @@ reviews:
            `Core/Libraries/Source/Platform/`). No direct Win32 (HWND, Win32 APIs), Cocoa, or raw POSIX syscalls
            (`pthread_*`, `open()`) in game logic (`Generals/`, `GeneralsMD/`, `Core/GameEngine/`). Use SDL3 abstractions.
         2. Cross-Platform Determinism (macOS ARM64 vs Linux x86_64 cross-play):
-           - Use deterministic `WWMath` wrappers (`WWMath::Sqrt`, `WWMath::Sin`, `WWMath::Cos`, `WWMath::TanTrig`,
-             `WWMath::Acos`, `WWMath::Asin`, `WWMath::Atan`, `WWMath::Atan2`, `WWMath::Ceil`, `WWMath::Floor`, `WWMath::PowOrigin`)
-             instead of standard CRT math functions.
-           - Prevent NaN/Inf division before casting to integer (e.g. `WWMath::Div_FixNaN` or explicit `if (max > 0)` checks)
+           - In simulation/game logic code (`GameLogic/` and shared simulation math primitives `Trig.cpp`, `Coord2D`, `Coord3D`, `BezierSegment`),
+             use deterministic `WWMath` wrappers (`WWMath::Sqrt`, `WWMath::Sin`, `WWMath::Cos`, `WWMath::Tan`, `WWMath::Acos`, `WWMath::Asin`,
+             `WWMath::Atan`, `WWMath::Atan2`, `WWMath::Ceil`, `WWMath::Floor`, `WWMath::Pow`, `WWMath::Fabs`, `WWMath::Div_Safe`).
+           - Rendering, UI, audio, and client visuals (`GameClient`, `W3DDevice`, `WW3D2`) do NOT affect simulation CRCs and should use standard
+             CRT math (`sinf`, `cosf`, `sqrtf`, `tanf`, `atan2`, etc.) without unnecessary overhead; do NOT flag CRT math in rendering/client files.
+           - Prevent NaN/Inf division before casting to integer (use `WWMath::Div_Safe` or explicit `if (max > 0)` checks)
              to avoid ARM64 (`0`) vs x86 (`INT_MIN`) conversion discrepancies.
            - Avoid double-precision evaluation where float precision is required to prevent x87/NEON 1-ULP divergence.
            - Ensure `ScopedFPUGuard` is present at boundaries of simulation updates (`GameLogic::update()`), audio thread callbacks,
@@ -156,7 +158,10 @@ reviews:
         instructions: "Verify that no platform-specific APIs (Win32, Cocoa, raw POSIX) leak into game logic (Generals/, GeneralsMD/, Core/GameEngine/). Platform code must reside in Core/GameEngineDevice/ or platform libraries."
       - name: "Cross-Platform Determinism"
         mode: "error"
-        instructions: "Verify that simulation/game logic math uses WWMath deterministic functions (WWMath::Sqrt, WWMath::Sin, WWMath::Cos, WWMath::Atan2, WWMath::PowOrigin, etc.) and divisions are protected against NaN/Inf before integer casts."
+        instructions: >-
+          Verify that simulation and game logic math (in GameLogic/ and shared math primitives) uses WWMath deterministic functions
+          (WWMath::Sqrt, WWMath::Sin, WWMath::Cos, WWMath::Atan2, WWMath::Tan, WWMath::Pow, WWMath::Div_Safe, etc.) and divisions are protected
+          against NaN/Inf before integer casts. Do NOT flag standard CRT math in rendering, UI, or client-only code (GameClient, W3DDevice, WW3D2).
       - name: "MiniAudio Backend Focus"
         mode: "warning"
         instructions: "Verify that new audio features and bugfixes target MiniAudio as the primary cross-platform audio backend. OpenAL is deprecated and no longer maintained."

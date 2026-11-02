@@ -1059,7 +1059,8 @@ UnsignedInt CRCInfo::readCRC()
 
 Bool RecorderClass::sawCRCMismatch() const
 {
-	return m_crcInfo->sawCRCMismatch();
+	// GeneralsX @bugfix fbraz3 31/10/2026 Guard against null m_crcInfo on replay aborted/early exit
+	return m_crcInfo ? m_crcInfo->sawCRCMismatch() : FALSE;
 }
 
 void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool fromPlayback)

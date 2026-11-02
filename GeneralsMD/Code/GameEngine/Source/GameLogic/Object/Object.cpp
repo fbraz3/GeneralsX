@@ -1801,13 +1801,13 @@ inline Bool isPosDifferent(const Coord3D* a, const Coord3D* b)
 	// so we must put in some cleverness...
 	const Real THRESH = 0.01f;
 
-	if (fabs(a->x - b->x) > THRESH)
+	if (WWMath::Fabs(a->x - b->x) > THRESH)
 		return true;
 
-	if (fabs(a->y - b->y) > THRESH)
+	if (WWMath::Fabs(a->y - b->y) > THRESH)
 		return true;
 
-	if (fabs(a->z - b->z) > THRESH)
+	if (WWMath::Fabs(a->z - b->z) > THRESH)
 		return true;
 
 	return false;
@@ -1823,7 +1823,7 @@ inline Bool isAngleDifferent(Real a, Real b)
 
 	const Real THRESH = 0.01f;	// in radians, this is approx 1/2 degree.
 
-	if (fabs(a - b) > THRESH)
+	if (WWMath::Fabs(a - b) > THRESH)
 		return true;
 
 	return false;
@@ -6315,7 +6315,10 @@ Bool Object::canProduceUpgrade( const UpgradeTemplate *upgrade )
 	// TheControlBar belongs to the client, we shouldn't depend on that to check this.
 
 	// We need to have the button to make the upgrade.  CommandSets are a weird Logic/Client hybrid.
-	const CommandSet *set = TheControlBar->findCommandSet(getCommandSetString());
+	const CommandSet *set = TheControlBar ? TheControlBar->findCommandSet(getCommandSetString()) : nullptr;
+
+	if (!set)
+		return FALSE;
 
 	for( Int buttonIndex = 0; buttonIndex < MAX_COMMANDS_PER_SET; buttonIndex++ )
 	{

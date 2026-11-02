@@ -53,7 +53,7 @@ Execute a comprehensive review and analysis cycle for the specified Pull Request
 Thoroughly inspect the PR diff against core `GeneralsX` rules (see `AGENTS.md` and `.github/instructions/`):
 - **Deterministic Math & Cross-Play**:
   - No raw `libm` math calls (`sqrt`, `sin`, `cos`, `tan`, `atan2`, `pow`, `floor`, `ceil`) in simulation code; use `WWMath` equivalents.
-  - Guard integer casts of divisions against zero or NaN (`WWMath::Div_FixNaN`, `if (divisor != 0)` with finite checks, or `if (divisor > 0)` for strictly positive domains like max health).
+  - Guard integer casts of divisions against zero or NaN (`WWMath::Div_Safe`, `if (divisor != 0)` with finite checks, or `if (divisor > 0)` for strictly positive domains like max health).
   - Enforce `ScopedFPUGuard` at game update and picking boundaries.
 - **Platform Isolation**:
   - No native Win32/Cocoa/POSIX API calls in game logic (`Core/GameEngine/`, `Generals/`, `GeneralsMD/`). Platform code belongs strictly in `Core/GameEngineDevice/` or `Core/Libraries/Source/Platform/`.
