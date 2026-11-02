@@ -451,7 +451,7 @@ void Shell::pop()
 	* from the shutdown() for the screen, it will be immediately popped off
 	* the stack */
 //-------------------------------------------------------------------------------------------------
-void Shell::popImmediate()
+void Shell::popImmediate( Bool runNewTopInit )
 {
 	WindowLayout *screen = top();
 
@@ -475,7 +475,8 @@ void Shell::popImmediate()
 	screen->runShutdown( &immediatePop );
 
 	// pop the screen of the stack
-	doPop( FALSE );
+	// GeneralsX @bugfix fbraz3 02/11/2026 Allow callers to suppress running runInit on the uncovered screen
+	doPop( FALSE, runNewTopInit );
 
 	if (TheIMEManager)
 		TheIMEManager->detach();
@@ -733,7 +734,7 @@ void Shell::doPush( AsciiString layoutFile )
 //-------------------------------------------------------------------------------------------------
 /** Actually do the work for a pop */
 //-------------------------------------------------------------------------------------------------
-void Shell::doPop( Bool impendingPush )
+void Shell::doPop( Bool impendingPush, Bool runNewTopInit )
 {
 	WindowLayout *currentTop = top();
 
@@ -754,7 +755,8 @@ void Shell::doPop( Bool impendingPush )
 
 	// run the init for the new top of the stack if present
 	WindowLayout *newTop = top();
-	if( newTop && !impendingPush )
+	// GeneralsX @bugfix fbraz3 02/11/2026 Guard newTop initialization when suppressed by caller or when shell is inactive
+	if( newTop && !impendingPush && runNewTopInit && m_isShellActive )
 	{
 		newTop->runInit( nullptr );
 		//newTop->bringForward();

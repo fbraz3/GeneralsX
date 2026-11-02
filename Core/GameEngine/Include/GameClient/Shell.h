@@ -131,7 +131,7 @@ public:
 	// pseudo-stack operations for manipulating layouts
 	void push( AsciiString filename, Bool shutdownImmediate = FALSE );	///< load new screen on top, optionally doing an immediate shutdown
 	void pop();																				///< pop top layout
-	void popImmediate();															///< pop now
+	void popImmediate( Bool runNewTopInit = TRUE );					///< pop now
 	void showShell( Bool runInit = TRUE );									///< init the top of stack
 	void hideShell();																	///< shutdown the top of stack
 	WindowLayout *top();															///< return top layout
@@ -169,7 +169,7 @@ protected:
 	void unlinkScreen( WindowLayout *screen );							///< remove screen from list
 
 	void doPush( AsciiString layoutFile );									///< workhorse for push action
-	void doPop( Bool impendingPush );												///< workhorse for pop action
+	void doPop( Bool impendingPush, Bool runNewTopInit = TRUE );	///< workhorse for pop action
 
 	enum { MAX_SHELL_STACK = 16 };													///< max simultaneous shell screens
 	WindowLayout *m_screenStack[ MAX_SHELL_STACK ];					///< the screen layout stack
