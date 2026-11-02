@@ -173,12 +173,12 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
+// GeneralsX @bugfix fbraz3 02/11/2026 Backport from ZH: Pop ScoreScreen without initializing uncovered menus (#328, #390).
 void startNextCampaignGame()
 {
 	AsciiString nextMap = TheCampaignManager->getCurrentMap();
 	TheWritableGlobalData->m_pendingFile = nextMap;
 
-	// GeneralsX @bugfix fbraz3 02/11/2026 Backport from ZH: Pop ScoreScreen without initializing uncovered menus (#328, #390).
 	TheShell->popImmediate(FALSE);
 	TheShell->hideShell();
 

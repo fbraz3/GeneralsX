@@ -451,6 +451,7 @@ void Shell::pop()
 	* from the shutdown() for the screen, it will be immediately popped off
 	* the stack */
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix fbraz3 02/11/2026 Allow immediate pop without running new top init to prevent shell reset (#328, #390).
 void Shell::popImmediate( Bool runNewTopInit )
 {
 	WindowLayout *screen = top();
@@ -734,6 +735,7 @@ void Shell::doPush( AsciiString layoutFile )
 //-------------------------------------------------------------------------------------------------
 /** Actually do the work for a pop */
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix fbraz3 02/11/2026 Support skipping top layout runInit() when popping (#328, #390).
 void Shell::doPop( Bool impendingPush, Bool runNewTopInit )
 {
 	WindowLayout *currentTop = top();

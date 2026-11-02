@@ -202,24 +202,25 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
+// GeneralsX @bugfix fbraz3 02/11/2026 Fix auto-defeat in General's Challenge on next match / retry (#328, #390).
+// Popping the ScoreScreen layout must not run runInit() on the uncovered layout below it (e.g. ChallengeMenu).
+// Initializing ChallengeMenu would call showShellMap(TRUE) which queues a conflicting MSG_NEW_GAME(GAME_SHELL),
+// overwrites m_pendingFile with the shell map, and wipes TheChallengeGameInfo slot list via reset().
+// When TheChallengeGameInfo slots were cleared, placeNetworkBuildingsForPlayer() was skipped on the next map,
+// leaving the player with no starting command center/units and causing immediate defeat during the intro cinematic.
 void startNextCampaignGame()
 {
 	AsciiString nextMap = TheCampaignManager->getCurrentMap();
 	TheWritableGlobalData->m_pendingFile = nextMap;
 
-	// GeneralsX @bugfix fbraz3 02/11/2026 Fix auto-defeat in General's Challenge on next match / retry (#328, #390).
-	// Popping the ScoreScreen layout must not run runInit() on the uncovered layout below it (e.g. ChallengeMenu).
-	// Initializing ChallengeMenu would call showShellMap(TRUE) which queues a conflicting MSG_NEW_GAME(GAME_SHELL),
-	// overwrites m_pendingFile with the shell map, and wipes TheChallengeGameInfo slot list via reset().
-	// When TheChallengeGameInfo slots were cleared, placeNetworkBuildingsForPlayer() was skipped on the next map,
-	// leaving the player with no starting command center/units and causing immediate defeat during the intro cinematic.
 	TheShell->popImmediate(FALSE);
 	TheShell->hideShell();
 
 	// Re-assert the real pending file: prepareNewGame() copies m_pendingFile into m_mapName
 	TheWritableGlobalData->m_pendingFile = nextMap;
 
-	if (TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+	Bool isChallenge = (TheCampaignManager->getCurrentCampaign() != nullptr && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign());
+	if (isChallenge)
 	{
 		if (!TheChallengeGameInfo)
 		{
@@ -246,7 +247,10 @@ void startNextCampaignGame()
 	msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 	msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
 	msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
-	msg->appendIntegerArgument(TheGlobalData->m_framesPerSecondLimit);
+	if (isChallenge)
+	{
+		msg->appendIntegerArgument(TheGlobalData->m_framesPerSecondLimit);
+	}
 
 	InitRandom(0);
 }
