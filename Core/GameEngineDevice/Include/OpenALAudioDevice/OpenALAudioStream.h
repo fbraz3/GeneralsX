@@ -53,4 +53,5 @@ protected:
     ALuint m_source = 0;
     ALuint m_buffers[AL_STREAM_BUFFER_COUNT] = {};
     unsigned int m_current_buffer_idx = 0;
+    unsigned int m_newBuffersQueued = 0;
 };
