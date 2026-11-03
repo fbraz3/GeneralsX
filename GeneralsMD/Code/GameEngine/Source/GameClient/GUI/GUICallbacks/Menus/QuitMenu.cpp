@@ -38,6 +38,9 @@
 #include "Common/PlayerList.h"
 #include "Common/RandomValue.h"
 #include "Common/Recorder.h"
+#include "Common/PlayerTemplate.h"
+#include "GameClient/CampaignManager.h"
+#include "GameClient/ChallengeGenerals.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/GameWindowManager.h"
@@ -78,6 +81,8 @@ static NameKeyType buttonRestart = NAMEKEY_INVALID;
 static NameKeyType buttonReturn = NAMEKEY_INVALID;
 static NameKeyType buttonOptions = NAMEKEY_INVALID;
 static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
+
+extern SkirmishGameInfo *TheChallengeGameInfo;
 
 static void initGadgetsFullQuit()
 {
@@ -200,6 +205,27 @@ static void restartMissionMenu()
 
 	TheGameLogic->clearGameData(FALSE);
 	TheGameEngine->setQuitting(FALSE);
+
+	// GeneralsX @bugfix fbraz3 02/11/2026 Re-initialize TheChallengeGameInfo on mission restart in General's Challenge (#328, #390)
+	if (TheCampaignManager && TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+	{
+		if (!TheChallengeGameInfo)
+		{
+			TheChallengeGameInfo = NEW SkirmishGameInfo;
+		}
+		TheChallengeGameInfo->init();
+		TheChallengeGameInfo->clearSlotList();
+		TheChallengeGameInfo->reset();
+		TheChallengeGameInfo->enterGame();
+		TheChallengeGameInfo->setMap(mapName);
+
+		Int templateNum = TheChallengeGenerals ? TheChallengeGenerals->getCurrentPlayerTemplateNum() : 0;
+		const PlayerTemplate *playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
+		GameSlot slot;
+		slot.setState(SLOT_PLAYER, playerTemplate ? playerTemplate->getDisplayName() : UnicodeString::TheEmptyString);
+		slot.setPlayerTemplate(templateNum);
+		TheChallengeGameInfo->setSlot(0, slot);
+	}
 
 	if (replayFile.isNotEmpty())
 	{

@@ -202,34 +202,40 @@ void populateSideInfo( UnicodeString side,ScoreGather *sg, Int pos, Color color)
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
+// GeneralsX @bugfix fbraz3 02/11/2026 Fix auto-defeat in General's Challenge on next match / retry (#328, #390).
+// Popping the ScoreScreen layout must not run runInit() on the uncovered layout below it (e.g. ChallengeMenu).
+// Initializing ChallengeMenu would call showShellMap(TRUE) which queues a conflicting MSG_NEW_GAME(GAME_SHELL),
+// overwrites m_pendingFile with the shell map, and wipes TheChallengeGameInfo slot list via reset().
+// When TheChallengeGameInfo slots were cleared, placeNetworkBuildingsForPlayer() was skipped on the next map,
+// leaving the player with no starting command center/units and causing immediate defeat during the intro cinematic.
 void startNextCampaignGame()
 {
-	// GeneralsX @bugfix coolswood 18/07/2026 Fix Generals Challenge defeat during the next mission's intro cinematic.
-	// The previous ordering performed popImmediate()/hideShell() before queuing MSG_NEW_GAME(GAME_SINGLE_PLAYER).
-	// Hiding the shell triggers the next menu's init (e.g. SaveLoad), which calls Shell::showShellMap(TRUE),
-	// and showShellMap appends its own MSG_NEW_GAME(GAME_SHELL) for the shell map and overwrites m_pendingFile
-	// with the shell map name. That GAME_SHELL message then races ahead of the GAME_SINGLE_PLAYER message and
-	// is processed first by onNewGame(): with m_gameMode == GAME_SHELL the isChallengeCampaign check is false,
-	// TheGameInfo stays null, placeNetworkBuildingsForPlayer() is skipped, the local player never receives a
-	// starting base, and the map's "PLAYER_HAS_N_OR_FEWER_BUILDINGS" script fires doDefeat() a few frames after
-	// the map loads (visible as the defeat screen during the intro cinematic). Fix: set m_pendingFile and queue
-	// MSG_NEW_GAME(GAME_SINGLE_PLAYER) BEFORE the shell teardown so our message is first in the queue, and
-	// re-assert m_pendingFile afterwards in case Shell::showShellMap clobbered it. The shell's duplicate
-	// MSG_NEW_GAME(GAME_SHELL) now lands behind ours and is rejected by the onNewGame() guard.
-	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
-	if (TheCampaignManager->getCurrentCampaign() && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+	AsciiString nextMap = TheCampaignManager->getCurrentMap();
+	TheWritableGlobalData->m_pendingFile = nextMap;
+
+	TheShell->popImmediate(FALSE);
+	TheShell->hideShell();
+
+	// Re-assert the real pending file: prepareNewGame() copies m_pendingFile into m_mapName
+	TheWritableGlobalData->m_pendingFile = nextMap;
+
+	Bool isChallenge = (TheCampaignManager->getCurrentCampaign() != nullptr && TheCampaignManager->getCurrentCampaign()->isChallengeCampaign());
+	if (isChallenge)
 	{
-		DEBUG_ASSERTCRASH( TheChallengeGameInfo, ("TheChallengeGameInfo doesn't exist.") );
+		if (!TheChallengeGameInfo)
+		{
+			TheChallengeGameInfo = NEW SkirmishGameInfo;
+		}
 		TheChallengeGameInfo->init();
 		TheChallengeGameInfo->clearSlotList();
 		TheChallengeGameInfo->reset();
 		TheChallengeGameInfo->enterGame();
-		TheChallengeGameInfo->setMap(TheCampaignManager->getCurrentMap());
+		TheChallengeGameInfo->setMap(nextMap);
 
-		Int templateNum = TheChallengeGenerals->getCurrentPlayerTemplateNum();
+		Int templateNum = TheChallengeGenerals ? TheChallengeGenerals->getCurrentPlayerTemplateNum() : 0;
 		const PlayerTemplate *playerTemplate = ThePlayerTemplateStore->getNthPlayerTemplate(templateNum);
 		GameSlot slot;
-		slot.setState(SLOT_PLAYER, playerTemplate->getDisplayName());
+		slot.setState(SLOT_PLAYER, playerTemplate ? playerTemplate->getDisplayName() : UnicodeString::TheEmptyString);
 		slot.setPlayerTemplate(templateNum);
 		TheChallengeGameInfo->setSlot(0, slot);
 
@@ -237,19 +243,14 @@ void startNextCampaignGame()
 			TheGameLogic->clearGameData();
 	}
 
-	// Queue MSG_NEW_GAME(GAME_SINGLE_PLAYER) before popImmediate()/hideShell(): this guarantees it sits ahead
-	// of any MSG_NEW_GAME(GAME_SHELL) that the shell teardown may append via Shell::showShellMap(TRUE).
 	GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 	msg->appendIntegerArgument(GAME_SINGLE_PLAYER);
 	msg->appendIntegerArgument(TheCampaignManager->getGameDifficulty());
 	msg->appendIntegerArgument(TheCampaignManager->getRankPoints());
-
-	TheShell->popImmediate();
-	TheShell->hideShell();
-
-	// Re-assert the real pending file: prepareNewGame() copies m_pendingFile into m_mapName, so the value
-	// present here is what actually loads. Shell::showShellMap(TRUE) may have overwritten it above.
-	TheWritableGlobalData->m_pendingFile = TheCampaignManager->getCurrentMap();
+	if (isChallenge)
+	{
+		msg->appendIntegerArgument(TheGlobalData->m_framesPerSecondLimit);
+	}
 
 	InitRandom(0);
 }
