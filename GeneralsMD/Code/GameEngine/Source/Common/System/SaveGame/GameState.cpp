@@ -739,6 +739,7 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 		TheFramePacer->enableLogicTimeScale(tickRate < maxFPS);
 		fprintf(stderr, "[SAVELOAD] Logic time scale re-evaluated after load: tick=%d Hz, render cap=%d FPS, scale=%s\n",
 			tickRate, maxFPS, (tickRate < maxFPS) ? "on" : "off");
+		fflush(stderr);
 	}
 
 	// check for error
