@@ -2688,6 +2688,12 @@ void W3DModelDraw::handleClientRecoil()
 
 		const ModelConditionInfo::WeaponBarrelInfoVec& barrels = m_curState->m_weaponBarrelInfoVec[wslot];
 		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
+		// GeneralsX @bugfix Moortu 02/11/2026 Synchronize recoil list if barrels were validated late (#379)
+		if (recoils.size() < barrels.size())
+		{
+			WeaponRecoilInfo tmp;
+			recoils.resize(barrels.size(), tmp);
+		}
 		Int count = barrels.size();
 		Int recoilCount = recoils.size();
 		DEBUG_ASSERTCRASH(count == recoilCount, ("Barrel count != recoil count!"));
@@ -4173,7 +4179,8 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 
 	Bool handled = false;
 
-	if (specificBarrelToUse < 0 || specificBarrelToUse > wbvec.size())
+	// GeneralsX @bugfix Moortu 02/11/2026 Reject barrel indices equal to the barrel count (#379)
+	if (specificBarrelToUse < 0 || specificBarrelToUse >= (Int)wbvec.size())
 		specificBarrelToUse = 0;
 
 	const ModelConditionInfo::WeaponBarrelInfo& info = wbvec[specificBarrelToUse];
@@ -4220,6 +4227,20 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 	if (info.m_recoilBone || info.m_muzzleFlashBone)
 	{
 		//DEBUG_LOG(("START muzzleflash %08lx for Draw %08lx state %s at frame %d",info.m_muzzleFlashBone,this,m_curState->m_description.str(),TheGameLogic->getFrame()));
+		// GeneralsX @bugfix Moortu 02/11/2026 Guard recoil info indexing and resize when barrels validated late (#379)
+		// The recoil list is sized when the model state is set. If that happened before the shared
+		// barrel info of the state was validated (it is only built during a logic update), the list
+		// is still empty here. Size all slots to their barrel list now, instead of indexing past its end.
+		for (int s = 0; s < WEAPONSLOT_COUNT; ++s)
+		{
+			const ModelConditionInfo::WeaponBarrelInfoVec& bvec = m_curState->m_weaponBarrelInfoVec[s];
+			WeaponRecoilInfoVec& rvec = m_weaponRecoilInfoVec[s];
+			if (rvec.size() < bvec.size())
+			{
+				WeaponRecoilInfo tmp;
+				rvec.resize(bvec.size(), tmp);
+			}
+		}
 		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
 		recoil.m_recoilRate = getW3DModelDrawModuleData()->m_initialRecoil;
