@@ -80,9 +80,27 @@ void OpenALAudioStream::update()
     ALint num_queued;
     alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_queued);
 
+    // GeneralsX @bugfix Moortu 02/11/2026 Drop processed buffers on STOPPED source to avoid looping speech (#380)
+    // A STOPPED source has played everything that was queued on it: OpenAL reports every
+    // queued buffer as processed. Drop them now. Calling play() on a STOPPED source rewinds it
+    // and plays the old buffers again, so the last chunk of a finished speech line would loop
+    // forever and the stream would never be released (constant hissing/repeating voice sound).
+    // Buffers queued after this point (refill below) are new and are started by the final restart.
+    if (sourceState == AL_STOPPED && num_queued > 0) {
+        ALint processedOnStop = 0;
+        alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &processedOnStop);
+        while (processedOnStop > 0) {
+            ALuint buffer;
+            alSourceUnqueueBuffers(m_source, 1, &buffer);
+            processedOnStop--;
+        }
+        alGetSourcei(m_source, AL_BUFFERS_QUEUED, &num_queued);
+    }
+
     // GeneralsX @bugfix BenderAI 22/04/2026 Restart before unqueue to avoid dropping freshly queued
     // briefing buffers when OpenAL reports AL_STOPPED with processed buffers.
-    if ((sourceState == AL_STOPPED || sourceState == AL_INITIAL || sourceState == AL_PAUSED) && num_queued > 0) {
+    // Only INITIAL/PAUSED here: a STOPPED source was handled above.
+    if ((sourceState == AL_INITIAL || sourceState == AL_PAUSED) && num_queued > 0) {
         play();
         alGetSourcei(m_source, AL_SOURCE_STATE, &sourceState);
     }
