@@ -4173,7 +4173,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 
 	Bool handled = false;
 
-	if (specificBarrelToUse < 0 || specificBarrelToUse > wbvec.size())
+	if (specificBarrelToUse < 0 || specificBarrelToUse >= (Int)wbvec.size())
 		specificBarrelToUse = 0;
 
 	const ModelConditionInfo::WeaponBarrelInfo& info = wbvec[specificBarrelToUse];
@@ -4220,7 +4220,17 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 	if (info.m_recoilBone || info.m_muzzleFlashBone)
 	{
 		//DEBUG_LOG(("START muzzleflash %08lx for Draw %08lx state %s at frame %d",info.m_muzzleFlashBone,this,m_curState->m_description.str(),TheGameLogic->getFrame()));
-		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
+		// GeneralsX @bugfix Moortu 02/11/2026 Guard recoil info indexing and resize when barrels validated late (#379)
+		// The recoil list is sized when the model state is set. If that happened before the shared
+		// barrel info of the state was validated (it is only built during a logic update), the list
+		// is still empty here. Size it to the barrel list now, instead of indexing past its end.
+		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
+		if (recoils.size() < wbvec.size())
+		{
+			WeaponRecoilInfo tmp;
+			recoils.resize(wbvec.size(), tmp);
+		}
+		WeaponRecoilInfo& recoil = recoils[specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
 		recoil.m_recoilRate = getW3DModelDrawModuleData()->m_initialRecoil;
 		if (info.m_muzzleFlashBone != 0)
