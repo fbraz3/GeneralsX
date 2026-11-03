@@ -36,6 +36,7 @@
 #endif
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GameStateMap.h"
@@ -723,6 +724,21 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 	catch (...)
 	{
 		error = TRUE;
+	}
+
+	// GeneralsX @bugfix Moortu 02/11/2026 Re-evaluate the logic time scale after the engine reset (#334)
+	// TheGameEngine->reset() runs ScriptEngine::reset(), which restores the global render FPS limit
+	// (for example 30 -> 60) but leaves the logic time scale flag untouched. A Skirmish started with the
+	// game speed slider at the tick rate (30) has the scale disabled (30 < 30 is false), so after an
+	// in-game load the logic ran once per render frame at 60 FPS: double speed. Loading from the main
+	// menu was fine because clearGameData() re-evaluates the flag when leaving the previous game.
+	if (TheFramePacer != nullptr)
+	{
+		const Int tickRate = TheFramePacer->getLogicTimeScaleFps();
+		const Int maxFPS = TheFramePacer->getFramesPerSecondLimit();
+		TheFramePacer->enableLogicTimeScale(tickRate < maxFPS);
+		fprintf(stderr, "[SAVELOAD] Logic time scale re-evaluated after load: tick=%d Hz, render cap=%d FPS, scale=%s\n",
+			tickRate, maxFPS, (tickRate < maxFPS) ? "on" : "off");
 	}
 
 	// check for error
