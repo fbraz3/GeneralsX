@@ -2688,6 +2688,12 @@ void W3DModelDraw::handleClientRecoil()
 
 		const ModelConditionInfo::WeaponBarrelInfoVec& barrels = m_curState->m_weaponBarrelInfoVec[wslot];
 		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
+		// GeneralsX @bugfix Moortu 02/11/2026 Synchronize recoil list if barrels were validated late (#379)
+		if (recoils.size() < barrels.size())
+		{
+			WeaponRecoilInfo tmp;
+			recoils.resize(barrels.size(), tmp);
+		}
 		Int count = barrels.size();
 		Int recoilCount = recoils.size();
 		DEBUG_ASSERTCRASH(count == recoilCount, ("Barrel count != recoil count!"));
@@ -4173,6 +4179,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 
 	Bool handled = false;
 
+	// GeneralsX @bugfix Moortu 02/11/2026 Reject barrel indices equal to the barrel count (#379)
 	if (specificBarrelToUse < 0 || specificBarrelToUse >= (Int)wbvec.size())
 		specificBarrelToUse = 0;
 
@@ -4223,14 +4230,18 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 		// GeneralsX @bugfix Moortu 02/11/2026 Guard recoil info indexing and resize when barrels validated late (#379)
 		// The recoil list is sized when the model state is set. If that happened before the shared
 		// barrel info of the state was validated (it is only built during a logic update), the list
-		// is still empty here. Size it to the barrel list now, instead of indexing past its end.
-		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
-		if (recoils.size() < wbvec.size())
+		// is still empty here. Size all slots to their barrel list now, instead of indexing past its end.
+		for (int s = 0; s < WEAPONSLOT_COUNT; ++s)
 		{
-			WeaponRecoilInfo tmp;
-			recoils.resize(wbvec.size(), tmp);
+			const ModelConditionInfo::WeaponBarrelInfoVec& bvec = m_curState->m_weaponBarrelInfoVec[s];
+			WeaponRecoilInfoVec& rvec = m_weaponRecoilInfoVec[s];
+			if (rvec.size() < bvec.size())
+			{
+				WeaponRecoilInfo tmp;
+				rvec.resize(bvec.size(), tmp);
+			}
 		}
-		WeaponRecoilInfo& recoil = recoils[specificBarrelToUse];
+		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
 		recoil.m_recoilRate = getW3DModelDrawModuleData()->m_initialRecoil;
 		if (info.m_muzzleFlashBone != 0)
