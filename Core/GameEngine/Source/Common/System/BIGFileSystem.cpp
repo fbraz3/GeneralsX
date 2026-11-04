@@ -500,24 +500,24 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 		return;
 	}
 
-	if (zhAssetDirectory.isNotEmpty()) {
-		AsciiString siblingGenerals = zhAssetDirectory;
-		siblingGenerals.concat("/../Generals");
-		if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
-			return;
-		}
+	AsciiString rootZhDir = zhAssetDirectory.isNotEmpty() ? zhAssetDirectory : AsciiString(".");
 
-		AsciiString steamGenerals = zhAssetDirectory;
-		steamGenerals.concat("/ZH_Generals");
-		if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
-			return;
-		}
+	AsciiString siblingGenerals = rootZhDir;
+	siblingGenerals.concat("/../Generals");
+	if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
+		return;
+	}
 
-		AsciiString steamGeneralsLower = zhAssetDirectory;
-		steamGeneralsLower.concat("/zh_generals");
-		if (tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
-			return;
-		}
+	AsciiString steamGenerals = rootZhDir;
+	steamGenerals.concat("/ZH_Generals");
+	if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
+		return;
+	}
+
+	AsciiString steamGeneralsLower = rootZhDir;
+	steamGeneralsLower.concat("/zh_generals");
+	if (tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
+		return;
 	}
 }
 #endif

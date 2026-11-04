@@ -206,15 +206,23 @@ if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; t
 fi
 
 # GeneralsX @feature fbraz3 04/11/2026 Stage generalsx.big into active asset root and remove legacy loose overrides
-_gen_asset_dir="${CNC_GENERALS_PATH:-${CNC_GENERALS_INSTALLPATH:-}}"
+_gen_asset_dir="${CNC_GENERALS_PATH:-${GENERALSX_ASSET_PATH:-${CNC_GENERALS_INSTALLPATH:-}}}"
 if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
     if [[ -f "Generals.big" && "$(pwd)" != "${SCRIPT_DIR}" ]]; then
-        cp -f "${SCRIPT_DIR}/generalsx.big" "generalsx.big.tmp" 2>/dev/null && mv -f "generalsx.big.tmp" "generalsx.big" 2>/dev/null || true
-        rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        _stage_tmp="generalsx.big.tmp.$$"
+        if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
     fi
     if [[ -n "${_gen_asset_dir}" && -d "${_gen_asset_dir}" && "${_gen_asset_dir}" != "${SCRIPT_DIR}" ]]; then
-        cp -f "${SCRIPT_DIR}/generalsx.big" "${_gen_asset_dir}/generalsx.big.tmp" 2>/dev/null && mv -f "${_gen_asset_dir}/generalsx.big.tmp" "${_gen_asset_dir}/generalsx.big" 2>/dev/null || true
-        rm -f "${_gen_asset_dir}/Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        _stage_tmp="${_gen_asset_dir}/generalsx.big.tmp.$$"
+        if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "${_gen_asset_dir}/generalsx.big" 2>/dev/null; then
+            rm -f "${_gen_asset_dir}/Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
     fi
 fi
 rm -f "${SCRIPT_DIR}/Data/INI/FXListGeneralsX.ini" 2>/dev/null || true

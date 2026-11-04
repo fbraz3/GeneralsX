@@ -427,8 +427,12 @@ if [[ -d "${CNC_GENERALS_PATH}" ]]; then
     cd "${CNC_GENERALS_PATH}"
 
     if [[ -f "${RESOURCES_DIR}/generalsx.big" ]]; then
-        cp -f "${RESOURCES_DIR}/generalsx.big" "generalsx.big" 2>/dev/null || true
-        rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        _stage_tmp="generalsx.big.tmp.$$"
+        if cp -f "${RESOURCES_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
     fi
 
     # SagePatch INI override: the engine now auto-creates SagePatch.ini with
