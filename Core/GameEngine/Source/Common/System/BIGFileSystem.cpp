@@ -80,12 +80,8 @@ static Bool isPatchArchiveFilename(const AsciiString& archivePath)
 	}
 
 	const char* baseName = (split != nullptr) ? (split + 1) : raw;
-
-#ifdef _WIN32
-	return _strnicmp(baseName, "Patch", 5) == 0;
-#else
-	return strncasecmp(baseName, "Patch", 5) == 0;
-#endif
+	AsciiString base(baseName);
+	return base.startsWithNoCase("Patch");
 }
 
 // GeneralsX @feature fbraz3 14/10/2026 True if the basename starts with "generalsx" (e.g. generalsx.big).
@@ -100,12 +96,8 @@ static Bool isGeneralsXArchiveFilename(const AsciiString& archivePath)
 	}
 
 	const char* baseName = (split != nullptr) ? (split + 1) : raw;
-
-#ifdef _WIN32
-	return _strnicmp(baseName, "generalsx", 9) == 0;
-#else
-	return strncasecmp(baseName, "generalsx", 9) == 0;
-#endif
+	AsciiString base(baseName);
+	return base.startsWithNoCase("generalsx");
 }
 
 static Bool equalsIgnoreCase(const char* lhs, const char* rhs)
@@ -748,8 +740,9 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 			while (*subPath == '/' || *subPath == '\\') {
 				subPath++;
 			}
-			if (strnicmp(subPath, "ZH_Generals/", 12) == 0 ||
-				strnicmp(subPath, "ZH_Generals\\", 12) == 0 ||
+			AsciiString sub(subPath);
+			if (sub.startsWithNoCase("ZH_Generals/") ||
+				sub.startsWithNoCase("ZH_Generals\\") ||
 				strstr(subPath, "/ZH_Generals/") != nullptr ||
 				strstr(subPath, "\\ZH_Generals\\") != nullptr) {
 				it++;
