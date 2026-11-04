@@ -107,6 +107,7 @@ modules:
       - install -Dm644 flatpak/com.fbraz3.GeneralsXZH.metainfo.xml /app/share/metainfo/com.fbraz3.GeneralsXZH.metainfo.xml
       - install -Dm644 flatpak/generalsx-zh_icon_512.png /app/share/icons/hicolor/512x512/apps/com.fbraz3.GeneralsXZH.png
       - install -Dm644 resources/dxvk/dxvk.conf /app/share/generalsxzh/dxvk.conf
+      - if [ -f build-flatpak/generalsx.big ]; then install -Dm644 build-flatpak/generalsx.big /app/share/generalsxzh/generalsx.big; fi
       - install -d /app/share/fonts
       - if [ -d assets/fonts ]; then cp assets/fonts/*.ttf assets/fonts/LICENSE.liberation assets/fonts/LICENSE.fontawesome /app/share/fonts/; fi
       - install -d /app/lib
@@ -215,6 +216,13 @@ modules:
         cd "${CNC_GENERALS_INSTALLPATH}"
         if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
           export CNC_GENERALS_ZH_PATH="${CNC_GENERALS_INSTALLPATH}"
+        fi
+
+        if [[ -f /app/share/generalsxzh/generalsx.big ]]; then
+          if ! cp -f /app/share/generalsxzh/generalsx.big "generalsx.big" 2>/dev/null; then
+            echo "WARNING: could not copy generalsx.big into ${CNC_GENERALS_INSTALLPATH}; GeneralsX custom assets may not load." >&2
+          fi
+          rm -f "Data/INI/FXListGeneralsX.ini" "Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
         fi
 
         # SagePatch INI override: the engine now auto-creates SagePatch.ini with

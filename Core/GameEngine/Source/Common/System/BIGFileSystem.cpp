@@ -88,6 +88,26 @@ static Bool isPatchArchiveFilename(const AsciiString& archivePath)
 #endif
 }
 
+// GeneralsX @feature fbraz3 14/10/2026 True if the basename starts with "generalsx" (e.g. generalsx.big).
+static Bool isGeneralsXArchiveFilename(const AsciiString& archivePath)
+{
+	const char* raw = archivePath.str();
+	const char* lastSlash = strrchr(raw, '/');
+	const char* lastBackslash = strrchr(raw, '\\');
+	const char* split = lastSlash;
+	if (split == nullptr || (lastBackslash != nullptr && lastBackslash > split)) {
+		split = lastBackslash;
+	}
+
+	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+
+#ifdef _WIN32
+	return _strnicmp(baseName, "generalsx", 9) == 0;
+#else
+	return strncasecmp(baseName, "generalsx", 9) == 0;
+#endif
+}
+
 static Bool equalsIgnoreCase(const char* lhs, const char* rhs)
 {
 	if (lhs == nullptr || rhs == nullptr) {
@@ -706,6 +726,8 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 Patch*.big must win over same-named base archives
 	// within this root; allowPatchPrecedence=FALSE keeps a fallback root from outranking the primary one.
 	FilenameList patchFilenameList;
+	// GeneralsX @feature fbraz3 14/10/2026 generalsx.big has highest precedence over both base and patch archives.
+	FilenameList generalsxFilenameList;
 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
@@ -718,9 +740,27 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 			it++;
 			continue;
 		}
+
+		// GeneralsX @bugfix fbraz3 04/11/2026 Skip nested ZH_Generals subdirectory during the primary Zero Hour scan
+		// so loadBaseGeneralsAssetsForZH mounts base Generals archives afterward without patch precedence.
+		if (allowPatchPrecedence && it->getLength() > dir.getLength()) {
+			const char *subPath = it->str() + dir.getLength();
+			while (*subPath == '/' || *subPath == '\\') {
+				subPath++;
+			}
+			if (strnicmp(subPath, "ZH_Generals/", 12) == 0 ||
+				strnicmp(subPath, "ZH_Generals\\", 12) == 0 ||
+				strstr(subPath, "/ZH_Generals/") != nullptr ||
+				strstr(subPath, "\\ZH_Generals\\") != nullptr) {
+				it++;
+				continue;
+			}
+		}
 #endif
 
-		if (isPatchArchiveFilename(*it)) {
+		if (isGeneralsXArchiveFilename(*it)) {
+			generalsxFilenameList.insert(*it);
+		} else if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);
 		} else if (loadOneArchiveFile(*it, overwrite)) {
 			actuallyAdded = TRUE;
@@ -736,6 +776,18 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 		}
 
 		patchIt++;
+	}
+
+	if (actuallyAdded && allowPatchPrecedence) {
+		FilenameListIter gxIt = generalsxFilenameList.begin();
+		while (gxIt != generalsxFilenameList.end()) {
+			if (loadOneArchiveFile(*gxIt, TRUE)) {
+				fprintf(stderr, "[BIG] Mounted GeneralsX archive: %s\n", gxIt->str());
+				fflush(stderr);
+			}
+
+			gxIt++;
+		}
 	}
 
 	return actuallyAdded;
