@@ -211,10 +211,11 @@ modules:
         fi
 
         if [[ -f /app/share/generalsx/generalsx.big ]]; then
-          if ! cp -f /app/share/generalsx/generalsx.big "generalsx.big" 2>/dev/null; then
-            echo "WARNING: could not copy generalsx.big into ${CNC_GENERALS_INSTALLPATH}; GeneralsX custom assets may not load." >&2
+          if cp -f /app/share/generalsx/generalsx.big "generalsx.big.tmp" 2>/dev/null && mv -f "generalsx.big.tmp" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+          else
+            echo "WARNING: could not stage generalsx.big into ${CNC_GENERALS_INSTALLPATH}; GeneralsX custom assets may not load." >&2
           fi
-          rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
         fi
 
         # SagePatch INI override: the engine now auto-creates SagePatch.ini with

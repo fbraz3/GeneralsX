@@ -512,6 +512,12 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 		if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
 			return;
 		}
+
+		AsciiString steamGeneralsLower = zhAssetDirectory;
+		steamGeneralsLower.concat("/zh_generals");
+		if (tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
+			return;
+		}
 	}
 }
 #endif
@@ -720,6 +726,8 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 	FilenameList patchFilenameList;
 	// GeneralsX @feature fbraz3 14/10/2026 generalsx.big has highest precedence over both base and patch archives.
 	FilenameList generalsxFilenameList;
+	// GeneralsX @feature fbraz3 04/11/2026 In fallback scan (!allowPatchPrecedence && !overwrite), defer normal base archives so fallback patches mount first without overwriting Zero Hour
+	FilenameList normalFilenameList;
 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
@@ -756,6 +764,8 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 			generalsxFilenameList.insert(*it);
 		} else if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);
+		} else if (!allowPatchPrecedence && !overwrite) {
+			normalFilenameList.insert(*it);
 		} else if (loadOneArchiveFile(*it, overwrite)) {
 			actuallyAdded = TRUE;
 		}
@@ -770,6 +780,17 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 		}
 
 		patchIt++;
+	}
+
+	if (!allowPatchPrecedence && !overwrite) {
+		FilenameListIter normIt = normalFilenameList.begin();
+		while (normIt != normalFilenameList.end()) {
+			if (loadOneArchiveFile(*normIt, FALSE)) {
+				actuallyAdded = TRUE;
+			}
+
+			normIt++;
+		}
 	}
 
 	if (actuallyAdded && allowPatchPrecedence) {
