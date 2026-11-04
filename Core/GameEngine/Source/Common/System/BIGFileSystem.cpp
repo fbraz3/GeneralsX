@@ -758,7 +758,8 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 		}
 #endif
 
-		if (isGeneralsXArchiveFilename(*it)) {
+		// GeneralsX @feature fbraz3 04/11/2026 Defer generalsx*.big to ensure it is mounted last with highest precedence during primary scan
+		if (allowPatchPrecedence && isGeneralsXArchiveFilename(*it)) {
 			generalsxFilenameList.insert(*it);
 		} else if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);
@@ -813,7 +814,7 @@ void BIGFileSystem::loadMods()
 
 	if (TheGlobalData->m_modDir.isNotEmpty())
 	{
-		MAYBE_UNUSED Bool ret = loadArchiveFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE);
+		MAYBE_UNUSED Bool ret = loadArchiveFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE, FALSE);
 		(void)ret;
 		DEBUG_ASSERTLOG(ret, ("loadArchiveFilesFromDirectory(%s) returned FALSE!", TheGlobalData->m_modDir.str()));
 	}
