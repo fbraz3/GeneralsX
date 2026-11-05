@@ -129,7 +129,7 @@ public:
 	void hide( Bool hide );																	///< show/hide all shell layouts
 
 	// pseudo-stack operations for manipulating layouts
-	void push( AsciiString filename, Bool shutdownImmediate = FALSE );	///< load new screen on top, optionally doing an immediate shutdown
+	Bool push( AsciiString filename, Bool shutdownImmediate = FALSE );	///< load new screen on top, optionally doing an immediate shutdown
 	void pop();																				///< pop top layout
 	// GeneralsX @bugfix fbraz3 02/11/2026 Support popping layout without initializing uncovered screen (#328, #390)
 	void popImmediate( Bool runNewTopInit = TRUE );					///< pop now
@@ -169,7 +169,7 @@ protected:
 	void linkScreen( WindowLayout *screen );								///< link screen to list
 	void unlinkScreen( WindowLayout *screen );							///< remove screen from list
 
-	void doPush( AsciiString layoutFile );									///< workhorse for push action
+	Bool doPush( AsciiString layoutFile, Bool restoreTopOnFail = FALSE );	///< workhorse for push action
 	// GeneralsX @bugfix fbraz3 02/11/2026 Allow suppressing runInit on uncovered layout (#328, #390)
 	void doPop( Bool impendingPush, Bool runNewTopInit = TRUE );	///< workhorse for pop action
 

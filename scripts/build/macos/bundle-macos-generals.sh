@@ -343,6 +343,14 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${RESOURCES_DIR}/generalsx.big"
+fi
+
 # GeneralsX @feature felipebraz 26/09/2026 Bundle universal fonts into application resources.
 mkdir -p "${RESOURCES_DIR}/fonts"
 if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
@@ -353,14 +361,6 @@ if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
 else
     echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
     exit 1
-fi
-
-# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
-FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/Generals/Data/INI/FXListGeneralsX.ini"
-if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
-    echo "  + Data/INI/FXListGeneralsX.ini"
-    mkdir -p "${RESOURCES_DIR}/Data/INI"
-    cp "${FXLIST_GENERALSX_SRC}" "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini"
 fi
 
 # App launcher wrapper
@@ -398,7 +398,15 @@ if [[ -f "${RESOURCES_DIR}/MoltenVK_icd.json" ]]; then
 fi
 
 # Default asset path matching the standard macOS deploy layout (allow user override)
-export CNC_GENERALS_PATH="${CNC_GENERALS_PATH:-${HOME}/GeneralsX/Generals}"
+if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
+    if [[ -d "${HOME}/GeneralsX/Generals" && -n "$(compgen -G "${HOME}/GeneralsX/Generals/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+    elif [[ -d "${HOME}/GeneralsX/data/Generals" && -n "$(compgen -G "${HOME}/GeneralsX/data/Generals/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/data/Generals"
+    else
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+    fi
+fi
 
 # Backward compatibility for existing runtime readers
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" ]]; then
@@ -418,9 +426,14 @@ fi
 if [[ -d "${CNC_GENERALS_PATH}" ]]; then
     cd "${CNC_GENERALS_PATH}"
 
-    if [[ -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" ]]; then
-        mkdir -p "Data/INI"
-        cp -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+    if [[ -f "${RESOURCES_DIR}/generalsx.big" ]]; then
+        _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
+        if cp -f "${RESOURCES_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
     fi
 
     # SagePatch INI override: the engine now auto-creates SagePatch.ini with

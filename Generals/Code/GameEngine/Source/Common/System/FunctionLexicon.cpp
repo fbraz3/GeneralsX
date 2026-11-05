@@ -147,6 +147,8 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 	{ NAMEKEY_INVALID, "GameInfoWindowSystem",               (void*)GameInfoWindowSystem },
 	{ NAMEKEY_INVALID, "ScoreScreenSystem",                  (void*)ScoreScreenSystem },
 	{ NAMEKEY_INVALID, "DownloadMenuSystem",                 (void*)DownloadMenuSystem },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu window callbacks
+	{ NAMEKEY_INVALID, "GeneralsXMenuSystem",                (void*)GeneralsXMenuSystem },
 
 	{ NAMEKEY_INVALID, nullptr,                              nullptr }
 
@@ -217,6 +219,8 @@ static FunctionLexicon::TableEntry gameWinInputTable[] =
 	{ NAMEKEY_INVALID, "GeneralsExpPointsInput",            (void*)GeneralsExpPointsInput },
 
 	{ NAMEKEY_INVALID, "DownloadMenuInput",                 (void*)DownloadMenuInput },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu input callback
+	{ NAMEKEY_INVALID, "GeneralsXMenuInput",                 (void*)GeneralsXMenuInput },
 
 	{ NAMEKEY_INVALID, "IMECandidateWindowInput",           (void*)IMECandidateWindowInput },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
@@ -278,6 +282,8 @@ static FunctionLexicon::TableEntry winLayoutInitTable[] =
 	{ NAMEKEY_INVALID, "GameInfoWindowInit",            (void*)GameInfoWindowInit },
 	{ NAMEKEY_INVALID, "ScoreScreenInit",               (void*)ScoreScreenInit },
 	{ NAMEKEY_INVALID, "DownloadMenuInit",              (void*)DownloadMenuInit },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu init callback
+	{ NAMEKEY_INVALID, "GeneralsXMenuInit",             (void*)GeneralsXMenuInit },
 	{ NAMEKEY_INVALID, "DifficultySelectInit",          (void*)DifficultySelectInit },
 	{ NAMEKEY_INVALID, "PopupReplayInit",               (void*)PopupReplayInit },
 
@@ -319,6 +325,8 @@ static FunctionLexicon::TableEntry winLayoutUpdateTable[] =
 	{ NAMEKEY_INVALID, "NetworkDirectConnectUpdate",      (void*)NetworkDirectConnectUpdate },
 	{ NAMEKEY_INVALID, "ScoreScreenUpdate",               (void*)ScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "DownloadMenuUpdate",              (void*)DownloadMenuUpdate },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu update callback
+	{ NAMEKEY_INVALID, "GeneralsXMenuUpdate",              (void*)GeneralsXMenuUpdate },
 	{ NAMEKEY_INVALID, "PopupReplayUpdate",               (void*)PopupReplayUpdate },
 	{ NAMEKEY_INVALID, nullptr,                           nullptr }
 
@@ -359,6 +367,8 @@ static FunctionLexicon::TableEntry winLayoutShutdownTable[] =
 	{ NAMEKEY_INVALID, "NetworkDirectConnectShutdown",      (void*)NetworkDirectConnectShutdown },
 	{ NAMEKEY_INVALID, "ScoreScreenShutdown",               (void*)ScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "DownloadMenuShutdown",              (void*)DownloadMenuShutdown },
+	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu shutdown callback
+	{ NAMEKEY_INVALID, "GeneralsXMenuShutdown",             (void*)GeneralsXMenuShutdown },
 	{ NAMEKEY_INVALID, "PopupReplayShutdown",               (void*)PopupReplayShutdown },
 	{ NAMEKEY_INVALID, nullptr,                             nullptr }
 

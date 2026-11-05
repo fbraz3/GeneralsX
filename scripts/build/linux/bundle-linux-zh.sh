@@ -161,12 +161,12 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail"
 fi
 
-# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
-FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
-if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
-    echo "  + Data/INI/FXListGeneralsX.ini"
-    mkdir -p "${BUNDLE_DIR}/Data/INI"
-    cp "${FXLIST_GENERALSX_SRC}" "${BUNDLE_DIR}/Data/INI/FXListGeneralsX.ini"
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${BUNDLE_DIR}/generalsx.big"
 fi
 
 # Run wrapper
@@ -205,6 +205,30 @@ fi
 if [[ -z "${CNC_GENERALS_INSTALLPATH:-}" && -d "${SCRIPT_DIR}/../Generals" ]]; then
     export CNC_GENERALS_INSTALLPATH="${SCRIPT_DIR}/../Generals/"
 fi
+
+# GeneralsX @feature fbraz3 04/11/2026 Stage generalsx.big into active asset root and remove legacy loose overrides
+_zh_asset_dir="${CNC_GENERALS_ZH_PATH:-${GENERALSX_ZH_ASSET_PATH:-${CNC_ZH_INSTALLPATH:-}}}"
+if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
+    if [[ -f "INIZH.big" && "$(pwd)" != "${SCRIPT_DIR}" ]]; then
+        _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
+        if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" "Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
+    fi
+    if [[ -n "${_zh_asset_dir}" && -d "${_zh_asset_dir}" && "${_zh_asset_dir}" != "${SCRIPT_DIR}" ]]; then
+        _stage_tmp="${_zh_asset_dir}/generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
+        if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "${_zh_asset_dir}/generalsx.big" 2>/dev/null; then
+            rm -f "${_zh_asset_dir}/Data/INI/FXListGeneralsX.ini" "${_zh_asset_dir}/Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
+    fi
+fi
+rm -f "${SCRIPT_DIR}/Data/INI/FXListGeneralsX.ini" "${SCRIPT_DIR}/Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
 
 # GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD (LLVM 20.x crash workaround)
 # libvulkan_lvp.so (LLVMpipe) crashes during static initialization with LLVM 20.x.

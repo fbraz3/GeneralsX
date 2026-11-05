@@ -154,12 +154,29 @@ if(RTS_BUILD_OPTION_SAGE_PATCH)
     add_subdirectory(Patches/SagePatch)
 endif()
 
+# GeneralsX @feature fbraz3 14/10/2026 Build generalsx.big archive from assets/generalsx-big
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+set(GENERALSX_BIG_OUTPUT "${CMAKE_BINARY_DIR}/generalsx.big")
+file(GLOB_RECURSE GENERALSX_BIG_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets/generalsx-big/*")
+set(GENERALSX_BIG_MANIFEST "${CMAKE_BINARY_DIR}/generalsx_big_manifest.txt")
+string(REPLACE ";" "\n" GENERALSX_BIG_MANIFEST_CONTENT "${GENERALSX_BIG_SOURCES}")
+file(GENERATE OUTPUT "${GENERALSX_BIG_MANIFEST}" CONTENT "${GENERALSX_BIG_MANIFEST_CONTENT}\n")
+add_custom_command(
+    OUTPUT "${GENERALSX_BIG_OUTPUT}"
+    COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/scripts/tooling/build_big.py" pack "${CMAKE_CURRENT_SOURCE_DIR}/assets/generalsx-big" "${GENERALSX_BIG_OUTPUT}"
+    DEPENDS ${GENERALSX_BIG_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/scripts/tooling/build_big.py" "${GENERALSX_BIG_MANIFEST}"
+    COMMENT "Building generalsx.big archive"
+    VERBATIM
+)
+add_custom_target(generalsx_big ALL DEPENDS "${GENERALSX_BIG_OUTPUT}")
+
 # Add main build targets
 if(RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD)
     if(TARGET sage_patch)
         add_dependencies(z_generals sage_patch)
     endif()
+    add_dependencies(z_generals generalsx_big)
 endif()
 
 if(RTS_BUILD_GENERALS)
@@ -167,6 +184,7 @@ if(RTS_BUILD_GENERALS)
     if(TARGET sage_patch)
         add_dependencies(g_generals sage_patch)
     endif()
+    add_dependencies(g_generals generalsx_big)
 endif()
 
 if(RTS_BUILD_OPTION_TESTS)

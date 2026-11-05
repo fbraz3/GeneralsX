@@ -381,6 +381,17 @@ void TransitionGroup::addWindow( TransitionWindow *transWin )
 	m_transitionWindowList.push_back(transWin);
 }
 
+// GeneralsX @feature fbraz3 14/10/2026 Check if group already contains a window
+Bool TransitionGroup::hasWindow( AsciiString winName )
+{
+	for( TransitionWindowList::iterator it = m_transitionWindowList.begin(); it != m_transitionWindowList.end(); ++it )
+	{
+		if( (*it)->m_winName.compareNoCase( winName ) == 0 )
+			return TRUE;
+	}
+	return FALSE;
+}
+
 //-----------------------------------------------------------------------------
 
 GameWindowTransitionsHandler::GameWindowTransitionsHandler()
@@ -615,5 +626,20 @@ void GameWindowTransitionsHandler::parseWindow( INI* ini, void *instance, void *
 	TransitionWindow *transWin = NEW TransitionWindow;
 	ini->initFromINI(transWin, myFieldParse);
 	((TransitionGroup*)instance)->addWindow(transWin);
+}
+
+// GeneralsX @feature fbraz3 14/10/2026 Add window to existing transition group if not already present
+void GameWindowTransitionsHandler::addWindowToGroup( AsciiString groupName, AsciiString winName, Int style, Int frameDelay )
+{
+	TransitionGroup *g = findGroup( groupName );
+	if (!g)
+		return;
+	if (g->hasWindow( winName ))
+		return;
+	TransitionWindow *transWin = NEW TransitionWindow;
+	transWin->m_winName = winName;
+	transWin->m_style = style;
+	transWin->m_frameDelay = frameDelay;
+	g->addWindow( transWin );
 }
 

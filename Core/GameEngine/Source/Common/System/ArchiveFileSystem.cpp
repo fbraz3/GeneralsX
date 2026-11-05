@@ -161,19 +161,37 @@ void ArchiveFileSystem::loadIntoDirectoryTree(ArchiveFile *archiveFile, Bool ove
 			continue;
 		}
 
-		ArchivedFileLocationMap::iterator fileIt;
 		if (overwrite)
 		{
-			// When overwriting, try place the new value at the beginning of the key list.
-			fileIt = dirInfo->m_files.find(token);
+			// GeneralsX @bugfix fbraz3 14/10/2026 In modern C++11+, std::multimap preserves insertion order
+			// and insert(hint, ...) appends equivalent keys to the end of the range. To place the new overwrite archive
+			// at the beginning of the key list (as SAGE intends so that instance 0 returns it), save existing entries,
+			// erase them, insert the new archive first, and re-insert the existing entries.
+			auto range = dirInfo->m_files.equal_range(token);
+			if (range.first != range.second)
+			{
+				std::vector<ArchiveFile*> existingArchives;
+				for (auto itRange = range.first; itRange != range.second; ++itRange)
+				{
+					existingArchives.push_back(itRange->second);
+				}
+				dirInfo->m_files.erase(range.first, range.second);
+				dirInfo->m_files.insert(std::make_pair(token, archiveFile));
+				for (ArchiveFile* existing : existingArchives)
+				{
+					dirInfo->m_files.insert(std::make_pair(token, existing));
+				}
+			}
+			else
+			{
+				dirInfo->m_files.insert(std::make_pair(token, archiveFile));
+			}
 		}
 		else
 		{
 			// Append to the end of the key list.
-			fileIt = dirInfo->m_files.end();
+			dirInfo->m_files.insert(std::make_pair(token, archiveFile));
 		}
-
-		dirInfo->m_files.insert(fileIt, std::make_pair(token, archiveFile));
 
 #if defined(DEBUG_LOGGING) && ENABLE_FILESYSTEM_LOGGING
 		{

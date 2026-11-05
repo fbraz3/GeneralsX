@@ -80,12 +80,24 @@ static Bool isPatchArchiveFilename(const AsciiString& archivePath)
 	}
 
 	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+	AsciiString base(baseName);
+	return base.startsWithNoCase("Patch");
+}
 
-#ifdef _WIN32
-	return _strnicmp(baseName, "Patch", 5) == 0;
-#else
-	return strncasecmp(baseName, "Patch", 5) == 0;
-#endif
+// GeneralsX @feature fbraz3 14/10/2026 True if the basename starts with "generalsx" (e.g. generalsx.big).
+static Bool isGeneralsXArchiveFilename(const AsciiString& archivePath)
+{
+	const char* raw = archivePath.str();
+	const char* lastSlash = strrchr(raw, '/');
+	const char* lastBackslash = strrchr(raw, '\\');
+	const char* split = lastSlash;
+	if (split == nullptr || (lastBackslash != nullptr && lastBackslash > split)) {
+		split = lastBackslash;
+	}
+
+	const char* baseName = (split != nullptr) ? (split + 1) : raw;
+	AsciiString base(baseName);
+	return base.startsWithNoCase("generalsx");
 }
 
 static Bool equalsIgnoreCase(const char* lhs, const char* rhs)
@@ -488,18 +500,24 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 		return;
 	}
 
-	if (zhAssetDirectory.isNotEmpty()) {
-		AsciiString siblingGenerals = zhAssetDirectory;
-		siblingGenerals.concat("/../Generals");
-		if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
-			return;
-		}
+	AsciiString rootZhDir = zhAssetDirectory.isNotEmpty() ? zhAssetDirectory : AsciiString(".");
 
-		AsciiString steamGenerals = zhAssetDirectory;
-		steamGenerals.concat("/ZH_Generals");
-		if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
-			return;
-		}
+	AsciiString siblingGenerals = rootZhDir;
+	siblingGenerals.concat("/../Generals");
+	if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
+		return;
+	}
+
+	AsciiString steamGenerals = rootZhDir;
+	steamGenerals.concat("/ZH_Generals");
+	if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
+		return;
+	}
+
+	AsciiString steamGeneralsLower = rootZhDir;
+	steamGeneralsLower.concat("/zh_generals");
+	if (tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
+		return;
 	}
 }
 #endif
@@ -706,6 +724,10 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 	// GeneralsX @bugfix UnicodeApocalypse 11/09/2026 Patch*.big must win over same-named base archives
 	// within this root; allowPatchPrecedence=FALSE keeps a fallback root from outranking the primary one.
 	FilenameList patchFilenameList;
+	// GeneralsX @feature fbraz3 14/10/2026 generalsx.big has highest precedence over both base and patch archives.
+	FilenameList generalsxFilenameList;
+	// GeneralsX @feature fbraz3 04/11/2026 In fallback scan (!allowPatchPrecedence && !overwrite), defer normal base archives so fallback patches mount first without overwriting Zero Hour
+	FilenameList normalFilenameList;
 
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
@@ -718,10 +740,32 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 			it++;
 			continue;
 		}
+
+		// GeneralsX @bugfix fbraz3 04/11/2026 Skip nested ZH_Generals subdirectory during the primary Zero Hour scan
+		// so loadBaseGeneralsAssetsForZH mounts base Generals archives afterward without patch precedence.
+		if (allowPatchPrecedence && it->getLength() > dir.getLength()) {
+			const char *subPath = it->str() + dir.getLength();
+			while (*subPath == '/' || *subPath == '\\') {
+				subPath++;
+			}
+			AsciiString sub(subPath);
+			if (sub.startsWithNoCase("ZH_Generals/") ||
+				sub.startsWithNoCase("ZH_Generals\\") ||
+				strstr(subPath, "/ZH_Generals/") != nullptr ||
+				strstr(subPath, "\\ZH_Generals\\") != nullptr) {
+				it++;
+				continue;
+			}
+		}
 #endif
 
-		if (isPatchArchiveFilename(*it)) {
+		// GeneralsX @feature fbraz3 04/11/2026 Defer generalsx*.big to ensure it is mounted last with highest precedence during primary scan
+		if (allowPatchPrecedence && isGeneralsXArchiveFilename(*it)) {
+			generalsxFilenameList.insert(*it);
+		} else if (isPatchArchiveFilename(*it)) {
 			patchFilenameList.insert(*it);
+		} else if (!allowPatchPrecedence && !overwrite) {
+			normalFilenameList.insert(*it);
 		} else if (loadOneArchiveFile(*it, overwrite)) {
 			actuallyAdded = TRUE;
 		}
@@ -736,6 +780,29 @@ Bool BIGFileSystem::loadArchiveFilesFromDirectory(AsciiString dir, AsciiString f
 		}
 
 		patchIt++;
+	}
+
+	if (!allowPatchPrecedence && !overwrite) {
+		FilenameListIter normIt = normalFilenameList.begin();
+		while (normIt != normalFilenameList.end()) {
+			if (loadOneArchiveFile(*normIt, FALSE)) {
+				actuallyAdded = TRUE;
+			}
+
+			normIt++;
+		}
+	}
+
+	if (actuallyAdded && allowPatchPrecedence) {
+		FilenameListIter gxIt = generalsxFilenameList.begin();
+		while (gxIt != generalsxFilenameList.end()) {
+			if (loadOneArchiveFile(*gxIt, TRUE)) {
+				fprintf(stderr, "[BIG] Mounted GeneralsX archive: %s\n", gxIt->str());
+				fflush(stderr);
+			}
+
+			gxIt++;
+		}
 	}
 
 	return actuallyAdded;
@@ -761,7 +828,7 @@ void BIGFileSystem::loadMods()
 
 	if (TheGlobalData->m_modDir.isNotEmpty())
 	{
-		MAYBE_UNUSED Bool ret = loadArchiveFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE);
+		MAYBE_UNUSED Bool ret = loadArchiveFilesFromDirectory(TheGlobalData->m_modDir, "*.big", TRUE, FALSE);
 		(void)ret;
 		DEBUG_ASSERTLOG(ret, ("loadArchiveFilesFromDirectory(%s) returned FALSE!", TheGlobalData->m_modDir.str()));
 	}

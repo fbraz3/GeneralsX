@@ -640,6 +640,8 @@ public:
 	AsciiString getName() { return m_name; }
 	void setName( AsciiString name){ m_name = name;	}
 	void addWindow( TransitionWindow *transWin );
+	// GeneralsX @feature fbraz3 14/10/2026 Check if group already contains a window
+	Bool hasWindow( AsciiString winName );
 	Bool isReversed();
 	Bool isFireOnce() { return m_fireOnce; }
 	Bool m_fireOnce;
@@ -674,6 +676,8 @@ public:
 	TransitionGroup *getNewGroup( AsciiString name );
 	// GeneralsX @feature fbraz3 18/09/2026 Check if transition group exists
 	Bool hasGroup( AsciiString groupName ) { return findGroup(groupName) != nullptr; }
+	// GeneralsX @feature fbraz3 14/10/2026 Add window to existing transition group
+	void addWindowToGroup( AsciiString groupName, AsciiString winName, Int style, Int frameDelay );
 private:
 	TransitionGroup *findGroup( AsciiString groupName );
 	typedef std::list<TransitionGroup *> TransitionGroupList;

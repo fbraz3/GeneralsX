@@ -345,6 +345,14 @@ else
     echo "WARNING: ${DXVK_CONF_SRC} not found - terrain shaders may fail on macOS"
 fi
 
+# GeneralsX @feature fbraz3 14/10/2026 Bundle generalsx.big archive
+echo "  + generalsx.big"
+GENERALSX_BIG="${BUILD_DIR}/generalsx.big"
+python3 "${PROJECT_ROOT}/scripts/tooling/build_big.py" pack "${PROJECT_ROOT}/assets/generalsx-big" "${GENERALSX_BIG}"
+if [[ -f "${GENERALSX_BIG}" ]]; then
+    cp "${GENERALSX_BIG}" "${RESOURCES_DIR}/generalsx.big"
+fi
+
 # GeneralsX @bugfix Copilot 24/03/2026 Bundle Fontconfig config so FreeType/Fontconfig font matching works in app launcher runtime.
 # GeneralsX @bugfix Copilot 24/03/2026 Guard Fontconfig conf.d copy so missing directory does not break bundling under set -e.
 if [[ -f "${FONTCONFIG_ETC_DIR}/fonts.conf" ]]; then
@@ -371,14 +379,6 @@ if [[ -d "${PROJECT_ROOT}/assets/fonts" ]]; then
 else
     echo "ERROR: ${PROJECT_ROOT}/assets/fonts directory not found - cannot bundle fonts" >&2
     exit 1
-fi
-
-# GeneralsX @feature fbraz3 31/10/2026 Bundle FXListGeneralsX.ini for dynamic explosion & superweapon lights
-FXLIST_GENERALSX_SRC="${PROJECT_ROOT}/GeneralsZH/Data/INI/FXListGeneralsX.ini"
-if [[ -f "${FXLIST_GENERALSX_SRC}" ]]; then
-    echo "  + Data/INI/FXListGeneralsX.ini"
-    mkdir -p "${RESOURCES_DIR}/Data/INI"
-    cp "${FXLIST_GENERALSX_SRC}" "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini"
 fi
 
 # App launcher wrapper
@@ -425,13 +425,21 @@ fi
 # Default asset paths matching the standard macOS deploy layout (allow user override)
 # GeneralsX @bugfix felipebraz 12/07/2026 Default CNC_GENERALS_PATH to ~/GeneralsX/Generals if empty (Issue #205)
 if [[ -z "${CNC_GENERALS_PATH:-}" ]]; then
-    export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+    if [[ -d "${HOME}/GeneralsX/Generals" && -n "$(compgen -G "${HOME}/GeneralsX/Generals/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+    elif [[ -d "${HOME}/GeneralsX/data/Generals" && -n "$(compgen -G "${HOME}/GeneralsX/data/Generals/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/data/Generals"
+    else
+        export CNC_GENERALS_PATH="${HOME}/GeneralsX/Generals"
+    fi
 fi
 if [[ -z "${CNC_GENERALS_ZH_PATH:-}" ]]; then
     if [[ -d "${HOME}/GeneralsX/GeneralsZH" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsZH/*.big" 2>/dev/null)" ]]; then
         export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"
     elif [[ -d "${HOME}/GeneralsX/GeneralsMD" && -n "$(compgen -G "${HOME}/GeneralsX/GeneralsMD/*.big" 2>/dev/null)" ]]; then
         export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsMD"
+    elif [[ -d "${HOME}/GeneralsX/data/GeneralsZH" && -n "$(compgen -G "${HOME}/GeneralsX/data/GeneralsZH/*.big" 2>/dev/null)" ]]; then
+        export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/data/GeneralsZH"
     elif [[ -d "${HOME}/GeneralsX/GeneralsZH" ]]; then
         export CNC_GENERALS_ZH_PATH="${HOME}/GeneralsX/GeneralsZH"
     else
@@ -463,9 +471,14 @@ fi
 if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     cd "${CNC_GENERALS_ZH_PATH}"
 
-    if [[ -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" ]]; then
-        mkdir -p "Data/INI"
-        cp -f "${RESOURCES_DIR}/Data/INI/FXListGeneralsX.ini" "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
+    if [[ -f "${RESOURCES_DIR}/generalsx.big" ]]; then
+        _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
+        if cp -f "${RESOURCES_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
+            rm -f "Data/INI/FXListGeneralsX.ini" "Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
+        else
+            rm -f "${_stage_tmp}" 2>/dev/null || true
+        fi
     fi
 
     # SagePatch INI override: the engine now auto-creates SagePatch.ini with
