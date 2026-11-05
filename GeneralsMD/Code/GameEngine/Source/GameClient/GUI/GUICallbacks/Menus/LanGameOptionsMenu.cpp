@@ -203,14 +203,19 @@ static void playerTooltip(GameWindow *window,
 	if (idx == -1)
 		return;
 
-	LANGameSlot *slot = TheLAN->GetMyGame()->getLANSlot(i);
+	// TheSuperHackers @bugfix Okladnoj 17/10/2026 Check that the game still exists as it is deleted while the setup screen fades out after the host left.
+	LANGameInfo *myGame = TheLAN->GetMyGame();
+	if (!myGame)
+		return;
+
+	LANGameSlot *slot = myGame->getLANSlot(i);
 	if (!slot)
 		return;
 
 	LANPlayer *player = slot->getUser();
 	if (!player)
 	{
-		DEBUG_ASSERTCRASH(TheLAN->GetMyGame()->getIP(i) == 0, ("No player info in listbox!"));
+		DEBUG_ASSERTCRASH(myGame->getIP(i) == 0, ("No player info in listbox!"));
 		TheMouse->setCursorTooltip( UnicodeString::TheEmptyString );
 		return;
 	}
@@ -394,8 +399,7 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
-	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	color = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
@@ -453,8 +457,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
-	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	playerTemplate = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
 	if (myGame)
@@ -566,8 +569,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
-	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	team = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	LANGameInfo *myGame = TheLAN->GetMyGame();
 
 	if (myGame)
@@ -612,8 +614,7 @@ static void handleStartingCashSelection()
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
 
     Money startingCash;
-    // GeneralsX @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit compatibility
-    startingCash.deposit( static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ))), FALSE, FALSE );
+    startingCash.deposit( (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
     myGame->setStartingCash( startingCash );
     myGame->resetAccepted();
 
@@ -954,12 +955,7 @@ void updateGameOptions()
 		}
 		else
 		{
-			AsciiString s = TheLAN->GetMyGame()->getMap();
-			if (s.reverseFind('\\'))
-			{
-				s = s.reverseFind('\\') + 1;
-			}
-			mapDisplayName.format(L"%hs", s.str());
+			mapDisplayName.format(L"%hs", getFileName(TheLAN->GetMyGame()->getMap().str()));
 		}
 		UnicodeString old = GadgetStaticTextGetText(textEntryMapDisplay);
 		if(old.compare(mapDisplayName) != 0)
@@ -971,8 +967,7 @@ void updateGameOptions()
     Int index = 0;
     for ( ; index < itemCount; index++ )
     {
-      // GeneralsX @bugfix BenderAI 12/02/2026 - Cast via intptr_t for 64-bit compatibility
-      Int value  = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxStartingCash, index)));
+      Int value  = (Int)(intptr_t)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
       if ( value == theGame->getStartingCash().countMoney() )
       {
         GadgetComboBoxSetSelectedPos(comboBoxStartingCash, index, TRUE);

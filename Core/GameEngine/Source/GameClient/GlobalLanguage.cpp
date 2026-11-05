@@ -76,6 +76,7 @@ static const LookupListRec ResolutionFontSizeMethodNames[] =
 	{ "BALANCED", GlobalLanguage::ResolutionFontSizeMethod_Balanced },
 	{ nullptr, 0 }
 };
+static_assert(ARRAY_SIZE(ResolutionFontSizeMethodNames) == GlobalLanguage::ResolutionFontSizeMethod_Count + 1, "Incorrect array size");
 
 static const FieldParse TheGlobalLanguageDataFieldParseTable[] =
 {

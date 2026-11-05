@@ -20,10 +20,7 @@
 
 #pragma once
 
-#include "BaseType.h"
-#include <string.h>
-
-inline char getNativePathSeparator()
+inline Char getNativePathSeparator()
 {
 #ifdef _WIN32
 	return '\\';
@@ -33,7 +30,7 @@ inline char getNativePathSeparator()
 }
 
 // Returns true for a separator the host platform uses to open files.
-inline bool isFileSystemPathSeparator(char ch)
+template <typename T> Bool isFileSystemPathSeparator(T ch)
 {
 #ifdef _WIN32
 	return ch == '\\' || ch == '/';
@@ -43,12 +40,13 @@ inline bool isFileSystemPathSeparator(char ch)
 }
 
 // Returns true for either separator. Game data paths carry '\\' on every platform.
-inline bool isPathSeparator(char ch)
+template <typename T> Bool isPathSeparator(T ch)
 {
 	return ch == '/' || ch == '\\';
 }
 
-inline bool isAbsolutePath(const char* path)
+// Returns whether the given path is an absolute file path.
+template <typename T> Bool isAbsolutePath(const T* path)
 {
 	if (path == nullptr)
 	{
@@ -61,7 +59,10 @@ inline bool isAbsolutePath(const char* path)
 	}
 
 #ifdef _WIN32
-	const bool hasDriveLetter = (path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z');
+	const bool hasDriveLetter =
+		(path[0] >= 'A' && path[0] <= 'Z') ||
+		(path[0] >= 'a' && path[0] <= 'z');
+
 	if (hasDriveLetter && path[1] == ':' && isFileSystemPathSeparator(path[2]))
 	{
 		return true;
@@ -71,59 +72,46 @@ inline bool isAbsolutePath(const char* path)
 	return false;
 }
 
-inline const char* getLastPathSeparator(const char* path)
+// Returns a pointer to the first path separator of the given path.
+template <typename T> T* getFirstPathSeparator(T* path)
 {
-	return path ? maxPtr(strrchr(path, '/'), strrchr(path, '\\')) : nullptr;
+	for (; *path; ++path)
+	{
+		if (isPathSeparator(*path))
+			return path;
+	}
+	return nullptr;
 }
 
-inline const wchar_t* getLastPathSeparator(const wchar_t* path)
+// Returns a pointer to the last path separator of the given path.
+template <typename T> T* getLastPathSeparator(T* path)
 {
-	return path ? maxPtr(wcsrchr(path, L'/'), wcsrchr(path, L'\\')) : nullptr;
+	T* last = nullptr;
+	for (; *path; ++path)
+	{
+		if (isPathSeparator(*path))
+			last = path;
+	}
+	return last;
 }
 
-// Returns the whole path when it contains no separator
-inline const char* getFileName(const char* path)
+// Returns the file name after the last path separator or the whole path as is if none was found.
+template <typename T> T* getFileName(T* path)
 {
-	const char* lastSeparator = getLastPathSeparator(path);
+	T* lastSeparator = getLastPathSeparator(path);
 	return lastSeparator ? lastSeparator + 1 : path;
 }
 
-inline const char* getExtension(const char* path)
+// Returns null when the file name has no extension, ignoring dots in directory names.
+template <typename T> T* getExtension(T* path)
 {
-	const char* lastDot = strrchr(path, '.');
-
-	if (!lastDot)
+	T* lastDot = nullptr;
+	for (; *path; ++path)
 	{
-		return nullptr;
+		if (*path == '.')
+			lastDot = path;
+		else if (isPathSeparator(*path))
+			lastDot = nullptr;
 	}
-
-	const char* lastSeparator = getLastPathSeparator(path);
-
-	// Check if the dot is contained in the filename
-	if (lastSeparator && lastDot < lastSeparator)
-	{
-		return nullptr;
-	}
-
-	return lastDot;
-}
-
-inline const wchar_t* getExtension(const wchar_t* path)
-{
-	const wchar_t* lastDot = wcsrchr(path, L'.');
-
-	if (!lastDot)
-	{
-		return nullptr;
-	}
-
-	const wchar_t* lastSeparator = getLastPathSeparator(path);
-
-	// Check if the dot is contained in the filename
-	if (lastSeparator && lastDot < lastSeparator)
-	{
-		return nullptr;
-	}
-
 	return lastDot;
 }

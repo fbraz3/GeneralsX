@@ -167,8 +167,7 @@ void INI::parseMapCacheDefinition( INI* ini )
 	{
 		// maps without localized name tags
 		AsciiString tempdisplayname;
-		const char *displayNameStart = findLastPathSeparator(name);
-		tempdisplayname = displayNameStart ? displayNameStart + 1 : name;
+		tempdisplayname = getFileName(name.str());
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{

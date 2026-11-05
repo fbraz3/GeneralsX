@@ -132,7 +132,6 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 		key->key = KEY_NONE;
 		key->status = KeyboardIO::STATUS_UNUSED;
 		key->state = 0;
-		key->keyDownTimeMsec = 0;
 		return;
 	}
 	
@@ -147,7 +146,6 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 		key->key = KEY_NONE;
 		key->status = KeyboardIO::STATUS_UNUSED;
 		key->state = 0;
-		key->keyDownTimeMsec = 0;
 		return;
 	}
 	
@@ -160,8 +158,6 @@ void SDL3Keyboard::getKey(KeyboardIO *key)
 	key->key = keyDef;
 	key->status = KeyboardIO::STATUS_UNUSED;
 	key->state = keyEvent.down ? KEY_STATE_DOWN : KEY_STATE_UP;
-	// GeneralsX @bugfix felipebraz 01/04/2026 Use the same timer domain as Keyboard::checkKeyRepeat() to avoid immediate duplicate repeats.
-	key->keyDownTimeMsec = keyEvent.down ? timeGetTime() : 0;
 	
 	// Mark this slot as empty (sentinel)
 	m_eventBuffer[m_nextGetIndex].type = SDL_EVENT_FIRST;

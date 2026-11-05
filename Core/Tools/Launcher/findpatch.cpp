@@ -17,6 +17,7 @@
 */
 
 #include "findpatch.h"
+#include <Lib/PathUtil.h>
 
 //
 // Locate a patch file
@@ -140,15 +141,10 @@ bit8 Get_App_Dir(OUT char *filename,int maxlen, ConfigFile &config,int index)
     return(FALSE);
   }
 
-  // Find the last '\\' in a string and put a 0 after it
+  // Null the file name.
   //  If you only put a directory in the InstallPath key instead of a full
   //  path to a file, you better end the directory with a trailing '\\'!!!
-  char *cptr=gamePath;
-  char *tempPtr;
-  while( (tempPtr=strchr(cptr,'\\')) !=nullptr)
-    cptr=tempPtr+1;
-  if (cptr)
-    *cptr=0;
+  *getFileName(gamePath)=0;
 
   DBGMSG("Game path = "<<gamePath);
   strncpy(filename,gamePath,maxlen);

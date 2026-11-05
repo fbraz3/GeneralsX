@@ -72,7 +72,9 @@
 #include "Common/ThingFactory.h"
 #include "Common/Team.h"
 #include "Common/ThingTemplate.h"
-#include "GameClient/Water.h"
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+#include "Common/TunnelTracker.h"
+#endif
 #include "Common/WellKnownKeys.h"
 #include "Common/Xfer.h"
 #include "Common/XferCRC.h"
@@ -91,6 +93,7 @@
 #include "GameClient/View.h"
 #include "GameClient/CampaignManager.h"
 #include "GameClient/GameWindowTransitions.h"
+#include "GameClient/Water.h"
 
 #include "GameLogic/AI.h"
 #include "GameLogic/AIPathfind.h"
@@ -536,7 +539,6 @@ static Object * placeObjectAtPosition(Int slotNum, AsciiString objectTemplateNam
 		obj->setOrientation(obj->getTemplate()->getPlacementViewAngle());
 		obj->setPosition( &pos );
 
-		//DEBUG_LOG(("Placed a starting building for %s at waypoint %s", playerName.str(), waypointName.str()));
 		CRCDEBUG_LOG(("Placed an object for %ls at pos (%g,%g,%g)", pPlayer->getPlayerDisplayName().str(),
 			pos.x, pos.y, pos.z));
 		DUMPCOORD3D(&pos);
@@ -1242,10 +1244,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	char Buf[256];
-	sprintf(Buf,"After terrainlogic->loadmap=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-		//DEBUG_LOG(("Placed a starting building for %s at waypoint %s", playerName.str(), waypointName.str()));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("After terrainlogic->loadmap=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 	Int localSlot = 0;
@@ -1617,8 +1616,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"After terrainlogic->newmap=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("After terrainlogic->newmap=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 		// Special case, load any bridge map objects.
@@ -1707,8 +1705,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"Before loading objects=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("Before loading objects=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 	if( loadingSaveGame == FALSE )
@@ -1809,8 +1806,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"After loading objects=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("After loading objects=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 	// place initial network buildings/units
@@ -1945,8 +1941,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"After partition manager update=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("After partition manager update=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 
@@ -2023,8 +2018,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	#ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"After delete load screen=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("After delete load screen=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 	#endif
 
 	if(m_gameMode == GAME_SHELL)
@@ -2165,8 +2159,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 #ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
-	sprintf(Buf,"Total startnewgame=%f",((double)(endTime64-startTime64)/(double)(freq64)*1000.0));
-	DEBUG_LOG(("%s", Buf));
+	DEBUG_LOG(("Total startnewgame=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 #endif
 
 	//Assume that getting this far means we've successfully entered an online game.
@@ -2233,12 +2226,13 @@ void GameLogic::loadMapINI( AsciiString mapName )
 		return;
 	}
 
-	// back up over the ".map" extension and to the first directory separator
-	char *extension = filename + length - 4;
-	while ((extension > filename) && (*extension != '\\') && (*extension != '/')) {
-		--extension;
+	// cut the map file name off to get the map directory
+	char *separator = getLastPathSeparator(filename);
+	if (separator) {
+		*separator = 0;
+	} else {
+		filename[0] = 0;
 	}
-	*extension = 0;
 
 
 	char fullFledgeFilename[_MAX_PATH];
@@ -2965,6 +2959,40 @@ void GameLogic::friend_awakenUpdateModule(Object* obj, UpdateModulePtr u, Unsign
 	}
 }
 
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+// ------------------------------------------------------------------------------------------------
+// Find the tunnel tracker that contains the object and destroy all objects in the contain list
+// ------------------------------------------------------------------------------------------------
+void GameLogic::friend_destroyInTunnelContain(const Object* strandedObject)
+{
+	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
+	{
+		TunnelTracker* tracker = ThePlayerList->getNthPlayer(i)->getTunnelSystem();
+		if (!tracker)
+			continue;
+
+		const ContainedItemsList& list = *tracker->getContainedItemsList();
+
+		const ContainedItemsList::const_iterator it = std::find(list.begin(), list.end(), strandedObject);
+		if (it == list.end())
+			continue;
+
+		while (!list.empty())
+		{
+			Object* obj = list.front();
+
+			tracker->removeFromContain(obj);
+
+			obj->onRemovedFrom(nullptr);
+
+			destroyObject(obj);
+		}
+
+		break;
+	}
+}
+#endif
+
 // ------------------------------------------------------------------------------------------------
 #ifdef DO_UNIT_TIMINGS
 	enum {TIME_FRAMES=100};
@@ -3089,13 +3117,12 @@ static void unitTimings()
 		if (veryFirstTime) {
 			thingName = "No Object";
 		}
-		sprintf(foo, "\nTime %f, %d ms for 100 %s , noPart %f, noSpawn %f logic %f \n", timeAll,
+		DEBUG_LOG(("\nTime %f, %d ms for 100 %s , noPart %f, noSpawn %f logic %f \n", timeAll,
 			(Int)(timeAll*1000/TIME_FRAMES), thingName.str(), timeNoPart,
-			timeNoSpawn, timeLogic);
-		DEBUG_LOG((foo));
+			timeNoSpawn, timeLogic));
 		sprintf(foo, "\nDrawCalls for 100 %s , all %d, noPart %d, noSpawn %d logic %d \n", thingName.str(),
 			drawCallAll,drawCallNoPart,drawCallNoSpawn, drawCallLogic);
-		DEBUG_LOG((foo));
+		DEBUG_LOG(("%s", foo));
 
 		if (g_UT_timingLog) {
 			fputs(foo, g_UT_timingLog);
@@ -3319,17 +3346,13 @@ void GameLogic::update()
 		m_startNewGame = FALSE;
 
 	#ifdef DUMP_PERF_STATS
-		char Buf[1024];
 		__int64 freq64;
 		GetPrecisionTimerTicksPerSec(&freq64);
 
-		sprintf(Buf,"Texture=%f, Anim=%f, CreateRobj=%f, Load3DAssets=%f",
-			((double)Total_Get_Texture_Time/(double)(freq64)*1000.0),
+		DEBUG_LOG(("Texture=%f, Anim=%f, CreateRobj=%f, Load3DAssets=%f", ((double)Total_Get_Texture_Time/(double)(freq64)*1000.0),
 			((double)Total_Get_HAnim_Time/(double)(freq64)*1000.0),
 			((double)Total_Create_Render_Obj_Time/(double)(freq64)*1000.0),
-			((double)Total_Load_3D_Assets/(double)(freq64)*1000.0));
-
-	DEBUG_LOG(("%s", Buf));
+			((double)Total_Load_3D_Assets/(double)(freq64)*1000.0)));
 	#endif
 	}
 
@@ -3371,11 +3394,14 @@ void GameLogic::update()
 	if (generateForSolo || generateForMP)
 	{
 		m_CRC = getCRC( CRC_RECALC );
-		bool isPlayback = (TheRecorder && TheRecorder->isPlaybackMode());
 
-		GameMessage *msg = newInstance(GameMessage)(GameMessage::MSG_LOGIC_CRC);
+		// TheSuperHackers @tweak Caball009 30/09/2026 Playback CRC is now separate from regular CRC,
+		// removing the need for the second parameter used to distinguish them. Older clients can still
+		// parse newer replays because GameMessage::getArgument returns false for the missing playback argument.
+		const bool isPlayback = TheRecorder && TheRecorder->isPlaybackMode();
+		const GameMessage::Type msgType = isPlayback ? GameMessage::MSG_LOGIC_CRC_PLAYBACK : GameMessage::MSG_LOGIC_CRC;
+		GameMessage *msg = newInstance(GameMessage)(msgType);
 		msg->appendIntegerArgument(m_CRC);
-		msg->appendBooleanArgument(isPlayback);
 
 		// TheSuperHackers @info helmutbuhler 13/04/2025
 		// During replay simulation, we bypass TheMessageStream and instead put the CRC message
@@ -3470,7 +3496,7 @@ void GameLogic::update()
 			{
 				USE_PERF_TIMER(GameLogic_update_sleepy)
 
-				//DEBUG_LOG(("calling update %08lx (%d %d)...",update,update->friend_getNextCallFrame(),update->friend_getNextCallPhase()));
+				//DEBUG_LOG(("calling update %08lx (%d %d)...",u,u->friend_getNextCallFrame(),u->friend_getNextCallPhase()));
 				m_curUpdateModule = u;
 
 				sleepLen = u->update();

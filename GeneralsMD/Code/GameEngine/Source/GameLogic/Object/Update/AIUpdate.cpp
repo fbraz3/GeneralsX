@@ -4565,13 +4565,33 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 		{
 			if( !canAutoAcquireWhileStealthed() )
 			{
-  			const Object *container = obj->getContainedBy();
-  			if( ! (container && container->getContain()->isPassengerAllowedToFire()) )
-  			{
+				//He's stealthed and idle, but if he's garrisoned, then that's a whole different matter....
+				const Object *container = obj->getContainedBy();
+				if( !container )
+				{
+					//Not contained
+					return nullptr;
+				}
+
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+				// TheSuperHackers @bugfix Caball009 22/09/2026 Return early to prevent a crash.
+				// This is needed when a Tunnel Network with units is transferred to another player and then sold or destroyed.
+				// The units are not properly transferred and are left in an invalid state.
+				if (!container->getContain())
+				{
+					// remove all such units from the tunnel tracker and destroy them
+					TheGameLogic->friend_destroyInTunnelContain(obj);
+
+					return nullptr;
+				}
+#endif
+
+				if( !container->getContain()->isPassengerAllowedToFire() )
+				{
 					// Sorry, stealthed and not allowed to idle fire when stealthed.
 					// Being in a firing container is an exception to this veto.
-  				return nullptr;
-  			}
+					return nullptr;
+				}
 			}
 		}
 	}
@@ -5364,6 +5384,12 @@ void AIUpdateInterface::loadPostProcess()
 			m_pathfindGoalCell.y = -1;
 			TheAI->pathfinder()->updateGoal(getObject(), &goalPos, getObject()->getLayer());
 		}
+	}
+
+	// TheSuperHackers @bugfix bobtista 11/10/2026 The pathfind queue is not saved, so queue the pending request again.
+	if (m_waitingForPath && m_queueForPathFrame == 0)
+	{
+		TheAI->pathfinder()->queueForPath(getObject()->getID());
 	}
 
 }

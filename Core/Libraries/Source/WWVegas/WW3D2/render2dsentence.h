@@ -151,6 +151,7 @@ private:
 	
 	void							Update_Current_Buffer( int char_width );
 	const FontCharsClassCharDataStruct	*	Get_Char_Data( WCHAR ch );
+	const FontCharsClass *			Get_Char_Font( WCHAR ch ) const;
 
 	void							Grow_Unicode_Array( WCHAR ch );
 	void							Free_Character_Arrays();

@@ -34,7 +34,9 @@
 #include "Common/XferDeepCRC.h"
 #include "Common/crc.h"
 #include "Common/Snapshot.h"
+#if RETAIL_COMPATIBLE_CRC
 #include "Utility/endian_compat.h"
+#endif
 
 #if DEEP_CRC_TO_MEMORY
 #include "GameLogic/GameLogic.h"
@@ -99,7 +101,11 @@ void XferCRC::endBlock()
 void XferCRC::addCRC( UnsignedInt val )
 {
 
+#if RETAIL_COMPATIBLE_CRC
 	m_crc = (m_crc << 1) + htobe(val) + ((m_crc >> 31) & 0x01);
+#else
+	m_crc = (m_crc << 1) + val + ((m_crc >> 31) & 0x01);
+#endif
 
 }
 
@@ -169,7 +175,11 @@ void XferCRC::skip( Int dataSize )
 UnsignedInt XferCRC::getCRC()
 {
 
+#if RETAIL_COMPATIBLE_CRC
 	return htobe(m_crc);
+#else
+	return m_crc;
+#endif
 
 }
 

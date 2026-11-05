@@ -95,6 +95,7 @@
 #include "dx8texman.h"
 #include "WWLib/bound.h"
 #include "DbgHelpGuard.h"
+#include <Utility/bit_adapter.h>
 
 #include "shdlib.h"
 #include <vector>
@@ -569,7 +570,7 @@ void Log_DX8_ErrorCode(unsigned res)
 		sizeof(tmp));
 
 	if (new_res==D3D_OK) {
-		WWDEBUG_SAY((tmp));
+		WWDEBUG_SAY(("%s", tmp));
 	}
 
 	WWASSERT(0);
@@ -750,16 +751,12 @@ void DX8Wrapper::Shutdown()
 
 	}
 
-	if (CurrentCaps)
+	for (size_t i = 0; i < ARRAY_SIZE(Textures); ++i)
 	{
-		int max=CurrentCaps->Get_Max_Textures_Per_Pass();
-		for (int i = 0; i < max; i++)
+		if (Textures[i])
 		{
-			if (Textures[i])
-			{
-				Textures[i]->Release();
-				Textures[i] = nullptr;
-			}
+			Textures[i]->Release();
+			Textures[i] = nullptr;
 		}
 	}
 
@@ -4596,7 +4593,7 @@ void DX8Wrapper::Get_DX8_Render_State_Value_Name(StringClass& name, D3DRENDERSTA
 	case D3DRS_PATCHSEGMENTS:
 	case D3DRS_POINTSIZE_MAX:
 	case D3DRS_TWEENFACTOR:
-		name.Format("%f",*(float*)&value);
+		name.Format("%f",std::bit_cast<float>(value));
 		break;
 
 	case D3DRS_ZBIAS:
@@ -4701,7 +4698,7 @@ void DX8Wrapper::Get_DX8_Texture_Stage_State_Value_Name(StringClass& name, D3DTE
 	case D3DTSS_BUMPENVMAT11:
 	case D3DTSS_BUMPENVLSCALE:
 	case D3DTSS_BUMPENVLOFFSET:
-		name.Format("%f",*(float*)&value);
+		name.Format("%f",std::bit_cast<float>(value));
 		break;
 
 	case D3DTSS_TEXCOORDINDEX:

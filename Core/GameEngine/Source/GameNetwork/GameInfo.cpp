@@ -550,8 +550,7 @@ void GameInfo::setMap( AsciiString mapName )
 				// directory name, we can do this since the filename
 				// is just the directory name with the file extention
 				// added onto it.
-				// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
-				while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
+				while (getLastPathSeparator(mapName.str()) != nullptr)
 				{
 					if (!newMapName.isEmpty())
 					{
@@ -985,8 +984,7 @@ static AsciiString buildGameInfoAsciiString(const GameInfo& game, const AsciiStr
 		// directory name, we can do this since the filename
 		// is just the directory name with the file extention
 		// added onto it.
-		// GeneralsX @bugfix fbraz 05/05/2026 Handle both forward and backward separators correctly when building map-sidecar lookup paths
-		while (!mapName.isEmpty() && (mapName.find('\\') != nullptr || mapName.find('/') != nullptr))
+		while (getLastPathSeparator(mapName.str()) != nullptr)
 		{
 			if (!newMapName.isEmpty())
 			{

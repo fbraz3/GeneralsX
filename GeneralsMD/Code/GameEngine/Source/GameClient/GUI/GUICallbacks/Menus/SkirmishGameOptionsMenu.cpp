@@ -886,8 +886,7 @@ static void handlePlayerSelection(int index)
 	Int playerType, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
   UnicodeString title = GadgetComboBoxGetText(combo);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	playerType = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	playerType = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -906,8 +905,7 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	color = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 
 	GameInfo *myGame = TheSkirmishGameInfo;
 
@@ -947,8 +945,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	playerTemplate = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -1001,8 +998,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+	team = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -1028,8 +1024,7 @@ static void handleStartingCashSelection()
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
 
     Money startingCash;
-    // GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-    startingCash.deposit( static_cast<UnsignedInt>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ))), FALSE, FALSE );
+    startingCash.deposit( (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
     myGame->setStartingCash( startingCash );
   }
 }
@@ -1275,8 +1270,7 @@ void updateSkirmishGameOptions()
   Int index = 0;
   for ( ; index < itemCount; index++ )
   {
-    // GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-    Int value  = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxStartingCash, index)));
+    Int value  = (Int)(intptr_t)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
     if ( value == TheSkirmishGameInfo->getStartingCash().countMoney() )
     {
       GadgetComboBoxSetSelectedPos(comboBoxStartingCash, index, TRUE);

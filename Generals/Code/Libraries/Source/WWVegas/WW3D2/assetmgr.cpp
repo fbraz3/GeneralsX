@@ -799,8 +799,7 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 		char filename [MAX_PATH];
 		const char *mesh_name = ::strchr (name, '.');
 		if (mesh_name != nullptr) {
-			// GeneralsX @build Copilot 11/05/2026 Use SIZE_T pointer-delta math to avoid truncation in 64-bit builds.
-			::lstrcpyn (filename, name, ((SIZE_T)mesh_name) - ((SIZE_T)name) + 1);
+			::lstrcpyn (filename, name, (int)(mesh_name - name) + 1);
 			::lstrcat (filename, ".w3d");
 		} else {
 			snprintf( filename, ARRAY_SIZE(filename), "%s.w3d", name);

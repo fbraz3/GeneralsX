@@ -20,7 +20,6 @@
 #include "missingtexture.h"
 #include "texture.h"
 #include "dx8wrapper.h"
-#include <d3dx8core.h>
 
 static unsigned missing_image_width=128;
 static unsigned missing_image_height=128;
@@ -104,51 +103,24 @@ void MissingTexture::_Init()
 		return;
 	}
 
-	D3DLOCKED_RECT locked_rect;
-	RECT rect;
-	rect.left=0;
-	rect.right=missing_image_width;
-	rect.top=0;
-	rect.bottom=missing_image_height;
-	DX8_ErrorCode(
-		tex->LockRect(
-			0,
-			&locked_rect,
-			&rect,
-			0));
-
-	unsigned *buffer=(unsigned*)locked_rect.pBits;
-	//unsigned char *pixels=(unsigned char *)missing_image_pixels;
-	for (unsigned y=0;y<missing_image_height;y++)
+	// TheSuperHackers @fix bobtista 09/10/2026 Fill every mip level with the solid color.
+	for (unsigned level=0;level<tex->GetLevelCount();++level)
 	{
-		for (unsigned x=0; x<missing_image_width; x++)
+		D3DSURFACE_DESC desc;
+		D3DLOCKED_RECT locked_rect;
+		DX8_ErrorCode(tex->GetLevelDesc(level,&desc));
+		DX8_ErrorCode(tex->LockRect(level,&locked_rect,nullptr,0));
+
+		for (unsigned y=0;y<desc.Height;y++)
 		{
-			//*buffer++=missing_image_palette[*pixels++];
-			*buffer++=0x7FFF00FF;
+			unsigned *buffer=reinterpret_cast<unsigned*>(static_cast<unsigned char*>(locked_rect.pBits)+y*locked_rect.Pitch);
+			for (unsigned x=0;x<desc.Width;x++)
+			{
+				buffer[x]=0x7FFF00FF;
+			}
 		}
-		buffer=(unsigned*)locked_rect.pBits;
-		buffer+=locked_rect.Pitch/sizeof(unsigned)*y;
-	}
 
-	DX8_ErrorCode(tex->UnlockRect(0));
-
-	for (unsigned i=1;i<tex->GetLevelCount();++i) {
-		IDirect3DSurface8 *src,*dst;
-		DX8_ErrorCode(tex->GetSurfaceLevel(i-1,&src));
-		DX8_ErrorCode(tex->GetSurfaceLevel(i,&dst));
-
-		DX8_ErrorCode(D3DXLoadSurfaceFromSurface(
-			dst,
-			nullptr,	// palette
-			nullptr,	// rect
-			src,
-			nullptr,	// palette
-			nullptr,	// rect
-			D3DX_FILTER_BOX,	// box is good for 2:1 filtering
-			0));
-
-		src->Release();
-		dst->Release();
+		DX8_ErrorCode(tex->UnlockRect(level));
 	}
 
 	_MissingTexture=tex;

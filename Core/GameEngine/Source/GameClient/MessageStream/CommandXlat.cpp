@@ -265,8 +265,6 @@ bool changeLogicTimeScale(FpsValueChange change)
 }
 
 
-static Bool isSystemMessage( const GameMessage *msg );
-
 enum{ DROPPED_MAX_PARTICLE_COUNT = 1000};
 
 static Bool canSelectionSalvage( const Object *targetObj)
@@ -668,7 +666,9 @@ void pickAndPlayUnitVoiceResponse( const DrawableList *list, GameMessage::Type m
 					//Low priority sounds -- only do this if uninitialized.
 					if( info && info->m_air )
 						soundToPlayPtr = templ->getVoiceAttackAir();
-					else
+
+					// TheSuperHackers @tweak Stubbjax 31/10/2026 Fall back to VoiceAttack if VoiceAttackAir is invalid.
+					if (!soundToPlayPtr || !TheAudio->isValidAudioEvent(soundToPlayPtr))
 						soundToPlayPtr = templ->getVoiceAttack();
 
 					objectWithSound = obj;
@@ -742,8 +742,11 @@ void pickAndPlayUnitVoiceResponse( const DrawableList *list, GameMessage::Type m
 					//Low priority sounds -- only do this if uninitialized.
 					if( info && info->m_air )
 						soundToPlayPtr = templ->getVoiceAttackAir();
-					else
+
+					// TheSuperHackers @tweak Stubbjax 31/10/2026 Fall back to VoiceAttack if VoiceAttackAir is invalid.
+					if (!soundToPlayPtr || !TheAudio->isValidAudioEvent(soundToPlayPtr))
 						soundToPlayPtr = templ->getVoiceAttack();
+
 					objectWithSound = obj;
 				}
 
@@ -1113,7 +1116,7 @@ GameMessage::Type CommandTranslator::issueAttackCommand( Drawable *target,
 	if( m_teamExists )
 	{
 
-		//DEBUG_LOG(("issuing team-attack cmd against %s",enemy->getTemplate()->getName().str()));
+		//DEBUG_LOG(("issuing team-attack cmd against %s",targetObj->getTemplate()->getName().str()));
 
 		// insert team attack command message into stream
 		switch( command )
@@ -3403,11 +3406,24 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 {
 	GameMessage::Type t = msg->getType();
 	GameMessageDisposition disp = KEEP_MESSAGE;
+
 	// We want to always be able to get to the options menu even during no input times and a clear game data message should always go through
-	if (t != GameMessage::MSG_META_OPTIONS && t != GameMessage::MSG_CLEAR_GAME_DATA &&
-			!TheInGameUI->getInputEnabled() && !isSystemMessage(msg))
+	switch (t)
 	{
-		return DESTROY_MESSAGE;
+	case GameMessage::MSG_FRAME_TICK:
+	case GameMessage::MSG_CLEAR_GAME_DATA:
+	case GameMessage::MSG_LOGIC_CRC_PLAYBACK:
+	case GameMessage::MSG_META_OPTIONS:
+	case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
+	case GameMessage::MSG_DESTROY_SELECTED_GROUP:
+	case GameMessage::MSG_SET_REPLAY_CAMERA:
+	case GameMessage::MSG_LOGIC_CRC:
+		break;
+	default:
+		if (!TheInGameUI->getInputEnabled())
+			return DESTROY_MESSAGE;
+
+		break;
 	}
 
 #if defined(RTS_DEBUG)
@@ -6473,23 +6489,4 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 
 	return disp;
 
-}
-
-static Bool isSystemMessage( const GameMessage *msg )
-{
-	if (!msg) {
-		return false;
-	}
-	GameMessage::Type msgType = msg->getType();
-
-	switch (msgType)
-	{
-		case GameMessage::MSG_DESTROY_SELECTED_GROUP:
-		case GameMessage::MSG_LOGIC_CRC:
-		case GameMessage::MSG_SET_REPLAY_CAMERA:
-		case GameMessage::MSG_FRAME_TICK:
-		case GameMessage::MSG_META_DEMO_INSTANT_QUIT:
-			return TRUE;
-	}
-	return FALSE;
 }

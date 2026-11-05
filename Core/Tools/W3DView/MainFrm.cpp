@@ -531,11 +531,10 @@ CMainFrame::OnCreateClient
 			ASSERT (pCGraphicView);
 			if (pCGraphicView) {
 
-				TCHAR szFileName[MAX_PATH];
-				::GetModuleFileName (nullptr, szFileName, sizeof (szFileName));
-				LPTSTR pszPath = ::strrchr (szFileName, '\\');
-				if (pszPath) {
-					pszPath[0] = 0;
+				{
+					TCHAR szFileName[MAX_PATH];
+					::GetModuleFileName (nullptr, szFileName, sizeof (szFileName));
+					*getFileName (szFileName) = 0;
 					::SetCurrentDirectory (szFileName);
 				}
 
@@ -674,7 +673,7 @@ CMainFrame::WindowProc
 				::GetModuleFileName (nullptr, filename, sizeof (filename));
 
 				// Strip the filename from the path
-				LPTSTR ppath = ::strrchr (filename, '\\');
+				LPTSTR ppath = getLastPathSeparator (filename);
 				if (ppath != nullptr) {
 					ppath[0] = 0;
 				}
@@ -3090,7 +3089,7 @@ CMainFrame::OnSaveScreenshot ()
 	//
 	// Strip the filename from the path
 	//
-	LPTSTR ppath = ::strrchr (filename, '\\');
+	LPTSTR ppath = getLastPathSeparator (filename);
 	if (ppath != nullptr) {
 		ppath[0] = 0;
 	}

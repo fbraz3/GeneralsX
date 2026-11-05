@@ -407,6 +407,11 @@ Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
 
 	fullPath.concat(path);
 	DEBUG_LOG(("GetStringFromRegistry - looking in %s for key %s", fullPath.str(), key.str()));
+	if (getStringFromRegistry(HKEY_CURRENT_USER, fullPath.str(), key.str(), val))
+	{
+		return TRUE;
+	}
+
 	if (getStringFromRegistry(HKEY_LOCAL_MACHINE, fullPath.str(), key.str(), val))
 	{
 		return TRUE;

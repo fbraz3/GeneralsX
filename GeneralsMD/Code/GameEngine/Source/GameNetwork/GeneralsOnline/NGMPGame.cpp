@@ -15,6 +15,7 @@
 #include "Common/GlobalData.h"
 #include "GameClient/View.h"
 #include "GameClient/InGameUI.h"
+#include <Lib/PathUtil.h>
 
 void showNotificationBox( AsciiString nick, UnicodeString message);
 
@@ -317,7 +318,7 @@ void NGMPGame::launchGame(void)
 	const MapMetaData *pMap = TheMapCache->findMap(getMap());
 	if (!pMap && !getMap().isEmpty())
 	{
-		pMap = TheMapCache->findMap(GetFileFromPath(getMap()));
+		pMap = TheMapCache->findMap(getFileName(getMap().str()));
 	}
 
 	if (pMap == NULL)

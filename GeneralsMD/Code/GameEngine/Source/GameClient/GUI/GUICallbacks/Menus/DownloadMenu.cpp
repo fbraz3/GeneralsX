@@ -165,15 +165,8 @@ HRESULT DownloadManagerMunkee::downloadFile( AsciiString server, AsciiString use
 
 	if (staticTextFile)
 	{
-		AsciiString bob = file;
-
 		// just get the filename, not the pathname
-		const char *tmp = bob.reverseFind('/');
-		if (tmp)
-			bob = tmp+1;
-		tmp = bob.reverseFind('\\');
-		if (tmp)
-			bob = tmp+1;
+		const char* bob = getFileName(file.str());
 
 		UnicodeString fileString;
 		fileString.translate(bob);

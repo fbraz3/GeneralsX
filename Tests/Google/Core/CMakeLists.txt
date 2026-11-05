@@ -2,8 +2,14 @@
 set(COREI_GOOGLETEST_SRC
     GoogleTestMain.cpp
     GameEngine/Common/AsciiStringTest.cpp
+    GameEngine/Common/FileSystemTest.cpp
+    GameEngine/Common/FileSystemTestFixture.h
     GameEngine/Common/INITest.cpp
+    GameEngine/GameClient/DisplayStringDummyTest.cpp
+    GameEngineDevice/StdDevice/Common/StdLocalFileSystemTest.cpp
     Libraries/Compression/CompressionManagerTest.cpp
+    Libraries/WWVegas/WW3D2/hlod_test.cpp
+    Libraries/WWVegas/WW3D2/soundrobj_test.cpp
     Libraries/WWVegas/WWMath/WWMathCalls.h
     Libraries/WWVegas/WWMath/WWMathDumps.h
     Libraries/WWVegas/WWMath/WWMathKeys.h

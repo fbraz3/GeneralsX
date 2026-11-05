@@ -17,6 +17,7 @@
 */
 
 #pragma once
+
 #include "WWLib/WWDefines.h"
 
 #ifndef PRESERVE_BUILDING_RESUMPTION_DELAY
@@ -84,11 +85,9 @@
 #endif
 
 #ifndef PRESERVE_RETAIL_SCRIPTED_CAMERA
-#define PRESERVE_RETAIL_SCRIPTED_CAMERA (0) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
+#define PRESERVE_RETAIL_SCRIPTED_CAMERA (1) // Retain scripted camera behavior present in retail Generals 1.08 and Zero Hour 1.04
 #endif
 
-// GeneralsX @refactor stm 28/08/2026 Import the retail-particle compatibility switch.
-// Upstream PR: https://github.com/TheSuperHackers/GeneralsGameCode/pull/3172
 #ifndef PRESERVE_RETAIL_PARTICLES
 #define PRESERVE_RETAIL_PARTICLES (1) // Preserve original look of particles present in retail Generals 1.08 and Zero Hour 1.04
 #endif
@@ -124,11 +123,7 @@
 // Note: Retail compatibility must not be broken before this project officially does.
 // Use RETAIL_COMPATIBLE_CRC, RETAIL_COMPATIBLE_DATA and RETAIL_COMPATIBLE_XFER_SAVE to guard breaking changes.
 
-// RETAIL_COMPATIBLE_CRC is default defined in BaseDefines.h
-
-#ifndef RETAIL_COMPATIBLE_DATA
-#define RETAIL_COMPATIBLE_DATA (1) // Game and tool data files are expected to be compatible with retail Generals 1.08 and Zero Hour 1.04
-#endif
+// RETAIL_COMPATIBLE_CRC and RETAIL_COMPATIBLE_DATA are default defined in BaseDefines.h
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
 #define RETAIL_COMPATIBLE_XFER_SAVE (1) // Game is expected to be Xfer Save compatible with retail Generals 1.08, Zero Hour 1.04
@@ -136,21 +131,21 @@
 
 // This is here to easily toggle between the retail compatible with fixed pathfinding fallback and pure fixed pathfinding mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING
-#define RETAIL_COMPATIBLE_PATHFINDING (0)
+#define RETAIL_COMPATIBLE_PATHFINDING (1)
 #endif
 
 // This is here to easily toggle between the retail compatible pathfinding memory allocation and the new static allocated data mode
 #ifndef RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
-#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (0)
+#define RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION (1)
 #endif
 
 #ifndef RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM
-#define RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM (0) // Use the original circle fill algorithm, which is more efficient but less accurate
+#define RETAIL_COMPATIBLE_CIRCLE_FILL_ALGORITHM (1) // Use the original circle fill algorithm, which is more efficient but less accurate
 #endif
 
 // Disable non retail fixes in the networking, such as putting more data per UDP packet
 #ifndef RETAIL_COMPATIBLE_NETWORKING
-#define RETAIL_COMPATIBLE_NETWORKING (0)
+#define RETAIL_COMPATIBLE_NETWORKING (1)
 #endif
 
 // This is essentially synonymous for RETAIL_COMPATIBLE_CRC. There is a lot wrong with AIGroup, such as use-after-free, double-free, leaks,
@@ -158,7 +153,7 @@
 // but put them behind this macro.
 
 #ifndef RETAIL_COMPATIBLE_AIGROUP
-#define RETAIL_COMPATIBLE_AIGROUP (0) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
+#define RETAIL_COMPATIBLE_AIGROUP (1) // AIGroup logic is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
 #endif
 
 #ifndef ENABLE_GAMETEXT_SUBSTITUTES
@@ -180,11 +175,6 @@
 // Buffered IO generally is much faster than unbuffered for small reads and writes.
 #ifndef USE_BUFFERED_IO
 #define USE_BUFFERED_IO (1)
-#endif
-
-// GeneralsX @feature Meeseeks 28/08/2026 Enable deep CRC memory buffer logging by default across all platforms including Windows
-#if (!defined(DEEP_CRC_TO_MEMORY) && !defined(DEBUG_CRC))
-#define DEEP_CRC_TO_MEMORY 1
 #endif
 
 // Enable cache for local file existence. Reduces amount of disk accesses for better performance,
@@ -227,8 +217,8 @@
 
 #define MIN_DISPLAY_BIT_DEPTH       16
 #define DEFAULT_DISPLAY_BIT_DEPTH   32
-#define DEFAULT_DISPLAY_WIDTH      1024 // The standard resolution this game was designed for
-#define DEFAULT_DISPLAY_HEIGHT     768 // The standard resolution this game was designed for
+#define DEFAULT_DISPLAY_WIDTH      800 // The standard resolution this game was designed for
+#define DEFAULT_DISPLAY_HEIGHT     600 // The standard resolution this game was designed for
 
 
 // NON-TWEAKABLE DEFINES ARE DOWN HERE
