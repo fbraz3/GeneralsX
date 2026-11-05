@@ -895,12 +895,7 @@ Real OptionPreferences::getMaxCameraHeight() const
 	OptionPreferences::const_iterator it = find("MaxCameraHeight");
 	if (it == end())
 	{
-		Real fallback = TheGlobalData ? TheGlobalData->m_maxCameraHeight : 300.0f;
-		if (!isFinite(fallback) || fallback < 100.0f)
-			fallback = 100.0f;
-		else if (fallback > 1000.0f)
-			fallback = 1000.0f;
-		return fallback;
+		return TheGlobalData ? TheGlobalData->m_maxCameraHeight : 300.0f;
 	}
 
 	Real val = (Real)atof(it->second.str());
@@ -958,12 +953,7 @@ Real OptionPreferences::getTerrainDrawDistanceScale() const
 	OptionPreferences::const_iterator it = find("TerrainDrawDistanceScale");
 	if (it == end())
 	{
-		Real fallback = TheGlobalData ? TheGlobalData->m_terrainDrawDistanceScale : 1.0f;
-		if (!isFinite(fallback) || fallback < 1.0f)
-			fallback = 1.0f;
-		else if (fallback > 2.0f)
-			fallback = 2.0f;
-		return fallback;
+		return TheGlobalData ? TheGlobalData->m_terrainDrawDistanceScale : 1.0f;
 	}
 
 	Real val = (Real)atof(it->second.str());

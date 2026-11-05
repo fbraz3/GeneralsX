@@ -210,6 +210,7 @@ _gen_asset_dir="${CNC_GENERALS_PATH:-${GENERALSX_ASSET_PATH:-${CNC_GENERALS_INST
 if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
     if [[ -f "Generals.big" && "$(pwd)" != "${SCRIPT_DIR}" ]]; then
         _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
         if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
             rm -f "Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
         else
@@ -218,6 +219,7 @@ if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
     fi
     if [[ -n "${_gen_asset_dir}" && -d "${_gen_asset_dir}" && "${_gen_asset_dir}" != "${SCRIPT_DIR}" ]]; then
         _stage_tmp="${_gen_asset_dir}/generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
         if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "${_gen_asset_dir}/generalsx.big" 2>/dev/null; then
             rm -f "${_gen_asset_dir}/Data/INI/FXListGeneralsX.ini" 2>/dev/null || true
         else

@@ -473,6 +473,7 @@ if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
 
     if [[ -f "${RESOURCES_DIR}/generalsx.big" ]]; then
         _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
         if cp -f "${RESOURCES_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
             rm -f "Data/INI/FXListGeneralsX.ini" "Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
         else

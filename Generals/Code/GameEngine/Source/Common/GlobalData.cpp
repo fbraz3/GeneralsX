@@ -1279,19 +1279,25 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_gameWindowTransitionSpeedMultiplier = optionPref.getGameWindowTransitionSpeedMultiplier();
 	// GeneralsX @feature fbraz3 14/10/2026 Camera height and terrain draw distance overridden from Options.ini
 	// GeneralsX @bugfix fbraz3 15/10/2026 Validate finite Real before assigning to GlobalData
-	Real maxCam = optionPref.getMaxCameraHeight();
-	if (!isFinite(maxCam) || maxCam < 100.0f)
-		maxCam = 100.0f;
-	else if (maxCam > 1000.0f)
-		maxCam = 1000.0f;
-	TheWritableGlobalData->m_maxCameraHeight = maxCam;
+	if (optionPref.find("MaxCameraHeight") != optionPref.end())
+	{
+		Real maxCam = optionPref.getMaxCameraHeight();
+		if (!isFinite(maxCam) || maxCam < 100.0f)
+			maxCam = 100.0f;
+		else if (maxCam > 1000.0f)
+			maxCam = 1000.0f;
+		TheWritableGlobalData->m_maxCameraHeight = maxCam;
+	}
 
-	Real drawDist = optionPref.getTerrainDrawDistanceScale();
-	if (!isFinite(drawDist) || drawDist < 1.0f)
-		drawDist = 1.0f;
-	else if (drawDist > 2.0f)
-		drawDist = 2.0f;
-	TheWritableGlobalData->m_terrainDrawDistanceScale = drawDist;
+	if (optionPref.find("TerrainDrawDistanceScale") != optionPref.end())
+	{
+		Real drawDist = optionPref.getTerrainDrawDistanceScale();
+		if (!isFinite(drawDist) || drawDist < 1.0f)
+			drawDist = 1.0f;
+		else if (drawDist > 2.0f)
+			drawDist = 2.0f;
+		TheWritableGlobalData->m_terrainDrawDistanceScale = drawDist;
+	}
 	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
 	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
 

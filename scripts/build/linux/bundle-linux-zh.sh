@@ -211,6 +211,7 @@ _zh_asset_dir="${CNC_GENERALS_ZH_PATH:-${GENERALSX_ZH_ASSET_PATH:-${CNC_ZH_INSTA
 if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
     if [[ -f "INIZH.big" && "$(pwd)" != "${SCRIPT_DIR}" ]]; then
         _stage_tmp="generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
         if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "generalsx.big" 2>/dev/null; then
             rm -f "Data/INI/FXListGeneralsX.ini" "Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
         else
@@ -219,6 +220,7 @@ if [[ -f "${SCRIPT_DIR}/generalsx.big" ]]; then
     fi
     if [[ -n "${_zh_asset_dir}" && -d "${_zh_asset_dir}" && "${_zh_asset_dir}" != "${SCRIPT_DIR}" ]]; then
         _stage_tmp="${_zh_asset_dir}/generalsx.big.tmp.$$"
+        rm -f "${_stage_tmp}" 2>/dev/null || true
         if cp -f "${SCRIPT_DIR}/generalsx.big" "${_stage_tmp}" 2>/dev/null && mv -f "${_stage_tmp}" "${_zh_asset_dir}/generalsx.big" 2>/dev/null; then
             rm -f "${_zh_asset_dir}/Data/INI/FXListGeneralsX.ini" "${_zh_asset_dir}/Window/Menus/ExtrasMenu.wnd" 2>/dev/null || true
         else
