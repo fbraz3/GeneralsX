@@ -396,10 +396,10 @@ enum {
 				W3D_CHUNK_DEFORM_KEYFRAME				=0x0000005A,	// a keyframe of deform information in the set
 					W3D_CHUNK_DEFORM_DATA				=0x0000005B,	// deform information about a single vertex
 
-		W3D_CHUNK_PS2_SHADERS							=0x00000080,	// Shader info specific to the Playstation 2.
-
 		W3D_CHUNK_VERTEX_TANGENTS = 0x00000060,         // array of tangents (array of W3dVectorStruct's)
 		W3D_CHUNK_VERTEX_BINORMALS = 0x00000061,         // array of binormals (array of W3dVectorStruct's)
+
+		W3D_CHUNK_PS2_SHADERS							=0x00000080,	// Shader info specific to the Playstation 2.
 
 		W3D_CHUNK_AABTREE									=0x00000090,	// Axis-Aligned Box Tree for hierarchical polygon culling
 			W3D_CHUNK_AABTREE_HEADER,										// catalog of the contents of the AABTree
@@ -1126,7 +1126,7 @@ typedef enum
 	SURFACE_TYPE_MAX			// NOTE: if you add a surface type, add it to the SurfaceEffects.INI file!
 } W3D_SURFACE_TYPES;
 
-const char * const SURFACE_TYPE_STRINGS[SURFACE_TYPE_MAX] =
+const char * const SURFACE_TYPE_STRINGS[] =
 {
 	"Light Metal",
 	"Heavy Metal",
@@ -1161,6 +1161,7 @@ const char * const SURFACE_TYPE_STRINGS[SURFACE_TYPE_MAX] =
 	"Underwater Dirt",
 	"Underwater Tiberium Dirt",
 };
+static_assert(ARRAY_SIZE(SURFACE_TYPE_STRINGS) == SURFACE_TYPE_MAX, "Incorrect array size");
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Flags for the Mesh Attributes member
@@ -1225,9 +1226,9 @@ const char * const SURFACE_TYPE_STRINGS[SURFACE_TYPE_MAX] =
 // boundary values for W3dMeshHeaderStruct::SortLevel
 #define SORT_LEVEL_NONE						0
 #define MAX_SORT_LEVEL						32
-#define SORT_LEVEL_BIN1						10
+#define SORT_LEVEL_BIN1						20
 #define SORT_LEVEL_BIN2						15
-#define SORT_LEVEL_BIN3						20
+#define SORT_LEVEL_BIN3						10
 
 struct W3dMeshHeader3Struct
 {
@@ -1792,7 +1793,7 @@ enum
 // The definition of this string array can be found in
 // Part_Ldr.cpp.  Please update this array accordingly.
 //
-extern const char *EMITTER_TYPE_NAMES[EMITTER_TYPEID_COUNT];
+extern const char *EMITTER_TYPE_NAMES[];
 
 struct W3dEmitterHeaderStruct
 {
@@ -2188,8 +2189,8 @@ struct W3dNullObjectStruct
 
 //
 //	Note:  This structure is followed directly by a chunk (W3D_CHUNK_SOUNDROBJ_DEFINITION)
-// that contains an embedded AudibleSoundDefinitionClass's storage.  See audibledound.h
-// for details.
+// that contains the settings of the sound.  See SoundRenderObjDefClass::Write_Definition
+// in soundrobj.cpp for details.
 //
 struct W3dSoundRObjHeaderStruct
 {

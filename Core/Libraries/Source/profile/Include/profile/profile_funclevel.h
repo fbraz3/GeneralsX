@@ -211,7 +211,7 @@ public:
   // GeneralsX @refactor BenderAI 10/02/2026 Use uintptr_t to avoid pointer precision loss on 64-bit
   uintptr_t GetId() const
     {
-      return (uintptr_t)m_threadID;
+      return (unsigned)(uintptr_t)m_threadID;
     }
 
   private:

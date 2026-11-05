@@ -103,7 +103,7 @@ LogClass::LogClass(const char *fname)
 {
 	char buffer[ _MAX_PATH ];
 	GetModuleFileName( nullptr, buffer, sizeof( buffer ) );
-	if (char *pEnd = strrchr(buffer, '\\'))
+	if (char *pEnd = getLastPathSeparator(buffer))
 	{
 		*pEnd = 0;
 	}
@@ -156,7 +156,7 @@ void LogClass::log(const char *fmt, ...)
 void LogClass::dumpMatrix3D(const Matrix3D *m, AsciiString name, AsciiString fname, Int line)
 {
 	fname.toLower();
-	fname = fname.reverseFind('\\') + 1;
+	fname = getFileName(fname.str());
 	const Real *matrix = (const Real *)m;
 	log("dumpMatrix3D() %s:%d %s",
 		fname.str(), line, name.str());
@@ -170,7 +170,7 @@ void LogClass::dumpReal(Real r, AsciiString name, AsciiString fname, Int line)
 	if (!m_fp || !isValidTimeToCalcLogicStuff())
 		return;
 	fname.toLower();
-	fname = fname.reverseFind('\\') + 1;
+	fname = getFileName(fname.str());
 	log("dumpReal() %s:%d %s %8.8X (%f)",
 		fname.str(), line, name.str(), AS_INT(r), r);
 }
@@ -270,7 +270,7 @@ inline Bool isCommonMaintainFrameFlagSet(Int a, Int b)
 // Note: these values are saved in save files, so you MUST NOT REMOVE OR CHANGE
 // existing values!
 //
-static const char *TerrainDecalTextureName[TERRAIN_DECAL_MAX]=
+static const char *TerrainDecalTextureName[]=
 {
 #ifdef ALLOW_DEMORALIZE
 	"DM_RING",//demoralized
@@ -293,6 +293,7 @@ static const char *TerrainDecalTextureName[TERRAIN_DECAL_MAX]=
 #endif
 	"" //dummy entry for TERRAIN_DECAL_SHADOW_TEXTURE
 };
+static_assert(ARRAY_SIZE(TerrainDecalTextureName) == TERRAIN_DECAL_MAX, "Incorrect array size");
 
 const UnsignedInt NO_NEXT_DURATION = 0xffffffff;
 
@@ -1237,7 +1238,6 @@ enum AnimParseType CPP_11(: Int)
 //-------------------------------------------------------------------------------------------------
 static void parseAnimation(INI* ini, void *instance, void * /*store*/, const void* userData)
 {
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use uintptr_t for pointer cast (fighter19 64-bit pattern)
 	AnimParseType animType = (AnimParseType)(uintptr_t)userData;
 
 	AsciiString animName = ini->getNextAsciiString();
@@ -1452,7 +1452,6 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 	ModelConditionInfo info;
 	W3DModelDrawModuleData* self = (W3DModelDrawModuleData*)instance;
-	// GeneralsX @bugfix BenderAI 13/02/2026 Use uintptr_t for pointer cast (fighter19 64-bit pattern)
 	ParseCondStateType cst = (ParseCondStateType)(uintptr_t)userData;
 	switch (cst)
 	{
@@ -2703,7 +2702,6 @@ void W3DModelDraw::handleClientRecoil()
 			if (barrels[i].m_muzzleFlashBone != 0)
 			{
 				Bool hidden = recoils[i].m_state != WeaponRecoilInfo::RECOIL_START;
-				//DEBUG_LOG(("adjust muzzleflash %08lx for Draw %08lx state %s to %d at frame %d",subObjToHide,this,m_curState->m_description.str(),hidden?1:0,TheGameLogic->getFrame()));
 				barrels[i].setMuzzleFlashHidden(m_renderObject, hidden);
 			}
 

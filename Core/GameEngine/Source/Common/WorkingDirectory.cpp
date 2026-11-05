@@ -107,12 +107,7 @@ Bool WorkingDirectory::setExecutableWorkingDirectory()
 	}
 #endif
 
-	Char *pEnd = strrchr(buffer, '/');
-#ifdef _WIN32
-	Char *pEndBackslash = strrchr(buffer, '\\');
-	if (pEndBackslash > pEnd)
-		pEnd = pEndBackslash;
-#endif
+	Char *pEnd = getLastPathSeparator(buffer);
 	if (pEnd == nullptr)
 	{
 		DEBUG_LOG(("Executable path has no directory: '%s'", buffer));

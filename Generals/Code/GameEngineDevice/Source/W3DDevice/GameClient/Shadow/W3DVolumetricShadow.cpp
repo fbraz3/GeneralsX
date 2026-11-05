@@ -2080,6 +2080,13 @@ Bool W3DVolumetricShadow::poseSkinMesh(W3DShadowGeometryMesh *geomMesh, MeshClas
 	return TRUE;
 }
 
+// Returns the X, Y and Z components of a matrix row.
+static Vector3 getRowXYZ(const Matrix4x4& matrix, Int row)
+{
+	const Vector4& r = matrix[row];
+	return Vector3(r.X, r.Y, r.Z);
+}
+
 /*floorZ is the assumed ground height below the model.  The code will try to extrude shadows just long enough to hit this point in order
 to reduce fill rate usage.*/
 void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, MeshClass *mesh, const Matrix3D *meshXform, const AABoxClass &meshBox, float floorZ )
@@ -2115,20 +2122,16 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, MeshCl
 #else
 	//When dealing with infinite light sources, we can assume that the shadow doesn't
 	//change much based on object position.  Only the orientation to light matters.
-	Real cosAngle = fabs (Vector3::Dot_Product((Vector3 &)(prevXForm->operator [](0)),(Vector3 &)(objectToWorld.operator [](0))));
-	if (cosAngle >= cosAngleToCare)
-	{	cosAngle = fabs (Vector3::Dot_Product((Vector3 &)(prevXForm->operator [](1)),(Vector3 &)(objectToWorld.operator [](1))));
-		if (cosAngle >= cosAngleToCare)
+	for (Int rowIndex = 0; rowIndex < 3; ++rowIndex)
+	{
+		const Vector3 prevRow = getRowXYZ(*prevXForm, rowIndex);
+		const Vector3 currRow = getRowXYZ(objectToWorld, rowIndex);
+		if (fabs(Vector3::Dot_Product(prevRow, currRow)) < cosAngleToCare)
 		{
-			cosAngle = fabs (Vector3::Dot_Product((Vector3 &)(prevXForm->operator [](2)),(Vector3 &)(objectToWorld.operator [](2))));
-			if (cosAngle < cosAngleToCare)
-				isMeshRotating=true;
+			isMeshRotating = true;
+			break;
 		}
-		else
-			isMeshRotating =true;
 	}
-	else
-		isMeshRotating =true;
 #endif
 
 	// get the light
@@ -2837,14 +2840,10 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 		//in index list.  Rendering edges back-to-back improves vertex cache usage.
 		for (k=i+2; k<indicesPerMesh; k+=2)
 			if (silhouetteIndices[k]==currentEdgeEnd)
-			{	//swap the two edges
-				// GeneralsX @bugfix Copilot 11/05/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
-				Short edge0a = silhouetteIndices[i+2];
-				Short edge0b = silhouetteIndices[i+3];
-				silhouetteIndices[i+2] = silhouetteIndices[k];
-				silhouetteIndices[i+3] = silhouetteIndices[k+1];
-				silhouetteIndices[k] = edge0a;
-				silhouetteIndices[k+1] = edge0b;
+			{
+				//swap the two edges
+				std::swap(silhouetteIndices[i+2], silhouetteIndices[k]);
+				std::swap(silhouetteIndices[i+3], silhouetteIndices[k+1]);
 				break;
 			}
 
@@ -2981,6 +2980,14 @@ void W3DVolumetricShadow::constructVolume( Vector3 *lightPosObject,Real shadowEx
 	shadowVolume->SetNumActiveVertex(vertexCount);
 }
 
+// Copies a position into a shadow volume vertex.
+static void setVertexXYZ(VertexFormatXYZ& vertex, const Vector3& position)
+{
+	vertex.x = position.X;
+	vertex.y = position.Y;
+	vertex.z = position.Z;
+}
+
 // constructVolumeVB ==========================================================
 // Given a fresh new geometry class called "shadowVolume" to hold the actual
 // shadow volume data, this method will create the shadow volume polygons
@@ -3075,14 +3082,10 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			//in index list.  Rendering edges back-to-back improves vertex cache usage.
 			for (k=i+2; k<indicesPerMesh; k+=2)
 				if (silhouetteIndices[k]==currentEdgeEnd)
-				{	//swap the two edges
-					// GeneralsX @bugfix Copilot 11/05/2026 Avoid strict-aliasing/alignment UB when swapping edge pairs on 64-bit/ARM.
-					Short edge0a = silhouetteIndices[i+2];
-					Short edge0b = silhouetteIndices[i+3];
-					silhouetteIndices[i+2] = silhouetteIndices[k];
-					silhouetteIndices[i+3] = silhouetteIndices[k+1];
-					silhouetteIndices[k] = edge0a;
-					silhouetteIndices[k+1] = edge0b;
+				{
+					//swap the two edges
+					std::swap(silhouetteIndices[i+2], silhouetteIndices[k]);
+					std::swap(silhouetteIndices[i+3], silhouetteIndices[k+1]);
 					break;
 				}
 
@@ -3217,8 +3220,8 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 	extrude2 *= shadowExtrudeDistance;
 	extrude2 += edgeVertex2;
 
-	*vb++ = *(VertexFormatXYZ *)&edgeVertex2;
-	*vb++ = *(VertexFormatXYZ *)&extrude2;
+	setVertexXYZ(*vb++, edgeVertex2);
+	setVertexXYZ(*vb++, extrude2);
 
 	vertexCount=2;
 	polygonCount=0;
@@ -3252,7 +3255,7 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			{
 				//add end of strip.  Finishes the last 2 polygons.
 				geomMesh->GetVertex( currentEdgeEnd, &edgeVertex2 );
-				*vb++ = *(VertexFormatXYZ *)&edgeVertex2;
+				setVertexXYZ(*vb++, edgeVertex2);
 
 				//
 				// add the polygon consisting of the two edge vertices and the
@@ -3269,7 +3272,7 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 				extrude2 *= shadowExtrudeDistance;
 				extrude2 += edgeVertex2;
 				// add the one new vertex
-				*vb++ = *(VertexFormatXYZ *)&extrude2;
+				setVertexXYZ(*vb++, extrude2);
 
 				lastEdgeVertex2Index=vertexCount;
 				lastExtrude2Index=vertexCount+1;
@@ -3296,8 +3299,8 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			stripStartIndex=silhouetteIndices[ i+2 ];
 			stripStartVertex=lastEdgeVertex2Index;
 
-			*vb++ = *(VertexFormatXYZ *)&edgeVertex2;
-			*vb++ = *(VertexFormatXYZ *)&extrude2;
+			setVertexXYZ(*vb++, edgeVertex2);
+			setVertexXYZ(*vb++, extrude2);
 			vertexCount += 2;
 
 			polygonCount += 2;
@@ -3308,7 +3311,7 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			//continue existing strip by adding extra vertex and extrusion
 
 			geomMesh->GetVertex( currentEdgeEnd, &edgeVertex2 );
-			*vb++ = *(VertexFormatXYZ *)&edgeVertex2;
+			setVertexXYZ(*vb++, edgeVertex2);
 			//
 			// add the polygon consisting of the two edge vertices and the
 			// first extruded point
@@ -3325,7 +3328,7 @@ void W3DVolumetricShadow::constructVolumeVB( Vector3 *lightPosObject,Real shadow
 			extrude2 += edgeVertex2;
 
 			// add the one new vertex
-			*vb++ = *(VertexFormatXYZ *)&extrude2;
+			setVertexXYZ(*vb++, extrude2);
 
 			lastEdgeVertex2Index=vertexCount;
 			lastExtrude2Index=vertexCount+1;

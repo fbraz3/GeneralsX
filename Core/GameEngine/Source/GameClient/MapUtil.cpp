@@ -73,36 +73,6 @@ static std::set<std::string> s_failedMapLookups;
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static const char *mapExtension = ".map";
 
-// GeneralsX @bugfix Copilot 27/04/2026 Accept both '\' and '/' separators so user custom maps work on macOS/Linux paths.
-static const char *findLastPathSeparator(const AsciiString& path)
-{
-	const char *backslash = path.reverseFind('\\');
-	const char *slash = path.reverseFind('/');
-
-	if (!backslash)
-	{
-		return slash;
-	}
-
-	if (!slash)
-	{
-		return backslash;
-	}
-
-	return slash > backslash ? slash : backslash;
-}
-
-static Bool hasValidMapLeafLayout(const AsciiString& filepathLower, const AsciiString& filenameLower)
-{
-	AsciiString endingStrBackslash;
-	endingStrBackslash.format("%s\\%s%s", filenameLower.str(), filenameLower.str(), mapExtension);
-
-	AsciiString endingStrSlash;
-	endingStrSlash.format("%s/%s%s", filenameLower.str(), filenameLower.str(), mapExtension);
-
-	return filepathLower.endsWithNoCase(endingStrBackslash.str()) || filepathLower.endsWithNoCase(endingStrSlash.str());
-}
-
 static Int m_width = 0;						///< Height map width.
 static Int m_height = 0;					///< Height map height (y size of array).
 static Int m_borderSize = 0;			///< Non-playable border area.
@@ -577,7 +547,7 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 	FilenameList filepathList;
 	FilenameListIter filepathIt;
 	AsciiString toplevelPattern;
-	toplevelPattern.format("%s\\", mapDir.str());
+	toplevelPattern.format("%s%c", mapDir.str(), getNativePathSeparator());
 	Bool mapListChanged = FALSE;
 	AsciiString filenamepattern;
 	filenamepattern.format("*.%s", getMapExtension().str());
@@ -592,10 +562,10 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 		AsciiString filepathLower = *filepathIt;
 		filepathLower.toLower();
 
-		const char *szFilenameLower = findLastPathSeparator(filepathLower);
+		const char *szFilenameLower = getLastPathSeparator(filepathLower.str());
 		if (!szFilenameLower)
 		{
-			DEBUG_CRASH(("Couldn't find path separator in map name!"));
+			DEBUG_CRASH(("Couldn't find / or \\ in map name!"));
 			continue;
 		}
 
@@ -608,7 +578,11 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 			continue;
 		}
 
-		if (!hasValidMapLeafLayout(filepathLower, filenameLower))
+		// The map must sit in a folder of the same name
+		const AsciiString fullMapFolderLower(filepathLower.str(), szFilenameLower - filepathLower.str());
+		const char* lastMapFolderLower = getFileName(fullMapFolderLower.str());
+
+		if (strcmp(lastMapFolderLower, filenameLower.str()) != 0)
 		{
 			DEBUG_CRASH(("Found map '%s' in wrong spot (%s)", filenameLower.str(), filepathLower.str()));
 			continue;
@@ -651,8 +625,7 @@ Bool MapCache::addMap(
 			{
 				// unofficial maps or maps without names
 				AsciiString tempdisplayname;
-				const char *displayNameStart = findLastPathSeparator(fname);
-				tempdisplayname = displayNameStart ? displayNameStart + 1 : fname;
+				tempdisplayname = getFileName(fname.str());
 				(*this)[lowerFname].m_displayName.translate(tempdisplayname);
 				if (md.m_numPlayers >= 2)
 				{
@@ -682,9 +655,6 @@ Bool MapCache::addMap(
 		DEBUG_LOG(("size: %d / %d", fileInfo.sizeLow, md.m_filesize));
 		DEBUG_LOG(("time1: %d / %d", fileInfo.timestampHigh, md.m_timestamp.m_highTimeStamp));
 		DEBUG_LOG(("time2: %d / %d", fileInfo.timestampLow, md.m_timestamp.m_lowTimeStamp));
-//		DEBUG_LOG(("size: %d / %d", filesize, md.m_filesize));
-//		DEBUG_LOG(("time1: %d / %d", timestamp.m_highTimeStamp, md.m_timestamp.m_highTimeStamp));
-//		DEBUG_LOG(("time2: %d / %d", timestamp.m_lowTimeStamp, md.m_timestamp.m_lowTimeStamp));
 	}
 
 	DEBUG_LOG(("MapCache::addMap(): caching '%s' because '%s' was not found", fname.str(), lowerFname.str()));
@@ -714,8 +684,7 @@ Bool MapCache::addMap(
 	{
 		DEBUG_LOG(("Missing TheKey_mapName!"));
 		AsciiString tempdisplayname;
-		const char *displayNameStart = findLastPathSeparator(fname);
-		tempdisplayname = displayNameStart ? displayNameStart + 1 : fname;
+		tempdisplayname = getFileName(fname.str());
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{
@@ -729,7 +698,7 @@ Bool MapCache::addMap(
 	{
 		AsciiString stringFileName = fname;
 		stringFileName.truncateBy(4);
-		const char *stringFileSeparator = findLastPathSeparator(stringFileName);
+		const char *stringFileSeparator = getLastPathSeparator(stringFileName.str());
 		if (stringFileSeparator && *stringFileSeparator == '/')
 		{
 			stringFileName.concat("/map.str");
@@ -1334,10 +1303,7 @@ Image *getMapPreviewImage( AsciiString mapName )
 	for(Int i = 0; i < portableName.getLength(); ++i)
 	{
 		char c = portableName.getCharAt(i);
-		// GeneralsX @bugfix 09/09/2026 Also escape '/', the path separator used by
-		// StdLocalFileSystem on macOS/Linux; previously only '\' and ':' were
-		// escaped, so custom map previews loaded from disk failed to copy.
-		if (c == '\\' || c == ':' || c == '/')
+		if (isPathSeparator(c) || c == ':')
 			tempName.concat('_');
 		else
 			tempName.concat(c);

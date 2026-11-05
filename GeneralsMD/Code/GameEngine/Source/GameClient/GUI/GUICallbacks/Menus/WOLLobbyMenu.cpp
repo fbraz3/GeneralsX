@@ -2099,8 +2099,12 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 
 						PeerRequest req;
 						req.peerRequestType = PeerRequest::PEERREQUEST_GETEXTENDEDSTAGINGROOMINFO;
-					// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-					req.stagingRoom.id = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rowSelected, 0)));
+						req.stagingRoom.id = (Int)(intptr_t)GadgetListBoxGetItemData(control, rowSelected, 0);
+
+						if (lastID != req.stagingRoom.id || now > lastFrame + 60)
+						{
+							TheGameSpyPeerMessageQueue->addRequest(req);
+						}
 
 						lastID = req.stagingRoom.id;
 						lastFrame = now;
@@ -2173,8 +2177,8 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetListBoxGetSelected(GetGameListBox(), &selected);
 					if (selected >= 0)
 					{
-						Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(GetGameListBox(), selected)));
-						if (selectedID >= 0)
+				Int selectedID = (Int)(intptr_t)GadgetListBoxGetItemData(GetGameListBox(), selected);
+				if (selectedID >= 0)
 						{
 #if defined(SAGE_USE_NGMP)
 							const auto& lobbies = NGMP_OnlineServicesManager::getInstance().getLobbies();
@@ -2532,8 +2536,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						break;
 					}
 
-					// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-					Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(control, rc->pos)));
+				Int selectedID = (Int)(intptr_t)GadgetListBoxGetItemData(control, rc->pos);
 					if (selectedID > 0)
 					{
 						StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();

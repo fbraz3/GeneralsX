@@ -1312,7 +1312,7 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 	{
 		return AlternateBrandFont->Get_Char_Data( glyph );
 	}
- 	else if ( AlternateUnicodeFont && this != AlternateUnicodeFont )
+ 	else if ( Get_Char_Font( ch ) != this )
 	{
 		return AlternateUnicodeFont->Get_Char_Data( glyph );
 	}
@@ -1338,6 +1338,25 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 		WWASSERT( retval->Value == glyph );
 	}
 	return retval;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//	Get_Char_Font
+//
+////////////////////////////////////////////////////////////////////////////////////
+const FontCharsClass *
+FontCharsClass::Get_Char_Font (WCHAR ch) const
+{
+	//
+	//	Characters outside the first 256 come from the alternate Unicode font, if there is one
+	//
+	if ( ch >= 256 && AlternateUnicodeFont && this != AlternateUnicodeFont ) {
+		return AlternateUnicodeFont;
+	}
+
+	return this;
 }
 
 
@@ -1428,10 +1447,20 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 		dest_ptr				+= (dest_inc * y) + x;
 
 		//
+		//	TheSuperHackers @bugfix The glyph holds as many rows as the font that stored it, which is the
+		//	alternate Unicode font for characters outside the first 256. That font can be shorter than
+		//	this one, for example SimSun is 16 px where Arial is 18 px at 12 point. Read only the rows
+		//	the glyph has and clear the remaining rows, instead of reading past the glyph.
+		//
+		const int glyph_rows = min( Get_Char_Font( ch )->CharHeight, CharHeight );
+
+		int row;
+
+		//
 		//	Copy the data from the src buffer to the destination, rebuilding the A4R4G4B4 texel
 		//	from the stored coverage value the same way Store_GDI_Char used to compose it.
 		//
-		for ( int row = 0; row < CharHeight; row ++ ) {
+		for ( row = 0; row < glyph_rows; row ++ ) {
 			for ( int col = 0; col < data->Width; col ++ ) {
 				const uint8 coverage = *src_ptr;
 				uint16 curData = (coverage != 0 ? 0x0FFF : 0) | ((uint16)(coverage >> 4) << 12);
@@ -1441,6 +1470,14 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 				dest_ptr[col] = curData;
 				src_ptr++;
 			}
+			dest_ptr	+= dest_inc;
+		}
+
+		//
+		//	The remaining rows are empty.
+		//
+		for ( ; row < CharHeight; row ++ ) {
+			::memset( dest_ptr, 0, data->Width * sizeof( uint16 ) );
 			dest_ptr	+= dest_inc;
 		}
 	}

@@ -20,11 +20,12 @@
 
 #include "ref_ptr.h"
 #include "refcount.h"
+#include <Lib/PathUtil.h>
+#include <Lib/Profile.h>
 #include "Utility/STLUtils.h"
 #include "Utility/stringex.h"
 #include <Utility/stdio_adapter.h>
 #include <Utility/utility_adapter.h>
-#include "Lib/Profile.h"
 
 // TheSuperHackers @build 10/02/2026 Bender
 // Linux port: Include platform compatibility headers BEFORE any DirectX/Windows headers are parsed

@@ -5,6 +5,7 @@ set(UTILITY_SRC
     Utility/atl_compat.h
     Utility/atomic_adapter.h
     Utility/atomic_x86interlocked.inl
+    Utility/bit_adapter.h
     Utility/compat.h
     Utility/comsupp_compat.h
     Utility/endian_compat.h
@@ -20,6 +21,7 @@ set(UTILITY_SRC
     Utility/sstream_adapter.h
     Utility/stdio_adapter.h
     Utility/STLUtils.h
+    Utility/string_adapter.h
     Utility/string_compat.h
     Utility/stringex.h
     Utility/stringex_memcchr.inl

@@ -48,6 +48,8 @@
 #include "genmtlnamesdialog.h"
 #include "genlodextensiondialog.h"
 #include "floaterdialog.h"
+#include <Lib/PathUtil.h>
+#include <Utility/stringex.h>
 #include <stdmat.h>
 
 
@@ -1528,10 +1530,9 @@ void SettingsFormClass::Init()
 	// string is of the form 'key=value'.  Based on my testing, it appears that windows removes any white
 	// space before or after the equal sign as well.
 	char dllpath[_MAX_PATH];
-	::GetModuleFileName(AppInstance,dllpath,sizeof(dllpath));
-	char * last_slash = strrchr(dllpath,'\\');
-	last_slash++;
-	strcpy(last_slash,DAZZLE_SETTINGS_FILENAME);
+	::GetModuleFileName(AppInstance,dllpath,ARRAY_SIZE(dllpath));
+	*getFileName(dllpath)=0;
+	strlcat(dllpath,DAZZLE_SETTINGS_FILENAME,ARRAY_SIZE(dllpath));
 
 	char * dazzle_types_buffer = new char[DAZZLE_SECTION_BUFFERSIZE];	// max size of a section for Win95
 

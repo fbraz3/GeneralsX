@@ -43,6 +43,7 @@
  *   HLodDefClass::Save_Header -- writes the HLodDef header                                    *
  *   HLodDefClass::Save_Lod_Array -- Saves the lod array                                       *
  *   HLodDefClass::Save_Aggregate_Array -- Save the array of aggregate models                  *
+ *   HLodDefClass::Save_Proxy_Array -- Save the array of proxies                               *
  *   HLodDefClass::Load_W3D -- Loads this HLodDef from a W3d File                              *
  *   HLodDefClass::read_header -- loads the HLodDef header from a W3d file                     *
  *   HLodDefClass::read_proxy_array -- load the proxy names                                    *
@@ -51,6 +52,7 @@
  *   HLodDefClass::SubObjectArrayClass::Save_W3D -- saves a w3d file for this HLodDef          *
  *   HLodDefClass::SubObjectArrayClass::Load_W3D -- LodArray load function                     *
  *   HLodDefClass::SubObjectArrayClass::Reset -- release the contents of this array            *
+ *   HLodDefClass::SubObjectArrayClass::Copy_Additional_Models -- copies the additional models *
  *   HLodClass::HLodClass -- Constructor                                                       *
  *   HLodClass::HLodClass -- copy constructor                                                  *
  *   HLodClass::HLodClass -- Constructor                                                       *
@@ -344,6 +346,7 @@ void HLodDefClass::Free()
 	Lod = nullptr;
 	LodCount = 0;
 
+	Aggregates.Reset();
 	REF_PTR_RELEASE(ProxyArray);
 }
 
@@ -408,6 +411,9 @@ void HLodDefClass::Initialize(HLodClass &src_lod)
 			Lod[index].BoneIndex = bone_indicies;
 		}
 	}
+
+	Aggregates.Copy_Additional_Models(src_lod);
+	REF_PTR_SET (ProxyArray, src_lod.ProxyArray);
 }
 
 
@@ -433,7 +439,9 @@ WW3DErrorType HLodDefClass::Save(ChunkSaveClass & csave)
 
 		// Attempt to save the different sections of the aggregate definition
 		if ((Save_Header (csave) == WW3D_ERROR_OK) &&
-			 (Save_Lod_Array (csave) == WW3D_ERROR_OK)) {
+			 (Save_Lod_Array (csave) == WW3D_ERROR_OK) &&
+			 (Save_Aggregate_Array (csave) == WW3D_ERROR_OK) &&
+			 (Save_Proxy_Array (csave) == WW3D_ERROR_OK)) {
 
 			// Success!
 			ret_val = WW3D_ERROR_OK;
@@ -516,7 +524,11 @@ WW3DErrorType HLodDefClass::Save_Lod_Array(ChunkSaveClass &csave)
 	for (int lod_index = 0;
 		  (lod_index < LodCount) && success;
 		  lod_index ++) {
-		success = Lod[lod_index].Save_W3D (csave);
+		success &= (csave.Begin_Chunk (W3D_CHUNK_HLOD_LOD_ARRAY) == TRUE);
+		if (success) {
+			success &= Lod[lod_index].Save_W3D (csave);
+			success &= csave.End_Chunk ();
+		}
 	}
 
 	// Return the WW3DErrorType return code
@@ -541,12 +553,68 @@ WW3DErrorType HLodDefClass::Save_Lod_Array(ChunkSaveClass &csave)
  *=============================================================================================*/
 WW3DErrorType HLodDefClass::Save_Aggregate_Array(ChunkSaveClass & csave)
 {
+	bool success = true;
 	if (Aggregates.ModelCount > 0) {
-		csave.Begin_Chunk(W3D_CHUNK_HLOD_AGGREGATE_ARRAY);
-		Aggregates.Save_W3D(csave);
-		csave.End_Chunk();
+		success &= csave.Begin_Chunk(W3D_CHUNK_HLOD_AGGREGATE_ARRAY);
+		if (success) {
+			success &= Aggregates.Save_W3D(csave);
+			success &= csave.End_Chunk();
+		}
 	}
-	return WW3D_ERROR_OK;
+	return success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
+}
+
+
+/***********************************************************************************************
+ * HLodDefClass::Save_Proxy_Array -- Save the array of proxies                                 *
+ *                                                                                             *
+ * The screen size in the array header is 0.                                                   *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   10/18/2026 TheSuperHackers : Created.                                                     *
+ *=============================================================================================*/
+WW3DErrorType HLodDefClass::Save_Proxy_Array(ChunkSaveClass & csave)
+{
+	bool success = true;
+
+	if ((ProxyArray != nullptr) && (ProxyArray->Length() > 0)) {
+		success &= csave.Begin_Chunk(W3D_CHUNK_HLOD_PROXY_ARRAY);
+
+		if (success) {
+			success &= csave.Begin_Chunk(W3D_CHUNK_HLOD_SUB_OBJECT_ARRAY_HEADER);
+
+			if (success) {
+				W3dHLodArrayHeaderStruct header = { 0 };
+				header.ModelCount = ProxyArray->Length();
+				header.MaxScreenSize = 0.0f;
+				success &= (csave.Write(&header,sizeof(header)) == sizeof(header));
+				success &= csave.End_Chunk();
+			}
+
+			for (int imodel=0; success && imodel<ProxyArray->Length(); ++imodel) {
+				ProxyRecordClass & proxy = (*ProxyArray)[imodel];
+				W3dHLodSubObjectStruct subobjdef = { 0 };
+				subobjdef.BoneIndex = proxy.Get_Bone_Index();
+				::lstrcpyn(subobjdef.Name, proxy.Get_Name(), sizeof(subobjdef.Name));
+				subobjdef.Name[sizeof(subobjdef.Name) - 1] = 0;
+
+				success &= csave.Begin_Chunk(W3D_CHUNK_HLOD_SUB_OBJECT);
+				if (success) {
+					success &= (csave.Write(&subobjdef,sizeof(subobjdef)) == sizeof(subobjdef));
+					success &= csave.End_Chunk();
+				}
+			}
+			success &= csave.End_Chunk();
+		}
+	}
+
+	return success ? WW3D_ERROR_OK : WW3D_ERROR_SAVE_FAILED;
 }
 
 
@@ -773,6 +841,35 @@ void HLodDefClass::SubObjectArrayClass::Reset()
 
 
 /***********************************************************************************************
+ * HLodDefClass::SubObjectArrayClass::Copy_Additional_Models -- copies the additional models   *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   10/18/2026 TheSuperHackers : Created.                                                     *
+ *=============================================================================================*/
+void HLodDefClass::SubObjectArrayClass::Copy_Additional_Models(const HLodClass & hlod)
+{
+	Reset();
+
+	ModelCount = hlod.Get_Additional_Model_Count ();
+	if (ModelCount > 0) {
+		MaxScreenSize = 0.0f;
+		ModelName = W3DNEWARRAY char *[ModelCount];
+		BoneIndex = W3DNEWARRAY int[ModelCount];
+		for (int model_index = 0; model_index < ModelCount; model_index ++) {
+			ModelName[model_index] = ::strdup (hlod.Peek_Additional_Model (model_index)->Get_Name ());
+			BoneIndex[model_index] = hlod.Get_Additional_Model_Bone (model_index);
+		}
+	}
+}
+
+
+/***********************************************************************************************
  * HLodDefClass::SubObjectArrayClass::Load_W3D -- LodArray load function                       *
  *                                                                                             *
  * INPUT:                                                                                      *
@@ -834,58 +931,54 @@ bool HLodDefClass::SubObjectArrayClass::Load_W3D(ChunkLoadClass & cload)
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   1/26/00    gth : Created.                                                                 *
+ *   10/18/2026 TheSuperHackers : Write only the array contents, as Load_W3D reads them.       *
+ *              The caller wraps them in W3D_CHUNK_HLOD_LOD_ARRAY or                           *
+ *              W3D_CHUNK_HLOD_AGGREGATE_ARRAY.                                                *
  *=============================================================================================*/
 bool HLodDefClass::SubObjectArrayClass::Save_W3D(ChunkSaveClass &csave)
 {
 	// Assume error
 	bool ret_val = false;
 
-	// Begin a chunk that identifies the LOD array
-	if (csave.Begin_Chunk (W3D_CHUNK_HLOD_LOD_ARRAY) == TRUE) {
+	// Begin a chunk that identifies the LOD header
+	if (csave.Begin_Chunk (W3D_CHUNK_HLOD_SUB_OBJECT_ARRAY_HEADER) == TRUE) {
 
-		// Begin a chunk that identifies the LOD header
-		if (csave.Begin_Chunk (W3D_CHUNK_HLOD_SUB_OBJECT_ARRAY_HEADER) == TRUE) {
+		W3dHLodArrayHeaderStruct header = { 0 };
+		header.ModelCount = ModelCount;
+		header.MaxScreenSize = MaxScreenSize;
 
-			W3dHLodArrayHeaderStruct header = { 0 };
-			header.ModelCount = ModelCount;
-			header.MaxScreenSize = MaxScreenSize;
+		// Write the LOD header structure out to the chunk
+		ret_val = (csave.Write (&header, sizeof (header)) == sizeof (header));
 
-			// Write the LOD header structure out to the chunk
-			ret_val = (csave.Write (&header, sizeof (header)) == sizeof (header));
+		// End the header chunk
+		csave.End_Chunk ();
+	}
 
-			// End the header chunk
-			csave.End_Chunk ();
-		}
+	if (ret_val) {
 
-		if (ret_val) {
+		// Write all of this LOD's models to the file
+		for (int index = 0;
+			  (index < ModelCount) && ret_val;
+			  index ++) {
 
-			// Write all of this LOD's models to the file
-			for (int index = 0;
-				  (index < ModelCount) && ret_val;
-				  index ++) {
+			// Save this LOD sub-obj to the chunk
+			ret_val &= (csave.Begin_Chunk (W3D_CHUNK_HLOD_SUB_OBJECT) == TRUE);
+			if (ret_val) {
 
-				// Save this LOD sub-obj to the chunk
-				ret_val &= (csave.Begin_Chunk (W3D_CHUNK_HLOD_SUB_OBJECT) == TRUE);
-				if (ret_val) {
+				W3dHLodSubObjectStruct info = { 0 };
+				info.BoneIndex = BoneIndex[index];
 
-					W3dHLodSubObjectStruct info = { 0 };
-					info.BoneIndex = BoneIndex[index];
+				// Copy this model name into the structure
+				::lstrcpyn (info.Name, ModelName[index], sizeof (info.Name));
+				info.Name[sizeof (info.Name) - 1] = 0;
 
-					// Copy this model name into the structure
-					::lstrcpyn (info.Name, ModelName[index], sizeof (info.Name));
-					info.Name[sizeof (info.Name) - 1] = 0;
+				// Write the LOD sub-obj structure out to the chunk
+				ret_val &= (csave.Write (&info, sizeof (info)) == sizeof (info));
 
-					// Write the LOD sub-obj structure out to the chunk
-					ret_val &= (csave.Write (&info, sizeof (info)) == sizeof (info));
-
-					// End the sub-obj chunk
-					csave.End_Chunk ();
-				}
+				// End the sub-obj chunk
+				csave.End_Chunk ();
 			}
 		}
-
-		// End the HLOD-Array chunk
-		csave.End_Chunk ();
 	}
 
 	// Return the true/false result code

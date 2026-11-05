@@ -753,8 +753,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		const char *mesh_name = strchr (name, '.');
 		if (mesh_name != nullptr)
 		{
-			// GeneralsX @bugfix BenderAI 10/02/2026 - Use ptrdiff_t to avoid pointer-to-int truncation on 64-bit
-		lstrcpyn(filename, name, (int)(mesh_name - name) + 1);
+			lstrcpyn(filename, name, (int)(mesh_name - name) + 1);
 			lstrcat(filename, ".w3d");
 		} else {
 			snprintf( filename, ARRAY_SIZE(filename), "%s.w3d", name);
@@ -1495,7 +1494,9 @@ void W3DAssetManager::Recolor_Vertices(unsigned int *color, int count, const Vec
 	for (i=0; i<count; i++)
 	{
 		rgba=DX8Wrapper::Convert_Color(color[i]);
-		Recolor(reinterpret_cast<Vector3&>(rgba),hsv_shift);
+		Vector3 rgb(rgba.X,rgba.Y,rgba.Z);
+		Recolor(rgb,hsv_shift);
+		rgba.Set(rgb.X,rgb.Y,rgb.Z,rgba.W);
 		color[i]=DX8Wrapper::Convert_Color_Clamp(rgba);
 	}
 }

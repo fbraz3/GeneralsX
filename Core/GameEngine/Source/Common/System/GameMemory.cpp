@@ -201,8 +201,11 @@ static Bool theMainInitFlag = false;
 // PRIVATE PROTOTYPES
 // ----------------------------------------------------------------------------
 
-/// @todo srj -- make this work for 8
-#define MEM_BOUND_ALIGNMENT 4
+#define MEM_BOUND_ALIGNMENT 8
+static_assert((MEM_BOUND_ALIGNMENT & (MEM_BOUND_ALIGNMENT-1)) == 0, "MEM_BOUND_ALIGNMENT must be a power of two");
+#ifdef MEMORYPOOL_BOUNDINGWALL
+static_assert(WALLSIZE % MEM_BOUND_ALIGNMENT == 0, "WALLSIZE must keep user data aligned");
+#endif
 
 static Int roundUpMemBound(Int i);
 static void *sysAllocateDoNotZero(Int numBytes);
@@ -243,6 +246,7 @@ static void* sysAllocateDoNotZero(Int numBytes)
 	void* p = ::GlobalAlloc(GMEM_FIXED, numBytes);
 	if (!p)
 		throw ERROR_OUT_OF_MEMORY;
+	DEBUG_ASSERTCRASH(((size_t)p & (MEM_BOUND_ALIGNMENT-1)) == 0, ("system allocation is not %d byte aligned", MEM_BOUND_ALIGNMENT));
 #ifdef MEMORYPOOL_DEBUG
 	{
 		USE_PERF_TIMER(MemoryPoolDebugging)
@@ -309,7 +313,7 @@ static void doStackDumpOutput(const char* m)
 	const char *PREPEND = "STACKTRACE";
 	if (*m == 0)
 	{
-		DEBUG_LOG((m));
+		DEBUG_LOG(("%s", m));
 	}
 	else
 	{
@@ -468,6 +472,15 @@ public:
 #endif
 
 };
+
+// GeneralsX @bugfix 09/03/2026 Round user-data offset up to 16-byte boundary for 64-bit SSE/NEON alignment
+#ifdef MEMORYPOOL_BOUNDINGWALL
+static const Int SINGLEBLOCK_USERDATA_OFFSET = (sizeof(MemoryPoolSingleBlock) + WALLSIZE + 15) & ~15;
+#else
+static const Int SINGLEBLOCK_USERDATA_OFFSET = (sizeof(MemoryPoolSingleBlock) + 15) & ~15;
+#endif
+static_assert(SINGLEBLOCK_USERDATA_OFFSET % MEM_BOUND_ALIGNMENT == 0, "SINGLEBLOCK_USERDATA_OFFSET must keep user data aligned");
+
 // ----------------------------------------------------------------------------
 class MemoryPoolBlob
 {
@@ -538,17 +551,7 @@ inline void **BlockCheckpointInfo::getStacktraceInfo() { return m_stacktrace; }
 */
 inline void* MemoryPoolSingleBlock::getUserDataNoDbg()
 {
-	// GeneralsX @bugfix 09/03/2026
-	// Round header size up to 16-byte boundary so user data is always 16-byte aligned.
-	// Third-party code (e.g. openal-soft DeviceBase) may use SSE movaps which requires
-	// 16-byte alignment. sizeof(MemoryPoolSingleBlock) == 24 (3 ptrs, MPSB_DLINK), so
-	// the raw offset would be only 8-byte aligned; rounding to 32 fixes this.
-	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
-	char* p = ((char*)this) + kHeaderSize;
-	#ifdef MEMORYPOOL_BOUNDINGWALL
-	p += WALLSIZE;
-	#endif
-	return (void*)p;
+	return ((char*)this) + SINGLEBLOCK_USERDATA_OFFSET;
 }
 
 /**
@@ -560,6 +563,7 @@ inline void* MemoryPoolSingleBlock::getUserData()
 	// yes, verify the block in this case for plain debug mode (not intense-verify mode)
 	#ifdef MEMORYPOOL_DEBUG
 	debugVerifyBlock();
+	DEBUG_ASSERTCRASH(((size_t)getUserDataNoDbg() & (MEM_BOUND_ALIGNMENT-1)) == 0, ("user data is not %d byte aligned", MEM_BOUND_ALIGNMENT));
 	#endif
 	return getUserDataNoDbg();
 }
@@ -570,16 +574,9 @@ inline void* MemoryPoolSingleBlock::getUserData()
 */
 inline /*static*/ Int MemoryPoolSingleBlock::calcRawBlockSize(Int logicalSize)
 {
-	// GeneralsX @bugfix 09/03/2026
-	// Use the 16-byte-rounded header size (same as getUserDataNoDbg / recoverBlockFromUserData).
-	// Round the total up to a multiple of 16 so that every block in a blob array starts at a
-	// 16-byte aligned address (malloc/sysAllocate guarantees 16-byte alignment for the first
-	// block). This ensures user data returned by getUserData() is always 16-byte aligned, which
-	// is required by SSE movaps used in third-party libraries (e.g. openal-soft DeviceBase).
-	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
-	Int s = ::roundUpMemBound(logicalSize) + (Int)kHeaderSize;
+	Int s = ::roundUpMemBound(logicalSize) + SINGLEBLOCK_USERDATA_OFFSET;
 	#ifdef MEMORYPOOL_BOUNDINGWALL
-	s += WALLSIZE*2;
+	s += WALLSIZE;
 	#endif
 	// Round total block stride up to 16-byte boundary.
 	s = (s + 15) & ~15;
@@ -925,12 +922,7 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	DEBUG_ASSERTCRASH(pUserData, ("null pUserData"));
 	if (!pUserData)
 		return nullptr;
-	static constexpr size_t kHeaderSize = (sizeof(MemoryPoolSingleBlock) + 15) & ~size_t(15);
-	char* p = ((char*)pUserData) - kHeaderSize;
-	#ifdef MEMORYPOOL_BOUNDINGWALL
-	p -= WALLSIZE;
-	#endif
-	MemoryPoolSingleBlock *block = (MemoryPoolSingleBlock *)p;
+	MemoryPoolSingleBlock *block = (MemoryPoolSingleBlock *)(((char*)pUserData) - SINGLEBLOCK_USERDATA_OFFSET);
 // yes, verify the block in this case for plain debug mode (not intense-verify mode)
 #ifdef MEMORYPOOL_DEBUG
 	block->debugVerifyBlock();
@@ -1543,7 +1535,7 @@ void MemoryPool::init(MemoryPoolFactory *factory, const char *poolName, Int allo
 {
 	m_factory = factory;
 	m_poolName = poolName;
-	m_allocationSize = ::roundUpMemBound(allocationSize);	// round up to four-byte boundary
+	m_allocationSize = ::roundUpMemBound(allocationSize);
 	m_initialAllocationCount = initialAllocationCount;
 	m_overflowAllocationCount = overflowAllocationCount;
 	m_usedBlocksInPool = 0;
@@ -1579,7 +1571,7 @@ MemoryPool::~MemoryPool()
 */
 MemoryPoolBlob* MemoryPool::createBlob(Int allocationCount)
 {
-	DEBUG_ASSERTCRASH(allocationCount > 0 && allocationCount%MEM_BOUND_ALIGNMENT==0, ("bad allocationCount (must be >0 and evenly divisible by %d)",MEM_BOUND_ALIGNMENT));
+	DEBUG_ASSERTCRASH(allocationCount > 0 && allocationCount%4==0, ("bad allocationCount (must be >0 and evenly divisible by 4)"));
 
 	MemoryPoolBlob* blob = new (::sysAllocateDoNotZero(sizeof(MemoryPoolBlob))) MemoryPoolBlob;	// will throw on failure
 
@@ -2271,7 +2263,7 @@ void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes 
 
 #if defined(RTS_DEBUG)
   // check alignment
-  if (unsigned(result)&3)
+  if ((size_t)result & (MEM_BOUND_ALIGNMENT-1))
     throw ERROR_OUT_OF_MEMORY;
 #endif
 
@@ -2674,7 +2666,7 @@ MemoryPool *MemoryPoolFactory::createMemoryPool(const char *poolName, Int alloca
 	MemoryPool *pool = findMemoryPool(poolName);
 	if (pool)
 	{
-		DEBUG_ASSERTCRASH(allocationSize == pool->getAllocationSize(), ("pool size mismatch"));
+		DEBUG_ASSERTCRASH(::roundUpMemBound(allocationSize) == pool->getAllocationSize(), ("pool size mismatch"));
 		return pool;
 	}
 
@@ -3660,7 +3652,7 @@ void* createW3DMemPool(const char *poolName, int allocationSize)
 	LINK_TESTER_INCREMENT();
 	preMainInitMemoryManager();
 	MemoryPool* pool = TheMemoryPoolFactory->createMemoryPool(poolName, allocationSize, 0, 0);
-	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == allocationSize, ("bad w3d pool"));
+	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == ::roundUpMemBound(allocationSize), ("bad w3d pool"));
 	return pool;
 }
 
@@ -3668,7 +3660,7 @@ void* createW3DMemPool(const char *poolName, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize)
 {
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
-	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
+	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == ::roundUpMemBound(allocationSize), ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	return ((MemoryPool*)pool)->allocateBlock("allocateFromW3DMemPool");
 }
 
@@ -3676,7 +3668,7 @@ void* allocateFromW3DMemPool(void* pool, int allocationSize)
 void* allocateFromW3DMemPool(void* pool, int allocationSize, const char* msg, int unused)
 {
 	DEBUG_ASSERTCRASH(pool, ("pool is null"));
-	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == allocationSize, ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
+	DEBUG_ASSERTCRASH(pool && ((MemoryPool*)pool)->getAllocationSize() == ::roundUpMemBound(allocationSize), ("bad w3d pool size %s",((MemoryPool*)pool)->getPoolName()));
 	return ((MemoryPool*)pool)->allocateBlock(msg);
 }
 

@@ -1536,6 +1536,29 @@ void WaterRenderObjClass::updateRenderTargetTextures(CameraClass *cam)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reflects a point or direction across the horizontal plane at the given height. */
+//-------------------------------------------------------------------------------------------------
+static Vector3 reflectAcrossWaterPlane(const Vector3& point, Real planeHeight)
+{
+	const Vector3 waterNormal(0.0f, 0.0f, 1.0f);
+	const Real distance = Vector3::Dot_Product(point, waterNormal) - planeHeight;
+	return point - (2.0f * distance * waterNormal);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reflects a camera transform across the water plane at the given height. */
+//-------------------------------------------------------------------------------------------------
+static Matrix3D reflectCameraTransform(const Matrix3D& transform, Real waterLevel)
+{
+	// The axes are directions, so they reflect across the plane through the origin.
+	return Matrix3D(
+		reflectAcrossWaterPlane(transform.Get_X_Vector(), 0.0f),
+		reflectAcrossWaterPlane(transform.Get_Y_Vector(), 0.0f),
+		reflectAcrossWaterPlane(transform.Get_Z_Vector(), 0.0f),
+		reflectAcrossWaterPlane(transform.Get_Translation(), waterLevel));
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Renders the reflected scene into an offscreen texture. */
 //-------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
@@ -1550,32 +1573,7 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 		return;
 	}
 	Matrix3D	OldCameraMatrix=cam->Get_Transform();
-	Matrix4x4	FullMatrix4(cam->Get_Transform());	//copy 3x4 matrix into a 4x4
 	Vector3		WaterNormal(0,0,1);	//normal of plane used for reflection
-	Vector4		WaterPlane(WaterNormal.X,WaterNormal.Y,WaterNormal.Z,level);
-	Vector3		rRight,rUp,rN,rPos;	//orientation and translation vectors of camera
-
-	Matrix4x4	FullMatrix(FullMatrix4.Transpose());	//swap rows/columns
-
-	//reflect camera right vector
-	Real axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[0],WaterNormal);
-	rRight = (Vector3&)FullMatrix[0] - (2.0f*axis_distance*WaterNormal);
-
-	//reflect camera up vector
-	axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[1],WaterNormal);
-	rUp = (Vector3&)FullMatrix[1] - (2.0f*axis_distance*WaterNormal);
-
-	//reflect camera n vector
-	axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[2],WaterNormal);
-	rN = (Vector3&)FullMatrix[2] - (2.0f*axis_distance*WaterNormal);
-
-	//reflect camera position
-	axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[3],WaterNormal);	//distance cam to origin
-	axis_distance -= WaterPlane.W;	// subtract mirror plane distance to get distance camera to plane
-	rPos = (Vector3&)FullMatrix[3] - (2.0f*axis_distance*WaterNormal);
-
-	//generate a new camera matrix from reflected vectors
-	Matrix3D reflectedTransform(rRight,rUp,rN,rPos);
 
 
 	DX8Wrapper::Set_Render_Target_With_Z((TextureClass*)m_pReflectionTexture, m_pReflectionZTexture);
@@ -1583,56 +1581,58 @@ void WaterRenderObjClass::renderMirror(CameraClass *cam, Real level)
 	// Clear the backbuffer
 	// The sea's cloud plane fills its background; map water has no such plane, so its target is
 	// cleared to white, which the overlay multiplies in as no change at all.
-	WW3D::Begin_Render(m_waterType == WATER_TYPE_0_TRANSLUCENT, true, WATER_REFLECTION_SKY_COLOR);
-
-	cam->Set_Transform( reflectedTransform );
-
-	//Force reflected image to be drawn into full texture size - not a viewport inside texture.
-	Vector2 vMin,vMax,vOldMax,vOldMin;
- 	cam->Get_Viewport(vOldMin,vOldMax);
- 	vMax.X=vMax.Y=1.0f;
-	vMin.X=vMin.Y=0.0f;
- 	cam->Set_Viewport(vMin,vMax);
-
-	// A point on the water plane lands on the same view plane position for both cameras, so the
-	// water's screen area is the same slice of the mirror's view plane, stretched over the texture.
-	Vector2 planeOldMin, planeOldMax;
-	cam->Get_View_Plane(planeOldMin, planeOldMax);
-	const Vector2 planeSize = planeOldMax - planeOldMin;
-	cam->Set_View_Plane(
-		Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMin.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMin.Y + 1.0f) * 0.5f),
-		Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMax.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMax.Y + 1.0f) * 0.5f));
-
-	cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
-
-	//flip the winding order of polygons to draw the reflected back sides.
-	ShaderClass::Invert_Backface_Culling(true);
-
-	// Render the scene
-	if (m_waterType == WATER_TYPE_2_PVSHADER)
+	if (WW3D::Begin_Render(m_waterType == WATER_TYPE_0_TRANSLUCENT, true, WATER_REFLECTION_SKY_COLOR) == WW3D_ERROR_OK)
 	{
-		renderSky();
-		if (m_tod == TIME_OF_DAY_NIGHT)
-			renderSkyBody(&reflectedTransform);
+		Matrix3D	reflectedTransform(reflectCameraTransform(OldCameraMatrix, level));
+		cam->Set_Transform( reflectedTransform );
+
+		//Force reflected image to be drawn into full texture size - not a viewport inside texture.
+		Vector2 vMin,vMax,vOldMax,vOldMin;
+		cam->Get_Viewport(vOldMin,vOldMax);
+		vMax.X=vMax.Y=1.0f;
+		vMin.X=vMin.Y=0.0f;
+		cam->Set_Viewport(vMin,vMax);
+
+		// A point on the water plane lands on the same view plane position for both cameras, so the
+		// water's screen area is the same slice of the mirror's view plane, stretched over the texture.
+		Vector2 planeOldMin, planeOldMax;
+		cam->Get_View_Plane(planeOldMin, planeOldMax);
+		const Vector2 planeSize = planeOldMax - planeOldMin;
+		cam->Set_View_Plane(
+			Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMin.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMin.Y + 1.0f) * 0.5f),
+			Vector2(planeOldMin.X + planeSize.X * (m_reflectionAreaMax.X + 1.0f) * 0.5f, planeOldMin.Y + planeSize.Y * (m_reflectionAreaMax.Y + 1.0f) * 0.5f));
+
+		cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
+
+		//flip the winding order of polygons to draw the reflected back sides.
+		ShaderClass::Invert_Backface_Culling(true);
+
+		// Render the scene
+		if (m_waterType == WATER_TYPE_2_PVSHADER)
+		{
+			renderSky();
+			if (m_tod == TIME_OF_DAY_NIGHT)
+				renderSkyBody(&reflectedTransform);
+		}
+
+		// The mirrored camera sits under the water, so everything under the water is in front of it.
+		PlaneClass waterSurface(WaterNormal, level);
+		cam->Set_Oblique_Near_Plane(&waterSurface);
+		cam->Apply();
+
+		WW3D::Render(m_parentScene,cam);
+
+		cam->Set_Oblique_Near_Plane(nullptr);
+		cam->Set_Transform(OldCameraMatrix);	//restore original non-reflected matrix
+		cam->Set_Viewport(vOldMin,vOldMax);
+		cam->Set_View_Plane(planeOldMin, planeOldMax);
+
+		cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
+
+		ShaderClass::Invert_Backface_Culling(false);
+
+		WW3D::End_Render(false);
 	}
-
-	// The mirrored camera sits under the water, so everything under the water is in front of it.
-	PlaneClass waterSurface(WaterNormal, level);
-	cam->Set_Oblique_Near_Plane(&waterSurface);
-	cam->Apply();
-
-	WW3D::Render(m_parentScene,cam);
-
-	cam->Set_Oblique_Near_Plane(nullptr);
-	cam->Set_Transform(OldCameraMatrix);	//restore original non-reflected matrix
- 	cam->Set_Viewport(vOldMin,vOldMax);
-	cam->Set_View_Plane(planeOldMin, planeOldMax);
-
-	cam->Apply();	//force an update of all the camera dependent parameters like frustum clip planes
-
-	ShaderClass::Invert_Backface_Culling(false);
-
-	WW3D::End_Render(false);
 
 	// Change the rendertarget back to the main backbuffer
 	DX8Wrapper::Set_Render_Target((IDirect3DSurface8 *)nullptr);
@@ -1702,32 +1702,8 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 			{
 				//Normal frame buffer reflection water type. Non translucent.  Legacy code we're not using anymore.
 				Matrix3D	OldCameraMatrix=rinfo.Camera.Get_Transform();
-				Matrix4x4	FullMatrix4(rinfo.Camera.Get_Transform());	//copy 3x4 matrix into a 4x4
 				Vector3		WaterNormal(0,0,1);	//normal of plane used for reflection
 				Vector4		WaterPlane(WaterNormal.X,WaterNormal.Y,WaterNormal.Z,m_level);	//assume distance to origin 0
-				Vector3		rRight,rUp,rN,rPos;	//orientation and translation vectors of camera
-
-				Matrix4x4	FullMatrix(FullMatrix4.Transpose());	//swap rows/columns
-
-				//reflect camera right vector
-				Real axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[0],WaterNormal);
-				rRight = (Vector3&)FullMatrix[0] - (2.0f*axis_distance*WaterNormal);
-
-				//reflect camera up vector
-				axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[1],WaterNormal);
-				rUp = (Vector3&)FullMatrix[1] - (2.0f*axis_distance*WaterNormal);
-
-				//reflect camera n vector
-				axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[2],WaterNormal);
-				rN = (Vector3&)FullMatrix[2] - (2.0f*axis_distance*WaterNormal);
-
-				//reflect camera position
-				axis_distance=Vector3::Dot_Product((Vector3&)FullMatrix[3],WaterNormal);	//distance cam to origin
-				axis_distance -= WaterPlane.W;	// subtract mirror plane distance to get distance camera to plane
-				rPos = (Vector3&)FullMatrix[3] - (2.0f*axis_distance*WaterNormal);
-
-				//generate a new camera matrix from reflected vectors
-				Matrix3D reflectedTransform(rRight,rUp,rN,rPos);
 
 				//flip the winding order of polygons to draw the reflected back sides.
 				ShaderClass::Invert_Backface_Culling(true);
@@ -1807,6 +1783,7 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 			#if 0	// No longer do simple rendering.
 				if (TheGlobalData->m_useWaterPlane)
 				{
+					Matrix3D	reflectedTransform(reflectCameraTransform(OldCameraMatrix,m_level));
 					//@todo : Would it be better to create a new camera or change the transform of the
 					//existing one?
 					rinfo.Camera.Set_Transform( reflectedTransform );
@@ -3516,7 +3493,7 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 	setupFlatWaterShader();// lorenzen sez use the alpha shader
 
 	//If video card supports it and it's enabled, feather the water edge using destination alpha
-	if (DX8Wrapper::getBackBufferFormat() == WW3D_FORMAT_A8R8G8B8 && TheGlobalData->m_showSoftWaterEdge && TheWaterTransparency->m_transparentWaterDepth !=0)
+	if (Renderer::Get_Back_Buffer_Format() == WW3D_FORMAT_A8R8G8B8 && TheGlobalData->m_showSoftWaterEdge && TheWaterTransparency->m_transparentWaterDepth !=0)
 	{		DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND, D3DBLEND_DESTALPHA );
 			if (!TheWaterTransparency->m_additiveBlend)
 				DX8Wrapper::Set_DX8_Render_State(D3DRS_DESTBLEND, D3DBLEND_INVDESTALPHA );

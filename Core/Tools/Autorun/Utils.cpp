@@ -76,6 +76,7 @@
 #include "Utils.h"
 #include "WinFix.h"
 #include "Wnd_File.h"
+#include <Lib/PathUtil.h>
 #include <winver.h>
 #include <shlwapi.h>
 //#include "resources.h"
@@ -131,11 +132,11 @@ void Fix_Single_Ampersands ( LPSTR pszString, bool upper_case )
 	strcpy((LPSTR)pszString, (LPSTR)pszTemp );
 }
 
-void Fix_Single_Ampersands ( wchar_t *pszString, bool upper_case )
+void Fix_Single_Ampersands ( unichar *pszString, bool upper_case )
 {
-	wchar_t	pszTemp[ MAX_PATH ];		// variable to hold the string passed
-	wchar_t	pszOld[ MAX_PATH ];			// variable to hold the string passed
-	wchar_t *letter;
+	unichar	pszTemp[ MAX_PATH ];		// variable to hold the string passed
+	unichar	pszOld[ MAX_PATH ];			// variable to hold the string passed
+	unichar *letter;
 	int		i = 0;
 
 	wcscpy( pszOld, pszString );
@@ -358,13 +359,13 @@ char *Make_Current_Path_To ( const char *filename, char *path )
 	return( path );
 }
 
-wchar_t *Make_Current_Path_To ( const wchar_t *filename, wchar_t *path )
+unichar *Make_Current_Path_To ( const unichar *filename, unichar *path )
 {
-	wchar_t	szPath	[ _MAX_PATH ];
-	wchar_t	drive	[ _MAX_DRIVE];
-	wchar_t	dir	 	[ _MAX_DIR  ];
+	unichar	szPath	[ _MAX_PATH ];
+	unichar	drive	[ _MAX_DRIVE];
+	unichar	dir	 	[ _MAX_DIR  ];
 
-	wcscpy( szPath, (wchar_t *)Args->Get_argv(0));
+	wcscpy( szPath, (unichar *)Args->Get_argv(0));
 	_wsplitpath( szPath, drive, dir, nullptr, nullptr );
 	_wmakepath( szPath, drive, dir, nullptr, nullptr );
 	Path_Add_Back_Slash( szPath );
@@ -393,17 +394,17 @@ wchar_t *Make_Current_Path_To ( const wchar_t *filename, wchar_t *path )
 char *Path_Add_Back_Slash ( char *path )
 {
 	if ( path != nullptr && *path != '\0' ) {
-		if ( path[ strlen( path )-1 ] != '\\' ) {
+		if ( !isPathSeparator( path[ strlen( path )-1 ] ) ) {
 			 strcat( path, "\\" );
 		}
 	}
 	return( path );
 }
 
-wchar_t *Path_Add_Back_Slash ( wchar_t *path )
+unichar *Path_Add_Back_Slash ( unichar *path )
 {
 	if ( path != nullptr && *path != '\0' ) {
-		if ( path[ wcslen( path )-1 ] != '\\' ) {
+		if ( !isPathSeparator( path[ wcslen( path )-1 ] ) ) {
 			 wcscat( path, L"\\" );
 		}
 	}
@@ -427,17 +428,17 @@ wchar_t *Path_Add_Back_Slash ( wchar_t *path )
 char *Path_Remove_Back_Slash ( char *path )
 {
 	if ( path != nullptr && *path != '\0' ) {
-		if ( path[ strlen( path )-1 ] == '\\' ) {
+		if ( isPathSeparator( path[ strlen( path )-1 ] ) ) {
 			 path[ strlen( path )-1 ] = '\0';
 		}
 	}
 	return( path );
 }
 
-wchar_t *Path_Remove_Back_Slash ( wchar_t *path )
+unichar *Path_Remove_Back_Slash ( unichar *path )
 {
 	if ( path != nullptr && *path != '\0' ) {
-		if ( path[ wcslen( path )-1 ] == L'\\' ) {
+		if ( isPathSeparator( path[ wcslen( path )-1 ] ) ) {
 			 path[ wcslen( path )-1 ] = L'\0';
 		}
 	}
@@ -602,14 +603,14 @@ void PlugInProductName( char *szString, int nName )
 /*																	   		*/
 /*--------------------------------------------------------------------------*/
 
-void PlugInProductName ( wchar_t *szString, const wchar_t *szName )
+void PlugInProductName ( unichar *szString, const unichar *szName )
 {
 	int		nCount, nMsgLength;
-	wchar_t	szTextBuf[ MAX_PATH ];
-	wchar_t	szOut[ MAX_PATH ];
-	wchar_t	szProduct[ MAX_PATH ];
-	wchar_t *temp = nullptr;
-	wchar_t *next = nullptr;
+	unichar	szTextBuf[ MAX_PATH ];
+	unichar	szOut[ MAX_PATH ];
+	unichar	szProduct[ MAX_PATH ];
+	unichar *temp = nullptr;
+	unichar *next = nullptr;
 
 	if ( szName == nullptr || szName[0] == '\0' ) {
 		return;

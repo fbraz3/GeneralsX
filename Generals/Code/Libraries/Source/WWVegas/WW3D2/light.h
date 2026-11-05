@@ -112,6 +112,7 @@ public:
 
 	void						Set_Far_Attenuation_Range(double fStart, double fEnd)				{ FarAttenStart = fStart; FarAttenEnd = fEnd; }
 	void						Get_Far_Attenuation_Range(double& fStart, double& fEnd) const	{ fStart = FarAttenStart; fEnd = FarAttenEnd; }
+	void						Get_Far_Attenuation_Range(float & fStart, float & fEnd) const	{ fStart = FarAttenStart; fEnd = FarAttenEnd; }
 	void						Set_Near_Attenuation_Range(double nStart, double nEnd)			{ NearAttenStart = nStart; NearAttenEnd = nEnd; }
 	void						Get_Near_Attenuation_Range(double& nStart, double& nEnd)	const	{ nStart = NearAttenStart; nEnd = NearAttenEnd; }
 	float						Get_Attenuation_Range() const										{ return FarAttenEnd; }
@@ -142,12 +143,6 @@ public:
 	WW3DErrorType			Load_W3D(ChunkLoadClass & cload);
 	WW3DErrorType			Save_W3D(ChunkSaveClass & csave);
 
-	/////////////////////////////////////////////////////////////////////////////
-	// Persistent object save-load interface
-	/////////////////////////////////////////////////////////////////////////////
-	virtual const PersistFactoryClass &	Get_Factory () const override;
-	virtual bool								Save (ChunkSaveClass &csave) override;
-	virtual bool								Load (ChunkLoadClass &cload) override;
 	//bool isDonut() {return Donut; };
 	//void setDonut(bool donut) { Donut = donut; };
 

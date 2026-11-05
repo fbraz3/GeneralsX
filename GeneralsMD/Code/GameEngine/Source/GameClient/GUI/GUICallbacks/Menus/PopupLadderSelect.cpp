@@ -130,8 +130,7 @@ static void populateLadderListBox()
 	GadgetListBoxGetSelected(listboxLadderSelect, &selIndex);
 	if (selIndex < 0)
 		return;
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
+	selID = (Int)(intptr_t)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
 	if (!selID)
 		return;
 	updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
@@ -374,8 +373,7 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 				if (selectPos < 0)
 					break;
 
-			// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-			ladderIndex = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 )));
+				ladderIndex = (Int)(intptr_t)GadgetListBoxGetItemData( listboxLadderSelect, selectPos, 0 );
 				const LadderInfo *li = TheLadderList->findLadderByIndex( ladderIndex );
 				if (li && li->cryptedPassword.isNotEmpty())
 				{
@@ -441,8 +439,12 @@ WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt ms
 			if (selIndex < 0)
 				break;
 
-		// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-		selID = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData(listboxLadderSelect, selIndex)));
+			selID = (Int)(intptr_t)GadgetListBoxGetItemData(listboxLadderSelect, selIndex);
+			if (!selID)
+				break;
+
+			updateLadderDetails(selID, staticTextLadderName, listboxLadderDetails);
+			break;
 		}
 
     //---------------------------------------------------------------------------------------------
@@ -629,8 +631,11 @@ WindowMsgHandledType RCGameDetailsMenuSystem( GameWindow *window, UnsignedInt ms
 			{
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-			// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-			Int selectedID = static_cast<Int>(reinterpret_cast<intptr_t>(window->winGetUserData()));
+				Int selectedID = (Int)(intptr_t)window->winGetUserData();
+				if(!selectedID)
+					break;
+				closeRightClickMenu(window);
+
 				if (controlID == ladderInfoID)
 				{
 					StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();

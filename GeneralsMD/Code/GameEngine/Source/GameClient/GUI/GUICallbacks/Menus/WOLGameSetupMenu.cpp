@@ -553,8 +553,7 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
+						(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 
 #if defined(SAGE_USE_NGMP)
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
@@ -640,7 +639,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
+			(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 #if defined(SAGE_USE_NGMP)
@@ -806,7 +805,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
+			(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 #if defined(SAGE_USE_NGMP)
@@ -1267,13 +1266,8 @@ void WOLDisplayGameOptions()
 	}
 	else
 	{
-		AsciiString s = theGame->getMap();
-		if (s.reverseFind('\\'))
-		{
-			s = s.reverseFind('\\') + 1;
-		}
 		UnicodeString mapDisplay;
-		mapDisplay.translate(s);
+		mapDisplay.translate(getFileName(theGame->getMap().str()));
 		GadgetStaticTextSetText(textEntryMapDisplay, mapDisplay);
 	}
 	WOLPositionStartSpots();
@@ -1310,8 +1304,7 @@ void WOLDisplayGameOptions()
   Int index = 0;
   for ( ; index < itemCount; index++ )
   {
-    // GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-    Int value  = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(comboBoxStartingCash, index)));
+			int value = (Int)(intptr_t)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
     if ( value == theGame->getStartingCash().countMoney() )
     {
       // Note: must check if combobox is already correct to avoid infinite recursion

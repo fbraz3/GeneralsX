@@ -535,8 +535,7 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 {
 	ThingTemplate* self = (ThingTemplate*)instance;
 	ModuleInfo* mi = (ModuleInfo*)store;
-	// GeneralsX @build BenderAI 11/02/2026 - Use uintptr_t for pointer-to-int cast (64-bit compat)
-	ModuleType type = (ModuleType)(UnsignedInt)(uintptr_t)userData;
+	ModuleType type = (ModuleType)(uintptr_t)userData;
 	const char* token = ini->getNextToken();
 	AsciiString tokenStr = token;
 
@@ -643,8 +642,7 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 //-------------------------------------------------------------------------------------------------
 void ThingTemplate::parseIntList(INI* ini, void *instance, void* store, const void* userData)
 {
-	// GeneralsX @build BenderAI 11/02/2026 - Use uintptr_t for pointer-to-int cast (64-bit compat)
-	Int numberEntries = (Int)(uintptr_t)userData;
+	Int numberEntries = (Int)(intptr_t)userData;
 	Int *intList = (Int*)store;
 
 	for( Int intIndex = 0; intIndex < numberEntries; intIndex ++ )

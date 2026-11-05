@@ -310,7 +310,7 @@ static void queuePatch(Bool mandatory, AsciiString downloadURL)
 static GHTTPBool motdCallback( GHTTPRequest request, GHTTPResult result,
 															char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (uintptr_t)param;
+	Int run = (Int)(intptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -345,7 +345,7 @@ static GHTTPBool motdCallback( GHTTPRequest request, GHTTPResult result,
 static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
 																char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (uintptr_t)param;
+	Int run = (Int)(intptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -407,7 +407,7 @@ static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
 static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 																		char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (uintptr_t)param;
+	Int run = (Int)(intptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -491,7 +491,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 
 static GHTTPBool gamePatchCheckCallback( GHTTPRequest request, GHTTPResult result, char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (uintptr_t)param;
+	Int run = (Int)(intptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));

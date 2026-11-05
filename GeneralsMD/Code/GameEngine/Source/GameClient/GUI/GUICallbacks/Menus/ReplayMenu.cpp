@@ -158,8 +158,7 @@ static UnicodeString createMapName(const AsciiString& filename, const ReplayGame
 	{
 		// TheSuperHackers @bugfix helmutbuhler 08/03/2025 Just use the filename.
 		// Displaying a long map path string would break the map list gui.
-		const char* filename = info.getMap().reverseFind('\\');
-		mapName.translate(filename ? filename + 1 : info.getMap());
+		mapName.translate(getFileName(info.getMap().str()));
 	}
 	else
 	{
@@ -274,13 +273,7 @@ void PopulateReplayFileListbox(GameWindow *listbox)
 	for (it = replayFilenames.begin(); it != replayFilenames.end(); ++it)
 	{
 		// just want the filename
-		// GeneralsX @bugfix copilot 12/03/2026 Handle both slash styles and avoid nullptr + 1 when no separator is found.
-		const char *filenameNoPath = (*it).reverseFind('\\');
-		if (!filenameNoPath)
-		{
-			filenameNoPath = (*it).reverseFind('/');
-		}
-		asciistr.set(filenameNoPath ? filenameNoPath + 1 : (*it).str());
+		asciistr.set(getFileName((*it).str()));
 
 		RecorderClass::ReplayHeader header;
 		ReplayGameInfo info;
@@ -870,7 +863,7 @@ void copyReplay()
 	newFilename.concat(translate);
 	if(CopyFile(filename.str(),newFilename.str(), FALSE) == 0)
 	{
-		wchar_t buffer[1024];
+		WideChar buffer[1024];
 		FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), nullptr);
 		UnicodeString errorStr;
 		errorStr.set(buffer);

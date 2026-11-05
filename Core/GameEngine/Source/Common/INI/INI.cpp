@@ -283,7 +283,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		AsciiString tempname;
 		tempname = (*it).str() + dirName.getLength();
 
-		if ((tempname.find('\\') == nullptr) && (tempname.find('/') == nullptr)) {
+		if (getFirstPathSeparator(tempname.str()) == nullptr) {
 			// this file doesn't reside in a subdirectory, load it first.
 			filesRead += load( *it, loadType, pXfer );
 		}
@@ -296,7 +296,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		AsciiString tempname;
 		tempname = (*it).str() + dirName.getLength();
 
-		if ((tempname.find('\\') != nullptr) || (tempname.find('/') != nullptr)) {
+		if (getFirstPathSeparator(tempname.str()) != nullptr) {
 			filesRead += load( *it, loadType, pXfer );
 		}
 		++it;
@@ -710,8 +710,7 @@ void INI::parseBool( INI* ini, void * /*instance*/, void *store, const void* /*u
 void INI::parseBitInInt32( INI *ini, void *instance, void *store, const void* userData )
 {
 	UnsignedInt* s = (UnsignedInt*)store;
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
-	UnsignedInt mask = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(userData));
+	UnsignedInt mask = (UnsignedInt)(uintptr_t)userData;
 
 	if (INI::scanBool(ini->getNextToken()))
 		*s |= mask;

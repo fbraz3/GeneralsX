@@ -137,8 +137,7 @@ class ParticleEmitterDefClass
 		unsigned int			Get_Burst_Size () const			{ return m_InfoV2.BurstSize; }
 		float						Get_Outward_Vel () const			{ return m_InfoV2.OutwardVel; }
 		float						Get_Vel_Inherit () const			{ return m_InfoV2.VelInherit; }
-		// GeneralsX @bugfix Copilot 11/05/2026 Preserve emitter future-start metadata across load/save parity paths.
-		float					Get_Future_Start_Time () const	{ return m_ExtraInfo.FutureStartTime; }
+		float						Get_Future_Start_Time () const	{ return m_ExtraInfo.FutureStartTime; }
 
 		virtual void			Set_Render_Mode (int mode)						{ m_InfoV2.RenderMode = mode; } // values in w3d_file.h
 		virtual void			Set_Frame_Mode (int mode)						{ m_InfoV2.FrameMode = mode; } // values in w3d_file.h

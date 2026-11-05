@@ -485,8 +485,7 @@ static void saveOptions()
 		GadgetComboBoxGetSelectedPos(comboBoxLANIP, &index);
 		if (index>=0 && TheGlobalData)
 		{
-			// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit
-			ip = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(GadgetComboBoxGetItemData(comboBoxLANIP, index)));
+			ip = (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData(comboBoxLANIP, index);
 			TheWritableGlobalData->m_defaultIP = ip;
 			pref->setLANIPAddress(ip);
 		}
@@ -498,8 +497,7 @@ static void saveOptions()
 		GadgetComboBoxGetSelectedPos(comboBoxOnlineIP, &index);
 		if (index>=0)
 		{
-			// GeneralsX @bugfix BenderAI 12/02/2026 - Cast via uintptr_t for 64-bit
-			ip = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(GadgetComboBoxGetItemData(comboBoxOnlineIP, index)));
+			ip = (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData(comboBoxOnlineIP, index);
 			pref->setOnlineIPAddress(ip);
 		}
 	}

@@ -68,7 +68,7 @@ static const char *const TheLocomotorPriorityNames[] =
 
 	nullptr
 };
-static_assert(ARRAY_SIZE(TheLocomotorPriorityNames) == LOCOMOTOR_PRIORITY_COUNT + 1, "Array size");
+static_assert(ARRAY_SIZE(TheLocomotorPriorityNames) == LOCOMOTOR_PRIORITY_COUNT + 1, "Incorrect array size");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -654,7 +654,7 @@ void LocomotorStore::reset()
 		Overridable *locoTemp = it->second->deleteOverrides();
 		if (!locoTemp)
 		{
-			m_locomotorTemplates.erase(it);
+			m_locomotorTemplates.erase(it++);
 		}
 		else
 		{

@@ -1,6 +1,5 @@
 /*
-**	Command & Conquer Generals Zero Hour(tm)
-**	Copyright 2025 Electronic Arts Inc.
+**	Copyright 2026 TheSuperHackers
 **
 **	This program is free software: you can redistribute it and/or modify
 **	it under the terms of the GNU General Public License as published by
@@ -18,18 +17,9 @@
 
 #pragma once
 
-#include "WWLib/always.h"
-#include "WWLib/wwstring.h"
+#include <string>
 
-namespace SaveLoadStatus
+namespace stl
 {
-	void Set_Status_Text(const char* text,int id);
-
-	void	Reset_Status_Count();
-	void	Inc_Status_Count();
-	int	Get_Status_Count();
-	void Get_Status_Text(StringClass& text, int id);
-};
-
-#define INIT_STATUS(t) SaveLoadStatus::Set_Status_Text(t,0)
-#define INIT_SUB_STATUS(t) SaveLoadStatus::Set_Status_Text(t,1)
+typedef std::basic_string<unichar> wstring;
+}

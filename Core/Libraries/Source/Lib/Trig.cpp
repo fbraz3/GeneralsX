@@ -36,10 +36,6 @@
 #include "gmath.h"
 #endif
 
-// GeneralsX @refactor fbraz 03/05/2026 Route legacy trig functions through deterministic GameMath.
-// Upstream reference: Okladnoj, PR #2670
-// https://github.com/TheSuperHackers/GeneralsGameCode/pull/2670
-
 Real Sin(Real x)
 {
 #if USE_DETERMINISTIC_MATH

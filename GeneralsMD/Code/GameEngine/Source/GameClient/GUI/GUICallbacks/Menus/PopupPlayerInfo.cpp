@@ -317,9 +317,8 @@ void BattleHonorTooltip(GameWindow *window,
 		return;
 	}
 
-	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer casts
-	Int battleHonor = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( window, row, col )));
-	Int extraValue = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetListBoxGetItemData( window, row - 1, col )));
+	Int battleHonor = (Int)(intptr_t)GadgetListBoxGetItemData( window, row, col );
+	Int extraValue = (Int)(intptr_t)GadgetListBoxGetItemData( window, row - 1, col );
 	if (battleHonor == 0)
 	{
 		//DEBUG_CRASH(("No Battle Honor in listbox row %d, col %d!", row, col));

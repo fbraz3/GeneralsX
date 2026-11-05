@@ -46,6 +46,7 @@
 #include <sys/stat.h>
 #include "Wnd_File.h"
 #include "WinFix.h"
+#include <Lib/PathUtil.h>
 //#include "autorun.h"
 
 
@@ -124,11 +125,7 @@ void Msg( int line, const char *filename, const char *fmt, ... )
 	//----------------------------------------------------------------------
 	// Make filename.
 	//----------------------------------------------------------------------
-	const char *temp = strrchr( filename, '\\' );
-	if ( temp != nullptr || temp[0] != '\0' ) {
-		temp++;
-		strcpy( szFile, temp );
-	}
+	strcpy( szFile, getFileName( filename ) );
 
 	//----------------------------------------------------------------------
 	// format message with header
@@ -163,8 +160,8 @@ void Msg( int line, const char *filename, const char *fmt, ... )
  * MSG -- Write Message to Debug file with line and filename.				*
  *																			*
  * INPUT:		int		line		--	line where message originated.	   	*
- *				wchar_t *filename	-- file where message originated.	   	*
- *				wchar_t *fmt		-- variable argument list. 				*
+ *				unichar *filename	-- file where message originated.	   	*
+ *				unichar *fmt		-- variable argument list. 				*
  *																			*
  * OUTPUT:		none.														*
  *																			*
@@ -174,13 +171,13 @@ void Msg( int line, const char *filename, const char *fmt, ... )
  *   08/19/1998   MML : Created.											*
  *==========================================================================*/
 
-void Msg( int line, const char *filename, const wchar_t *fmt, UINT codepage, ... )
+void Msg( int line, const char *filename, const unichar *fmt, UINT codepage, ... )
 {
-	wchar_t		szBuffer1[ MAX_PATH * 3 ];
-	wchar_t		szBuffer2[ MAX_PATH * 3 ];
+	unichar		szBuffer1[ MAX_PATH * 3 ];
+	unichar		szBuffer2[ MAX_PATH * 3 ];
 	char		szBuffer3[ MAX_PATH * 3 ];
-	wchar_t		szFile[ MAX_PATH ];
-	wchar_t		szArgs[ MAX_PATH ];
+	unichar		szFile[ MAX_PATH ];
+	unichar		szArgs[ MAX_PATH ];
 	va_list		va;
 	int			length;
 	DWORD		nBytes;
@@ -206,12 +203,9 @@ void Msg( int line, const char *filename, const wchar_t *fmt, UINT codepage, ...
 	//----------------------------------------------------------------------
 	// Make filename.
 	//----------------------------------------------------------------------
-	const char *temp = strrchr( filename, '\\' );
-	if ( temp != nullptr || temp[0] != '\0' ) {
-		temp++;
-		length = strlen( temp );
-		mbstowcs( szFile, temp, length );
-	}
+	const char *temp = getFileName( filename );
+	length = strlen( temp );
+	mbstowcs( szFile, temp, length );
 
 	//----------------------------------------------------------------------
 	// format message with header
@@ -280,7 +274,7 @@ void Delete_Msg_File ()
 	//----------------------------------------------------------------------
 //	strcat( strcpy( DebugFile, ".\\" ), DEBUG_FILE );
 	GetWindowsDirectory( DebugFile, MAX_PATH );
-	if ( DebugFile[ strlen( DebugFile )-1 ] != '\\' ) {
+	if ( !isPathSeparator( DebugFile[ strlen( DebugFile )-1 ] ) ) {
 		strcat( DebugFile, "\\" );
 	}
 	strcat( DebugFile, DEBUG_FILE );

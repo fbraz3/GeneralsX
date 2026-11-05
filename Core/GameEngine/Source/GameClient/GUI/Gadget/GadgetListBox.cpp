@@ -1792,9 +1792,6 @@ WindowMsgHandledType GadgetListBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 
 			if( list->multiSelect )
-				// For multi-select, the caller passes the address of an Int* pointer
-				// which gets cast to WindowMsgData (mData2). We must cast mData2 to Int**
-				// and write the internal 64-bit pointer list->selections into it.
 				*(Int**)mData2 = list->selections;
 			else
 				*(Int*)mData2 = list->selectPos;

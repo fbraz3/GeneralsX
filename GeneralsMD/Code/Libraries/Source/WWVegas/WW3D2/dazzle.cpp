@@ -55,8 +55,6 @@
 #include "WWLib/chunkio.h"
 #include "WWLib/WWFILE.h"
 #include "WWLib/inisup.h"
-#include "WWSaveLoad/persistfactory.h"
-#include "ww3dids.h"
 #include "dx8wrapper.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
@@ -604,7 +602,7 @@ void DazzleRenderObjClass::Init_From_INI(const INIClass* ini)
 			// Flare color
 			tmp_name.Format("%s%d",FLARE_COLOR_STRING,flare+1);
 			TPoint3D<float> tp=ini->Get_Point(section_name,tmp_name,TPoint3D<float>(1.0f,1.0f,1.0f));
-			lic.flare_colors[flare]=reinterpret_cast<const Vector3&>(tp);
+			lic.flare_colors[flare]=Vector3(tp.X,tp.Y,tp.Z);
 			// Flare uv
 			const DazzleINIClass* dini=reinterpret_cast<const DazzleINIClass*>(ini);
 			tmp_name.Format("%s%d",FLARE_UV_STRING,flare+1);
@@ -651,16 +649,16 @@ void DazzleRenderObjClass::Init_From_INI(const INIClass* ini)
 
 		TPoint3D<float> tp=ini->Get_Point(section_name,DAZZLE_DIRECTION_STRING,TPoint3D<float>(0.0f,0.0f,0.0f));
 		tp.Normalize();
-		dic.dazzle_direction=reinterpret_cast<const Vector3&>(tp);
+		dic.dazzle_direction=Vector3(tp.X,tp.Y,tp.Z);
 
 		tp=ini->Get_Point(section_name,DAZZLE_TEST_COLOR_STRING,TPoint3D<float>(1.0f,1.0f,1.0f));
-		dic.dazzle_test_color=reinterpret_cast<const Vector3&>(tp);
+		dic.dazzle_test_color=Vector3(tp.X,tp.Y,tp.Z);
 
 		tp=ini->Get_Point(section_name,DAZZLE_COLOR_STRING,TPoint3D<float>(1.0f,1.0f,1.0f));
-		dic.dazzle_color=reinterpret_cast<const Vector3&>(tp);
+		dic.dazzle_color=Vector3(tp.X,tp.Y,tp.Z);
 
 		tp=ini->Get_Point(section_name,HALO_COLOR_STRING,TPoint3D<float>(1.0f,1.0f,1.0f));
-		dic.halo_color=reinterpret_cast<const Vector3&>(tp);
+		dic.halo_color=Vector3(tp.X,tp.Y,tp.Z);
 
 		dic.radius=ini->Get_Float(section_name,RADIUS_STRING,1.0f);
 
@@ -1102,28 +1100,36 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 			unsigned color=DX8Wrapper::Convert_Color(col,1.0f);
 
 			dl=current_vloc+(dazzle_dxt-dazzle_dyt)*current_dazzle_size;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=0.0f;
 			vertex->v1=0.0f;
 			vertex->diffuse=color;
 			vertex++;
 
 			dl=current_vloc+(dazzle_dxt+dazzle_dyt)*current_dazzle_size;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=1.0f;
 			vertex->v1=0.0f;
 			vertex->diffuse=color;
 			vertex++;
 
 			dl=current_vloc-(dazzle_dxt-dazzle_dyt)*current_dazzle_size;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=1.0f;
 			vertex->v1=1.0f;
 			vertex->diffuse=color;
 			vertex++;
 
 			dl=current_vloc-(dazzle_dxt+dazzle_dyt)*current_dazzle_size;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=0.0f;
 			vertex->v1=1.0f;
 			vertex->diffuse=color;
@@ -1148,7 +1154,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 
 			offset = (halo_dxt - halo_dyt) * halo_size;
 			dl = current_vloc + offset;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=0.0f;
 			vertex->v1=0.0f;
 			vertex->diffuse=color;
@@ -1156,7 +1164,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 
 			offset = (halo_dxt + halo_dyt) * halo_size;
 			dl =current_vloc + offset;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=1.0f;
 			vertex->v1=0.0f;
 			vertex->diffuse=color;
@@ -1164,7 +1174,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 
 			offset = -(halo_dxt - halo_dyt) * halo_size;
 			dl = current_vloc + offset;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=1.0f;
 			vertex->v1=1.0f;
 			vertex->diffuse=color;
@@ -1172,7 +1184,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 
 			offset = -(halo_dxt + halo_dyt) * halo_size;
 			dl=current_vloc + offset;
-			reinterpret_cast<Vector3&>(vertex->x)=dl;
+			vertex->x=dl.X;
+			vertex->y=dl.Y;
+			vertex->z=dl.Z;
 			vertex->u1=0.0f;
 			vertex->v1=1.0f;
 			vertex->diffuse=color;
@@ -1409,130 +1423,6 @@ void DazzleRenderObjClass::Special_Render(SpecialRenderInfoClass & rinfo)
 	}
 }
 
-
-
-/****************************************************************************************
-
-
-	DazzleRenderObjClass - Persistent object support.
-
-	Dazzles are going to save their type and their transform and simply
-	re-create another dazzle of the same type when loaded.
-
-
-****************************************************************************************/
-
-class DazzlePersistFactoryClass : public PersistFactoryClass
-{
-	virtual uint32				Chunk_ID() const override;
-	virtual PersistClass *	Load(ChunkLoadClass & cload) const override;
-	virtual void				Save(ChunkSaveClass & csave,PersistClass * obj)	const override;
-
-	enum
-	{
-		DAZZLEFACTORY_CHUNKID_VARIABLES		= 1212000336,
-		DAZZLEFACTORY_VARIABLE_OBJPOINTER	= 0x00,
-		OBSOLETE_DAZZLEFACTORY_VARIABLE_TYPE,
-		DAZZLEFACTORY_VARIABLE_TRANSFORM,
-		DAZZLEFACTORY_VARIABLE_TYPENAME,
-	};
-};
-
-static DazzlePersistFactoryClass _DazzleFactory;
-
-uint32 DazzlePersistFactoryClass::Chunk_ID() const
-{
-	return WW3D_PERSIST_CHUNKID_DAZZLE;
-}
-
-PersistClass *	DazzlePersistFactoryClass::Load(ChunkLoadClass & cload) const
-{
-	DazzleRenderObjClass * old_obj = nullptr;
-	Matrix3D tm(1);
-	char dazzle_type[256];
-	dazzle_type[0] = 0;
-
-	/*
-	** Load the dazzle parameters
-	*/
-	while (cload.Open_Chunk()) {
-		switch (cload.Cur_Chunk_ID()) {
-
-			case DAZZLEFACTORY_CHUNKID_VARIABLES:
-
-				while (cload.Open_Micro_Chunk()) {
-					switch(cload.Cur_Micro_Chunk_ID()) {
-						READ_MICRO_CHUNK(cload,DAZZLEFACTORY_VARIABLE_OBJPOINTER,old_obj);
-						READ_MICRO_CHUNK(cload,DAZZLEFACTORY_VARIABLE_TRANSFORM,tm);
-						READ_MICRO_CHUNK_STRING(cload,DAZZLEFACTORY_VARIABLE_TYPENAME,dazzle_type,sizeof(dazzle_type));
-					}
-					cload.Close_Micro_Chunk();
-				}
-				break;
-
-			default:
-				WWDEBUG_SAY(("Unhandled Chunk: 0x%X File: %s Line: %d",__FILE__,__LINE__));
-				break;
-		};
-		cload.Close_Chunk();
-	}
-
-	/*
-	** Create a new dazzle object
-	*/
-	int type_index = 0;
-	if (strlen(dazzle_type) > 0) {
-		type_index = DazzleRenderObjClass::Get_Type_ID(dazzle_type);
-	}
-	RenderObjClass * new_obj = NEW_REF(DazzleRenderObjClass,(dazzle_type));
-
-	/*
-	** If we failed to create it, replace it with a nullptr
-	*/
-	if (new_obj == nullptr) {
-		static int count = 0;
-		if ( count++ < 10 ) {
-			WWDEBUG_SAY(("DazzlePersistFactory failed to create dazzle of type: %s!!",dazzle_type));
-			WWDEBUG_SAY(("Replacing it with a null render object!"));
-		}
-		new_obj = WW3DAssetManager::Get_Instance()->Create_Render_Obj("NULL");
-	}
-
-	WWASSERT(new_obj != nullptr);
-	if (new_obj) {
-		new_obj->Set_Transform(tm);
-	}
-
-	/*
-	** Register the old pointer for re-mapping to the new pointer
-	*/
-	SaveLoadSystemClass::Register_Pointer(old_obj,new_obj);
-	return new_obj;
-}
-
-void DazzlePersistFactoryClass::Save(ChunkSaveClass & csave,PersistClass * obj)	const
-{
-	DazzleRenderObjClass * robj = (DazzleRenderObjClass *)obj;
-	unsigned int dazzle_type = robj->Get_Dazzle_Type();
-	const char * dazzle_type_name = DazzleRenderObjClass::Get_Type_Name(dazzle_type);
-	const Matrix3D& tm = robj->Get_Transform();
-
-	csave.Begin_Chunk(DAZZLEFACTORY_CHUNKID_VARIABLES);
-	WRITE_MICRO_CHUNK(csave,DAZZLEFACTORY_VARIABLE_OBJPOINTER,robj);
-	WRITE_MICRO_CHUNK(csave,DAZZLEFACTORY_VARIABLE_TRANSFORM,tm);
-	WRITE_MICRO_CHUNK_STRING(csave,DAZZLEFACTORY_VARIABLE_TYPENAME,dazzle_type_name);
-
-	csave.End_Chunk();
-}
-
-
-/*
-** DazzleRenderObj save-load.
-*/
-const PersistFactoryClass & DazzleRenderObjClass::Get_Factory () const
-{
-	return _DazzleFactory;
-}
 
 
 
