@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://deepwiki.com/fbraz3/GeneralsGameCode"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+  <a href="https://deepwiki.com/fbraz3/GeneralsGameCode"><img src="assets/badges/ask_deepwiki.svg" alt="Ask DeepWiki"></a>
   <a href="https://github.com/fbraz3/GeneralsX/actions/workflows/ci.yml"><img src="https://github.com/fbraz3/GeneralsX/actions/workflows/ci.yml/badge.svg?branch=main" alt="GeneralsX CI"></a>
   <a href="https://github.com/fbraz3/GeneralsX/releases"><img src="https://img.shields.io/github/v/release/fbraz3/GeneralsX?include_prereleases&sort=date&display_name=tag&style=flat&label=Release" alt="GitHub Release"></a>
   <a href="https://github.com/fbraz3/GeneralsX/wiki"><img src="https://img.shields.io/badge/Wiki-Documentation-blue.svg" alt="Project Wiki"></a>
