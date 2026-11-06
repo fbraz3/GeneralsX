@@ -114,11 +114,13 @@ FlashTransition::~FlashTransition()
 void FlashTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(FLASHTRANSITION_START);
 	m_isFinished = FALSE;
@@ -129,6 +131,11 @@ void FlashTransition::init( GameWindow *win )
 void FlashTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FLASHTRANSITION_START || frame > FLASHTRANSITION_END)
 	{
 		DEBUG_CRASH(("FlashTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -195,6 +202,12 @@ void FlashTransition::update( Int frame )
 
 void FlashTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -202,6 +215,8 @@ void FlashTransition::reverse()
 
 void FlashTransition::draw()
 {
+	if(!m_win)
+		return;
 	switch (m_drawState)
 	{
 		case FLASHTRANSITION_FADE_IN_1:
@@ -251,6 +266,11 @@ void FlashTransition::draw()
 
 void FlashTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FLASHTRANSITION_END);
 }
 
@@ -273,11 +293,13 @@ ButtonFlashTransition::~ButtonFlashTransition()
 void ButtonFlashTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(BUTTONFLASHTRANSITION_START);
 	m_isFinished = FALSE;
@@ -288,6 +310,11 @@ void ButtonFlashTransition::init( GameWindow *win )
 void ButtonFlashTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < BUTTONFLASHTRANSITION_START || frame > BUTTONFLASHTRANSITION_END)
 	{
 		DEBUG_CRASH(("ButtonFlashTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -515,6 +542,12 @@ void ButtonFlashTransition::update( Int frame )
 
 void ButtonFlashTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -522,6 +555,8 @@ void ButtonFlashTransition::reverse()
 
 void ButtonFlashTransition::draw()
 {
+	if(!m_win)
+		return;
 	switch (m_drawState)
 	{
 		case BUTTONFLASHTRANSITION_FADE_IN_1:
@@ -628,6 +663,11 @@ void ButtonFlashTransition::draw()
 
 void ButtonFlashTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(BUTTONFLASHTRANSITION_END);
 }
 
@@ -650,11 +690,13 @@ FadeTransition::~FadeTransition()
 void FadeTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(FADETRANSITION_START);
 	m_isFinished = FALSE;
@@ -664,6 +706,11 @@ void FadeTransition::init( GameWindow *win )
 void FadeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FADETRANSITION_START || frame > FADETRANSITION_END)
 	{
 		DEBUG_CRASH(("FadeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -708,6 +755,12 @@ void FadeTransition::update( Int frame )
 
 void FadeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -771,6 +824,11 @@ void FadeTransition::draw()
 
 void FadeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FADETRANSITION_END);
 }
 //-----------------------------------------------------------------------------
@@ -791,11 +849,14 @@ ScaleUpTransition::~ScaleUpTransition()
 void ScaleUpTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(SCALEUPTRANSITION_START);
 	m_isFinished = FALSE;
@@ -811,6 +872,11 @@ void ScaleUpTransition::init( GameWindow *win )
 void ScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < SCALEUPTRANSITION_START || frame > SCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("ScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -876,6 +942,12 @@ void ScaleUpTransition::update( Int frame )
 
 void ScaleUpTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -897,6 +969,11 @@ void ScaleUpTransition::draw()
 
 void ScaleUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(SCALEUPTRANSITION_END);
 }
 
@@ -918,11 +995,14 @@ ScoreScaleUpTransition::~ScoreScaleUpTransition()
 void ScoreScaleUpTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(SCORESCALEUPTRANSITION_START);
 	m_isFinished = FALSE;
@@ -938,6 +1018,11 @@ void ScoreScaleUpTransition::init( GameWindow *win )
 void ScoreScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < SCORESCALEUPTRANSITION_START || frame > SCORESCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("ScoreScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1003,6 +1088,12 @@ void ScoreScaleUpTransition::update( Int frame )
 
 void ScoreScaleUpTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1024,6 +1115,11 @@ void ScoreScaleUpTransition::draw()
 
 void ScoreScaleUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(SCORESCALEUPTRANSITION_END);
 }
 
@@ -1053,6 +1149,8 @@ void MainMenuScaleUpTransition::init( GameWindow *win )
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinGrowMarker"));
 	if(!m_win || !m_growWin)
 	{
+		m_incrementPos.zero();
+		m_incrementSize.zero();
 		m_isFinished = TRUE;
 		return;
 	}
@@ -1076,6 +1174,11 @@ void MainMenuScaleUpTransition::init( GameWindow *win )
 void MainMenuScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUSCALEUPTRANSITION_START || frame > MAINMENUSCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1127,14 +1230,21 @@ void MainMenuScaleUpTransition::update( Int frame )
 
 void MainMenuScaleUpTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		m_frameLength = 0;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
-
+	m_frameLength = MAINMENUSCALEUPTRANSITION_END;
 }
 
 void MainMenuScaleUpTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUSCALEUPTRANSITION_START || m_drawState >= MAINMENUSCALEUPTRANSITION_END)
 		return;
@@ -1148,6 +1258,11 @@ void MainMenuScaleUpTransition::draw()
 
 void MainMenuScaleUpTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUSCALEUPTRANSITION_END);
 }
 
@@ -1176,6 +1291,7 @@ void MainMenuMediumScaleUpTransition::init( GameWindow *win )
 	}
 	if(!m_win)
 	{
+		m_incrementSize.zero();
 		m_isFinished = TRUE;
 		return;
 	}
@@ -1185,6 +1301,7 @@ void MainMenuMediumScaleUpTransition::init( GameWindow *win )
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(growWinName));
 	if(!m_growWin)
 	{
+		m_incrementSize.zero();
 		m_isFinished = TRUE;
 		return;
 	}
@@ -1207,6 +1324,11 @@ void MainMenuMediumScaleUpTransition::init( GameWindow *win )
 void MainMenuMediumScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUMEDIUMSCALEUPTRANSITION_START || frame > MAINMENUMEDIUMSCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuMediumScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1258,6 +1380,12 @@ void MainMenuMediumScaleUpTransition::update( Int frame )
 
 void MainMenuMediumScaleUpTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 	if(m_win)
@@ -1269,7 +1397,7 @@ void MainMenuMediumScaleUpTransition::reverse()
 
 void MainMenuMediumScaleUpTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUMEDIUMSCALEUPTRANSITION_START || m_drawState >= MAINMENUMEDIUMSCALEUPTRANSITION_END)
 		return;
@@ -1283,6 +1411,11 @@ void MainMenuMediumScaleUpTransition::draw()
 
 void MainMenuMediumScaleUpTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUMEDIUMSCALEUPTRANSITION_END);
 }
 //-----------------------------------------------------------------------------
@@ -1310,6 +1443,7 @@ void MainMenuSmallScaleDownTransition::init( GameWindow *win )
 	}
 	if(!m_win)
 	{
+		m_incrementSize.zero();
 		m_isFinished = TRUE;
 		return;
 	}
@@ -1319,6 +1453,7 @@ void MainMenuSmallScaleDownTransition::init( GameWindow *win )
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(growWinName));
 	if(!m_growWin)
 	{
+		m_incrementSize.zero();
 		m_isFinished = TRUE;
 		return;
 	}
@@ -1341,6 +1476,11 @@ void MainMenuSmallScaleDownTransition::init( GameWindow *win )
 void MainMenuSmallScaleDownTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUSMALLSCALEDOWNTRANSITION_START || frame > MAINMENUSMALLSCALEDOWNTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuSmallScaleDownTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1386,6 +1526,12 @@ void MainMenuSmallScaleDownTransition::update( Int frame )
 
 void MainMenuSmallScaleDownTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1393,7 +1539,7 @@ void MainMenuSmallScaleDownTransition::reverse()
 
 void MainMenuSmallScaleDownTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUSMALLSCALEDOWNTRANSITION_START || m_drawState >= MAINMENUSMALLSCALEDOWNTRANSITION_END)
 		return;
@@ -1407,6 +1553,11 @@ void MainMenuSmallScaleDownTransition::draw()
 
 void MainMenuSmallScaleDownTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUSMALLSCALEDOWNTRANSITION_END);
 }
 
@@ -1433,16 +1584,13 @@ TextTypeTransition::~TextTypeTransition()
 void TextTypeTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
-	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
-	}
 	if(!m_win)
 	{
 		m_isFinished = TRUE;
 		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(TEXTTYPETRANSITION_START);
 	m_isFinished = FALSE;
@@ -1456,6 +1604,11 @@ void TextTypeTransition::init( GameWindow *win )
 void TextTypeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < TEXTTYPETRANSITION_START || frame > TEXTTYPETRANSITION_END)
 	{
 		DEBUG_CRASH(("TextTypeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1512,6 +1665,13 @@ void TextTypeTransition::update( Int frame )
 
 void TextTypeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_drawState = -1;
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1520,6 +1680,8 @@ void TextTypeTransition::reverse()
 
 void TextTypeTransition::draw()
 {
+	if(!m_win || !m_dStr)
+		return;
 	if(m_drawState > TEXTTYPETRANSITION_START && m_drawState < m_frameLength)
 	{
 		m_dStr->setText(m_partialText);
@@ -1529,6 +1691,11 @@ void TextTypeTransition::draw()
 
 void TextTypeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(TEXTTYPETRANSITION_END);
 }
 
@@ -1602,6 +1769,11 @@ void CountUpTransition::init( GameWindow *win )
 void CountUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < COUNTUPTRANSITION_START || frame > COUNTUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("CountUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1688,6 +1860,11 @@ void CountUpTransition::draw()
 
 void CountUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if (!m_isFinished)
 		update(COUNTUPTRANSITION_END);
 }
@@ -1896,11 +2073,13 @@ FullFadeTransition::~FullFadeTransition()
 void FullFadeTransition::init( GameWindow *win )
 {
 	m_win = win;
-	if(win)
+	if(!m_win)
 	{
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 
 	m_isForward = FALSE;
 	update(FULLFADETRANSITION_START);
@@ -1914,6 +2093,11 @@ void FullFadeTransition::init( GameWindow *win )
 void FullFadeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FULLFADETRANSITION_START || frame > FULLFADETRANSITION_END)
 	{
 		DEBUG_CRASH(("FullFadeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1958,12 +2142,20 @@ void FullFadeTransition::update( Int frame )
 
 void FullFadeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 }
 
 void FullFadeTransition::draw()
 {
+	if(!m_win)
+		return;
 	Int alpha;
 	if(m_drawState > (FULLFADETRANSITION_END/2))
 		alpha = m_percent * 255 * (FULLFADETRANSITION_END - m_drawState);
@@ -1977,6 +2169,11 @@ void FullFadeTransition::draw()
 
 void FullFadeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FULLFADETRANSITION_END);
 }
 
@@ -2017,6 +2214,11 @@ void TextOnFrameTransition::init( GameWindow *win )
 
 void TextOnFrameTransition::update( Int frame )
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < TEXTONFRAMETRANSITION_START || frame > TEXTONFRAMETRANSITION_END)
 	{
 		DEBUG_CRASH(("TextOnFrameTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -2065,6 +2267,11 @@ void TextOnFrameTransition::draw()
 
 void TextOnFrameTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if (!m_isFinished)
 		update(TEXTONFRAMETRANSITION_END);
 }
