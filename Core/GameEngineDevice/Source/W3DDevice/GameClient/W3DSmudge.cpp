@@ -80,7 +80,23 @@ void W3DSmudgeManager::ReAcquireResources()
 {
 	ReleaseResources();
 
-	SurfaceClass *surface=DX8Wrapper::_Get_DX8_Back_Buffer();
+	// GeneralsX @bugfix fbraz 06/11/2026 Use current render target if active, falling back to backbuffer.
+	LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
+	IDirect3DSurface8 *renderTargetD3D = nullptr;
+	SurfaceClass *surface = nullptr;
+	if (pDev && SUCCEEDED(pDev->GetRenderTarget(&renderTargetD3D)) && renderTargetD3D)
+	{
+		surface = NEW_REF(SurfaceClass, (renderTargetD3D));
+		renderTargetD3D->Release();
+	}
+	else
+	{
+		surface = DX8Wrapper::_Get_DX8_Back_Buffer();
+	}
+
+	if (!surface)
+		return;
+
 	SurfaceClass::SurfaceDescription surface_desc;
 
 	surface->Get_Description(surface_desc);
@@ -323,21 +339,47 @@ void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 		return;
 	}
 
-	SurfaceClass *backBuffer = DX8Wrapper::_Get_DX8_Back_Buffer();
-
-	if (!backBuffer)
+	// GeneralsX @bugfix fbraz 06/11/2026 Sample from active render target instead of backbuffer to avoid UI ghosting (fixes #384).
+	LPDIRECT3DDEVICE8 pDev = DX8Wrapper::_Get_D3D_Device8();
+	if (!pDev)
 		return;
 
-	SurfaceClass *background=m_backgroundTexture ? m_backgroundTexture->Get_Surface_Level() : nullptr;
+	IDirect3DSurface8 *renderTargetD3D = nullptr;
+	SurfaceClass *renderTarget = nullptr;
+	if (SUCCEEDED(pDev->GetRenderTarget(&renderTargetD3D)) && renderTargetD3D)
+	{
+		renderTarget = NEW_REF(SurfaceClass, (renderTargetD3D));
+		renderTargetD3D->Release();
+	}
+	else
+	{
+		renderTarget = DX8Wrapper::_Get_DX8_Back_Buffer();
+	}
+
+	if (!renderTarget)
+		return;
+
+	SurfaceClass::SurfaceDescription surface_desc;
+	renderTarget->Get_Description(surface_desc);
+
+	// Ensure background texture matches current render target dimensions and format
+	if (!m_backgroundTexture ||
+		(int)m_backgroundTexture->Get_Width() != (int)surface_desc.Width ||
+		(int)m_backgroundTexture->Get_Height() != (int)surface_desc.Height)
+	{
+		REF_PTR_RELEASE(m_backgroundTexture);
+		m_backgroundTexture = MSGNEW("TextureClass") TextureClass(
+			surface_desc.Width, surface_desc.Height, surface_desc.Format,
+			MIP_LEVELS_1, TextureClass::POOL_DEFAULT, true);
+	}
+
+	SurfaceClass *background = m_backgroundTexture ? m_backgroundTexture->Get_Surface_Level() : nullptr;
 
 	if (!background)
 	{
-		REF_PTR_RELEASE(backBuffer);
+		REF_PTR_RELEASE(renderTarget);
 		return;
 	}
-
-	SurfaceClass::SurfaceDescription surface_desc;
-	backBuffer->Get_Description(surface_desc);
 
 	CameraClass &camera=rinfo.Camera;
 	Vector3 vsVert;
@@ -435,15 +477,15 @@ void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 	if (!count)
 	{
 		REF_PTR_RELEASE(background);
-		REF_PTR_RELEASE(backBuffer);
+		REF_PTR_RELEASE(renderTarget);
 		return;	//nothing to render.
 	}
 
-	//Copy the area of backbuffer occupied by smudges into an alternate buffer.
-	background->Copy(0,0,0,0,surface_desc.Width,surface_desc.Height,backBuffer);
+	//Copy the area of render target occupied by smudges into an alternate buffer.
+	background->Copy(0,0,0,0,surface_desc.Width,surface_desc.Height,renderTarget);
 
 	REF_PTR_RELEASE(background);
-	REF_PTR_RELEASE(backBuffer);
+	REF_PTR_RELEASE(renderTarget);
 
 	Matrix4x4 identity(true);
 	DX8Wrapper::Set_Transform(D3DTS_WORLD,identity);
@@ -557,6 +599,8 @@ flushSmudges:
 		smudgesRemaining -= smudgesInRenderBatch;
 	}
 
+	// GeneralsX @bugfix fbraz 06/11/2026 Unbind background texture to prevent hazard on subsequent copy passes.
+	DX8Wrapper::Set_Texture(0, nullptr);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,D3DTSS_ALPHAOP,D3DTOP_MODULATE);
 
