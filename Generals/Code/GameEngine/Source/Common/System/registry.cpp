@@ -95,6 +95,7 @@ static Bool doesLanguageBigExist(const char* rootPath, const char* bigFile)
 }
 
 // GeneralsX @feature felipebraz 20/08/2026 Cross-platform language autodetect from BIG files
+// GeneralsX @bugfix felipebraz 06/11/2026 Detect German2.big for German Steam base game (issue #378)
 // Detect language from localized BIG files when registry is unavailable.
 // This preserves original behavior where installer-provided language drives Data/<lang>/ paths.
 static Bool tryAutoDetectLanguage(AsciiString& val)
@@ -104,6 +105,7 @@ static Bool tryAutoDetectLanguage(AsciiString& val)
 		{ "Brazilian.big",   "brazilian" },
 		{ "English.big",     "english"   },
 		{ "German.big",      "german"    },
+		{ "German2.big",     "German2"   },
 		{ "French.big",      "french"    },
 		{ "Spanish.big",     "spanish"   },
 		{ "Chinese.big",     "chinese"   },
@@ -112,6 +114,7 @@ static Bool tryAutoDetectLanguage(AsciiString& val)
 		{ "BrazilianZH.big", "brazilian" },
 		{ "EnglishZH.big",   "english"   },
 		{ "GermanZH.big",    "german"    },
+		{ "German2ZH.big",   "German2"   },
 		{ "FrenchZH.big",    "french"    },
 		{ "SpanishZH.big",   "spanish"   },
 		{ "ChineseZH.big",   "chinese"   },

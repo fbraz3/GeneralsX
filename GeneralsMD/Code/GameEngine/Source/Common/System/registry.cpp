@@ -124,6 +124,7 @@ static Bool tryRelativeGeneralsPath(AsciiString& val)
 }
 
 // GeneralsX @feature felipebraz 20/08/2026 Cross-platform auto-detect game language from BIG files
+// GeneralsX @bugfix felipebraz 06/11/2026 Detect German2.big / German2ZH.big for German Steam installs (issue #378)
 // When registry has no Language key (e.g. Steam on Windows, Linux, macOS),
 // detect the language by checking which language-specific BIG file is present.
 // Precedence mirrors the original installer language selection.
@@ -134,11 +135,13 @@ static Bool tryAutoDetectLanguage(AsciiString& val)
 		{ "BrazilianZH.big", "brazilian" },
 		{ "EnglishZH.big",   "english"   },
 		{ "GermanZH.big",    "german"    },
+		{ "German2ZH.big",   "German2"   },
 		{ "FrenchZH.big",    "french"    },
 		{ "SpanishZH.big",   "spanish"   },
 		{ "ChineseZH.big",   "chinese"   },
 		{ "KoreanZH.big",    "korean"    },
 		{ "PolishZH.big",    "polish"    },
+		{ "German2.big",     "German2"   },
 		{ nullptr,           nullptr     }
 	};
 
