@@ -113,12 +113,14 @@ FlashTransition::~FlashTransition()
 
 void FlashTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(FLASHTRANSITION_START);
 	m_isFinished = FALSE;
@@ -129,6 +131,11 @@ void FlashTransition::init( GameWindow *win )
 void FlashTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FLASHTRANSITION_START || frame > FLASHTRANSITION_END)
 	{
 		DEBUG_CRASH(("FlashTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -137,10 +144,11 @@ void FlashTransition::update( Int frame )
 	switch (frame) {
 	case FLASHTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -179,9 +187,11 @@ void FlashTransition::update( Int frame )
 		break;
 	case FLASHTRANSITION_END:
 		{
-			if(!m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -192,6 +202,12 @@ void FlashTransition::update( Int frame )
 
 void FlashTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -199,6 +215,8 @@ void FlashTransition::reverse()
 
 void FlashTransition::draw()
 {
+	if(!m_win)
+		return;
 	switch (m_drawState)
 	{
 		case FLASHTRANSITION_FADE_IN_1:
@@ -248,6 +266,11 @@ void FlashTransition::draw()
 
 void FlashTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FLASHTRANSITION_END);
 }
 
@@ -269,12 +292,14 @@ ButtonFlashTransition::~ButtonFlashTransition()
 
 void ButtonFlashTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(BUTTONFLASHTRANSITION_START);
 	m_isFinished = FALSE;
@@ -285,6 +310,11 @@ void ButtonFlashTransition::init( GameWindow *win )
 void ButtonFlashTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < BUTTONFLASHTRANSITION_START || frame > BUTTONFLASHTRANSITION_END)
 	{
 		DEBUG_CRASH(("ButtonFlashTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -293,10 +323,11 @@ void ButtonFlashTransition::update( Int frame )
 	switch (frame) {
 	case BUTTONFLASHTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -495,9 +526,11 @@ void ButtonFlashTransition::update( Int frame )
 		break;
 	case BUTTONFLASHTRANSITION_END:
 		{
-			if(!m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -509,6 +542,12 @@ void ButtonFlashTransition::update( Int frame )
 
 void ButtonFlashTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -516,6 +555,8 @@ void ButtonFlashTransition::reverse()
 
 void ButtonFlashTransition::draw()
 {
+	if(!m_win)
+		return;
 	switch (m_drawState)
 	{
 		case BUTTONFLASHTRANSITION_FADE_IN_1:
@@ -622,6 +663,11 @@ void ButtonFlashTransition::draw()
 
 void ButtonFlashTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(BUTTONFLASHTRANSITION_END);
 }
 
@@ -643,12 +689,14 @@ FadeTransition::~FadeTransition()
 
 void FadeTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(FADETRANSITION_START);
 	m_isFinished = FALSE;
@@ -658,6 +706,11 @@ void FadeTransition::init( GameWindow *win )
 void FadeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FADETRANSITION_START || frame > FADETRANSITION_END)
 	{
 		DEBUG_CRASH(("FadeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -666,10 +719,11 @@ void FadeTransition::update( Int frame )
 	switch (frame) {
 	case FADETRANSITION_START:
 		{
-
-			if(m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -682,15 +736,18 @@ void FadeTransition::update( Int frame )
 	case FADETRANSITION_FADE_IN_7:
 	case FADETRANSITION_FADE_IN_8:
 	case FADETRANSITION_FADE_IN_9:
-		m_win->winHide(TRUE);
+		if(m_win)
+			m_win->winHide(TRUE);
 
 		m_drawState = frame;
 		break;
 	case FADETRANSITION_END:
 		{
-			if(!m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -698,6 +755,12 @@ void FadeTransition::update( Int frame )
 
 void FadeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -761,6 +824,11 @@ void FadeTransition::draw()
 
 void FadeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FADETRANSITION_END);
 }
 //-----------------------------------------------------------------------------
@@ -780,12 +848,15 @@ ScaleUpTransition::~ScaleUpTransition()
 
 void ScaleUpTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(SCALEUPTRANSITION_START);
 	m_isFinished = FALSE;
@@ -801,6 +872,11 @@ void ScaleUpTransition::init( GameWindow *win )
 void ScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < SCALEUPTRANSITION_START || frame > SCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("ScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -809,9 +885,11 @@ void ScaleUpTransition::update( Int frame )
 	switch (frame) {
 	case SCALEUPTRANSITION_START:
 		{
-			if(m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -852,9 +930,11 @@ void ScaleUpTransition::update( Int frame )
 		break;
 	case SCALEUPTRANSITION_END:
 		{
-			if(!m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -862,6 +942,12 @@ void ScaleUpTransition::update( Int frame )
 
 void ScaleUpTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -883,6 +969,11 @@ void ScaleUpTransition::draw()
 
 void ScaleUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(SCALEUPTRANSITION_END);
 }
 
@@ -903,12 +994,15 @@ ScoreScaleUpTransition::~ScoreScaleUpTransition()
 
 void ScoreScaleUpTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(SCORESCALEUPTRANSITION_START);
 	m_isFinished = FALSE;
@@ -924,6 +1018,11 @@ void ScoreScaleUpTransition::init( GameWindow *win )
 void ScoreScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < SCORESCALEUPTRANSITION_START || frame > SCORESCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("ScoreScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -932,9 +1031,11 @@ void ScoreScaleUpTransition::update( Int frame )
 	switch (frame) {
 	case SCORESCALEUPTRANSITION_START:
 		{
-			if(m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -975,9 +1076,11 @@ void ScoreScaleUpTransition::update( Int frame )
 		break;
 	case SCORESCALEUPTRANSITION_END:
 		{
-			if(!m_isForward || !m_win)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -985,6 +1088,12 @@ void ScoreScaleUpTransition::update( Int frame )
 
 void ScoreScaleUpTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1006,6 +1115,11 @@ void ScoreScaleUpTransition::draw()
 
 void ScoreScaleUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(SCORESCALEUPTRANSITION_END);
 }
 
@@ -1026,15 +1140,20 @@ MainMenuScaleUpTransition::~MainMenuScaleUpTransition()
 
 void MainMenuScaleUpTransition::init( GameWindow *win )
 {
+	m_win = win;
 	if(win)
 	{
-		m_win = win;
 		m_win->winGetSize(&m_size.x, &m_size.y);
 		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	}
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinGrowMarker"));
-	if(!m_growWin)
+	if(!m_win || !m_growWin)
+	{
+		m_incrementPos.zero();
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
 		return;
+	}
 
 	m_growWin->winGetSize(&m_growSize.x, &m_growSize.y);
 	m_growWin->winGetScreenPosition(&m_growPos.x, &m_growPos.y );
@@ -1055,6 +1174,11 @@ void MainMenuScaleUpTransition::init( GameWindow *win )
 void MainMenuScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUSCALEUPTRANSITION_START || frame > MAINMENUSCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1063,20 +1187,24 @@ void MainMenuScaleUpTransition::update( Int frame )
 	switch (frame) {
 	case MAINMENUSCALEUPTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
 //			m_win->winHide(TRUE);
-			m_growWin->winHide(TRUE);
+			if(m_growWin)
+				m_growWin->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
 	case MAINMENUSCALEUPTRANSITION_END:
 		{
-			if(!m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(TRUE);
-			m_growWin->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(TRUE);
+			if(m_growWin)
+				m_growWin->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -1102,14 +1230,21 @@ void MainMenuScaleUpTransition::update( Int frame )
 
 void MainMenuScaleUpTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		m_frameLength = 0;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
-
+	m_frameLength = MAINMENUSCALEUPTRANSITION_END;
 }
 
 void MainMenuScaleUpTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUSCALEUPTRANSITION_START || m_drawState >= MAINMENUSCALEUPTRANSITION_END)
 		return;
@@ -1123,6 +1258,11 @@ void MainMenuScaleUpTransition::draw()
 
 void MainMenuScaleUpTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUSCALEUPTRANSITION_END);
 }
 
@@ -1143,18 +1283,28 @@ MainMenuMediumScaleUpTransition::~MainMenuMediumScaleUpTransition()
 
 void MainMenuMediumScaleUpTransition::init( GameWindow *win )
 {
+	m_win = win;
 	if(win)
 	{
-		m_win = win;
 		m_win->winGetSize(&m_size.x, &m_size.y);
 		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+	}
+	if(!m_win)
+	{
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
 	AsciiString growWinName;
 	growWinName = m_win->winGetInstanceData()->m_decoratedNameString;
 	growWinName.concat("Medium");
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(growWinName));
 	if(!m_growWin)
+	{
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
 		return;
+	}
 
 	m_growWin->winGetSize(&m_growSize.x, &m_growSize.y);
 	m_growWin->winGetScreenPosition(&m_growPos.x, &m_growPos.y );
@@ -1174,6 +1324,11 @@ void MainMenuMediumScaleUpTransition::init( GameWindow *win )
 void MainMenuMediumScaleUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUMEDIUMSCALEUPTRANSITION_START || frame > MAINMENUMEDIUMSCALEUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuMediumScaleUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1182,20 +1337,25 @@ void MainMenuMediumScaleUpTransition::update( Int frame )
 	switch (frame) {
 	case MAINMENUMEDIUMSCALEUPTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(FALSE);
-			m_growWin->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(FALSE);
+			if(m_growWin)
+				m_growWin->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
 	case MAINMENUMEDIUMSCALEUPTRANSITION_END:
 		{
-			if(!m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(TRUE);
-			m_growWin->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(TRUE);
+			if(m_growWin)
+				m_growWin->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -1220,16 +1380,24 @@ void MainMenuMediumScaleUpTransition::update( Int frame )
 
 void MainMenuMediumScaleUpTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
-	m_win->winHide(TRUE);
-	m_growWin->winHide(TRUE);
+	if(m_win)
+		m_win->winHide(TRUE);
+	if(m_growWin)
+		m_growWin->winHide(TRUE);
 
 }
 
 void MainMenuMediumScaleUpTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUMEDIUMSCALEUPTRANSITION_START || m_drawState >= MAINMENUMEDIUMSCALEUPTRANSITION_END)
 		return;
@@ -1243,6 +1411,11 @@ void MainMenuMediumScaleUpTransition::draw()
 
 void MainMenuMediumScaleUpTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUMEDIUMSCALEUPTRANSITION_END);
 }
 //-----------------------------------------------------------------------------
@@ -1262,18 +1435,28 @@ MainMenuSmallScaleDownTransition::~MainMenuSmallScaleDownTransition()
 
 void MainMenuSmallScaleDownTransition::init( GameWindow *win )
 {
+	m_win = win;
 	if(win)
 	{
-		m_win = win;
 		m_win->winGetSize(&m_size.x, &m_size.y);
 		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+	}
+	if(!m_win)
+	{
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
+		return;
 	}
 	AsciiString growWinName;
 	growWinName = m_win->winGetInstanceData()->m_decoratedNameString;
 	growWinName.concat("Small");
 	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(growWinName));
 	if(!m_growWin)
+	{
+		m_incrementSize.zero();
+		m_isFinished = TRUE;
 		return;
+	}
 
 	m_growWin->winGetSize(&m_growSize.x, &m_growSize.y);
 	m_growWin->winGetScreenPosition(&m_growPos.x, &m_growPos.y );
@@ -1293,6 +1476,11 @@ void MainMenuSmallScaleDownTransition::init( GameWindow *win )
 void MainMenuSmallScaleDownTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < MAINMENUSMALLSCALEDOWNTRANSITION_START || frame > MAINMENUSMALLSCALEDOWNTRANSITION_END)
 	{
 		DEBUG_CRASH(("MainMenuSmallScaleDownTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1301,11 +1489,13 @@ void MainMenuSmallScaleDownTransition::update( Int frame )
 	switch (frame) {
 	case MAINMENUSMALLSCALEDOWNTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(FALSE);
-			m_growWin->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(FALSE);
+			if(m_growWin)
+				m_growWin->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
@@ -1322,10 +1512,13 @@ void MainMenuSmallScaleDownTransition::update( Int frame )
 		break;
 	case MAINMENUSMALLSCALEDOWNTRANSITION_END:
 		{
-			if(!m_isForward || !m_win || !m_growWin)
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(TRUE);
-			m_growWin->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(TRUE);
+			if(m_growWin)
+				m_growWin->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
@@ -1333,6 +1526,12 @@ void MainMenuSmallScaleDownTransition::update( Int frame )
 
 void MainMenuSmallScaleDownTransition::reverse()
 {
+	if(!m_win || !m_growWin || m_win->winIsHidden())
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1340,7 +1539,7 @@ void MainMenuSmallScaleDownTransition::reverse()
 
 void MainMenuSmallScaleDownTransition::draw()
 {
-	if(!m_win)
+	if(!m_win || !m_growWin)
 		return;
 	if(m_drawState <= MAINMENUSMALLSCALEDOWNTRANSITION_START || m_drawState >= MAINMENUSMALLSCALEDOWNTRANSITION_END)
 		return;
@@ -1354,6 +1553,11 @@ void MainMenuSmallScaleDownTransition::draw()
 
 void MainMenuSmallScaleDownTransition::skip()
 {
+	if(!m_win || !m_growWin)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(MAINMENUSMALLSCALEDOWNTRANSITION_END);
 }
 
@@ -1379,12 +1583,14 @@ TextTypeTransition::~TextTypeTransition()
 
 void TextTypeTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	m_isForward = FALSE;
 	update(TEXTTYPETRANSITION_START);
 	m_isFinished = FALSE;
@@ -1398,6 +1604,11 @@ void TextTypeTransition::init( GameWindow *win )
 void TextTypeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < TEXTTYPETRANSITION_START || frame > TEXTTYPETRANSITION_END)
 	{
 		DEBUG_CRASH(("TextTypeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1406,29 +1617,34 @@ void TextTypeTransition::update( Int frame )
 	switch (frame) {
 	case TEXTTYPETRANSITION_START:
 		{
-
-			if(m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 		}
 		break;
 	case TEXTTYPETRANSITION_END:
 		{
-			if(!m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
 	if(frame >= m_frameLength)
 	{
-		m_win->winHide(FALSE);
+		if(m_win)
+			m_win->winHide(FALSE);
 
 	}
 	if(frame > TEXTTYPETRANSITION_START && frame < m_frameLength)
 	{
-		m_win->winHide(TRUE);
+		if(m_win)
+			m_win->winHide(TRUE);
 		m_drawState = frame;
 		AudioEventRTS buttonClick("GUITypeText");
 
@@ -1449,6 +1665,13 @@ void TextTypeTransition::update( Int frame )
 
 void TextTypeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_drawState = -1;
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 
@@ -1457,6 +1680,8 @@ void TextTypeTransition::reverse()
 
 void TextTypeTransition::draw()
 {
+	if(!m_win || !m_dStr)
+		return;
 	if(m_drawState > TEXTTYPETRANSITION_START && m_drawState < m_frameLength)
 	{
 		m_dStr->setText(m_partialText);
@@ -1466,6 +1691,11 @@ void TextTypeTransition::draw()
 
 void TextTypeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(TEXTTYPETRANSITION_END);
 }
 
@@ -1488,19 +1718,21 @@ CountUpTransition::~CountUpTransition()
 
 void CountUpTransition::init( GameWindow *win )
 {
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
+	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 
-		if( m_win->winIsHidden() )
-		{
-			m_isForward = TRUE;
-			m_isFinished = TRUE;
-			m_frameLength = 0;
-			return;
-		}
+	if( m_win->winIsHidden() )
+	{
+		m_isForward = TRUE;
+		m_isFinished = TRUE;
+		m_frameLength = 0;
+		return;
 	}
 	m_fullText = GadgetStaticTextGetText(m_win);
 	m_isForward = FALSE;
@@ -1537,6 +1769,11 @@ void CountUpTransition::init( GameWindow *win )
 void CountUpTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < COUNTUPTRANSITION_START || frame > COUNTUPTRANSITION_END)
 	{
 		DEBUG_CRASH(("CountUpTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1545,34 +1782,40 @@ void CountUpTransition::update( Int frame )
 	switch (frame) {
 	case COUNTUPTRANSITION_START:
 		{
-
-			if(m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
-			m_currentValue = 0;
-			UnicodeString currVal;
-			currVal.format(L"%d",m_currentValue);
-			GadgetStaticTextSetText(m_win, currVal);
-
-			m_win->winHide(TRUE);
+			if(m_win)
+			{
+				m_currentValue = 0;
+				UnicodeString currVal;
+				currVal.format(L"%d",m_currentValue);
+				GadgetStaticTextSetText(m_win, currVal);
+				m_win->winHide(TRUE);
+			}
 			m_isFinished = TRUE;
 		}
 		break;
 	case COUNTUPTRANSITION_END:
 		{
-			if(!m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 		}
 	}
 	if(frame >= m_frameLength)
 	{
-		m_win->winHide(FALSE);
+		if(m_win)
+			m_win->winHide(FALSE);
 
 	}
 	if(frame > COUNTUPTRANSITION_START && frame < m_frameLength)
 	{
-		m_win->winHide(FALSE);
+		if(m_win)
+			m_win->winHide(FALSE);
 		m_drawState = frame;
 		AudioEventRTS buttonClick("GUIScoreScreenTick");
 
@@ -1586,18 +1829,20 @@ void CountUpTransition::update( Int frame )
 
 		UnicodeString currVal;
 		currVal.format(L"%d",m_currentValue);
-		GadgetStaticTextSetText(m_win, currVal);
+		if(m_win)
+			GadgetStaticTextSetText(m_win, currVal);
 	}
 	if( frame == m_frameLength )
 	{
-		GadgetStaticTextSetText(m_win, m_fullText);
+		if(m_win)
+			GadgetStaticTextSetText(m_win, m_fullText);
 		m_isFinished = TRUE;
 	}
 }
 
 void CountUpTransition::reverse()
 {
-	if( m_win->winIsHidden() )
+	if( !m_win || m_win->winIsHidden() )
 	{
 		m_isForward = FALSE;
 		m_isFinished = TRUE;
@@ -1615,6 +1860,11 @@ void CountUpTransition::draw()
 
 void CountUpTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if (!m_isFinished)
 		update(COUNTUPTRANSITION_END);
 }
@@ -1822,13 +2072,14 @@ FullFadeTransition::~FullFadeTransition()
 
 void FullFadeTransition::init( GameWindow *win )
 {
-
-	if(win)
+	m_win = win;
+	if(!m_win)
 	{
-		m_win = win;
-		m_win->winGetSize(&m_size.x, &m_size.y);
-		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
+		m_isFinished = TRUE;
+		return;
 	}
+	m_win->winGetSize(&m_size.x, &m_size.y);
+	m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 
 	m_isForward = FALSE;
 	update(FULLFADETRANSITION_START);
@@ -1842,6 +2093,11 @@ void FullFadeTransition::init( GameWindow *win )
 void FullFadeTransition::update( Int frame )
 {
 	m_drawState = -1;
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < FULLFADETRANSITION_START || frame > FULLFADETRANSITION_END)
 	{
 		DEBUG_CRASH(("FullFadeTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1850,42 +2106,56 @@ void FullFadeTransition::update( Int frame )
 	switch (frame) {
 	case FULLFADETRANSITION_START:
 		{
-
-			if(m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
 
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 
 		}
 		break;
 	case FULLFADETRANSITION_END:
 		{
-			if(!m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 
 		}
 	}
 	if(frame == FULLFADETRANSITION_END/2)
 	{
-		if(m_isForward)
-			m_win->winHide(FALSE);
-		else
-			m_win->winHide(TRUE);
+		if(m_win)
+		{
+			if(m_isForward)
+				m_win->winHide(FALSE);
+			else
+				m_win->winHide(TRUE);
+		}
 	}
 	m_drawState = frame;
 }
 
 void FullFadeTransition::reverse()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		m_isForward = FALSE;
+		return;
+	}
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
 }
 
 void FullFadeTransition::draw()
 {
+	if(!m_win)
+		return;
 	Int alpha;
 	if(m_drawState > (FULLFADETRANSITION_END/2))
 		alpha = m_percent * 255 * (FULLFADETRANSITION_END - m_drawState);
@@ -1899,6 +2169,11 @@ void FullFadeTransition::draw()
 
 void FullFadeTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	update(FULLFADETRANSITION_END);
 }
 
@@ -1921,12 +2196,8 @@ TextOnFrameTransition::~TextOnFrameTransition()
 
 void TextOnFrameTransition::init( GameWindow *win )
 {
-
-	if(win)
-	{
-		m_win = win;
-	}
-	if(m_win->winIsHidden())
+	m_win = win;
+	if(!m_win || m_win->winIsHidden())
 	{
 		m_isFinished = TRUE;
 		m_isForward = TRUE;
@@ -1943,6 +2214,11 @@ void TextOnFrameTransition::init( GameWindow *win )
 
 void TextOnFrameTransition::update( Int frame )
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if(frame < TEXTONFRAMETRANSITION_START || frame > TEXTONFRAMETRANSITION_END)
 	{
 		DEBUG_CRASH(("TextOnFrameTransition::update - Frame is out of the range the this update can handle %d", frame));
@@ -1951,20 +2227,23 @@ void TextOnFrameTransition::update( Int frame )
 	switch (frame) {
 	case TEXTONFRAMETRANSITION_START:
 		{
-
-			if(m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(m_isForward)
 				break;
 
-			m_win->winHide(TRUE);
+			if(m_win)
+				m_win->winHide(TRUE);
 			m_isFinished = TRUE;
 
 		}
 		break;
 	case TEXTONFRAMETRANSITION_END:
 		{
-			if(!m_isForward || !m_win )
+			// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Complete transition even if target window is null
+			if(!m_isForward)
 				break;
-			m_win->winHide(FALSE);
+			if(m_win)
+				m_win->winHide(FALSE);
 			m_isFinished = TRUE;
 
 		}
@@ -1975,7 +2254,7 @@ void TextOnFrameTransition::reverse()
 {
 	m_isFinished = FALSE;
 	m_isForward = FALSE;
-	if(m_win->winIsHidden())
+	if(!m_win || m_win->winIsHidden())
 	{
 		m_isFinished = TRUE;
 		m_frameLength = 0;
@@ -1988,6 +2267,11 @@ void TextOnFrameTransition::draw()
 
 void TextOnFrameTransition::skip()
 {
+	if(!m_win)
+	{
+		m_isFinished = TRUE;
+		return;
+	}
 	if (!m_isFinished)
 		update(TEXTONFRAMETRANSITION_END);
 }

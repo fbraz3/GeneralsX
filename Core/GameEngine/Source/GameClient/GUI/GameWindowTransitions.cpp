@@ -169,9 +169,12 @@ Bool TransitionWindow::init()
 	m_winID = TheNameKeyGenerator->nameToKey(m_winName);
 	m_win		= TheWindowManager->winGetWindowFromId(nullptr, m_winID);
 	m_currentFrameDelay = m_frameDelay;
-//	DEBUG_ASSERTCRASH( m_win, ("TransitionWindow::init Failed to find window %s", m_winName.str()));
-//	if( !m_win )
-//		return FALSE;
+	if (!m_win)
+	{
+		// GeneralsX @bugfix fbraz3 05/11/2026 Issue #381: Warn when a transition references a non-existent window
+		fprintf(stderr, "[WARNING] TransitionWindow::init: Window '%s' not found for transition style %d\n", m_winName.str(), m_style);
+		fflush(stderr);
+	}
 
 	delete m_transition;
 	m_transition = getTransitionForStyle( m_style );
