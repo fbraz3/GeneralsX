@@ -365,7 +365,8 @@ void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 	// Ensure background texture matches current render target dimensions and format
 	if (!m_backgroundTexture ||
 		(int)m_backgroundTexture->Get_Width() != (int)surface_desc.Width ||
-		(int)m_backgroundTexture->Get_Height() != (int)surface_desc.Height)
+		(int)m_backgroundTexture->Get_Height() != (int)surface_desc.Height ||
+		m_backgroundTexture->Get_Texture_Format() != surface_desc.Format)
 	{
 		REF_PTR_RELEASE(m_backgroundTexture);
 		m_backgroundTexture = MSGNEW("TextureClass") TextureClass(
