@@ -1039,7 +1039,11 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 #else
 	// GeneralsX @bugfix felipebraz 06/11/2026 Normalize path separators to POSIX on macOS/Linux (Issue #372).
 	std::string normalizedStr = prefix.str();
-	std::replace(normalizedStr.begin(), normalizedStr.end(), '\\', '/');
+	size_t baseLen = containingBasePath.getLength();
+	if (baseLen < normalizedStr.size())
+	{
+		std::replace(normalizedStr.begin() + baseLen, normalizedStr.end(), '\\', '/');
+	}
 	prefix = normalizedStr.c_str();
 #endif
 	return prefix;

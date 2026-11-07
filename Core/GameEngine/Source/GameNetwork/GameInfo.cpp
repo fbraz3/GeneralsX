@@ -642,8 +642,16 @@ void GameInfo::setMapCRC( UnsignedInt mapCRC )
 		}
 		else
 		{
-			//DEBUG_LOG(("GameInfo::setMapCRC - map CRC's match."));
-			getSlot(getLocalSlotNum())->setMapAvailability(true);
+			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
+			if (TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			{
+				m_mapName = md->m_fileName;
+				getSlot(getLocalSlotNum())->setMapAvailability(true);
+			}
+			else
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(false);
+			}
 		}
 	}
 }
@@ -664,15 +672,23 @@ void GameInfo::setMapSize( UnsignedInt mapSize )
 			DEBUG_LOG(("GameInfo::setMapSize - could not find map file."));
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
-		else if (m_mapCRC != md->m_CRC)
+		else if (m_mapCRC != md->m_CRC || m_mapSize != md->m_filesize)
 		{
-			DEBUG_LOG(("GameInfo::setMapSize - map CRC's do not match."));
+			DEBUG_LOG(("GameInfo::setMapSize - map CRC's or sizes do not match."));
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
 		else
 		{
-			//DEBUG_LOG(("GameInfo::setMapSize - map CRC's match."));
-			getSlot(getLocalSlotNum())->setMapAvailability(true);
+			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
+			if (TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			{
+				m_mapName = md->m_fileName;
+				getSlot(getLocalSlotNum())->setMapAvailability(true);
+			}
+			else
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(false);
+			}
 		}
 	}
 }

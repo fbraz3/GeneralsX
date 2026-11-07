@@ -870,6 +870,11 @@ void GameEngine::init()
 			{
 				TheWritableGlobalData->m_shellMapOn = FALSE;
 			}
+			else
+			{
+				// GeneralsX @bugfix felipebraz 07/11/2026 Ensure shell map name aligns with the resolved local file path.
+				TheWritableGlobalData->m_shellMapName = shellMapData->m_fileName;
+			}
 		}
 
 	}
