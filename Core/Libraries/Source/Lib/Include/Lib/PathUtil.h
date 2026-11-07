@@ -20,6 +20,10 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+
 inline Char getNativePathSeparator()
 {
 #ifdef _WIN32
@@ -27,6 +31,85 @@ inline Char getNativePathSeparator()
 #else
 	return '/';
 #endif
+}
+
+// Normalizes path separators to the host platform's native format.
+inline void normalizePathSeparatorsToNative(std::string& path, size_t startOffset = 0)
+{
+	const char nativeSep = getNativePathSeparator();
+	const char foreignSep = (nativeSep == '/') ? '\\' : '/';
+	if (startOffset < path.size())
+	{
+		std::replace(path.begin() + startOffset, path.end(), foreignSep, nativeSep);
+	}
+}
+
+// Normalizes path separators to standard portable network format (Windows backslashes).
+inline void normalizePathSeparatorsToPortable(std::string& path, size_t startOffset = 0)
+{
+	if (startOffset < path.size())
+	{
+		std::replace(path.begin() + startOffset, path.end(), '/', '\\');
+	}
+}
+
+// Returns the leaf directory and map file name: "dir/map.map" (normalized to POSIX separators).
+inline std::string getMapDirAndFileName(const std::string& path)
+{
+	size_t lastSep = path.find_last_of("/\\");
+	if (lastSep == std::string::npos)
+		return path;
+	size_t prevSep = (lastSep > 0) ? path.find_last_of("/\\", lastSep - 1) : std::string::npos;
+	if (prevSep == std::string::npos)
+		return path;
+	std::string result = path.substr(prevSep + 1);
+	for (char &c : result) {
+		if (c == '\\') c = '/';
+	}
+	return result;
+}
+
+// Validates whether the candidate map path matches the requested map name/path.
+inline bool isMapPathMatching(const std::string& requested, const std::string& actual)
+{
+	if (requested.empty() || actual.empty())
+		return false;
+	if (requested == actual)
+		return true;
+
+	auto normalize = [](const std::string& input) -> std::string {
+		std::string s = input;
+		std::transform(s.begin(), s.end(), s.begin(),
+			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		for (char &c : s) {
+			if (c == '\\') c = '/';
+		}
+		while (s.length() > 1 && s.back() == '/') s.pop_back();
+		return s;
+	};
+
+	std::string reqNorm = normalize(requested);
+	std::string actNorm = normalize(actual);
+
+	if (reqNorm == actNorm)
+		return true;
+
+	if (actNorm.length() > reqNorm.length())
+	{
+		const size_t suffixPos = actNorm.length() - reqNorm.length();
+		if (actNorm[suffixPos - 1] == '/' &&
+			actNorm.compare(suffixPos, reqNorm.length(), reqNorm) == 0)
+		{
+			return true;
+		}
+	}
+
+	std::string reqLeaf = getMapDirAndFileName(reqNorm);
+	std::string actLeaf = getMapDirAndFileName(actNorm);
+	if (!reqLeaf.empty() && reqLeaf == actLeaf)
+		return true;
+
+	return false;
 }
 
 // Returns true for a separator the host platform uses to open files.

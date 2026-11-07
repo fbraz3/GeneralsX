@@ -31,6 +31,8 @@
 
 #include <cstdint>
 #include "WWLib/strtok_r.h"
+#include "Lib/PathUtil.h"
+#include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "Common/MessageStream.h"
@@ -242,7 +244,9 @@ void LANAPI::OnGameStart()
 		// see if we really have the map.  if not, back out.
 		TheMapCache->updateCache();
 		const MapMetaData *mapMeta = TheMapCache->findMap(m_currentGame->getMap());
-		if (!filesOk || mapMeta == nullptr)
+		if (!filesOk || mapMeta == nullptr ||
+			!isMapPathMatching(m_currentGame->getMap().str(), mapMeta->m_fileName.str()) ||
+			!TheFileSystem->doesFileExist(mapMeta->m_fileName.str()))
 		{
 			DEBUG_LOG(("After transfer, we didn't really have the map.  Bailing..."));
 			OnPlayerLeave(m_name);

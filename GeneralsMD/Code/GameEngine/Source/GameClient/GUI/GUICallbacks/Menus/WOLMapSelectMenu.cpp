@@ -43,8 +43,7 @@
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "GameNetwork/GUIUtil.h"
-#include <algorithm>
-#include <string>
+#include "Lib/PathUtil.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonBack = NAMEKEY_INVALID;
@@ -480,29 +479,7 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					}
 					// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
 					const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
-					auto matchesRequestedMap = [](const AsciiString& requested, const MapMetaData* mapMeta) -> bool {
-						if (!mapMeta)
-							return false;
-						if (mapMeta->m_fileName == requested)
-							return true;
-
-						std::string reqNorm = requested.str();
-						std::transform(reqNorm.begin(), reqNorm.end(), reqNorm.begin(), ::tolower);
-						for (char &c : reqNorm) { if (c == '\\') c = '/'; }
-						while (reqNorm.length() > 1 && reqNorm.back() == '/') reqNorm.pop_back();
-
-						std::string fnNorm = mapMeta->m_fileName.str();
-						std::transform(fnNorm.begin(), fnNorm.end(), fnNorm.begin(), ::tolower);
-						for (char &c : fnNorm) { if (c == '\\') c = '/'; }
-						while (fnNorm.length() > 1 && fnNorm.back() == '/') fnNorm.pop_back();
-
-						if (reqNorm == fnNorm)
-							return true;
-						if (fnNorm.length() >= reqNorm.length() && fnNorm.rfind(reqNorm) == (fnNorm.length() - reqNorm.length()))
-							return true;
-						return false;
-					};
-					if (md != nullptr && matchesRequestedMap(asciiMap, md))
+					if (md != nullptr && isMapPathMatching(asciiMap.str(), md->m_fileName.str()))
 					{
 						if (TheNGMPGame)
 						{
