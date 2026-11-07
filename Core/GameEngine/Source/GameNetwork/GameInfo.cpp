@@ -45,6 +45,7 @@
 #include "GameNetwork/LANAPICallbacks.h"	// for testing packet size
 #include "WWLib/strtok_r.h"
 #include "WWLib/utf8.h"
+#include "Lib/PathUtil.h"
 
 
 
@@ -643,9 +644,9 @@ void GameInfo::setMapCRC( UnsignedInt mapCRC )
 		else
 		{
 			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
-			if (TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			// Keep the advertised portable map identity (m_mapName) separate from the local path for NGMP protocol integrity.
+			if (isMapPathMatching(m_mapName.str(), md->m_fileName.str()) && TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
 			{
-				m_mapName = md->m_fileName;
 				getSlot(getLocalSlotNum())->setMapAvailability(true);
 			}
 			else
@@ -680,9 +681,9 @@ void GameInfo::setMapSize( UnsignedInt mapSize )
 		else
 		{
 			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
-			if (TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			// Keep the advertised portable map identity (m_mapName) separate from the local path for NGMP protocol integrity.
+			if (isMapPathMatching(m_mapName.str(), md->m_fileName.str()) && TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
 			{
-				m_mapName = md->m_fileName;
 				getSlot(getLocalSlotNum())->setMapAvailability(true);
 			}
 			else

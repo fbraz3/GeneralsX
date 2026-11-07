@@ -262,8 +262,7 @@ void LANAPI::OnGameStart()
 			return;
 		}
 
-		// GeneralsX @bugfix felipebraz 07/11/2026 Use verified local map path from metadata for loader pendingFile.
-		m_currentGame->setMap(mapMeta->m_fileName);
+		// GeneralsX @bugfix felipebraz 07/11/2026 Keep portable map identity in m_currentGame for protocol integrity, use verified local path for loader pendingFile.
 		m_currentGame->startGame(0);
 
 		// shutdown the top, but do not pop it off the stack
