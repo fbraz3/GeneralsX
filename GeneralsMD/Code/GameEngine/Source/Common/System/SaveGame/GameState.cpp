@@ -36,6 +36,7 @@
 #endif
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Lib/PathUtil.h"
 #include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -981,7 +982,10 @@ AsciiString GameState::realMapPathToPortableMapPath(const AsciiString& in) const
 		prefix = in;
 	}
 	prefix.toLower();
-	return prefix;
+	// GeneralsX @bugfix felipebraz 07/11/2026 Canonical portable network format uses backslashes for cross-platform LAN CRC match.
+	std::string portableStr = prefix.str();
+	normalizePathSeparatorsToPortable(portableStr);
+	return AsciiString(portableStr.c_str());
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1001,7 +1005,7 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	{
 		// the map dir DOES NOT end with "\\", must add it
 		prefix = TheMapCache->getMapDir();
-		prefix.concat("\\");
+		prefix.concat(getNativePathSeparator());
 		containingBasePath = prefix;
 		prefix.concat(getMapLeafAndDirName(in));
 	}
@@ -1009,7 +1013,7 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	{
 		// the map dir DOES NOT end with "\\", must add it
 		prefix = TheMapCache->getUserMapDir();
-		prefix.concat("\\");
+		prefix.concat(getNativePathSeparator());
 		containingBasePath = prefix;
 		prefix.concat(getMapLeafAndDirName(in));
 	}
@@ -1025,7 +1029,10 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 		DEBUG_LOG(("Normalized file path for '%s' was outside the expected base path of '%s'.", prefix.str(), containingBasePath.str()));
 		return AsciiString::TheEmptyString;
 	}
-	// GeneralsX @bugfix Copilot 02/04/2026 Preserve path casing on macOS/Linux to avoid load failures on case-sensitive filesystems.
+	// GeneralsX @bugfix felipebraz 07/11/2026 Normalize path separators to host platform format via PathUtil.
+	std::string normalizedStr = prefix.str();
+	normalizePathSeparatorsToNative(normalizedStr, containingBasePath.getLength());
+	prefix = normalizedStr.c_str();
 #ifdef _WIN32
 	prefix.toLower();
 #endif

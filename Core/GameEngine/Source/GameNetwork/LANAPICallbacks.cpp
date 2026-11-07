@@ -31,6 +31,8 @@
 
 #include <cstdint>
 #include "WWLib/strtok_r.h"
+#include "Lib/PathUtil.h"
+#include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "Common/MessageStream.h"
@@ -241,7 +243,10 @@ void LANAPI::OnGameStart()
 
 		// see if we really have the map.  if not, back out.
 		TheMapCache->updateCache();
-		if (!filesOk || TheMapCache->findMap(m_currentGame->getMap()) == nullptr)
+		const MapMetaData *mapMeta = TheMapCache->findMap(m_currentGame->getMap());
+		if (!filesOk || mapMeta == nullptr ||
+			!isMapPathMatching(m_currentGame->getMap().str(), mapMeta->m_fileName.str()) ||
+			!TheFileSystem->doesFileExist(mapMeta->m_fileName.str()))
 		{
 			DEBUG_LOG(("After transfer, we didn't really have the map.  Bailing..."));
 			OnPlayerLeave(m_name);
@@ -257,12 +262,13 @@ void LANAPI::OnGameStart()
 			return;
 		}
 
+		// GeneralsX @bugfix felipebraz 07/11/2026 Keep portable map identity in m_currentGame for protocol integrity, use verified local path for loader pendingFile.
 		m_currentGame->startGame(0);
 
 		// shutdown the top, but do not pop it off the stack
 		//TheShell->hideShell();
 		// setup the Global Data with the Map and Seed
-		TheWritableGlobalData->m_pendingFile = m_currentGame->getMap();
+		TheWritableGlobalData->m_pendingFile = mapMeta->m_fileName;
 
 		// send a message to the logic for a new game
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );

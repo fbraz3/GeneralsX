@@ -45,6 +45,7 @@
 #include "GameNetwork/LANAPICallbacks.h"	// for testing packet size
 #include "WWLib/strtok_r.h"
 #include "WWLib/utf8.h"
+#include "Lib/PathUtil.h"
 
 
 
@@ -389,13 +390,11 @@ Int GameInfo::getMaxPlayers() const
 	if (!TheMapCache)
 		return -1;
 
-	AsciiString lowerMap = m_mapName;
-	lowerMap.toLower();
-	MapCache::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *data = TheMapCache->findMap(m_mapName);
+	if (!data)
 		return -1;
-	MapMetaData data = it->second;
-	return data.m_numPlayers;
+	return data->m_numPlayers;
 }
 
 void GameInfo::enterGame()
@@ -631,33 +630,29 @@ void GameInfo::setMapCRC( UnsignedInt mapCRC )
 	// check the map cache
 	if (m_inGame && getLocalSlotNum() >= 0)
 	{
-		//TheMapCache->updateCache();
-		AsciiString lowerMap = m_mapName;
-		lowerMap.toLower();
-		//DEBUG_LOG(("GameInfo::setMapCRC - looking for map file \"%s\" in the map cache", lowerMap.str()));
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-		if (it == TheMapCache->end())
+		// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+		const MapMetaData *md = TheMapCache->findMap(m_mapName);
+		if (!md)
 		{
-			/*
-			DEBUG_LOG(("GameInfo::setMapCRC - could not find map file."));
-			it = TheMapCache->begin();
-			while (it != TheMapCache->end())
-			{
-				DEBUG_LOG(("\t\"%s\"", it->first.str()));
-				++it;
-			}
-			*/
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
-		else if (m_mapCRC != it->second.m_CRC)
+		else if (m_mapCRC != md->m_CRC)
 		{
-			DEBUG_LOG(("GameInfo::setMapCRC - map CRC's do not match (%X/%X).", m_mapCRC, it->second.m_CRC));
+			DEBUG_LOG(("GameInfo::setMapCRC - map CRC's do not match (%X/%X).", m_mapCRC, md->m_CRC));
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
 		else
 		{
-			//DEBUG_LOG(("GameInfo::setMapCRC - map CRC's match."));
-			getSlot(getLocalSlotNum())->setMapAvailability(true);
+			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
+			// Keep the advertised portable map identity (m_mapName) separate from the local path for NGMP protocol integrity.
+			if (isMapPathMatching(m_mapName.str(), md->m_fileName.str()) && TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(true);
+			}
+			else
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(false);
+			}
 		}
 	}
 }
@@ -671,24 +666,30 @@ void GameInfo::setMapSize( UnsignedInt mapSize )
 	// check the map cache
 	if (m_inGame && getLocalSlotNum() >= 0)
 	{
-		//TheMapCache->updateCache();
-		AsciiString lowerMap = m_mapName;
-		lowerMap.toLower();
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-		if (it == TheMapCache->end())
+		// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+		const MapMetaData *md = TheMapCache->findMap(m_mapName);
+		if (!md)
 		{
 			DEBUG_LOG(("GameInfo::setMapSize - could not find map file."));
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
-		else if (m_mapCRC != it->second.m_CRC)
+		else if (m_mapCRC != md->m_CRC || m_mapSize != md->m_filesize)
 		{
-			DEBUG_LOG(("GameInfo::setMapSize - map CRC's do not match."));
+			DEBUG_LOG(("GameInfo::setMapSize - map CRC's or sizes do not match."));
 			getSlot(getLocalSlotNum())->setMapAvailability(false);
 		}
 		else
 		{
-			//DEBUG_LOG(("GameInfo::setMapSize - map CRC's match."));
-			getSlot(getLocalSlotNum())->setMapAvailability(true);
+			// GeneralsX @bugfix felipebraz 07/11/2026 Verify local file identity and existence before confirming map availability.
+			// Keep the advertised portable map identity (m_mapName) separate from the local path for NGMP protocol integrity.
+			if (isMapPathMatching(m_mapName.str(), md->m_fileName.str()) && TheFileSystem && TheFileSystem->doesFileExist(md->m_fileName.str()))
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(true);
+			}
+			else
+			{
+				getSlot(getLocalSlotNum())->setMapAvailability(false);
+			}
 		}
 	}
 }

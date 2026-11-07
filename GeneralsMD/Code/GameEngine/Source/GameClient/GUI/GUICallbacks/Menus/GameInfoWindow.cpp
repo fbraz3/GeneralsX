@@ -109,11 +109,11 @@ void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
 	// set the map name
 	UnicodeString map;
 	AsciiString asciiMap = gameInfo->getMap();
-	asciiMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
-	if (it != TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
+	if (md != nullptr)
 	{
-		map = it->second.m_displayName;
+		map = md->m_displayName;
 	}
 	else
 	{

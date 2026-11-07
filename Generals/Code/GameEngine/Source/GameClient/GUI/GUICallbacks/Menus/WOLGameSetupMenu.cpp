@@ -1217,14 +1217,13 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 			slot->setState( SLOT_OPEN );
 		}
 
-		AsciiString lowerMap = customPref.getPreferredMap();
-		lowerMap.toLower();
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-		if (it != TheMapCache->end())
+		// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+		const MapMetaData *md = TheMapCache ? TheMapCache->findMap(customPref.getPreferredMap()) : nullptr;
+		if (md != nullptr)
 		{
 			hostSlot->setMapAvailability(TRUE);
-			game->setMapCRC( it->second.m_CRC );
-			game->setMapSize( it->second.m_filesize );
+			game->setMapCRC( md->m_CRC );
+			game->setMapSize( md->m_filesize );
 
 			game->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
 		}
