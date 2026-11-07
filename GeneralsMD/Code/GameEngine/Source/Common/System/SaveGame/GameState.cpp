@@ -1001,7 +1001,11 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	{
 		// the map dir DOES NOT end with "\\", must add it
 		prefix = TheMapCache->getMapDir();
+#ifdef _WIN32
 		prefix.concat("\\");
+#else
+		prefix.concat("/");
+#endif
 		containingBasePath = prefix;
 		prefix.concat(getMapLeafAndDirName(in));
 	}
@@ -1009,7 +1013,11 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	{
 		// the map dir DOES NOT end with "\\", must add it
 		prefix = TheMapCache->getUserMapDir();
+#ifdef _WIN32
 		prefix.concat("\\");
+#else
+		prefix.concat("/");
+#endif
 		containingBasePath = prefix;
 		prefix.concat(getMapLeafAndDirName(in));
 	}
@@ -1028,6 +1036,11 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	// GeneralsX @bugfix Copilot 02/04/2026 Preserve path casing on macOS/Linux to avoid load failures on case-sensitive filesystems.
 #ifdef _WIN32
 	prefix.toLower();
+#else
+	// GeneralsX @bugfix felipebraz 06/11/2026 Normalize path separators to POSIX on macOS/Linux (Issue #372).
+	std::string normalizedStr = prefix.str();
+	std::replace(normalizedStr.begin(), normalizedStr.end(), '\\', '/');
+	prefix = normalizedStr.c_str();
 #endif
 	return prefix;
 }
