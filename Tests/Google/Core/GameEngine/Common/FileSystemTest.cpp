@@ -25,6 +25,7 @@
 
 #include "Common/FileSystem.h"
 #include "Common/STLTypedefs.h"
+#include "Lib/PathUtil.h"
 
 #include "FileSystemTestFixture.h"
 
@@ -201,4 +202,27 @@ TEST_F(FileSystemTest, KnowsCreatedFileInAnySpelling)
 	EXPECT_TRUE(TheFileSystem->doesFileExist("Data\\INI\\Weapon.ini"));
 	EXPECT_TRUE(TheFileSystem->doesFileExist("data/ini/weapon.ini"));
 	EXPECT_TRUE(TheFileSystem->doesFileExist("DATA\\\\INI//WEAPON.INI"));
+}
+
+TEST(PathUtil, MapPathMatching)
+{
+	// Exact matches
+	EXPECT_TRUE(isMapPathMatching("Maps/Tournament Desert/Tournament Desert.map", "Maps/Tournament Desert/Tournament Desert.map"));
+	EXPECT_TRUE(isMapPathMatching("Maps\\Tournament Desert\\Tournament Desert.map", "maps/tournament desert/tournament desert.map"));
+
+	// Portable network path vs local custom map path
+	EXPECT_TRUE(isMapPathMatching("UserData\\Maps\\Foo\\Foo.map", "/Users/user/Library/Application Support/GeneralsX/GeneralsZH/Maps/Foo/Foo.map"));
+	EXPECT_TRUE(isMapPathMatching("userdata/maps/foo/foo.map", "C:\\Users\\user\\Documents\\Command and Conquer Generals Zero Hour Data\\Maps\\foo\\foo.map"));
+
+	// Distinct subdirectories with identical map name must NOT match
+	EXPECT_FALSE(isMapPathMatching("Maps/A/Arena/Arena.map", "Maps/B/Arena/Arena.map"));
+	EXPECT_FALSE(isMapPathMatching("Maps/A/Arena/Arena.map", "/Users/user/Maps/B/Arena/Arena.map"));
+
+	// Non-map root prefixes must NOT match
+	EXPECT_FALSE(isMapPathMatching("maps/foo/foo.map", "xmaps/foo/foo.map"));
+	EXPECT_FALSE(isMapPathMatching("userdata/maps/foo/foo.map", "xmaps/foo/foo.map"));
+
+	// Substring collisions must NOT match
+	EXPECT_FALSE(isMapPathMatching("foo.map", "barfoo.map"));
+	EXPECT_FALSE(isMapPathMatching("maps/foo/foo.map", "maps/barfoo/barfoo.map"));
 }

@@ -69,6 +69,34 @@ inline std::string getMapDirAndFileName(const std::string& path)
 	return result;
 }
 
+// Returns the logical map subpath relative to map roots (e.g. "UserData/Maps/", "Maps/UserMaps/", "Maps/").
+inline std::string getLogicalMapSubpath(const std::string& normalizedPath)
+{
+	const std::string userDataPrefix = "userdata/maps/";
+	if (normalizedPath.rfind(userDataPrefix, 0) == 0)
+	{
+		return normalizedPath.substr(userDataPrefix.length());
+	}
+	const std::string userMapsPrefix = "maps/usermaps/";
+	if (normalizedPath.rfind(userMapsPrefix, 0) == 0)
+	{
+		return normalizedPath.substr(userMapsPrefix.length());
+	}
+	const std::string mapsPrefix = "maps/";
+	if (normalizedPath.rfind(mapsPrefix, 0) == 0)
+	{
+		return normalizedPath.substr(mapsPrefix.length());
+	}
+
+	size_t mapsPos = normalizedPath.rfind("/maps/");
+	if (mapsPos != std::string::npos)
+	{
+		return normalizedPath.substr(mapsPos + 6);
+	}
+
+	return normalizedPath;
+}
+
 // Validates whether the candidate map path matches the requested map name/path.
 inline bool isMapPathMatching(const std::string& requested, const std::string& actual)
 {
@@ -94,6 +122,14 @@ inline bool isMapPathMatching(const std::string& requested, const std::string& a
 	if (reqNorm == actNorm)
 		return true;
 
+	// Compare logical map subpaths relative to map root (e.g. "userdata/maps/", "maps/", or "/.../maps/").
+	std::string reqSub = getLogicalMapSubpath(reqNorm);
+	std::string actSub = getLogicalMapSubpath(actNorm);
+
+	if (!reqSub.empty() && reqSub == actSub)
+		return true;
+
+	// Check path-boundary suffix matching if one path is a full filesystem path and the other is a subpath.
 	if (actNorm.length() > reqNorm.length())
 	{
 		const size_t suffixPos = actNorm.length() - reqNorm.length();
@@ -103,11 +139,15 @@ inline bool isMapPathMatching(const std::string& requested, const std::string& a
 			return true;
 		}
 	}
-
-	std::string reqLeaf = getMapDirAndFileName(reqNorm);
-	std::string actLeaf = getMapDirAndFileName(actNorm);
-	if (!reqLeaf.empty() && reqLeaf == actLeaf)
-		return true;
+	else if (reqNorm.length() > actNorm.length())
+	{
+		const size_t suffixPos = reqNorm.length() - actNorm.length();
+		if (reqNorm[suffixPos - 1] == '/' &&
+			reqNorm.compare(suffixPos, actNorm.length(), actNorm) == 0)
+		{
+			return true;
+		}
+	}
 
 	return false;
 }
