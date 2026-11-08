@@ -225,4 +225,12 @@ TEST(PathUtil, MapPathMatching)
 	// Substring collisions must NOT match
 	EXPECT_FALSE(isMapPathMatching("foo.map", "barfoo.map"));
 	EXPECT_FALSE(isMapPathMatching("maps/foo/foo.map", "maps/barfoo/barfoo.map"));
+
+	// Stock map vs user map with identical relative path must NOT match (root isolation)
+	EXPECT_FALSE(isMapPathMatching("Maps/Tournament Desert/Tournament Desert.map", "UserData/Maps/Tournament Desert/Tournament Desert.map"));
+	EXPECT_FALSE(isMapPathMatching("Maps/Tournament Desert/Tournament Desert.map", "/Users/user/Library/Application Support/GeneralsX/GeneralsZH/Maps/Tournament Desert/Tournament Desert.map"));
+	EXPECT_FALSE(isMapPathMatching("UserData/Maps/Tournament Desert/Tournament Desert.map", "Maps/Tournament Desert/Tournament Desert.map"));
+
+	// Nested map directory suffix collisions must NOT match
+	EXPECT_FALSE(isMapPathMatching("Maps/Arena/Arena.map", "Maps/B/Maps/Arena/Arena.map"));
 }

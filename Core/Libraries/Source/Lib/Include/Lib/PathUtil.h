@@ -69,6 +69,44 @@ inline std::string getMapDirAndFileName(const std::string& path)
 	return result;
 }
 
+// Distinguishes the root location of a map path.
+enum class MapRootType
+{
+	UNKNOWN,
+	STOCK,
+	USER
+};
+
+// Determines whether a normalized path belongs to stock maps or user/custom maps.
+inline MapRootType getMapRootType(const std::string& normalizedPath)
+{
+	// User maps: portable prefixes or local user-data directories.
+	if (normalizedPath.rfind("userdata/maps/", 0) == 0 ||
+		normalizedPath.rfind("userdata/", 0) == 0 ||
+		normalizedPath.rfind("maps/usermaps/", 0) == 0 ||
+		normalizedPath.find("/userdata/maps/") != std::string::npos ||
+		normalizedPath.find("/userdata/") != std::string::npos ||
+		normalizedPath.find("/application support/") != std::string::npos ||
+		normalizedPath.find("/.local/share/") != std::string::npos ||
+		normalizedPath.find("command and conquer") != std::string::npos ||
+		normalizedPath.find("command & conquer") != std::string::npos)
+	{
+		return MapRootType::USER;
+	}
+
+	// Stock maps: starts with "maps/" (not usermaps) or located under game installation directory.
+	if (normalizedPath.rfind("maps/", 0) == 0)
+	{
+		return MapRootType::STOCK;
+	}
+	if (normalizedPath.rfind("/maps/") != std::string::npos)
+	{
+		return MapRootType::STOCK;
+	}
+
+	return MapRootType::UNKNOWN;
+}
+
 // Returns the logical map subpath relative to map roots (e.g. "UserData/Maps/", "Maps/UserMaps/", "Maps/").
 inline std::string getLogicalMapSubpath(const std::string& normalizedPath)
 {
@@ -122,32 +160,22 @@ inline bool isMapPathMatching(const std::string& requested, const std::string& a
 	if (reqNorm == actNorm)
 		return true;
 
-	// Compare logical map subpaths relative to map root (e.g. "userdata/maps/", "maps/", or "/.../maps/").
+	// Distinguish stock and user map roots. Reject matches across different root types
+	// (e.g. stock map request matching a custom user map with the same subpath).
+	MapRootType reqRoot = getMapRootType(reqNorm);
+	MapRootType actRoot = getMapRootType(actNorm);
+	if ((reqRoot == MapRootType::STOCK && actRoot == MapRootType::USER) ||
+		(reqRoot == MapRootType::USER && actRoot == MapRootType::STOCK))
+	{
+		return false;
+	}
+
+	// Compare logical map subpaths relative to map root (e.g. "UserData/Maps/", "Maps/", or "/.../Maps/").
 	std::string reqSub = getLogicalMapSubpath(reqNorm);
 	std::string actSub = getLogicalMapSubpath(actNorm);
 
 	if (!reqSub.empty() && reqSub == actSub)
 		return true;
-
-	// Check path-boundary suffix matching if one path is a full filesystem path and the other is a subpath.
-	if (actNorm.length() > reqNorm.length())
-	{
-		const size_t suffixPos = actNorm.length() - reqNorm.length();
-		if (actNorm[suffixPos - 1] == '/' &&
-			actNorm.compare(suffixPos, reqNorm.length(), reqNorm) == 0)
-		{
-			return true;
-		}
-	}
-	else if (reqNorm.length() > actNorm.length())
-	{
-		const size_t suffixPos = reqNorm.length() - actNorm.length();
-		if (reqNorm[suffixPos - 1] == '/' &&
-			reqNorm.compare(suffixPos, actNorm.length(), actNorm) == 0)
-		{
-			return true;
-		}
-	}
 
 	return false;
 }
