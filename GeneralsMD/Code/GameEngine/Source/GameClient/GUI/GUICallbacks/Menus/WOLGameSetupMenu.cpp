@@ -553,7 +553,9 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-						(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
+	// GeneralsX @bugfix marwanmk999-ai 07/11/2026 Restore missing color assignment dropped during upstream merge (#407)
+	// Upstream reference: marwanmk999-ai, Issue #407 https://github.com/fbraz3/GeneralsX/issues/407
+	color = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 #if defined(SAGE_USE_NGMP)
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
@@ -639,7 +641,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-			(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	playerTemplate = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 #if defined(SAGE_USE_NGMP)
@@ -805,7 +807,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-			(Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
+	// GeneralsX @build BenderAI 12/02/2026 64-bit safe pointer cast
 	team = static_cast<Int>(reinterpret_cast<intptr_t>(GadgetComboBoxGetItemData(combo, selIndex)));
 
 #if defined(SAGE_USE_NGMP)
