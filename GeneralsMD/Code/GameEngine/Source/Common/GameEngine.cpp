@@ -864,13 +864,16 @@ void GameEngine::init()
 		//
 		if (TheMapCache && TheGlobalData->m_shellMapOn)
 		{
-			AsciiString lowerName = TheGlobalData->m_shellMapName;
-			lowerName.toLower();
-
-			MapCache::const_iterator it = TheMapCache->find(lowerName);
-			if (it == TheMapCache->end())
+			// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+			const MapMetaData *shellMapData = TheMapCache->findMap(TheGlobalData->m_shellMapName);
+			if (shellMapData == nullptr)
 			{
 				TheWritableGlobalData->m_shellMapOn = FALSE;
+			}
+			else
+			{
+				// GeneralsX @bugfix felipebraz 07/11/2026 Ensure shell map name aligns with the resolved local file path.
+				TheWritableGlobalData->m_shellMapName = shellMapData->m_fileName;
 			}
 		}
 

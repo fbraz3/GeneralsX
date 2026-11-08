@@ -43,6 +43,7 @@
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "GameNetwork/GUIUtil.h"
+#include "Lib/PathUtil.h"
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -427,13 +428,13 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					else
 						asciiMap.translate( map );
 					TheGameSpyGame->setMap(asciiMap);
-					asciiMap.toLower();
-					std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
-					if (it != TheMapCache->end())
+					// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+					const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
+					if (md != nullptr && isMapPathMatching(asciiMap.str(), md->m_fileName.str()))
 					{
 						TheGameSpyGame->getGameSpySlot(0)->setMapAvailability(TRUE);
-						TheGameSpyGame->setMapCRC( it->second.m_CRC );
-						TheGameSpyGame->setMapSize( it->second.m_filesize );
+						TheGameSpyGame->setMapCRC( md->m_CRC );
+						TheGameSpyGame->setMapSize( md->m_filesize );
 					}
 
 					TheGameSpyGame->adjustSlotsForMap(); // BGC- adjust the slots for the new map.

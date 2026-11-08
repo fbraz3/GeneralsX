@@ -1042,16 +1042,14 @@ void createRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, Room
 		TheMapCache->updateCache();
 
 		TheGameSpyGame->setMap(TheGlobalData->m_mapName);
-		AsciiString asciiMap;
-		asciiMap = TheGlobalData->m_mapName;
-
-		asciiMap.toLower();
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
-		if (it != TheMapCache->end())
+		AsciiString asciiMap = TheGlobalData->m_mapName;
+		// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+		const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
+		if (md != nullptr)
 		{
 			TheGameSpyGame->getSlot(0)->setMapAvailability(true);
-			TheGameSpyGame->setMapCRC( it->second.m_CRC );
-			TheGameSpyGame->setMapSize( it->second.m_filesize );
+			TheGameSpyGame->setMapCRC( md->m_CRC );
+			TheGameSpyGame->setMapSize( md->m_filesize );
 
 			TheGameSpyGame->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
 		}

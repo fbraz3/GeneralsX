@@ -43,6 +43,7 @@
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameClient/MapUtil.h"
 #include "GameNetwork/GUIUtil.h"
+#include "Lib/PathUtil.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonBack = NAMEKEY_INVALID;
@@ -476,26 +477,26 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					{
 						TheGameSpyInfo->getCurrentStagingRoom()->setMap(asciiMap);
 					}
-					asciiMap.toLower();
-					std::map<AsciiString, MapMetaData>::iterator it = TheMapCache ? TheMapCache->find(asciiMap) : std::map<AsciiString, MapMetaData>::iterator();
-					if (TheMapCache && it != TheMapCache->end())
+					// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+					const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
+					if (md != nullptr && isMapPathMatching(asciiMap.str(), md->m_fileName.str()))
 					{
 						if (TheNGMPGame)
 						{
 							TheNGMPGame->getGameSpySlot(0)->setMapAvailability(TRUE);
-							TheNGMPGame->setMapCRC( it->second.m_CRC );
-							TheNGMPGame->setMapSize( it->second.m_filesize );
+							TheNGMPGame->setMapCRC( md->m_CRC );
+							TheNGMPGame->setMapSize( md->m_filesize );
 						}
 						if (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom())
 						{
 							TheGameSpyInfo->getCurrentStagingRoom()->getGameSpySlot(0)->setMapAvailability(TRUE);
-							TheGameSpyInfo->getCurrentStagingRoom()->setMapCRC( it->second.m_CRC );
-							TheGameSpyInfo->getCurrentStagingRoom()->setMapSize( it->second.m_filesize );
+							TheGameSpyInfo->getCurrentStagingRoom()->setMapCRC( md->m_CRC );
+							TheGameSpyInfo->getCurrentStagingRoom()->setMapSize( md->m_filesize );
 						}
 
-						newMaxPlayers = it->second.m_numPlayers;
-						strMapName.translate(it->second.m_displayName);
-						bOfficialMap = it->second.m_isOfficial;
+						newMaxPlayers = md->m_numPlayers;
+						strMapName.translate(md->m_displayName);
+						bOfficialMap = md->m_isOfficial;
 					}
 
 					if (TheNGMPGame)

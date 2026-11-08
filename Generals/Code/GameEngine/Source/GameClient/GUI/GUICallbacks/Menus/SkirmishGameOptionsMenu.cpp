@@ -488,15 +488,15 @@ static void startPressed()
 
 	BOOL isReady = FALSE;
 	Int playerCount = TheSkirmishGameInfo->getNumPlayers();
-	AsciiString lowerMap = TheSkirmishGameInfo->getMap();
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(TheSkirmishGameInfo->getMap()) : nullptr;
+	if (pMmd == nullptr)
 	{
 		buttonPushed = FALSE;
 		MessageBoxOk(TheGameText->fetch("GUI:ErrorStartingGame"), TheGameText->fetch("GUI:CantFindMap"), nullptr);
+		return;
 	}
-	MapMetaData mmd = it->second;
+	MapMetaData mmd = *pMmd;
 	if(playerCount > mmd.m_numPlayers)
 	{
 		buttonPushed = FALSE;
@@ -693,10 +693,9 @@ void positionAdditionalImages( MapMetaData *mmd, GameWindow *mapWindow, Bool for
 
 void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPositions[], GameWindow *mapWindow)
 {
-	AsciiString lowerMap = mapName;
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(mapName) : nullptr;
+	if (pMmd == nullptr)
 	{
 		mapWindow->winSetUserData(nullptr);
 
@@ -724,7 +723,7 @@ void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPosition
 	}
 	else
 	{
-		MapMetaData mmd = it->second;
+		MapMetaData mmd = *pMmd;
 
 		Image *image = getMapPreviewImage(mapName);
 		if (mapWindow != nullptr) {
@@ -770,7 +769,7 @@ void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPosition
 			}
 			else
 			{
-				DEBUG_CRASH(("positionStartSpots:: someone messed with the map cash.  We couldn't find waypoint <%s> in map <%s>", waypointName.str(),lowerMap.str()));
+				DEBUG_CRASH(("positionStartSpots:: someone messed with the map cash.  We couldn't find waypoint <%s> in map <%s>", waypointName.str(),mapName.str()));
 			}
 		}
 		// hide the rest
@@ -805,10 +804,9 @@ void positionStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[]
 
 void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[], Bool onLoadScreen )
 {
-	AsciiString lowerMap = myGame->getMap();
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it == TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *pMmd = TheMapCache ? TheMapCache->findMap(myGame->getMap()) : nullptr;
+	if (pMmd == nullptr)
 	{
 		for (Int i = 0; i < MAX_SLOTS; ++i)
     {
@@ -819,7 +817,7 @@ void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[
     }
 		return;
 	}
-	MapMetaData mmd = it->second;
+	MapMetaData mmd = *pMmd;
 
 	Int i = 0;
 	for(; i < MAX_SLOTS; ++i)
@@ -1124,12 +1122,11 @@ void skirmishUpdateSlotList()
   {
     doUpdateSlotList = FALSE;
 
-	  AsciiString lowerMap = TheSkirmishGameInfo->getMap();
-	  lowerMap.toLower();
-	  std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	  if (it != TheMapCache->end())
+	  // GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	  const MapMetaData *mmd = TheMapCache ? TheMapCache->findMap(TheSkirmishGameInfo->getMap()) : nullptr;
+	  if (mmd != nullptr)
 	  {
-      GadgetStaticTextSetText(textEntryMapDisplay, it->second.m_displayName);
+      GadgetStaticTextSetText(textEntryMapDisplay, mmd->m_displayName);
     }
     GadgetTextEntrySetText( textEntryPlayerName, TheSkirmishGameInfo->getSlot(0)->getName() );
     UpdateSlotList( TheSkirmishGameInfo, comboBoxPlayer,
@@ -1285,12 +1282,11 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		TheSkirmishGameInfo->setMapSize(md->m_filesize);
 	}
 
-	AsciiString lowerMap = prefs.getPreferredMap();
-	lowerMap.toLower();
-	std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-	if (it != TheMapCache->end())
+	// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+	const MapMetaData *prefMd = TheMapCache ? TheMapCache->findMap(prefs.getPreferredMap()) : nullptr;
+	if (prefMd != nullptr)
 	{
-    GadgetStaticTextSetText(textEntryMapDisplay, it->second.m_displayName);
+    GadgetStaticTextSetText(textEntryMapDisplay, prefMd->m_displayName);
   }
 
 	skirmishPositionStartSpots();

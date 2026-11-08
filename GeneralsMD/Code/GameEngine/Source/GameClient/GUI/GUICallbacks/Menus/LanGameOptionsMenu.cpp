@@ -864,14 +864,13 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		game->setMap( pref.getPreferredMap() );
     game->setStartingCash( pref.getStartingCash() );
     game->setSuperweaponRestriction( pref.getSuperweaponRestricted() ? 1 : 0 );
-		AsciiString lowerMap = pref.getPreferredMap();
-		lowerMap.toLower();
-		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
-		if (it != TheMapCache->end())
+		// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+		const MapMetaData *md = TheMapCache ? TheMapCache->findMap(pref.getPreferredMap()) : nullptr;
+		if (md != nullptr)
 		{
 			TheLAN->GetMyGame()->getSlot(0)->setMapAvailability(true);
-			TheLAN->GetMyGame()->setMapCRC( it->second.m_CRC );
-			TheLAN->GetMyGame()->setMapSize( it->second.m_filesize );
+			TheLAN->GetMyGame()->setMapCRC( md->m_CRC );
+			TheLAN->GetMyGame()->setMapSize( md->m_filesize );
 
 			TheLAN->GetMyGame()->adjustSlotsForMap(); // BGC- adjust the slots for the selected map.
 		}

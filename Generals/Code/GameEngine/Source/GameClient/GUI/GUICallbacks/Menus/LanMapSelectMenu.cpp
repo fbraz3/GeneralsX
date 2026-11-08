@@ -376,13 +376,13 @@ WindowMsgHandledType LanMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 					else
 						asciiMap.translate( map );
 					TheLAN->GetMyGame()->setMap( asciiMap );
-					asciiMap.toLower();
-					std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(asciiMap);
-					if (it != TheMapCache->end())
+					// GeneralsX @bugfix felipebraz 06/11/2026 Use findMap to handle mixed/normalized path separators on macOS/Linux (Issue #372).
+					const MapMetaData *md = TheMapCache ? TheMapCache->findMap(asciiMap) : nullptr;
+					if (md != nullptr)
 					{
 						TheLAN->GetMyGame()->getSlot(0)->setMapAvailability(true);
-						TheLAN->GetMyGame()->setMapCRC( it->second.m_CRC );
-						TheLAN->GetMyGame()->setMapSize( it->second.m_filesize );
+						TheLAN->GetMyGame()->setMapCRC( md->m_CRC );
+						TheLAN->GetMyGame()->setMapSize( md->m_filesize );
 
 						TheLAN->GetMyGame()->resetStartSpots();
 						TheLAN->GetMyGame()->adjustSlotsForMap(); // BGC- adjust the slots for the new map.
