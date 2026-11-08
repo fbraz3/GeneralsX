@@ -3263,8 +3263,8 @@ void W3DModelDraw::updateAirGroundIndicator()
 		return;
 	}
 
-	// GeneralsX @bugfix felipebraz 17/10/2026 Suppress ground indicator when aircraft is stealthed/cloaked
-	if (draw->getStealthLook() != STEALTHLOOK_NONE || draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
+	// GeneralsX @bugfix Mr. Meeseeks 08/11/2026 Allow ground indicator for friendly stealthed aircraft; only suppress if fully invisible or hidden
+	if (draw->getStealthLook() == STEALTHLOOK_INVISIBLE || draw->isDrawableEffectivelyHidden() || m_fullyObscuredByShroud || m_renderObject->Is_Hidden())
 	{
 		if (m_airGroundIndicator)
 			m_airGroundIndicator->enableShadowRender(FALSE);
