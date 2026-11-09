@@ -45,6 +45,7 @@
 
 
 Bool TheDebugIgnoreSyncErrors = FALSE;
+Bool TheDebugIgnoreReplaySyncErrors = FALSE;
 extern Int DX8Wrapper_PreserveFPU;
 
 #ifdef DEBUG_CRC
@@ -764,6 +765,13 @@ Int parseLoadReplay(char *args[], int num)
 	return 1;
 }
 
+Int parseIgnoreReplaySyncErrors(char *args[], int)
+{
+	TheDebugIgnoreReplaySyncErrors = true;
+
+	return 1;
+}
+
 //=============================================================================
 //=============================================================================
 
@@ -1233,6 +1241,9 @@ static CommandLineParam paramsForEngineInit[] =
 
 	// TheSuperHackers @feature bobtista 08/08/2026 Play a replay file from the command line.
 	{ "-loadreplay", parseLoadReplay },
+
+	// TheSuperHackers @feature bobtista 08/08/2026 Continue replay playback on CRC mismatches and only log them.
+	{ "-ignoreReplaySyncErrors", parseIgnoreReplaySyncErrors },
 
 	// TheSuperHackers @feature xezon 03/08/2025 Force full viewport for 'Control Bar Pro' Addons like GenTool did it.
 	{ "-forcefullviewport", parseFullViewport },
