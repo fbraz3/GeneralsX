@@ -91,6 +91,20 @@ GeneralsX stands on the shoulders of the RTS community and open-source pioneers:
 - **[Sponsor on GitHub](https://github.com/sponsors/fbraz3)** – Help fund test hardware, server infrastructure, CI/CD pipelines, and active development.
 - **[Contributing Guide](CONTRIBUTING.md)** – Contributions are welcome! Check our issues and pull request guidelines before opening a PR.
 
+---
+
+## 🌟 Star History
+
+<a href="https://www.star-history.com/?repos=fbraz3%2FGeneralsX&type=date&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=fbraz3/GeneralsX&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=fbraz3/GeneralsX&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=fbraz3/GeneralsX&type=date&legend=bottom-right" />
+ </picture>
+</a>
+
+---
+
 ## 📄 License
 
 See the [LICENSE](./LICENSE.md) file for details.  
