@@ -87,15 +87,27 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 		"DejaVu Sans"
 	};
 
+	FontCharsClass *last_resort = nullptr;
+
+	// GeneralsX @bugfix felipebraz 13/11/2026 Do not skip preferred_name when it is in kFallbackUnicodeFonts (e.g. Arial Unicode MS)
+	// and verify geometric symbol coverage (U+25B2/U+25BC) so Fontconfig generic fallbacks (Verdana/Helvetica) do not mask Liberation Sans.
 	for (const char *font_name : kFallbackUnicodeFonts) {
 		if (base_name != nullptr && strcmp(font_name, base_name) == 0)
-			continue;
-		if (preferred_name != nullptr && strcmp(font_name, preferred_name) == 0)
 			continue;
 
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(font_name, size, bold);
 		if (font != nullptr) {
-			return font;
+			if (font->Has_Glyph(0x25B2) && font->Has_Glyph(0x25BC)) {
+				if (last_resort != nullptr) {
+					last_resort->Release_Ref();
+				}
+				return font;
+			}
+			if (last_resort == nullptr) {
+				last_resort = font;
+			} else {
+				font->Release_Ref();
+			}
 		}
 	}
 
@@ -103,11 +115,21 @@ FontCharsClass *LoadUnicodeFallbackFont(Int size, Bool bold, const char *base_na
 	if (preferred_name != nullptr && (base_name == nullptr || strcmp(preferred_name, base_name) != 0)) {
 		FontCharsClass *font = WW3DAssetManager::Get_Instance()->Get_FontChars(preferred_name, size, bold);
 		if (font != nullptr) {
-			return font;
+			if (font->Has_Glyph(0x25B2) && font->Has_Glyph(0x25BC)) {
+				if (last_resort != nullptr) {
+					last_resort->Release_Ref();
+				}
+				return font;
+			}
+			if (last_resort == nullptr) {
+				last_resort = font;
+			} else {
+				font->Release_Ref();
+			}
 		}
 	}
 
-	return nullptr;
+	return last_resort;
 }
 
 // GeneralsX @feature felipebraz 26/09/2026 Load Font Awesome Brands as dedicated brand icon fallback font
