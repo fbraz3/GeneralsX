@@ -297,7 +297,7 @@ protected:
 protected:
 	/// Updates the sway offsets.
 	void updateSway(const BreezeInfo& info);
-	void loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator); ///< Fills the index and vertex buffers for drawing.
+	Bool loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator); ///< Fills the index and vertex buffers for drawing.
 	void updateVertexBuffer(); ///< Fills the index and vertex buffers for drawing.
 	// GeneralsX @bugfix fbraz3 13/11/2026 Separate batched draw helper for silhouette shadow pass and upright foliage pass
 	void drawTreeBuffers(Bool shadowPass); ///< Draws batched tree vertex/index buffers.

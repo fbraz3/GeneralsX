@@ -776,13 +776,13 @@ UnsignedInt W3DTreeBuffer::doLighting(const Vector3 *normal,
 //=============================================================================
 /** Loads the trees into the vertex buffer for drawing. */
 //=============================================================================
-void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator)
+Bool W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator)
 {
 	if (!m_indexTree[0] || !m_vertexTree[0] || !m_vertexTreeShadow[0] || !m_initialized) {
-		return;
+		return false;
 	}
 	if (!m_anythingChanged) {
-		return;
+		return true;
 	}
 
 	if (m_shadow == nullptr && TheW3DProjectedShadowManager) {
@@ -799,7 +799,6 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 	for (Int t = 0; t < m_numTrees; t++) {
 		m_trees[t].bufferNdx = -1;
 	}
-	m_anythingChanged = false;
 	Real stretchX = 0.0f;
 	Real stretchY = 0.0f;
 	const Bool haveSun = treeShadowStretch(stretchX, stretchY);
@@ -816,7 +815,7 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 			break;
 		}
 		if (!m_indexTree[bNdx] || !m_vertexTree[bNdx] || !m_vertexTreeShadow[bNdx]) {
-			break;
+			return false;
 		}
 		VertexFormatXYZNDUV1 *vb;
 		VertexFormatXYZNDUV1 *shadowVb;
@@ -834,9 +833,9 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
 		shadowVb=(VertexFormatXYZNDUV1*)lockVtxShadowBuffer.Get_Vertex_Array();
 		ib = lockIdxBuffer.Get_Index_Array();
-		// GeneralsX @bugfix fbraz3 13/11/2026 Guard against null vertex/index lock pointers
+		// GeneralsX @bugfix fbraz3 13/11/2026 Guard against null vertex/index lock pointers and keep rebuild pending on failure
 		if (vb == nullptr || shadowVb == nullptr || ib == nullptr) {
-			break;
+			return false;
 		}
 		// Add to the index buffer & vertex buffer.
 		Vector2 lookAtVector(m_cameraLookAtVector.X, m_cameraLookAtVector.Y);
@@ -1016,6 +1015,8 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		}
 	}
 
+	m_anythingChanged = false;
+	return true;
 }
 //=============================================================================
 // W3DTreeBuffer::updateVertexBuffer
@@ -1188,6 +1189,15 @@ W3DTreeBuffer::W3DTreeBuffer()
 	allocateTreeBuffers();
 	m_initialized = true;
 	m_curSwayVersion = -1;
+	// GeneralsX @bugfix fbraz3 14/11/2026 Initialize sway state so early mirror passes never read indeterminate values
+	for (i = 0; i < MAX_SWAY_TYPES; i++) {
+		m_curSwayOffset[i] = 0.0f;
+		m_curSwayStep[i] = 0.0f;
+		m_curSwayFactor[i] = 0.0f;
+	}
+	for (i = 0; i < NUM_SWAY_ENTRIES; i++) {
+		m_swayOffsets[i].Set(0.0f, 0.0f, 0.0f);
+	}
 
 	m_shadow = nullptr;
 
@@ -1851,8 +1861,9 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 			m_anythingChanged = true;
 		}
 		if (m_anythingChanged) {
-			loadTreesInVertexAndIndexBuffers(pDynamicLightsIterator);
-			m_anythingChanged = false;
+			if (loadTreesInVertexAndIndexBuffers(pDynamicLightsIterator)) {
+				m_anythingChanged = false;
+			}
 		} else if (m_anyPushChanged) {
 			m_anyPushChanged = false;
 			updateVertexBuffer();

@@ -61,10 +61,9 @@ const FrustumClass *shadowCameraFrustum;
 // GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Enhanced off-screen caster shadow frustum testing
 Bool shadowCanReachView( const FrustumClass &view, const SphereClass &body, Real groundZ, Real runX, Real runY )
 {
-	// GeneralsX @bugfix fbraz3 13/11/2026 Off-screen casters must be culled (return FALSE) when extended shadow frustum culling is disabled
-	if (TheGlobalData && !TheGlobalData->isExtendedShadowFrustumCulling())
-		return FALSE;
-	const Real drop = WWMath::Max( body.Center.Z - groundZ + body.Radius, 0.0f );
+	// GeneralsX @bugfix fbraz3 13/11/2026 With extended culling disabled, test only the caster body rather than its projected shadow
+	const Bool extended = !TheGlobalData || TheGlobalData->isExtendedShadowFrustumCulling();
+	const Real drop = extended ? WWMath::Max( body.Center.Z - groundZ + body.Radius, 0.0f ) : 0.0f;
 	const Vector3 downwind = body.Center + Vector3( runX, runY, -1.0f ) * drop;
 	for (Int side = 1; side <= 4; ++side)
 	{
