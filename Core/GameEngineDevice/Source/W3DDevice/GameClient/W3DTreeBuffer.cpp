@@ -84,6 +84,7 @@ enum
 #include "W3DDevice/GameClient/W3DProjectedShadow.h"
 #include "WW3D2/camera.h"
 #include "WW3D2/dx8wrapper.h"
+#include "WW3D2/Renderer.h"
 #include "WW3D2/dx8renderer.h"
 #include "WW3D2/matinfo.h"
 #include "WW3D2/mesh.h"
@@ -1037,6 +1038,7 @@ void W3DTreeBuffer::updateVertexBuffer()
 			break;
 		}
 		if (!m_vertexTree[bNdx] || !m_vertexTreeShadow[bNdx]) {
+			m_anyPushChanged = true;
 			continue;
 		}
 		VertexFormatXYZNDUV1 *vb;
@@ -1052,6 +1054,7 @@ void W3DTreeBuffer::updateVertexBuffer()
 		vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
 		shadowVb=(VertexFormatXYZNDUV1*)lockVtxShadowBuffer.Get_Vertex_Array();
 		if (!vb || !shadowVb) {
+			m_anyPushChanged = true;
 			continue;
 		}
 
@@ -1930,7 +1933,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	DX8Wrapper::Set_Vertex_Buffer(vb_access);
 
 	Matrix3D tm(1);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,tm);
+	Renderer::Set_Transform(RenderTransform_World,tm);
 
 	DX8Wrapper::Draw_Triangles(	0,2, 0,	4);	//draw a quad, 2 triangles, 4 verts
 #endif

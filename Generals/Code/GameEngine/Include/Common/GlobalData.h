@@ -615,6 +615,8 @@ public:
 
 	AsciiString m_modDir;
 	AsciiString m_modBIG;
+	// GeneralsX @feature felipebraz 13/11/2026 Runtime asset path overrides via command line (-assetPath)
+	AsciiString m_assetPath;
 
 	// the trailing '\' is included!
 	AsciiString getPath_UserData() const;
