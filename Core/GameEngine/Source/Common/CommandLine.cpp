@@ -1183,10 +1183,23 @@ Int parseClearDebugLevel(char *args[], int num)
 }
 #endif
 
+// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Allow loose files on disk to override mod archives (#397)
+Int parseLooseWins(char *args[], int num)
+{
+	if (TheWritableGlobalData)
+	{
+		TheWritableGlobalData->m_looseFilesWin = TRUE;
+	}
+	return 1;
+}
+
 // Initial Params are parsed before Windows Creation.
 // Note that except for TheGlobalData, no other global objects exist yet when these are parsed.
 static CommandLineParam paramsForStartup[] =
 {
+	// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Force loose files on disk to override mod archives (#397)
+	{ "-looseWins", parseLooseWins },
+
 	{ "-win", parseWin },
 	{ "-fullscreen", parseNoWin },
 
