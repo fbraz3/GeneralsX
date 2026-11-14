@@ -1018,6 +1018,9 @@ GlobalData::GlobalData()
 
 	m_debugShowGraphicalFramerate = FALSE;
 
+	// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Force loose files on disk to override mod archives (#397)
+	m_looseFilesWin = FALSE;
+
 	// By default, show all asserts.
 
 	m_unlookPersistDuration		= 30;
@@ -1037,6 +1040,7 @@ GlobalData::GlobalData()
 
 	m_isBreakableMovie = FALSE;
 	m_breakTheMovie = FALSE;
+	m_looseFilesWin = FALSE;
 
 	setTimeOfDay( m_timeOfDay );
 

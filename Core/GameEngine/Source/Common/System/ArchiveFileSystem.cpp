@@ -370,6 +370,37 @@ void ArchiveFileSystem::getFileListInDirectory(const AsciiString& currentDirecto
 	}
 }
 
+// GeneralsX @bugfix dogefly233/felipebraz 13/11/2026 Stock Zero Hour shipped only three files as loose files:
+// Data/Scripts/SkirmishScripts.scb, MultiplayerScripts.scb, and Scripts.ini.
+// All other game assets were shipped in .big archives. Loose files placed on disk for any other path
+// represent modder/user customizations and must take precedence over archives (#397).
+Bool ArchiveFileSystem::isStockLooseFile(const Char *filename)
+{
+	if (filename == nullptr || filename[0] == '\0')
+	{
+		return FALSE;
+	}
+
+	const char* fnRaw = filename;
+	const char* fnLastSlash = strrchr(fnRaw, '/');
+	const char* fnLastBackslash = strrchr(fnRaw, '\\');
+	const char* fnSplit = fnLastSlash;
+	if (fnSplit == nullptr || (fnLastBackslash != nullptr && fnLastBackslash > fnSplit))
+	{
+		fnSplit = fnLastBackslash;
+	}
+	const char* fnBase = (fnSplit != nullptr) ? (fnSplit + 1) : fnRaw;
+
+	if (stricmp(fnBase, "SkirmishScripts.scb") == 0 ||
+	    stricmp(fnBase, "MultiplayerScripts.scb") == 0 ||
+	    stricmp(fnBase, "Scripts.ini") == 0)
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 // GeneralsX @bugfix felipebraz 02/10/2026 Allow mod archives to take precedence over loose stock files.
 // Retail Zero Hour shipped stock loose files (e.g. Data/Scripts/SkirmishScripts.scb) that shadow mod archives
 // (such as Shockwave's !Shw_scripts.big) unless the launcher explicitly renamed them on disk.
@@ -383,23 +414,9 @@ Bool ArchiveFileSystem::isModArchive(ArchiveFile *archive, const Char *filename)
 	// 1. Script files: SkirmishScripts.scb, MultiplayerScripts.scb, Scripts.ini.
 	// Vanilla Zero Hour never packaged these into any .big archive; they only shipped as loose files.
 	// If any archive in the archive file system contains them, it is guaranteed to be a mod.
-	if (filename != nullptr)
+	if (filename != nullptr && isStockLooseFile(filename))
 	{
-		const char* fnRaw = filename;
-		const char* fnLastSlash = strrchr(fnRaw, '/');
-		const char* fnLastBackslash = strrchr(fnRaw, '\\');
-		const char* fnSplit = fnLastSlash;
-		if (fnSplit == nullptr || (fnLastBackslash != nullptr && fnLastBackslash > fnSplit))
-		{
-			fnSplit = fnLastBackslash;
-		}
-		const char* fnBase = (fnSplit != nullptr) ? (fnSplit + 1) : fnRaw;
-		if (stricmp(fnBase, "SkirmishScripts.scb") == 0 ||
-		    stricmp(fnBase, "MultiplayerScripts.scb") == 0 ||
-		    stricmp(fnBase, "Scripts.ini") == 0)
-		{
-			return TRUE;
-		}
+		return TRUE;
 	}
 
 	// 2. Mod archives starting with '!' (or '!!', '@', etc.) - the universal SAGE mod convention.
@@ -458,8 +475,27 @@ Bool ArchiveFileSystem::isModArchive(ArchiveFile *archive, const Char *filename)
 	return FALSE;
 }
 
+// GeneralsX @bugfix dogefly233/felipebraz 13/11/2026 Only stock loose script files are overridden by
+// mod archives by default. User/modder loose files always take precedence over archives (#397).
+// If -looseWins or GENERALSX_LOOSE_WINS=1 is enabled, loose files always take precedence even for stock scripts.
 Bool ArchiveFileSystem::hasModArchiveOverride(const Char *filename) const
 {
+	if (TheGlobalData && TheGlobalData->m_looseFilesWin)
+	{
+		return FALSE;
+	}
+
+	const char* envLoose = getenv("GENERALSX_LOOSE_WINS");
+	if (envLoose != nullptr && envLoose[0] != '\0' && strcmp(envLoose, "0") != 0)
+	{
+		return FALSE;
+	}
+
+	if (!isStockLooseFile(filename))
+	{
+		return FALSE;
+	}
+
 	return getFileCount(filename, ARCHIVE_FILTER_MOD_ONLY) > 0;
 }
 

@@ -156,6 +156,8 @@ public:
 	virtual void loadMods() = 0;
 
 	// GeneralsX @bugfix felipebraz 02/10/2026 Check if a file is provided by an overriding mod archive (!*.big or script files)
+	// GeneralsX @bugfix dogefly233/felipebraz 13/11/2026 Restrict mod archive overrides to stock loose scripts (#397)
+	static Bool				isStockLooseFile(const Char *filename);
 	Bool					hasModArchiveOverride(const Char *filename) const;
 	FileInstance			getFileCount(const Char *filename, ArchiveFilter filter = ARCHIVE_FILTER_ALL) const;
 	Bool					isModArchive(ArchiveFile *archive, const Char *filename) const;
