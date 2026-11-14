@@ -125,8 +125,16 @@ Bool Win32LocalFileSystem::doesFileExist(const Char *filename) const
 
 void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList & filenameList, Bool searchSubdirectories) const
 {
+	// GeneralsX @bugfix felipebraz 13/11/2026 Ensure directory separator between original and current path
+	// and ensure directory ends with a separator so wildcard search (e.g. *.big) searches inside the directory.
 	AsciiString directory = originalDirectory;
+	if (directory.isNotEmpty() && currentDirectory.isNotEmpty() && !directory.endsWith("/") && !directory.endsWith("\\")) {
+		directory.concat('\\');
+	}
 	directory.concat(currentDirectory);
+	if (directory.isNotEmpty() && !directory.endsWith("/") && !directory.endsWith("\\")) {
+		directory.concat('\\');
+	}
 
 	AsciiString asciisearch = directory;
 	asciisearch.concat(searchName);
@@ -159,8 +167,11 @@ void Win32LocalFileSystem::getFileListInDirectory(const AsciiString& currentDire
 			if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
 					(strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0)) {
 
-					AsciiString tempsearchstr;
-					tempsearchstr.concat(currentDirectory);
+					// GeneralsX @bugfix felipebraz 13/11/2026 Maintain cumulative relative path for subdirectory traversal
+					AsciiString tempsearchstr = currentDirectory;
+					if (tempsearchstr.isNotEmpty() && !tempsearchstr.endsWith("/") && !tempsearchstr.endsWith("\\")) {
+						tempsearchstr.concat('\\');
+					}
 					tempsearchstr.concat(findData.cFileName);
 					tempsearchstr.concat('\\');
 

@@ -481,6 +481,29 @@ Int parseSetCwd(char *args[], int num)
 	return 1;
 }
 
+// GeneralsX @feature felipebraz 13/11/2026 Support -assetPath and -generalsAssetPath for launcher workspaces
+Int parseAssetPath(char *args[], int num)
+{
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_assetPath = args[1];
+		return 2;
+	}
+	return 1;
+}
+
+#if RTS_ZEROHOUR
+Int parseGeneralsAssetPath(char *args[], int num)
+{
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_generalsAssetPath = args[1];
+		return 2;
+	}
+	return 1;
+}
+#endif
+
 Int parseXRes(char *args[], int num)
 {
 	if (num > 1)
@@ -1211,6 +1234,12 @@ static CommandLineParam paramsForStartup[] =
 	// The last successful selection wins; otherwise use the executable directory.
 	{ "-setCwd", parseSetCwd },
 	{ "-useCwd", parseUseCwd },
+
+	// GeneralsX @feature felipebraz 13/11/2026 Support -assetPath and -generalsAssetPath for launcher workspaces
+	{ "-assetPath", parseAssetPath },
+#if RTS_ZEROHOUR
+	{ "-generalsAssetPath", parseGeneralsAssetPath },
+#endif
 };
 
 // Parsed on its own, before GameData.ini is loaded, so the mod's archives are mounted

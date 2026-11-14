@@ -375,13 +375,106 @@ static Bool tryResolveFromIni(const AsciiString& exeDirectory, const char* keyNa
 	return FALSE;
 }
 
+// GeneralsX @feature felipebraz 13/11/2026 Check if a directory contains complete primary game archives.
+static Bool hasPrimaryGameArchive(const AsciiString& directory)
+{
+	if (directory.isEmpty()) {
+		return FALSE;
+	}
+
+	AsciiString dir = directory;
+	if (!dir.endsWith("/") && !dir.endsWith("\\")) {
+		dir.concat('/');
+	}
+
+#if RTS_ZEROHOUR
+	static const char* primaryFiles[] = {
+		"INIZH.big",
+		"inizh.big",
+		"INIZH.BIG",
+		"MapsZH.big",
+		"mapszh.big",
+		"SpeechZH.big",
+		"speechzh.big"
+	};
+#else
+	static const char* primaryFiles[] = {
+		"INI.big",
+		"ini.big",
+		"INI.BIG",
+		"Maps.big",
+		"maps.big",
+		"Speech.big",
+		"speech.big"
+	};
+#endif
+
+	for (UnsignedInt i = 0; i < ARRAY_SIZE(primaryFiles); ++i) {
+		AsciiString candidate = dir;
+		candidate.concat(primaryFiles[i]);
+		if (TheLocalFileSystem != nullptr && TheLocalFileSystem->doesFileExist(candidate.str())) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+#if RTS_ZEROHOUR
+// GeneralsX @feature felipebraz 13/11/2026 Check if a directory contains base Generals archives.
+static Bool hasBaseGeneralsArchive(const AsciiString& directory)
+{
+	if (directory.isEmpty()) {
+		return FALSE;
+	}
+
+	AsciiString dir = directory;
+	if (!dir.endsWith("/") && !dir.endsWith("\\")) {
+		dir.concat('/');
+	}
+
+	static const char* baseFiles[] = {
+		"INI.big",
+		"ini.big",
+		"INI.BIG",
+		"Maps.big",
+		"maps.big"
+	};
+
+	for (UnsignedInt i = 0; i < ARRAY_SIZE(baseFiles); ++i) {
+		AsciiString candidate = dir;
+		candidate.concat(baseFiles[i]);
+		if (TheLocalFileSystem != nullptr && TheLocalFileSystem->doesFileExist(candidate.str())) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+#endif
+
 template <typename TBigFileSystem>
 static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loadedDirectory)
 {
 	AsciiString exeDirectory;
 	getExecutableDirectory(exeDirectory);
 
-	// GeneralsX @feature GitHubCopilot 16/03/2026 Resolve primary asset directory by ENV > INI > default > current.
+	// GeneralsX @feature felipebraz 13/11/2026 Resolve primary asset directory by CMD > ENV > INI > exedir-complete > registry > resources > exedir > current.
+	if (TheGlobalData != nullptr && TheGlobalData->m_assetPath.isNotEmpty()) {
+		AsciiString sanitizedCmdPath;
+		if (sanitizeConfiguredPath(TheGlobalData->m_assetPath.str(), sanitizedCmdPath)) {
+			fprintf(stderr, "[ASSET_ROOT] Trying cmdline -assetPath='%s'\n", sanitizedCmdPath.str());
+			if (tryLoadBigFiles(fileSystem, sanitizedCmdPath, "cmdline")) {
+				fprintf(stderr, "[ASSET_ROOT] Selected source=cmdline path='%s'\n", sanitizedCmdPath.str());
+				if (loadedDirectory != nullptr) {
+					*loadedDirectory = sanitizedCmdPath;
+				}
+				return TRUE;
+			}
+			fprintf(stderr, "[ASSET_ROOT] Cmdline path '%s' did not provide BIG files\n", sanitizedCmdPath.str());
+		}
+	}
+
 #if RTS_ZEROHOUR
 	const char* primaryEnvName = kPrimaryAssetEnvZH;
 	const char* primaryEnvValue = getenv(kPrimaryAssetEnvZH);
@@ -429,13 +522,40 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 		}
 	}
 
-	AsciiString iniPath;
-	if (tryResolveFromIni(exeDirectory, kPrimaryAssetIniKey, iniPath)) {
-		fprintf(stderr, "[ASSET_ROOT] Trying ini [Paths]%s='%s'\n", kPrimaryAssetIniKey, iniPath.str());
-		if (tryLoadBigFiles(fileSystem, iniPath, "ini")) {
-			fprintf(stderr, "[ASSET_ROOT] Selected source=ini path='%s'\n", iniPath.str());
+	AsciiString rawIniPath;
+	if (tryResolveFromIni(exeDirectory, kPrimaryAssetIniKey, rawIniPath)) {
+		AsciiString iniPath;
+		if (sanitizeConfiguredPath(rawIniPath.str(), iniPath)) {
+			fprintf(stderr, "[ASSET_ROOT] Trying ini [Paths]%s='%s'\n", kPrimaryAssetIniKey, iniPath.str());
+			if (tryLoadBigFiles(fileSystem, iniPath, "ini")) {
+				fprintf(stderr, "[ASSET_ROOT] Selected source=ini path='%s'\n", iniPath.str());
+				if (loadedDirectory != nullptr) {
+					*loadedDirectory = iniPath;
+				}
+				return TRUE;
+			}
+			if (exeDirectory.isNotEmpty()) {
+				AsciiString candidate = exeDirectory;
+				candidate.concat('/');
+				candidate.concat(iniPath);
+				if (tryLoadBigFiles(fileSystem, candidate, "ini-exedir")) {
+					fprintf(stderr, "[ASSET_ROOT] Selected source=ini-exedir path='%s'\n", candidate.str());
+					if (loadedDirectory != nullptr) {
+						*loadedDirectory = candidate;
+					}
+					return TRUE;
+				}
+			}
+		}
+	}
+
+	// GeneralsX @feature felipebraz 13/11/2026 Prefer complete installation found in executable directory
+	// over Windows registry so that launcher-managed workspaces (e.g. GenHub) and portable setups work out of the box.
+	if (exeDirectory.isNotEmpty() && hasPrimaryGameArchive(exeDirectory)) {
+		if (tryLoadBigFiles(fileSystem, exeDirectory, "default-exedir-complete")) {
+			fprintf(stderr, "[ASSET_ROOT] Selected source=default-exedir-complete path='%s'\n", exeDirectory.str());
 			if (loadedDirectory != nullptr) {
-				*loadedDirectory = iniPath;
+				*loadedDirectory = exeDirectory;
 			}
 			return TRUE;
 		}
@@ -490,7 +610,17 @@ static Bool loadPrimaryGameAssets(TBigFileSystem* fileSystem, AsciiString* loade
 template <typename TBigFileSystem>
 static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiString& zhAssetDirectory)
 {
-	// GeneralsX @feature GitHubCopilot 16/03/2026 Resolve base Generals asset directory for ZH by ENV > INI > default.
+	// GeneralsX @feature felipebraz 13/11/2026 Support -generalsAssetPath command line override
+	if (TheGlobalData != nullptr && TheGlobalData->m_generalsAssetPath.isNotEmpty()) {
+		AsciiString sanitizedCmdPath;
+		if (sanitizeConfiguredPath(TheGlobalData->m_generalsAssetPath.str(), sanitizedCmdPath)) {
+			if (tryLoadBigFiles(fileSystem, sanitizedCmdPath, "cmdline-generals", FALSE, FALSE)) {
+				return;
+			}
+		}
+	}
+
+	// GeneralsX @feature GitHubCopilot 16/03/2026 Resolve base Generals asset directory for ZH by CMD > ENV > INI > local ZH_Generals > registry > sibling.
 	const char* baseEnvValue = getenv(kBaseGeneralsAssetEnv);
 	if (baseEnvValue != nullptr && baseEnvValue[0] != '\0') {
 		if (tryLoadBigFiles(fileSystem, AsciiString(baseEnvValue), "env-generals", FALSE, FALSE)) {
@@ -515,9 +645,50 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 	AsciiString exeDirectory;
 	getExecutableDirectory(exeDirectory);
 
-	AsciiString iniPath;
-	if (tryResolveFromIni(exeDirectory, kBaseGeneralsAssetIniKey, iniPath)) {
-		if (tryLoadBigFiles(fileSystem, iniPath, "ini-generals", FALSE, FALSE)) {
+	AsciiString rawIniPath;
+	if (tryResolveFromIni(exeDirectory, kBaseGeneralsAssetIniKey, rawIniPath)) {
+		AsciiString iniPath;
+		if (sanitizeConfiguredPath(rawIniPath.str(), iniPath)) {
+			if (tryLoadBigFiles(fileSystem, iniPath, "ini-generals", FALSE, FALSE)) {
+				return;
+			}
+			if (exeDirectory.isNotEmpty()) {
+				AsciiString candidate = exeDirectory;
+				candidate.concat('/');
+				candidate.concat(iniPath);
+				if (tryLoadBigFiles(fileSystem, candidate, "ini-generals-exedir", FALSE, FALSE)) {
+					return;
+				}
+			}
+		}
+	}
+
+	// GeneralsX @feature felipebraz 13/11/2026 Prefer local ZH_Generals folder in the active ZH root
+	// or executable directory over the Windows registry for self-contained / launcher workspaces.
+	AsciiString rootZhDir = zhAssetDirectory.isNotEmpty() ? zhAssetDirectory : AsciiString(".");
+
+	AsciiString steamGenerals = rootZhDir;
+	steamGenerals.concat("/ZH_Generals");
+	if (hasBaseGeneralsArchive(steamGenerals) && tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
+		return;
+	}
+
+	AsciiString steamGeneralsLower = rootZhDir;
+	steamGeneralsLower.concat("/zh_generals");
+	if (hasBaseGeneralsArchive(steamGeneralsLower) && tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
+		return;
+	}
+
+	if (exeDirectory.isNotEmpty() && exeDirectory != rootZhDir) {
+		AsciiString exeGenerals = exeDirectory;
+		exeGenerals.concat("/ZH_Generals");
+		if (hasBaseGeneralsArchive(exeGenerals) && tryLoadBigFiles(fileSystem, exeGenerals, "default-exedir-zh-generals", FALSE, FALSE)) {
+			return;
+		}
+
+		AsciiString exeGeneralsLower = exeDirectory;
+		exeGeneralsLower.concat("/zh_generals");
+		if (hasBaseGeneralsArchive(exeGeneralsLower) && tryLoadBigFiles(fileSystem, exeGeneralsLower, "default-exedir-zh-generals-lower", FALSE, FALSE)) {
 			return;
 		}
 	}
@@ -528,22 +699,17 @@ static void loadBaseGeneralsAssetsForZH(TBigFileSystem* fileSystem, const AsciiS
 		return;
 	}
 
-	AsciiString rootZhDir = zhAssetDirectory.isNotEmpty() ? zhAssetDirectory : AsciiString(".");
-
 	AsciiString siblingGenerals = rootZhDir;
 	siblingGenerals.concat("/../Generals");
 	if (tryLoadBigFiles(fileSystem, siblingGenerals, "default-sibling-generals", FALSE, FALSE)) {
 		return;
 	}
 
-	AsciiString steamGenerals = rootZhDir;
-	steamGenerals.concat("/ZH_Generals");
+	// Fallback to any ZH_Generals folder without requiring primary archive check
 	if (tryLoadBigFiles(fileSystem, steamGenerals, "default-zh-generals", FALSE, FALSE)) {
 		return;
 	}
 
-	AsciiString steamGeneralsLower = rootZhDir;
-	steamGeneralsLower.concat("/zh_generals");
 	if (tryLoadBigFiles(fileSystem, steamGeneralsLower, "default-zh-generals-lower", FALSE, FALSE)) {
 		return;
 	}
