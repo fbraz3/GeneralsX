@@ -391,21 +391,13 @@ static Bool hasPrimaryGameArchive(const AsciiString& directory)
 	static const char* primaryFiles[] = {
 		"INIZH.big",
 		"inizh.big",
-		"INIZH.BIG",
-		"MapsZH.big",
-		"mapszh.big",
-		"SpeechZH.big",
-		"speechzh.big"
+		"INIZH.BIG"
 	};
 #else
 	static const char* primaryFiles[] = {
 		"INI.big",
 		"ini.big",
-		"INI.BIG",
-		"Maps.big",
-		"maps.big",
-		"Speech.big",
-		"speech.big"
+		"INI.BIG"
 	};
 #endif
 
@@ -436,9 +428,7 @@ static Bool hasBaseGeneralsArchive(const AsciiString& directory)
 	static const char* baseFiles[] = {
 		"INI.big",
 		"ini.big",
-		"INI.BIG",
-		"Maps.big",
-		"maps.big"
+		"INI.BIG"
 	};
 
 	for (UnsignedInt i = 0; i < ARRAY_SIZE(baseFiles); ++i) {
