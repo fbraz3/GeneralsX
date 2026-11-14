@@ -1862,6 +1862,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 			(fabsf(stretchX - m_lastShadowStretchX) > 1e-4f ||
 			 fabsf(stretchY - m_lastShadowStretchY) > 1e-4f)) {
 			m_anythingChanged = true;
+			m_updateAllKeys = true;
 		}
 		if (m_anythingChanged) {
 			if (loadTreesInVertexAndIndexBuffers(pDynamicLightsIterator)) {
