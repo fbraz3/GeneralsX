@@ -280,9 +280,28 @@ static ShaderClass detailAlphaShader(SC_ALPHA_DETAIL);
 
 static ShaderClass modelShadowShader(SC_MODEL_SHADOW);
 
+// GeneralsX @bugfix fbraz3 13/11/2026 Batched tree silhouette shadow shader and helpers
+// Projected tree silhouette shadow pass: blend black by texture alpha, depth-tested against terrain, no Z write.
+#define SC_TREE_SHADOW ( SHADE_CNST(ShaderClass::PASS_LEQUAL, ShaderClass::DEPTH_WRITE_DISABLE, ShaderClass::COLOR_WRITE_ENABLE, ShaderClass::SRCBLEND_SRC_ALPHA, \
+	ShaderClass::DSTBLEND_ONE_MINUS_SRC_ALPHA, ShaderClass::FOG_DISABLE, ShaderClass::GRADIENT_MODULATE, ShaderClass::SECONDARY_GRADIENT_DISABLE, ShaderClass::TEXTURING_ENABLE, \
+	ShaderClass::ALPHATEST_ENABLE, ShaderClass::CULL_MODE_DISABLE, \
+	ShaderClass::DETAILCOLOR_DISABLE, ShaderClass::DETAILALPHA_DISABLE) )
+
+static ShaderClass treeShadowShader(SC_TREE_SHADOW);
+
 #define TREE_SHADOW_ALPHA 90
+#define TREE_SHADOW_ALPHAREF 12
 #define TREE_SHADOW_LIFT 1.0f
 #define TREE_SHADOW_MAX_STRETCH 3.0f
+
+static Bool treeSilhouetteShadows(DWORD treeVertexShader)
+{
+	return TheGlobalData != nullptr
+		&& (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes)
+		&& TheGlobalData->isShadowsForProps()
+		&& treeVertexShader != 0
+		&& TheW3DShadowManager != nullptr;
+}
 
 static Bool treeShadowStretch(Real &stretchX, Real &stretchY)
 {
@@ -304,6 +323,41 @@ static Bool treeShadowStretch(Real &stretchX, Real &stretchY)
 		stretchY *= scale;
 	}
 	return true;
+}
+
+// GeneralsX @bugfix fbraz3 13/11/2026 Project a batched tree vertex onto the terrain heightmap for silhouette shadows
+static void writeTreeShadowVertex(VertexFormatXYZNDUV1 *dst, const Vector3 &vLoc, Real baseZ,
+	Real stretchX, Real stretchY, Bool castsShadow, Real swayType, Real u1, Real v1)
+{
+	if (!castsShadow) {
+		dst->x = vLoc.X;
+		dst->y = vLoc.Y;
+		dst->z = baseZ - 1000.0f;
+		dst->nx = swayType;
+		dst->ny = 1.0f;
+		dst->nz = baseZ - 1000.0f;
+		dst->diffuse = 0;
+	} else {
+		Real height = vLoc.Z - baseZ;
+		if (height < 0.0f) {
+			height = 0.0f;
+		}
+		const Real landX = vLoc.X + height * stretchX;
+		const Real landY = vLoc.Y + height * stretchY;
+		const Real groundZ = TheTerrainRenderObject != nullptr
+			? TheTerrainRenderObject->getHeightMapHeight(landX, landY, nullptr)
+			: baseZ;
+		const Real shadowZ = groundZ + TREE_SHADOW_LIFT;
+		dst->x = landX;
+		dst->y = landY;
+		dst->z = shadowZ;
+		dst->nx = swayType;
+		dst->ny = 1.0f;
+		dst->nz = shadowZ - height;
+		dst->diffuse = (UnsignedInt)TREE_SHADOW_ALPHA << 24;
+	}
+	dst->u1 = u1;
+	dst->v1 = v1;
 }
 //-----------------------------------------------------------------------------
 //         Private Functions
@@ -328,17 +382,20 @@ void W3DTreeBuffer::cull(const CameraClass * camera)
 	m_cameraLookAtVector.Set(x,y,z);
 
 	const FrustumClass &cameraFrustum = camera->Get_Frustum();
-	const Bool shadowsEnabled = TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes;
+	Real stretchX = 0.0f;
+	Real stretchY = 0.0f;
+	// GeneralsX @bugfix fbraz3 13/11/2026 Use clamped silhouette shadow stretch reach instead of unclamped volumeShadowCanReachView
+	const Bool castsSilhouette = treeSilhouetteShadows(m_dwTreeVertexShader) && treeShadowStretch(stretchX, stretchY);
 
 	for (curTree=0; curTree<m_numTrees; curTree++) {
 		Bool doKey = false;	// We calculate the key when a tree becomes visible.
 		Bool visible = !camera->Cull_Sphere(m_trees[curTree].bounds);
-		if (!visible && shadowsEnabled) {
+		if (!visible && castsSilhouette) {
 			Int type = m_trees[curTree].treeType;
-			if (type >= 0 && type < m_numTreeTypes && (m_treeTypes[type].m_doShadow || (TheGlobalData && TheGlobalData->m_shadowsForProps))) {
-				// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Keep tree visible if its projected/extruded shadow enters the view frustum
-				if (volumeShadowCanReachView(cameraFrustum, m_trees[curTree].bounds, m_trees[curTree].location.Z))
+			if (type >= 0 && type < m_numTreeTypes && (m_treeTypes[type].m_doShadow || (TheGlobalData && TheGlobalData->isShadowsForProps()))) {
+				if (shadowCanReachView(cameraFrustum, m_trees[curTree].bounds, m_trees[curTree].location.Z, stretchX, stretchY)) {
 					visible = true;
+				}
 			}
 		}
 		if (visible != m_trees[curTree].visible) {
@@ -721,7 +778,7 @@ UnsignedInt W3DTreeBuffer::doLighting(const Vector3 *normal,
 //=============================================================================
 void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator)
 {
-	if (!m_indexTree[0] || !m_vertexTree[0] || !m_initialized) {
+	if (!m_indexTree[0] || !m_vertexTree[0] || !m_vertexTreeShadow[0] || !m_initialized) {
 		return;
 	}
 	if (!m_anythingChanged) {
@@ -743,6 +800,12 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		m_trees[t].bufferNdx = -1;
 	}
 	m_anythingChanged = false;
+	Real stretchX = 0.0f;
+	Real stretchY = 0.0f;
+	const Bool haveSun = treeShadowStretch(stretchX, stretchY);
+	m_lastShadowStretchX = stretchX;
+	m_lastShadowStretchY = stretchY;
+
 	Int curTree=0;
 	Int bNdx;
 	const GlobalData::TerrainLighting *objectLighting = TheGlobalData->m_terrainObjectsLighting[TheGlobalData->m_timeOfDay];
@@ -752,18 +815,29 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		if (curTree >= m_numTrees) {
 			break;
 		}
+		if (!m_indexTree[bNdx] || !m_vertexTree[bNdx] || !m_vertexTreeShadow[bNdx]) {
+			break;
+		}
 		VertexFormatXYZNDUV1 *vb;
+		VertexFormatXYZNDUV1 *shadowVb;
 		UnsignedShort *ib;
 		// Lock the buffers.
 	#ifdef USE_STATIC
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexTree[bNdx], 0);
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexTree[bNdx], 0);
+		DX8VertexBufferClass::WriteLockClass lockVtxShadowBuffer(m_vertexTreeShadow[bNdx], 0);
 	#else
 		DX8IndexBufferClass::WriteLockClass lockIdxBuffer(m_indexTree[bNdx], D3DLOCK_DISCARD);
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexTree[bNdx], D3DLOCK_DISCARD);
+		DX8VertexBufferClass::WriteLockClass lockVtxShadowBuffer(m_vertexTreeShadow[bNdx], D3DLOCK_DISCARD);
 	#endif
 		vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
+		shadowVb=(VertexFormatXYZNDUV1*)lockVtxShadowBuffer.Get_Vertex_Array();
 		ib = lockIdxBuffer.Get_Index_Array();
+		// GeneralsX @bugfix fbraz3 13/11/2026 Guard against null vertex/index lock pointers
+		if (vb == nullptr || shadowVb == nullptr || ib == nullptr) {
+			break;
+		}
 		// Add to the index buffer & vertex buffer.
 		Vector2 lookAtVector(m_cameraLookAtVector.X, m_cameraLookAtVector.Y);
 		lookAtVector.Normalize();
@@ -772,6 +846,7 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 		UnsignedShort *curIb = ib;
 
 		VertexFormatXYZNDUV1 *curVb = vb;
+		VertexFormatXYZNDUV1 *curShadowVb = shadowVb;
 
 
 
@@ -815,8 +890,6 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 
 
 			Int startVertex = m_curNumTreeVertices[bNdx];
-			m_trees[curTree].firstIndex = startVertex;
-			m_trees[curTree].bufferNdx = bNdx;
 			Int i;
 			Int numVertex = m_treeTypes[type].m_mesh->Peek_Model()->Get_Vertex_Count();
 			Vector3 *pVert = m_treeTypes[type].m_mesh->Peek_Model()->Get_Vertex_Array();
@@ -832,6 +905,9 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 			if (m_curNumTreeIndices[bNdx]+3*numIndex+6 >= MAX_TREE_INDEX) {
 				break;
 			}
+			// GeneralsX @bugfix fbraz3 13/11/2026 Record bufferNdx and firstIndex only after confirming capacity
+			m_trees[curTree].firstIndex = startVertex;
+			m_trees[curTree].bufferNdx = bNdx;
 
 			const Vector2*uvs=m_treeTypes[type].m_mesh->Peek_Model()->Get_UV_Array_By_Index(0);
 
@@ -854,6 +930,7 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 				Vscale *= 0.5f;
 				VOffset += (TILE_PIXEL_EXTENT/2) / (Real)m_textureHeight;
 			}
+			const Bool castsShadow = haveSun && (m_treeTypes[type].m_doShadow || (TheGlobalData && TheGlobalData->isShadowsForProps()));
 			for (i=0; i<numVertex; i++) {
 				if (m_curNumTreeVertices[bNdx] >= MAX_TREE_VERTEX)
 					break;
@@ -921,7 +998,10 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 				} else {
 					curVb->diffuse = diffuse;
 				}
+				writeTreeShadowVertex(curShadowVb, vLoc, loc.Z, stretchX, stretchY, castsShadow,
+					m_trees[curTree].swayType, curVb->u1, curVb->v1);
 				curVb++;
+				curShadowVb++;
 				m_curNumTreeVertices[bNdx]++;
 			}
 
@@ -944,27 +1024,38 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 //=============================================================================
 void W3DTreeBuffer::updateVertexBuffer()
 {
-	if (!m_indexTree[0] || !m_vertexTree[0] || !m_initialized) {
+	if (!m_indexTree[0] || !m_vertexTree[0] || !m_vertexTreeShadow[0] || !m_initialized) {
 		return;
 	}
+	Real stretchX = 0.0f;
+	Real stretchY = 0.0f;
+	const Bool haveSun = treeShadowStretch(stretchX, stretchY);
 	Int bNdx;
 	for	(bNdx = 0; bNdx<MAX_BUFFERS; bNdx++) {
 		if (m_curNumTreeIndices[bNdx]==0) {
 			break;
 		}
+		if (!m_vertexTree[bNdx] || !m_vertexTreeShadow[bNdx]) {
+			continue;
+		}
 		VertexFormatXYZNDUV1 *vb;
+		VertexFormatXYZNDUV1 *shadowVb;
 		// Lock the buffers.
 	#ifdef USE_STATIC
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexTree[bNdx], 0);
+		DX8VertexBufferClass::WriteLockClass lockVtxShadowBuffer(m_vertexTreeShadow[bNdx], 0);
 	#else
 		DX8VertexBufferClass::WriteLockClass lockVtxBuffer(m_vertexTree[bNdx], D3DLOCK_DISCARD);
+		DX8VertexBufferClass::WriteLockClass lockVtxShadowBuffer(m_vertexTreeShadow[bNdx], D3DLOCK_DISCARD);
 	#endif
 		vb=(VertexFormatXYZNDUV1*)lockVtxBuffer.Get_Vertex_Array();
-		if (!vb) {
+		shadowVb=(VertexFormatXYZNDUV1*)lockVtxShadowBuffer.Get_Vertex_Array();
+		if (!vb || !shadowVb) {
 			continue;
 		}
 
 		VertexFormatXYZNDUV1 *curVb;
+		VertexFormatXYZNDUV1 *curShadowVb;
 
 		Int curTree;
 		for (curTree=0; curTree<m_numTrees; curTree++) {
@@ -987,8 +1078,10 @@ void W3DTreeBuffer::updateVertexBuffer()
 			Real theCos = m_trees[curTree].cos;
 			DEBUG_ASSERTCRASH(type>=0 && m_treeTypes[type].m_mesh!=nullptr, ("Invalid tree type or mesh."));
 
+			const Bool castsShadow = haveSun && (m_treeTypes[type].m_doShadow || (TheGlobalData && TheGlobalData->isShadowsForProps()));
 			Int startVertex = m_trees[curTree].firstIndex;
 			curVb = vb+startVertex;
+			curShadowVb = shadowVb+startVertex;
 			Int i;
 			Int numVertex = m_treeTypes[type].m_mesh->Peek_Model()->Get_Vertex_Count();
 			Vector3 *pVert = m_treeTypes[type].m_mesh->Peek_Model()->Get_Vertex_Array();
@@ -1022,7 +1115,10 @@ void W3DTreeBuffer::updateVertexBuffer()
 				curVb->y = vLoc.Y;
 				curVb->z = vLoc.Z;
 				curVb->ny = 1.0f - m_treeTypes[type].m_data->m_darkening*m_trees[curTree].pushAside;
+				writeTreeShadowVertex(curShadowVb, vLoc, loc.Z, stretchX, stretchY, castsShadow,
+					m_trees[curTree].swayType, curShadowVb->u1, curShadowVb->v1);
 				curVb++;
+				curShadowVb++;
 			}
 		}
 	}
@@ -1063,10 +1159,13 @@ W3DTreeBuffer::W3DTreeBuffer()
 	Int i;
 	for	(i=0; i<MAX_BUFFERS; i++) {
 		m_vertexTree[i] = nullptr;
+		m_vertexTreeShadow[i] = nullptr;
 		m_indexTree[i] = nullptr;
 		m_curNumTreeVertices[i]=0;
 		m_curNumTreeIndices[i]=0;
 	}
+	m_lastShadowStretchX = 0.0f;
+	m_lastShadowStretchY = 0.0f;
 	m_treeTexture = nullptr;
 	m_dwTreeVertexShader = 0;
 	m_dwTreePixelShader = 0;
@@ -1105,6 +1204,7 @@ void W3DTreeBuffer::freeTreeBuffers()
 	Int i;
 	for	(i=0; i<MAX_BUFFERS; i++) {
 		REF_PTR_RELEASE(m_vertexTree[i]);
+		REF_PTR_RELEASE(m_vertexTreeShadow[i]);
 		REF_PTR_RELEASE(m_indexTree[i]);
 	}
 
@@ -1214,9 +1314,11 @@ void W3DTreeBuffer::allocateTreeBuffers()
 	for	(i=0; i<MAX_BUFFERS; i++) {
 	#ifdef USE_STATIC
 		m_vertexTree[i]=NEW_REF(DX8VertexBufferClass,(DX8_FVF_XYZNDUV1,MAX_TREE_VERTEX+4,DX8VertexBufferClass::USAGE_DEFAULT));
+		m_vertexTreeShadow[i]=NEW_REF(DX8VertexBufferClass,(DX8_FVF_XYZNDUV1,MAX_TREE_VERTEX+4,DX8VertexBufferClass::USAGE_DEFAULT));
 		m_indexTree[i]=NEW_REF(DX8IndexBufferClass,(MAX_TREE_INDEX+4, DX8IndexBufferClass::USAGE_DEFAULT));
 	#else
 		m_vertexTree[i]=NEW_REF(DX8VertexBufferClass,(DX8_FVF_XYZNDUV1,MAX_TREE_VERTEX+4,DX8VertexBufferClass::USAGE_DYNAMIC));
+		m_vertexTreeShadow[i]=NEW_REF(DX8VertexBufferClass,(DX8_FVF_XYZNDUV1,MAX_TREE_VERTEX+4,DX8VertexBufferClass::USAGE_DYNAMIC));
 		m_indexTree[i]=NEW_REF(DX8IndexBufferClass,(MAX_TREE_INDEX+4, DX8IndexBufferClass::USAGE_DYNAMIC));
 	#endif
 		m_curNumTreeVertices[i]=0;
@@ -1551,6 +1653,66 @@ void W3DTreeBuffer::pushAsideTree(DrawableID id, const Coord3D *pusherPos,
 	}
 }
 
+//=============================================================================
+// W3DTreeBuffer::drawTreeBuffers
+//=============================================================================
+/** Draws every buffer that has anything in it, either as the terrain-draped
+silhouette shadow pass or the normal upright foliage pass. */
+//=============================================================================
+// GeneralsX @bugfix fbraz3 13/11/2026 Batched silhouette shadow pass & upright foliage pass
+void W3DTreeBuffer::drawTreeBuffers(Bool shadowPass)
+{
+	DX8Wrapper::Set_Shader(shadowPass ? treeShadowShader : detailAlphaShader);
+	DX8Wrapper::Set_Texture(0, m_treeTexture);
+	DX8Wrapper::Set_Texture(1, nullptr);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_TEXCOORDINDEX, 0);
+	DX8Wrapper::Set_DX8_Texture_Stage_State(1, D3DTSS_TEXCOORDINDEX, 1);
+	DX8Wrapper::Apply_Render_State_Changes();
+
+	if (shadowPass) {
+		// Override ALPHAREF and texture stage ops after Apply_Render_State_Changes() so ShaderClass::Apply() (0x60) does not clobber them.
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, (D3DCOLOR)(TREE_SHADOW_ALPHA << 24));
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF, TREE_SHADOW_ALPHAREF);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_COLORARG1, D3DTA_TFACTOR);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	} else {
+		W3DShaderManager::setShroudTex(1);
+		DX8Wrapper::Apply_Render_State_Changes();
+	}
+
+	for (Int bNdx = 0; bNdx < MAX_BUFFERS; bNdx++) {
+		if (m_curNumTreeIndices[bNdx] == 0) {
+			break;
+		}
+		DX8VertexBufferClass *vb = shadowPass ? m_vertexTreeShadow[bNdx] : m_vertexTree[bNdx];
+		DX8IndexBufferClass *ib = m_indexTree[bNdx];
+		if (vb == nullptr || ib == nullptr) {
+			break;
+		}
+		DX8Wrapper::Set_Index_Buffer(ib, 0);
+		DX8Wrapper::Set_Vertex_Buffer(vb);
+		// Render the waving grass or terrain-draped shadow silhouette
+		DX8Wrapper::Apply_Render_State_Changes();
+		if (m_dwTreeVertexShader) {
+			DX8Wrapper::_Get_D3D_Device8()->SetVertexShader(m_dwTreeVertexShader);
+			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 1);
+			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+		}
+		DX8Wrapper::Draw_Triangles(0, m_curNumTreeIndices[bNdx] / 3, 0, m_curNumTreeVertices[bNdx]);
+	}
+
+	if (shadowPass) {
+		// Restore ShaderClass and stage state tracking cleanly before the upright foliage pass.
+		DX8Wrapper::Invalidate_Cached_Render_States();
+	}
+}
+
 DECLARE_PERF_TIMER(Tree_Render)
 
 //=============================================================================
@@ -1565,10 +1727,13 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 		return;
 	}
 
+	// GeneralsX @bugfix fbraz3 13/11/2026 Do not let water mirror reflection pass advance sway/toppling, consume m_updateAllKeys, or draw decals into the reflection target
+	const Bool isMirrorPass = ShaderClass::Is_Backface_Culling_Inverted();
+
 	// if breeze changes, always process the full update, even if not visible,
 	// so that things offscreen won't 'pop' when first viewed
 	const BreezeInfo& info = TheScriptEngine->getBreezeInfo();
-	if (info.m_breezeVersion != m_curSwayVersion)
+	if (!isMirrorPass && info.m_breezeVersion != m_curSwayVersion)
 	{
 		updateSway(info);
 	}
@@ -1579,9 +1744,11 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	Int i;
 	for (i=0; i<MAX_SWAY_TYPES; i++)
 	{
-		m_curSwayOffset[i] += m_curSwayStep[i] * timeScale;
-		if (m_curSwayOffset[i] > NUM_SWAY_ENTRIES-1) {
-			m_curSwayOffset[i] -= NUM_SWAY_ENTRIES-1;
+		if (!isMirrorPass) {
+			m_curSwayOffset[i] += m_curSwayStep[i] * timeScale;
+			if (m_curSwayOffset[i] > NUM_SWAY_ENTRIES-1) {
+				m_curSwayOffset[i] -= NUM_SWAY_ENTRIES-1;
+			}
 		}
 		Int minOffset = REAL_TO_INT_FLOOR(m_curSwayOffset[i]);
 		if (minOffset>=0 && minOffset+1<NUM_SWAY_ENTRIES) {
@@ -1598,23 +1765,26 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 		m_needToUpdateTexture = false;
 		updateTexture();
 	}
+
+	const Bool drawShadows = !isMirrorPass && TheGlobalData && (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes);
+	const Bool silhouetteShadows = drawShadows && treeSilhouetteShadows(m_dwTreeVertexShader);
+	Real stretchX = 0.0f;
+	Real stretchY = 0.0f;
+	const Bool haveSun = (drawShadows && (silhouetteShadows || TheGlobalData->isShadowsForProps())) ? treeShadowStretch(stretchX, stretchY) : FALSE;
+
 	if (m_treeTexture==nullptr) {
-		if (TheW3DProjectedShadowManager && (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes)) {
-			Real stretchX, stretchY;
-			if (treeShadowStretch(stretchX, stretchY)) {
-				drawModelShadows(camera, stretchX, stretchY);
-			}
+		if (TheW3DProjectedShadowManager && drawShadows && TheGlobalData->isShadowsForProps() && haveSun) {
+			drawModelShadows(camera, stretchX, stretchY);
 		}
 		return;
 	}
-	if (m_updateAllKeys) {
+	if (m_updateAllKeys && !isMirrorPass) {
 		cull(camera);
 	}
 
 	Int curTree;
-	// Draw tree shadows.
-	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Trees use decal shadows even when volumetric shadows are enabled
-	if (m_shadow && TheW3DProjectedShadowManager && (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes)) {
+	// Draw fallback circular tree shadows only when projected silhouette shadows are inactive.
+	if (m_shadow && TheW3DProjectedShadowManager && drawShadows && !silhouetteShadows) {
 		for (curTree=0; curTree<m_numTrees; curTree++) {
 			Int type = m_trees[curTree].treeType;
 			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type
@@ -1622,9 +1792,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 				// deleted.
 				continue;
 			}
-			// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 With ShadowsForProps on, every tree gets a shadow decal even if type omitted DoShadow
-			if (!m_trees[curTree].visible ||
-				(!m_treeTypes[type].m_doShadow && (!TheGlobalData || !TheGlobalData->m_shadowsForProps))) {
+			if (!m_trees[curTree].visible || !m_treeTypes[type].m_doShadow) {
 				continue;
 			}
 
@@ -1639,49 +1807,56 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 		TheW3DProjectedShadowManager->flushDecals(m_shadow->getTexture(0), SHADOW_DECAL);
 	}
 
-	// Update pushed aside and toppling trees.
-	for (curTree=0; curTree<m_numTrees; curTree++) {
-		Int type = m_trees[curTree].treeType;
-		// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type and null check moduleData
-		if (type<0 || type>=m_numTreeTypes) {
-			// deleted or invalid.
-			continue;
-		}
-		const W3DTreeDrawModuleData *moduleData = m_treeTypes[type].m_data;
-		if (moduleData == nullptr) {
-			continue;
-		}
-		if(m_trees[curTree].m_toppleState == TOPPLE_FALLING ||
-			 m_trees[curTree].m_toppleState == TOPPLE_FOGGED) {
-			updateTopplingTree(m_trees+curTree, timeScale);
-		} else if(m_trees[curTree].m_toppleState == TOPPLE_DOWN) {
-			if (moduleData->m_killWhenToppled) {
-				if (m_trees[curTree].m_sinkFramesLeft <= 0.0f) {
-					m_trees[curTree].treeType = DELETED_TREE_TYPE; // delete it. [7/11/2003]
-					m_anythingChanged = true; // need to regenerate trees. [7/11/2003]
+	// Update pushed aside and toppling trees (main pass only).
+	if (!isMirrorPass) {
+		for (curTree=0; curTree<m_numTrees; curTree++) {
+			Int type = m_trees[curTree].treeType;
+			// GeneralsX @bugfix fbraz3 01/10/2026 Issue #347: Bounds check type and null check moduleData
+			if (type<0 || type>=m_numTreeTypes) {
+				// deleted or invalid.
+				continue;
+			}
+			const W3DTreeDrawModuleData *moduleData = m_treeTypes[type].m_data;
+			if (moduleData == nullptr) {
+				continue;
+			}
+			if(m_trees[curTree].m_toppleState == TOPPLE_FALLING ||
+				 m_trees[curTree].m_toppleState == TOPPLE_FOGGED) {
+				updateTopplingTree(m_trees+curTree, timeScale);
+			} else if(m_trees[curTree].m_toppleState == TOPPLE_DOWN) {
+				if (moduleData->m_killWhenToppled) {
+					if (m_trees[curTree].m_sinkFramesLeft <= 0.0f) {
+						m_trees[curTree].treeType = DELETED_TREE_TYPE; // delete it. [7/11/2003]
+						m_anythingChanged = true; // need to regenerate trees. [7/11/2003]
+					}
+					const Real sinkDistancePerFrame = (moduleData->m_sinkFrames > 0) ? (moduleData->m_sinkDistance / moduleData->m_sinkFrames) : 0.0f;
+					m_trees[curTree].m_sinkFramesLeft -= timeScale;
+					m_trees[curTree].location.Z -= sinkDistancePerFrame * timeScale;
+					m_trees[curTree].m_mtx.Set_Translation(m_trees[curTree].location);
 				}
-				const Real sinkDistancePerFrame = (moduleData->m_sinkFrames > 0) ? (moduleData->m_sinkDistance / moduleData->m_sinkFrames) : 0.0f;
-				m_trees[curTree].m_sinkFramesLeft -= timeScale;
-				m_trees[curTree].location.Z -= sinkDistancePerFrame * timeScale;
-				m_trees[curTree].m_mtx.Set_Translation(m_trees[curTree].location);
-			}
-		} else if (m_trees[curTree].pushAsideDelta!=0.0f) {
-			m_trees[curTree].pushAside += m_trees[curTree].pushAsideDelta;
-			if (m_trees[curTree].pushAside>=1.0f) {
-				m_trees[curTree].pushAsideDelta = (moduleData->m_framesToMoveInward > 0) ? (-1.0f/(Real)moduleData->m_framesToMoveInward) : 0.0f;
-			} else if (m_trees[curTree].pushAside<=0.0f) {
-				m_trees[curTree].pushAsideDelta = 0.0f;
-				m_trees[curTree].pushAside = 0.0f;
+			} else if (m_trees[curTree].pushAsideDelta!=0.0f) {
+				m_trees[curTree].pushAside += m_trees[curTree].pushAsideDelta;
+				if (m_trees[curTree].pushAside>=1.0f) {
+					m_trees[curTree].pushAsideDelta = (moduleData->m_framesToMoveInward > 0) ? (-1.0f/(Real)moduleData->m_framesToMoveInward) : 0.0f;
+				} else if (m_trees[curTree].pushAside<=0.0f) {
+					m_trees[curTree].pushAsideDelta = 0.0f;
+					m_trees[curTree].pushAside = 0.0f;
+				}
 			}
 		}
-	}
 
-	if (m_anythingChanged) {
-		loadTreesInVertexAndIndexBuffers(pDynamicLightsIterator);
-		m_anythingChanged = false;
-	} else if (m_anyPushChanged) {
-		m_anyPushChanged = false;
-		updateVertexBuffer();
+		if (silhouetteShadows && haveSun &&
+			(fabsf(stretchX - m_lastShadowStretchX) > 1e-4f ||
+			 fabsf(stretchY - m_lastShadowStretchY) > 1e-4f)) {
+			m_anythingChanged = true;
+		}
+		if (m_anythingChanged) {
+			loadTreesInVertexAndIndexBuffers(pDynamicLightsIterator);
+			m_anythingChanged = false;
+		} else if (m_anyPushChanged) {
+			m_anyPushChanged = false;
+			updateVertexBuffer();
+		}
 	}
 
 //#define DEBUG_TEXTURE 1
@@ -1751,40 +1926,27 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 
 
 	if (m_curNumTreeIndices[0] == 0) {
+		if (TheW3DProjectedShadowManager && drawShadows && TheGlobalData->isShadowsForProps() && haveSun) {
+			drawModelShadows(camera, stretchX, stretchY);
+		}
 		return;
 	}
-	DX8Wrapper::Set_Shader(detailAlphaShader);
 
-	DX8Wrapper::Set_Texture(0,m_treeTexture);
-	DX8Wrapper::Set_Texture(1,nullptr);
-	DX8Wrapper::Set_DX8_Texture_Stage_State(0,  D3DTSS_TEXCOORDINDEX, 0);
-	DX8Wrapper::Set_DX8_Texture_Stage_State(1,  D3DTSS_TEXCOORDINDEX, 1);
-	// Draw all the trees.
-	DX8Wrapper::Apply_Render_State_Changes();
-	W3DShaderManager::setShroudTex(1);
-	DX8Wrapper::Apply_Render_State_Changes();
-
+	Matrix4x4 mat;
 	if (m_dwTreeVertexShader) {
+		// Flush deferred world/view/projection transforms before reading them from the device.
+		DX8Wrapper::Apply_Render_State_Changes();
 		// GeneralsX @bugfix BenderAI 13/02/2026 Matrix4x4 for GLM compatibility (fighter19 pattern)
 		Matrix4x4 matProj, matView, matWorld;
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_WORLD, matWorld);
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, matView);
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_PROJECTION, matProj);
-		Matrix4x4 mat;
 		D3DXMatrixMultiply( (D3DXMATRIX*)&mat, (D3DXMATRIX*)&matView, (D3DXMATRIX*)&matProj );
 		D3DXMatrixMultiply( (D3DXMATRIX*)&mat, (D3DXMATRIX*)&matWorld, (D3DXMATRIX*)&mat );
 		D3DXMatrixTranspose( (D3DXMATRIX*)&mat, (D3DXMATRIX*)&mat );
 
 		// c4  - Composite World-View-Projection Matrix
 		DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  4, &mat,  4 );
-		Vector4 noSway(0,0,0,0);
-		DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  8, &noSway,  1 );
-
-		// c8 - c8+MAX_SWAY_TYPES - the sway amount.
-		for	(i=0; i<MAX_SWAY_TYPES; i++) {
-			Vector4 sway4(swayFactor[i].X, swayFactor[i].Y, swayFactor[i].Z, 0);
-			DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  9+i, &sway4,  1 );
-		}
 
 		W3DShroud *shroud;
 		if ((shroud=TheTerrainRenderObject->getShroud()) != nullptr) {
@@ -1809,6 +1971,29 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 			DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  33, &offset,  1 );
 		}
 
+		// Projected silhouette shadow pass for batched trees (terrain-draped in m_vertexTreeShadow with horizontal sway).
+		if (silhouetteShadows && haveSun) {
+			Vector4 noSwayShadow(0.0f, 0.0f, 0.0f, 0.0f);
+			DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  8, &noSwayShadow,  1 );
+			for (i=0; i<MAX_SWAY_TYPES; i++) {
+				Vector4 swayShadow(swayFactor[i].X, swayFactor[i].Y, 0.0f, 0.0f);
+				DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  9+i, &swayShadow,  1 );
+			}
+
+			drawTreeBuffers(true);
+
+			DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  4, &mat,  4 );
+		}
+
+		Vector4 noSway(0,0,0,0);
+		DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  8, &noSway,  1 );
+
+		// c8 - c8+MAX_SWAY_TYPES - the sway amount.
+		for	(i=0; i<MAX_SWAY_TYPES; i++) {
+			Vector4 sway4(swayFactor[i].X, swayFactor[i].Y, swayFactor[i].Z, 0);
+			DX8Wrapper::_Get_D3D_Device8()->SetVertexShaderConstant(  9+i, &sway4,  1 );
+		}
+
 		DX8Wrapper::Set_Vertex_Shader(m_dwTreeVertexShader);
 #if 0
 		DX8Wrapper::Set_Pixel_Shader(m_dwTreePixelShader);
@@ -1823,35 +2008,15 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 		DX8Wrapper::Set_Vertex_Shader(DX8_FVF_XYZNDUV1);
 	}
 
-
-	Int bNdx;
-	for (bNdx=0;bNdx<MAX_BUFFERS; bNdx++) {
-		if (m_curNumTreeIndices[bNdx]==0) {
-			break;
-		}
-		DX8Wrapper::Set_Index_Buffer(m_indexTree[bNdx],0);
-		DX8Wrapper::Set_Vertex_Buffer(m_vertexTree[bNdx]);
-		// Render the waving grass
-		DX8Wrapper::Apply_Render_State_Changes();
-		if (m_dwTreeVertexShader) {
-			DX8Wrapper::_Get_D3D_Device8()->SetVertexShader(m_dwTreeVertexShader);
-			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(0,  D3DTSS_TEXCOORDINDEX, 0);
-			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(1,  D3DTSS_TEXCOORDINDEX, 1);
-			DX8Wrapper::_Get_D3D_Device8()->SetTextureStageState(1,  D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
-		}
-		DX8Wrapper::Draw_Triangles(	0, m_curNumTreeIndices[bNdx]/3, 0,	m_curNumTreeVertices[bNdx]);
-	}
+	drawTreeBuffers(false);
 
 	DX8Wrapper::Set_Vertex_Shader(DX8_FVF_XYZNDUV1);
 	DX8Wrapper::Set_Pixel_Shader(0);
 	DX8Wrapper::Invalidate_Cached_Render_States();	//code above mucks around with W3D states so make sure we reset
 
 	// GeneralsX @feature Olcay Seygan / Ilyas Akin 08/10/2026 Draw object-tree model shadows
-	if (TheW3DProjectedShadowManager && (TheGlobalData->m_useShadowDecals || TheGlobalData->m_useShadowVolumes)) {
-		Real stretchX, stretchY;
-		if (treeShadowStretch(stretchX, stretchY)) {
-			drawModelShadows(camera, stretchX, stretchY);
-		}
+	if (TheW3DProjectedShadowManager && drawShadows && TheGlobalData->isShadowsForProps() && haveSun) {
+		drawModelShadows(camera, stretchX, stretchY);
 	}
 
 }

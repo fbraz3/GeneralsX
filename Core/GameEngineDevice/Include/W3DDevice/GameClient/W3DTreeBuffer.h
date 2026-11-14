@@ -232,18 +232,23 @@ private:
 	enum { MAX_TREE_VERTEX=30000,
 					MAX_TREE_INDEX=60000,
 					MAX_TREES=4000};
+	// GeneralsX @bugfix fbraz3 13/11/2026 Increase tree buffer count to 4 (120k verts / 240k indices) to prevent foliage drop on zoomed-out/extended draw distance views
 	enum {MAX_TYPES = 64,
 				MAX_TILES = 512,
 				NUM_SWAY_ENTRIES = 100,
 				MAX_SWAY_TYPES = 10,
-				MAX_BUFFERS = 1,
+				MAX_BUFFERS = 4,
 				SORT_ITERATIONS_PER_FRAME=10};
 	enum {PARTITION_WIDTH_HEIGHT = 100};
 	enum {MAX_MODEL_SHADOWS = 1024,		///< object trees on a map; Golden Oasis has 278 palms
 				MAX_SHADOW_TEXTURES = 32,		///< distinct textures across those models
 				MAX_SHADOW_BATCH_VERTEX = 8000};	///< per texture, per frame
 	DX8VertexBufferClass	*m_vertexTree[MAX_BUFFERS];	///<Tree vertex buffer.
+	// GeneralsX @bugfix fbraz3 13/11/2026 Terrain-draped batched tree silhouette shadow vertex buffers
+	DX8VertexBufferClass	*m_vertexTreeShadow[MAX_BUFFERS];	///<Tree silhouette shadow vertex buffer.
 	DX8IndexBufferClass			*m_indexTree[MAX_BUFFERS];	///<indices defining a triangles for the tree drawing.
+	Real		m_lastShadowStretchX;	///< Sun shadow X stretch used when building m_vertexTreeShadow.
+	Real		m_lastShadowStretchY;	///< Sun shadow Y stretch used when building m_vertexTreeShadow.
 	DWORD					m_dwTreePixelShader;	///<handle to D3D pixel shader
 	DWORD					m_dwTreeVertexShader;	///<handle to D3D vertex shader
 
@@ -294,6 +299,8 @@ protected:
 	void updateSway(const BreezeInfo& info);
 	void loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *pDynamicLightsIterator); ///< Fills the index and vertex buffers for drawing.
 	void updateVertexBuffer(); ///< Fills the index and vertex buffers for drawing.
+	// GeneralsX @bugfix fbraz3 13/11/2026 Separate batched draw helper for silhouette shadow pass and upright foliage pass
+	void drawTreeBuffers(Bool shadowPass); ///< Draws batched tree vertex/index buffers.
 	void drawModelShadows(CameraClass *camera, Real stretchX, Real stretchY); ///< the object trees' shadows
 	Int  addShadowTexture(TextureClass *tex);	///< index of this texture in the shadow list, adding it if new
 	void cull(const CameraClass * camera);						 ///< Culls the trees.
