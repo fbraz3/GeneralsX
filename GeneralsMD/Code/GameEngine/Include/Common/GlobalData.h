@@ -618,6 +618,9 @@ public:
 	Bool				m_breakTheMovie;								///< The user has hit escape!
 	AsciiString m_modDir;
 	AsciiString m_modBIG;
+	// GeneralsX @feature felipebraz 13/11/2026 Runtime asset path overrides via command line (-assetPath / -generalsAssetPath)
+	AsciiString m_assetPath;
+	AsciiString m_generalsAssetPath;
 
 	//-allAdvice feature
 	//Bool m_allAdvice;

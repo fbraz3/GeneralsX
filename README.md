@@ -44,6 +44,14 @@ Ready-to-run releases are available for macOS, Linux, and Windows:
 ### 🌐 Cross-Platform Multiplayer
 GeneralsX includes integrated multiplayer powered by **GeneralsOnline**. Players on macOS, Linux, and Windows can host, join lobbies, and battle against each other online with zero network configuration hurdles.
 
+### 📂 Asset Paths & Launcher Workspaces
+GeneralsX automatically resolves game assets from multiple sources, preferring complete local workspaces (e.g., [GenHub](https://github.com/community-outpost/GenHub) profiles or portable setups) over the system registry. You can also specify asset paths explicitly:
+* **Command-line**: Pass `-assetPath "<path>"` (and `-generalsAssetPath "<path>"` for base Generals data in Zero Hour).
+* **Environment variables**: Set `CNC_GENERALS_ZH_PATH` and `CNC_GENERALS_PATH`.
+* **Options.ini override**: Add `[Paths]` with `AssetPath = .\` and `GeneralsAssetPath = .\ZH_Generals\`.
+
+See the [Running from a Launcher or Portable Workspace Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX#running-from-a-launcher-or-portable-workspace) for complete details.
+
 ---
 
 ## 📱 Ecosystem & Community Ports
