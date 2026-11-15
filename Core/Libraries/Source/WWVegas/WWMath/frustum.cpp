@@ -94,24 +94,28 @@ void FrustumClass::Init
 	Vector3	zv;
 	Vector3::Cross_Product(CameraTransform.Get_X_Vector(),CameraTransform.Get_Y_Vector(),&zv);
 
+	// GeneralsX @bugfix fbraz3 13/11/2026 Negate swapped view-plane bounds before multiplying by negative znear/zfar so asymmetric frustums are not inverted
+	const Vector2 cmin(-vpmax.X, -vpmax.Y);
+	const Vector2 cmax(-vpmin.X, -vpmin.Y);
+
 	//compare correct z-vector with the one in the camera matrix.  If they point in
 	//opposite directions, we have a reflected camera matrix.
 	if (Vector3::Dot_Product(CameraTransform.Get_Z_Vector(),zv) < 0)
 	{
 	  //flip the frustum corners horizontally for a reflected matrix
-	  Corners[1].Set(vpmin.X, vpmax.Y, 1.0);
+	  Corners[1].Set(cmin.X, cmax.Y, 1.0);
 	  Corners[5] = Corners[1];
 		Corners[1] *= znear;
 		Corners[5] *= zfar;
-		Corners[0].Set(vpmax.X, vpmax.Y, 1.0);
+		Corners[0].Set(cmax.X, cmax.Y, 1.0);
 		Corners[4] = Corners[0];
 		Corners[0] *= znear;
 		Corners[4] *= zfar;
-		Corners[3].Set(vpmin.X, vpmin.Y, 1.0);
+		Corners[3].Set(cmin.X, cmin.Y, 1.0);
 		Corners[7] = Corners[3];
 		Corners[3] *= znear;
 		Corners[7] *= zfar;
-		Corners[2].Set(vpmax.X, vpmin.Y, 1.0);
+		Corners[2].Set(cmax.X, cmin.Y, 1.0);
 		Corners[6] = Corners[2];
 		Corners[2] *= znear;
 		Corners[6] *= zfar;
@@ -119,19 +123,19 @@ void FrustumClass::Init
 	else
 	{
 		//normal camera
-		Corners[0].Set(vpmin.X, vpmax.Y, 1.0);
+		Corners[0].Set(cmin.X, cmax.Y, 1.0);
 		Corners[4] = Corners[0];
 		Corners[0] *= znear;
 		Corners[4] *= zfar;
-		Corners[1].Set(vpmax.X, vpmax.Y, 1.0);
+		Corners[1].Set(cmax.X, cmax.Y, 1.0);
 		Corners[5] = Corners[1];
 		Corners[1] *= znear;
 		Corners[5] *= zfar;
-		Corners[2].Set(vpmin.X, vpmin.Y, 1.0);
+		Corners[2].Set(cmin.X, cmin.Y, 1.0);
 		Corners[6] = Corners[2];
 		Corners[2] *= znear;
 		Corners[6] *= zfar;
-		Corners[3].Set(vpmax.X, vpmin.Y, 1.0);
+		Corners[3].Set(cmax.X, cmin.Y, 1.0);
 		Corners[7] = Corners[3];
 		Corners[3] *= znear;
 		Corners[7] *= zfar;
