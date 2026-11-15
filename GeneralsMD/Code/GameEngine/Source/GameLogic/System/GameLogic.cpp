@@ -60,7 +60,6 @@
 #include "Common/LatchRestore.h"
 #include "Common/MapObject.h"
 #include "Common/MultiplayerSettings.h"
-#include "Common/OSDisplay.h"
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -1167,7 +1166,7 @@ void GameLogic::updateDisplayBusyState()
 	const Bool busySystem = isInInteractiveGame() && !isGamePaused();
 	const Bool busyDisplay = busySystem && !TheGlobalData->m_headless;
 
-	OSDisplaySetBusyState(busyDisplay, busySystem);
+	TheGameEngine->setBusyState(busyDisplay, busySystem);
 }
 
 // ------------------------------------------------------------------------------------------------
