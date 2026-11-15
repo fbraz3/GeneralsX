@@ -249,6 +249,7 @@ private:
 	DX8IndexBufferClass			*m_indexTree[MAX_BUFFERS];	///<indices defining a triangles for the tree drawing.
 	Real		m_lastShadowStretchX;	///< Sun shadow X stretch used when building m_vertexTreeShadow.
 	Real		m_lastShadowStretchY;	///< Sun shadow Y stretch used when building m_vertexTreeShadow.
+	Bool		m_lastShadowHaveSun;	///< Sun availability used when building m_vertexTreeShadow.
 	DWORD					m_dwTreePixelShader;	///<handle to D3D pixel shader
 	DWORD					m_dwTreeVertexShader;	///<handle to D3D vertex shader
 

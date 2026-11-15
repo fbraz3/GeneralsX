@@ -805,6 +805,7 @@ Bool W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 	const Bool haveSun = treeShadowStretch(stretchX, stretchY);
 	m_lastShadowStretchX = stretchX;
 	m_lastShadowStretchY = stretchY;
+	m_lastShadowHaveSun = haveSun;
 
 	Int curTree=0;
 	Int bNdx;
@@ -1170,6 +1171,7 @@ W3DTreeBuffer::W3DTreeBuffer()
 	}
 	m_lastShadowStretchX = 0.0f;
 	m_lastShadowStretchY = 0.0f;
+	m_lastShadowHaveSun = false;
 	m_treeTexture = nullptr;
 	m_dwTreeVertexShader = 0;
 	m_dwTreePixelShader = 0;
@@ -1858,9 +1860,10 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 			}
 		}
 
-		if (silhouetteShadows && haveSun &&
-			(fabsf(stretchX - m_lastShadowStretchX) > 1e-4f ||
-			 fabsf(stretchY - m_lastShadowStretchY) > 1e-4f)) {
+		if (silhouetteShadows &&
+			(haveSun != m_lastShadowHaveSun ||
+			 (haveSun && (fabsf(stretchX - m_lastShadowStretchX) > 1e-4f ||
+			              fabsf(stretchY - m_lastShadowStretchY) > 1e-4f)))) {
 			m_anythingChanged = true;
 			m_updateAllKeys = true;
 		}
