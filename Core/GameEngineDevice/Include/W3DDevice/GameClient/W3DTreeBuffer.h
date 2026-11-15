@@ -109,6 +109,7 @@ typedef struct {
 
 	Real		pushAside;
 	Real		pushAsideDelta;
+	Bool		pushAsideDirty;		///< True when current pose has not yet been uploaded to both vertex buffers.
 	Real		pushAsideSin;			///< Sine of the rotation angle at location.
 	Real		pushAsideCos;			///< Cosine of the rotation angle at location.
 	ObjectID pushAsideSource; ///< Unit that is pushing us aside.

@@ -1005,6 +1005,7 @@ Bool W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 				curShadowVb++;
 				m_curNumTreeVertices[bNdx]++;
 			}
+			m_trees[curTree].pushAsideDirty = false;
 
 			for (i=0; i<numIndex; i++) {
 				if (m_curNumTreeIndices[bNdx]+4 > MAX_TREE_INDEX)
@@ -1072,10 +1073,12 @@ void W3DTreeBuffer::updateVertexBuffer()
 			if (type<0 || type>=m_numTreeTypes || m_treeTypes[type].m_mesh == nullptr || m_treeTypes[type].m_data == nullptr) {
 				continue;
 			}
-			if (m_trees[curTree].pushAsideDelta==0.0f && m_trees[curTree].m_toppleState == TOPPLE_UPRIGHT) {
+			if (m_trees[curTree].pushAsideDelta==0.0f && !m_trees[curTree].pushAsideDirty && m_trees[curTree].m_toppleState == TOPPLE_UPRIGHT) {
 				continue; // not toppling or pushed, no need to update. jba [7/11/2003]
 			}
-			m_anyPushChanged = true;
+			if (m_trees[curTree].pushAsideDelta!=0.0f || m_trees[curTree].m_toppleState != TOPPLE_UPRIGHT) {
+				m_anyPushChanged = true;
+			}
 			if (!m_trees[curTree].visible) continue;
 			Real scale = m_trees[curTree].scale;
 			Vector3 loc = m_trees[curTree].location;
@@ -1125,6 +1128,7 @@ void W3DTreeBuffer::updateVertexBuffer()
 				curVb++;
 				curShadowVb++;
 			}
+			m_trees[curTree].pushAsideDirty = false;
 		}
 	}
 }
@@ -1589,6 +1593,7 @@ void W3DTreeBuffer::addTree(DrawableID id, Coord3D location, Real scale, Real an
 	m_trees[m_numTrees].lastFrameUpdated = 0;
 	m_trees[m_numTrees].pushAsideSource = INVALID_ID;
 	m_trees[m_numTrees].pushAsideDelta = 0;
+	m_trees[m_numTrees].pushAsideDirty = false;
 	m_trees[m_numTrees].pushAsideCos = 1;
 	m_trees[m_numTrees].pushAsideSin = 1;
 	m_trees[m_numTrees].m_toppleState = TOPPLE_UPRIGHT;
@@ -1664,6 +1669,7 @@ void W3DTreeBuffer::pushAsideTree(DrawableID id, const Coord3D *pusherPos,
 			}
 			m_anyPushChanged = true;
 			m_trees[i].pushAsideDelta = 1.0f/(Real)treeData->m_framesToMoveOutward;
+			m_trees[i].pushAsideDirty = true;
 		}
 	}
 }
@@ -1851,6 +1857,8 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 				}
 			} else if (m_trees[curTree].pushAsideDelta!=0.0f) {
 				m_trees[curTree].pushAside += m_trees[curTree].pushAsideDelta;
+				m_trees[curTree].pushAsideDirty = true;
+				m_anyPushChanged = true;
 				if (m_trees[curTree].pushAside>=1.0f) {
 					m_trees[curTree].pushAsideDelta = (moduleData->m_framesToMoveInward > 0) ? (-1.0f/(Real)moduleData->m_framesToMoveInward) : 0.0f;
 				} else if (m_trees[curTree].pushAside<=0.0f) {
