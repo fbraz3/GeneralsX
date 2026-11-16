@@ -310,7 +310,7 @@ money and general's points (frame request + 4) and that without the flag the req
       frame a scheduled command (autopilot switch, cheat, hand order) lands on from live timing (frame 304 vs 306): consistent across the two
       machines, not a determinism bug. [ ] ~75 s of fixed setup and teardown per match remain (lobby, map load, ssh, log fetch): trim.
 - Windows build is not the bottleneck: it is incremental (~1 min for a sim change) on the 16-thread laptop.
-- [ ] Linux screenshots are written with a literal backslash in the file name (task spawned; driver works around it).
+- [x] Linux screenshots are written with a literal backslash in the file name (fixed in `W3DScreenshot.cpp`: `Screenshots/` on POSIX; the driver still matches the legacy name).
 - [x] Demo video: `tools/netplay/make_demo.sh` runs a visible solo game (Autopilot on, off, a hand-ordered Barracks via the real
       select + construct commands, on again) and stitches in-engine screenshots into a captioned mp4. [ ] A real screen recording with
       mouse clicks on the Windows laptop (ffmpeg gdigrab + SendInput) is still optional and would take over its desktop.

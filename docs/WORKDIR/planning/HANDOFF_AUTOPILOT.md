@@ -5,9 +5,9 @@ Start here when resuming. Written so the long Claude sessions behind this work c
 ## State
 - 2026-10-23: the in-game Autopilot control panel (`3d26658f3`) is pushed. Windows build OK, `run-netplay.sh --fast` and an Autopilot level-6 Death Valley run both
   IN SYNC, scenario baseline identical (72/72, 0 differ), new commits scanned clean. Still open: Ben has not tried the panel with a real mouse or at other resolutions.
-- Branch `feat/netplay-autopilot` on the PUBLIC fork `tonalOrchestrator/project-generalsx`. Everything is committed and pushed through `3d26658f3` (list below describes through `43edf863c`):
-  superweapons module, refactor steps 0-6, three design reviews, player-supplied music playlists (`FACTION_MUSIC_DESIGN.md`, "How to use it"), and the first
-  autopilot directive (capture; `AUTOPILOT_DIRECTIVES.md`, "Built so far"). The installed Linux game binary and the Windows laptop's exe (artifact
+- Branch `feat/netplay-autopilot` on the PUBLIC fork `tonalOrchestrator/project-generalsx`. Everything is committed and pushed through `65180cf9b` (list below describes through `43edf863c`; the panel `3d26658f3` and the garrison/defend directives `65180cf9b` came after):
+  superweapons module, refactor steps 0-6, three design reviews, player-supplied music playlists (`FACTION_MUSIC_DESIGN.md`, "How to use it"), and the
+  autopilot directive layer (capture, garrison, defend; `AUTOPILOT_DIRECTIVES.md`, "Built so far"), plus the control-bar panel. The installed Linux game binary and the Windows laptop's exe (artifact
   `20261022-191731-win32-2dfedd3b9d`) are builds of that code. Linux + Windows matches in sync: a 30-game-minute GLA Fortress match (8 Scud launches), and an
   Explore match with and without a capture directive (applied at the same frame on both machines).
 - Autopilot (levels 1-6: Easy, Normal, Hard, Wallet, Explore, Fortress; modules: planner, economy, defense, defense units, explorer, squad, hackers, repair,
