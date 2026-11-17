@@ -51,6 +51,7 @@ class LanRelay:
         self._clients: dict[tuple[int, int], "WebGPURequestHandler"] = {}
         self._udp_sockets: dict[int, socket.socket] = {}
         self._udp_workers: dict[int, tuple[threading.Event, threading.Thread]] = {}
+        self._retiring_workers: dict[int, threading.Thread] = {}
         self._port_locks: dict[int, threading.Lock] = {}
         self.lan_ip_str = "127.0.0.1"
         self.lan_ip_int = 0x7F000001
@@ -74,6 +75,12 @@ class LanRelay:
 
     def _ensure_udp_socket(self, port: int) -> None:
         with self._port_lock(port):
+            with self._lock:
+                if port in self._udp_sockets:
+                    return
+                retiring = self._retiring_workers.pop(port, None)
+            if retiring is not None and retiring is not threading.current_thread() and retiring.is_alive():
+                retiring.join()
             with self._lock:
                 if port in self._udp_sockets:
                     return
@@ -160,8 +167,12 @@ class LanRelay:
                         sock.close()
                     except OSError:
                         pass
-                if thread is not None and thread is not threading.current_thread() and thread.is_alive():
-                    thread.join(timeout=1.0)
+                if thread is not None:
+                    if thread is not threading.current_thread() and thread.is_alive():
+                        thread.join(timeout=1.5)
+                    if thread.is_alive():
+                        with self._lock:
+                            self._retiring_workers[port] = thread
 
     def route(self, source: tuple[int, int], destination: tuple[int, int], payload: bytes) -> None:
         with self._lock:
@@ -547,7 +558,15 @@ document.getElementById("log").textContent =
         else:
             header = bytes((0x80 | opcode, 126)) + struct.pack("!H", len(payload))
         with self._websocket_send_lock:
-            self.connection.sendall(header + payload)
+            prev_timeout = self.connection.gettimeout()
+            self.connection.settimeout(1.0)
+            try:
+                self.connection.sendall(header + payload)
+            finally:
+                try:
+                    self.connection.settimeout(prev_timeout)
+                except OSError:
+                    pass
 
     def _read_exact(self, length: int) -> bytes:
         data = bytearray()
