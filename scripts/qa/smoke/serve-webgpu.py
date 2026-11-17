@@ -90,7 +90,7 @@ class LanRelay:
             )
             self._udp_sockets[port] = sock
             self._udp_workers[port] = (stop_event, thread)
-        thread.start()
+            thread.start()
 
     def _udp_recv_loop(self, port: int, sock: socket.socket, stop_event: threading.Event) -> None:
         while not stop_event.is_set():
@@ -145,7 +145,7 @@ class LanRelay:
         for sock, stop_event, thread in cleanup:
             if stop_event is not None:
                 stop_event.set()
-            if thread is not None and thread is not threading.current_thread():
+            if thread is not None and thread is not threading.current_thread() and thread.is_alive():
                 thread.join(timeout=1.0)
             try:
                 sock.close()

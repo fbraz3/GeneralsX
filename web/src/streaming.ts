@@ -206,8 +206,8 @@ export class ArchiveStreamer {
               throw new Error(`HTTP ${response.status} fetching ${entry.url}`);
             }
             const body = new Uint8Array(await response.arrayBuffer());
-            // A 200 response carries the full file; slice it to the requested range.
-            bytes = response.status === 206 ? body : body.subarray(start, end + 1);
+            // A 200 response carries the full file; copy only the requested range so the full buffer can be GC'd.
+            bytes = response.status === 206 ? body : body.slice(start, end + 1);
           }
           for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
             const partKey = `${entry.url}#${index + offset / CHUNK_SIZE}`;
