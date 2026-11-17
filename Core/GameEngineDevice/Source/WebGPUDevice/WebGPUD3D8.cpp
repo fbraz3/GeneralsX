@@ -3869,8 +3869,9 @@ HRESULT WebGPUDirect3D8::CreateDevice(UINT adapter, D3DDEVTYPE type, HWND window
 	if (adapter || !parameters || !device) {
 		return D3DERR_INVALIDCALL;
 	}
-	if (parameters->BackBufferWidth > 0 && parameters->BackBufferHeight > 0) {
-		m_context.resize(parameters->BackBufferWidth, parameters->BackBufferHeight);
+	if (parameters->BackBufferWidth > 0 && parameters->BackBufferHeight > 0 &&
+		!m_context.resize(parameters->BackBufferWidth, parameters->BackBufferHeight)) {
+		return D3DERR_NOTAVAILABLE;
 	}
 	auto *created = new WebGPUD3DDevice(this, &m_context, *parameters);
 	created->m_creation.AdapterOrdinal = adapter;

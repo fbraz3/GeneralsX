@@ -200,7 +200,7 @@ export function initConsole(deps: ConsoleDeps): void {
       if (event.key === "Escape") {
         event.preventDefault();
         setOpen(false);
-      } else if (event.target === input) {
+      } else if (event.target === input && !event.isComposing) {
         handleConsoleKey(event);
       }
       event.stopImmediatePropagation();

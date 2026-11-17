@@ -119,9 +119,16 @@ bool WebGPUContext::resize(uint32_t width, uint32_t height)
 		return true;
 	}
 
+	const uint32_t prevWidth = m_width;
+	const uint32_t prevHeight = m_height;
 	m_width = width;
 	m_height = height;
-	return configureSurface();
+	if (!configureSurface()) {
+		m_width = prevWidth;
+		m_height = prevHeight;
+		return false;
+	}
+	return true;
 }
 
 bool WebGPUContext::isReady() const

@@ -50,6 +50,7 @@ class LanRelay:
         self._lock = threading.Lock()
         self._clients: dict[tuple[int, int], "WebGPURequestHandler"] = {}
         self._udp_sockets: dict[int, socket.socket] = {}
+        self._udp_workers: dict[int, tuple[threading.Event, threading.Thread]] = {}
         self.lan_ip_str = "127.0.0.1"
         self.lan_ip_int = 0x7F000001
         self._registrations = 0
@@ -74,20 +75,29 @@ class LanRelay:
                 except OSError:
                     pass
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.settimeout(0.5)
             try:
                 sock.bind(("0.0.0.0", port))
             except OSError as exc:
                 print(f"[LanRelay] Warning: failed to bind UDP 0.0.0.0:{port}: {exc}", file=sys.stderr)
                 sock.close()
                 return
+            stop_event = threading.Event()
+            thread = threading.Thread(
+                target=self._udp_recv_loop,
+                args=(port, sock, stop_event),
+                daemon=True,
+            )
             self._udp_sockets[port] = sock
-        thread = threading.Thread(target=self._udp_recv_loop, args=(port, sock), daemon=True)
+            self._udp_workers[port] = (stop_event, thread)
         thread.start()
 
-    def _udp_recv_loop(self, port: int, sock: socket.socket) -> None:
-        while True:
+    def _udp_recv_loop(self, port: int, sock: socket.socket, stop_event: threading.Event) -> None:
+        while not stop_event.is_set():
             try:
                 payload, (src_ip_str, src_port) = sock.recvfrom(65535)
+            except socket.timeout:
+                continue
             except OSError:
                 break
             try:
@@ -121,7 +131,7 @@ class LanRelay:
         self._ensure_udp_socket(key[1])
 
     def unregister(self, client: "WebGPURequestHandler") -> None:
-        sockets_to_close: list[socket.socket] = []
+        cleanup: list[tuple[socket.socket, threading.Event | None, threading.Thread | None]] = []
         with self._lock:
             stale = [key for key, value in self._clients.items() if value is client]
             for key in stale:
@@ -130,8 +140,13 @@ class LanRelay:
             for port in list(self._udp_sockets):
                 if port not in active_ports:
                     sock = self._udp_sockets.pop(port)
-                    sockets_to_close.append(sock)
-        for sock in sockets_to_close:
+                    stop_event, thread = self._udp_workers.pop(port, (None, None))
+                    cleanup.append((sock, stop_event, thread))
+        for sock, stop_event, thread in cleanup:
+            if stop_event is not None:
+                stop_event.set()
+            if thread is not None and thread is not threading.current_thread():
+                thread.join(timeout=1.0)
             try:
                 sock.close()
             except OSError:
@@ -149,7 +164,16 @@ class LanRelay:
             else:
                 self._directed += 1
                 target = self._clients.get(destination)
-                targets = [target] if target is not None else []
+                if target is not None:
+                    targets = [target]
+                elif destination[0] == self.lan_ip_int:
+                    targets = [
+                        client
+                        for key, client in self._clients.items()
+                        if key[1] == destination[1] and key != source
+                    ]
+                else:
+                    targets = []
             self._delivered += len(targets)
             udp_sock = self._udp_sockets.get(source[1])
             lan_ip_int = self.lan_ip_int

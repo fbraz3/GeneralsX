@@ -51,7 +51,9 @@ const workerSource = `
       } else {
         const response = await fetch(url, { headers: { Range: "bytes=" + start + "-" + end } });
         if (!response.ok && response.status !== 206) throw new Error("HTTP " + response.status);
-        bytes = new Uint8Array(await response.arrayBuffer());
+        const body = new Uint8Array(await response.arrayBuffer());
+        // A 200 response carries the full file; slice it to the requested range.
+        bytes = response.status === 206 ? body : body.subarray(start, end + 1);
       }
       data.set(bytes.subarray(0, data.length));
       state[1] = Math.min(bytes.length, data.length);
@@ -203,7 +205,9 @@ export class ArchiveStreamer {
             if (!response.ok || (response.status !== 206 && response.status !== 200)) {
               throw new Error(`HTTP ${response.status} fetching ${entry.url}`);
             }
-            bytes = new Uint8Array(await response.arrayBuffer());
+            const body = new Uint8Array(await response.arrayBuffer());
+            // A 200 response carries the full file; slice it to the requested range.
+            bytes = response.status === 206 ? body : body.subarray(start, end + 1);
           }
           for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
             const partKey = `${entry.url}#${index + offset / CHUNK_SIZE}`;
