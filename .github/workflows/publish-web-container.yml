@@ -1,0 +1,101 @@
+name: Publish Web Container (GHCR)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published release tag to package into ghcr.io/generalsx-project/generalsx-web"
+        required: true
+        type: string
+
+concurrency:
+  group: publish-web-container-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-container:
+    name: Publish ghcr.io/generalsx-project/generalsx-web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+            IS_PRERELEASE="false"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+            IS_PRERELEASE="${{ github.event.release.prerelease }}"
+          fi
+          if [ -z "$TAG" ]; then
+            echo "ERROR: Release tag could not be resolved"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.release.outputs.tag }}
+
+      - name: Download WebAssembly release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/wasm-release dist-wasm-bundle
+          gh release download "${{ steps.release.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "Web-WebGPU-GeneralsXZH.zip" \
+            --dir /tmp/wasm-release
+          unzip -q /tmp/wasm-release/Web-WebGPU-GeneralsXZH.zip -d dist-wasm-bundle
+          rm -f dist-wasm-bundle/serve-webgpu.py
+          for f in \
+            dist-wasm-bundle/index.html \
+            dist-wasm-bundle/GeneralsXZH.js \
+            dist-wasm-bundle/GeneralsXZH.wasm \
+            dist-wasm-bundle/GeneralsXZH.data \
+            dist-wasm-bundle/generalsx.big; do
+            test -s "$f" || { echo "Missing or empty release asset file: $f"; exit 1; }
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/generalsx-project/generalsx-web
+          tags: |
+            type=raw,value=${{ steps.release.outputs.tag }}
+            type=raw,value=latest,enable=${{ steps.release.outputs.is_prerelease != 'true' }}
+
+      - name: Build and push container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: web/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUNDLE_DIR=dist-wasm-bundle

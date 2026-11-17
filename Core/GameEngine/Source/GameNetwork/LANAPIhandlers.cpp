@@ -146,7 +146,7 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->GameInfo.gameName),
 		msg->GameInfo.inProgress, msg->GameInfo.isDirectConnect); */
 	// GeneralsX @bugfix Mr. Meesseeks 29/09/2026 Ignore self-announcements from any active local interface on multi-homed hosts.
-	if (senderIP == m_localIP || LANInterfaceDevice::isLocalHostAddress(senderIP))
+	if (senderIP == m_localIP || (AmIHost() && LANInterfaceDevice::isLocalHostAddress(senderIP)))
 	{
 		return; // Don't try to update own info
 	}

@@ -31,7 +31,8 @@ if(MSVC)
 
     # /INCREMENTAL:NO prevents PDB size bloat in Debug configuration(s).
     add_link_options("/INCREMENTAL:NO")
-else()
+# GeneralsX @build Avoid incompatible DWARF post-processing in browser release builds.
+elseif(NOT EMSCRIPTEN)
     # We go a bit wild here and assume any other compiler we are going to use supports -g for debug info.
     # Add debug symbols to Release builds for crash dump analysis, profiling, and post-mortem debugging.
     # For MinGW, symbols will be stripped to separate .debug files (matching MSVC PDB workflow).

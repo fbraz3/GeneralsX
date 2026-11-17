@@ -42,7 +42,9 @@
 
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameMessageParser.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif
 #include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "Common/RandomValue.h"
@@ -593,11 +595,13 @@ void RecorderClass::startRecording(GameDifficulty diff, GameMode originalGameMod
 				}
 			}
 		}
+#if defined(SAGE_USE_GAMESPY)
 		else
 		{
 			theSlotList = GameInfoToAsciiString(TheGameSpyGame);
 			localIndex = TheGameSpyGame->getLocalSlotNum();
 		}
+#endif
 	}
 	else
 	{
@@ -1829,8 +1833,10 @@ AsciiString RecorderClass::getLastReplayFileName()
 		GameInfo *game = nullptr;
 		if (TheLAN)
 			game = TheLAN->GetMyGame();
+#if defined(SAGE_USE_GAMESPY)
 		else if (TheGameSpyInfo)
 			game = TheGameSpyGame;
+#endif
 		if (game)
 		{
 			AsciiString players;

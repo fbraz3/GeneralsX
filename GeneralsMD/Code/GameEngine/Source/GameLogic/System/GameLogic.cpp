@@ -28,6 +28,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
 
 #ifndef _WIN32
 #include <fenv.h>
@@ -124,12 +127,14 @@
 #include "Common/DataChunk.h"
 #include "GameLogic/Scripts.h"
 
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#endif
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
-#include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
@@ -693,9 +698,11 @@ LoadScreen *GameLogic::getLoadScreen( Bool loadingSaveGame )
 	case GAME_REPLAY:
 		return NEW ShellGameLoadScreen;
 		break;
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	case GAME_INTERNET:
 		return NEW GameSpyLoadScreen;
 		break;
+#endif
 	case GAME_NONE:
 	default:
 		return nullptr;
@@ -1139,9 +1146,17 @@ static void populateRandomStartPosition( GameInfo *game )
 // ------------------------------------------------------------------------------------------------
 void GameLogic::updateLoadProgress( Int progress )
 {
-
+#if defined(__EMSCRIPTEN__)
+	fprintf(stderr, "GENERALSX_LOAD_PROGRESS %d %d\n", progress, m_loadScreen ? 1 : 0);
+#endif
 	if( m_loadScreen )
+	{
 		m_loadScreen->update( progress );
+#if defined(__EMSCRIPTEN__)
+		EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio && d.webaudio.state === "running") d.webaudio.suspend(); }); });
+		emscripten_sleep(0);
+#endif
+	}
 
 	if (TheGameEngine->getQuitting() || m_quitToDesktopAfterMatch)
 	{
@@ -1222,6 +1237,10 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 #endif
 
 	setLoadingMap( TRUE );
+#if defined(__EMSCRIPTEN__)
+	emscripten_sleep(250);
+	EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio && d.webaudio.state === "running") d.webaudio.suspend(); }); });
+#endif
 
 	if( loadingSaveGame == FALSE )
 	{
@@ -1302,11 +1321,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			TheGameInfo = TheNGMPGame;
 		}
 #endif
+#if defined(SAGE_USE_GAMESPY)
 		else
 		{
 			DEBUG_LOG(("Starting gamespy game"));
 			TheGameInfo = TheGameSpyGame;	/// @todo: MDC add back in after demo
 		}
+#endif
 	}
 	else
 	{
@@ -2315,6 +2336,17 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		}
 	}
 
+#if defined(__EMSCRIPTEN__)
+	{
+		Int holdTicks = 0;
+		while (EM_ASM_INT({ return globalThis.__gxHoldMatch ? 1 : 0; }) && holdTicks++ < 9000)
+		{
+			updateLoadProgress(101);
+			emscripten_sleep(100);
+		}
+	}
+#endif
+
 	updateLoadProgress(LOAD_PROGRESS_END);
 
 	if(isInMultiplayerGame() && TheNetwork)
@@ -2379,6 +2411,9 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			}
 #endif
 			deleteLoadScreen();
+#if defined(__EMSCRIPTEN__)
+			fprintf(stderr, "GENERALSX_LOAD_DONE\n");
+#endif
 
 	}
 
@@ -2495,6 +2530,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 #endif
 	TheWritableGlobalData->m_loadScreenRender = FALSE;	///< mark to resume rendering as normal
 
+#if defined(SAGE_USE_GAMESPY)
 	// if we're in a gamespy game, mark us as playing
 	if (TheGameSpyBuddyMessageQueue && TheGameSpyGame && isInInternetGame())
 	{
@@ -2506,6 +2542,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			ARRAY_SIZE(req.arg.status.locationString));
 		TheGameSpyBuddyMessageQueue->addRequest(req);
 	}
+#endif
 
   if( loadingSaveGame == FALSE )
   {
@@ -2522,16 +2559,21 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	//ReAllows quit menu to work during loading scene
 	//setGameLoading(FALSE);
 	setLoadingMap( FALSE );
+#if defined(__EMSCRIPTEN__)
+	EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio) d.webaudio.resume(); }); });
+#endif
 
 #ifdef DUMP_PERF_STATS
 	GetPrecisionTimer(&endTime64);
 	DEBUG_LOG(("Total startnewgame=%f", ((double)(endTime64-startTime64)/(double)(freq64)*1000.0)));
 #endif
 
+#if defined(SAGE_USE_GAMESPY)
 	//Assume that getting this far means we've successfully entered an online game.
 	//Add an additional disconnection to player stats in case he doesn't complete this game. -MW
 	if (TheGameSpyInfo)
 		TheGameSpyInfo->updateAdditionalGameSpyDisconnections(1);
+#endif
 
 
   if ( isInReplayGame() && TheInGameUI && TheGameText )

@@ -11,15 +11,16 @@
     },
     {
       "name": "fontconfig",
-      "platform": "!windows"
+      "platform": "!(windows | emscripten)"
     },
     {
       "name": "curl",
+      "platform": "!emscripten",
       "features": ["ssl", "websockets"]
     },
     {
       "name": "gamenetworkingsockets",
-      "platform": "!osx"
+      "platform": "!(osx | emscripten)"
     },
     "stb"
   ],

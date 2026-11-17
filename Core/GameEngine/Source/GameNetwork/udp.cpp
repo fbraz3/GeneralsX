@@ -39,6 +39,145 @@
 typedef int socklen_t;
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+
+// GeneralsX @feature Codex 04/08/2026 Preserve the UDP transport contract through the local browser LAN relay.
+EM_JS(UnsignedInt, GeneralsXWebLanVirtualIP, (), {
+	if (!globalThis.generalsXLanVirtualIP) {
+		if (typeof globalThis.generalsXLanHostIP === "number" && globalThis.generalsXLanHostIP !== 0) {
+			globalThis.generalsXLanVirtualIP = globalThis.generalsXLanHostIP >>> 0;
+		} else {
+			const queryValue = new URLSearchParams(globalThis.location.search).get("lanClient");
+			let clientId = /^(?:[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-4])$/.test(queryValue || "")
+				? Number(queryValue)
+				: 0;
+			if (!clientId) {
+				const storageKey = "generalsX.lanClient";
+				clientId = Number(globalThis.sessionStorage.getItem(storageKey)) || 0;
+				if (!clientId) {
+					const random = new Uint8Array(1);
+					globalThis.crypto.getRandomValues(random);
+					clientId = (random[0] % 254) + 1;
+					globalThis.sessionStorage.setItem(storageKey, String(clientId));
+				}
+			}
+			globalThis.generalsXLanVirtualIP = (0x0A000000 | clientId) >>> 0;
+		}
+	}
+	return globalThis.generalsXLanVirtualIP;
+});
+
+EM_JS(Int, GeneralsXWebLanBind, (UnsignedInt ip, UnsignedShort port), {
+	const virtualIP = ip || _GeneralsXWebLanVirtualIP();
+	const sockets = globalThis.generalsXLanSockets ||= new Map();
+	const existing = sockets.get(port);
+	if (existing) {
+		existing.socket.close();
+		sockets.delete(port);
+	}
+
+	const relayUrl = (globalThis.location.protocol === "https:" ? "wss://" : "ws://")
+		+ globalThis.location.host + "/GeneralsXLan";
+	const socket = new WebSocket(relayUrl);
+	socket.binaryType = "arraybuffer";
+	const state = { socket, virtualIP, port, incoming: [], outgoing: [], incomingBytes: 0 };
+	sockets.set(port, state);
+
+	const encodeRegistration = () => {
+		const message = new ArrayBuffer(7);
+		const view = new DataView(message);
+		view.setUint8(0, 1);
+		view.setUint32(1, virtualIP, false);
+		view.setUint16(5, port, false);
+		return message;
+	};
+
+	socket.addEventListener("open", () => {
+		socket.send(encodeRegistration());
+		for (const message of state.outgoing) socket.send(message);
+		state.outgoing.length = 0;
+		globalThis.generalsXLanStatus = { connected: true, ip: virtualIP, port };
+	});
+	const onRelayMessage = (event) => {
+		const bytes = new Uint8Array(event.data);
+		if (bytes.length === 5 && bytes[0] === 3) {
+			const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+			const assignedIP = view.getUint32(1, false) >>> 0;
+			if (assignedIP !== 0) {
+				globalThis.generalsXLanVirtualIP = assignedIP;
+				state.virtualIP = assignedIP;
+			}
+			return;
+		}
+		if (bytes.length < 7 || bytes[0] !== 2) return;
+		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+		const payload = bytes.slice(7);
+		state.incoming.push({
+			ip: view.getUint32(1, false),
+			port: view.getUint16(5, false),
+			payload
+		});
+		state.incomingBytes += payload.byteLength;
+		while (state.incoming.length > 16384 || state.incomingBytes > 32 * 1024 * 1024) {
+			state.incomingBytes -= state.incoming.shift().payload.byteLength;
+		}
+	};
+	socket.addEventListener("message", onRelayMessage);
+	socket.addEventListener("close", () => {
+		if (sockets.get(port) !== state) return;
+		globalThis.generalsXLanStatus = { connected: false, ip: state.virtualIP, port };
+	});
+	return 0;
+});
+
+EM_JS(void, GeneralsXWebLanClose, (UnsignedShort port), {
+	const sockets = globalThis.generalsXLanSockets;
+	const state = sockets?.get(port);
+	if (!state) return;
+	sockets.delete(port);
+	state.socket.close();
+});
+
+EM_JS(Int, GeneralsXWebLanWrite,
+	(const unsigned char *message, UnsignedInt length, UnsignedInt ip, UnsignedShort port, UnsignedShort localPort), {
+	const state = globalThis.generalsXLanSockets?.get(localPort);
+	if (!state) return -1;
+	const frame = new Uint8Array(7 + length);
+	const view = new DataView(frame.buffer);
+	view.setUint8(0, 2);
+	view.setUint32(1, ip, false);
+	view.setUint16(5, port, false);
+	frame.set(HEAPU8.subarray(message, message + length), 7);
+	if (state.socket.readyState === WebSocket.OPEN) {
+		state.socket.send(frame);
+	} else if (state.outgoing.length < 256) {
+		state.outgoing.push(frame);
+	} else {
+		return -1;
+	}
+	return length;
+});
+
+EM_JS(Int, GeneralsXWebLanRead,
+	(unsigned char *message, UnsignedInt capacity, UnsignedShort localPort, UnsignedInt *sourceIP, UnsignedShort *sourcePort), {
+	const state = globalThis.generalsXLanSockets?.get(localPort);
+	if (!state || state.incoming.length === 0) return 0;
+	const packet = state.incoming.shift();
+	state.incomingBytes -= packet.payload.byteLength;
+	const length = Math.min(capacity, packet.payload.byteLength);
+	HEAPU8.set(packet.payload.subarray(0, length), message);
+	HEAPU32[sourceIP >>> 2] = packet.ip;
+	HEAPU16[sourcePort >>> 1] = packet.port;
+	return length;
+});
+
+UnsignedInt GetWebLanVirtualIP()
+{
+	return GeneralsXWebLanVirtualIP();
+}
+#endif
+
 //-------------------------------------------------------------------------
 
 #ifdef DEBUG_LOGGING
@@ -124,8 +263,13 @@ UDP::UDP()
 
 UDP::~UDP()
 {
+#if defined(__EMSCRIPTEN__)
+	if (myPort)
+		GeneralsXWebLanClose(myPort);
+#else
 	if (fd)
 		closesocket(fd);
+#endif
 }
 
 Int UDP::Bind(const char *Host,UnsignedShort port)
@@ -147,6 +291,13 @@ Int UDP::Bind(const char *Host,UnsignedShort port)
 //   Well... you can get implicit binding if you pass 0 for either arg
 Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 {
+#if defined(__EMSCRIPTEN__)
+	myIP = IP ? IP : GetWebLanVirtualIP();
+	myPort = Port;
+	fd = Port;
+	m_lastError = GeneralsXWebLanBind(myIP, myPort);
+	return m_lastError == 0 ? OK : UNKNOWN;
+#else
   int retval;
   int status;
   UnsignedInt ipHostOrder = IP;
@@ -206,6 +357,7 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     fprintf(stderr,"Couldn't set nonblocking mode!\n");
 
   return(OK);
+#endif
 }
 
 Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
@@ -219,6 +371,9 @@ Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
 // private function
 Int UDP::SetBlocking(Int block)
 {
+#if defined(__EMSCRIPTEN__)
+	return OK;
+#else
   #ifdef _WIN32
    unsigned long flag=1;
    if (block)
@@ -242,11 +397,18 @@ Int UDP::SetBlocking(Int block)
    }
    return(OK);
   #endif
+#endif
 }
 
 
 Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedShort port)
 {
+#if defined(__EMSCRIPTEN__)
+	if ((IP == 0) || (port == 0)) return ADDRNOTAVAIL;
+	const Int written = GeneralsXWebLanWrite(msg, len, IP, port, myPort);
+	if (written < 0) m_lastError = EAGAIN;
+	return written;
+#else
   Int retval;
   struct sockaddr_in to;
 
@@ -281,10 +443,23 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 	}
 
   return(retval);
+#endif
 }
 
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
+#if defined(__EMSCRIPTEN__)
+	UnsignedInt sourceIP = 0;
+	UnsignedShort sourcePort = 0;
+	const Int received = GeneralsXWebLanRead(msg, len, myPort, &sourceIP, &sourcePort);
+	if (received > 0 && from != nullptr) {
+		memset(from, 0, sizeof(*from));
+		from->sin_family = AF_INET;
+		from->sin_addr.s_addr = htonl(sourceIP);
+		from->sin_port = htons(sourcePort);
+	}
+	return received;
+#else
   Int retval;
   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
   socklen_t alen=sizeof(sockaddr_in);
@@ -336,6 +511,7 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 		}
   }
   return(retval);
+#endif
 }
 
 
@@ -509,6 +685,9 @@ int UDP::Wait(Int sec,Int usec,fd_set &givenSet,fd_set &returnSet)
 
 Int UDP::SetInputBuffer(UnsignedInt bytes)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_RCVBUF,
@@ -517,12 +696,16 @@ Int UDP::SetInputBuffer(UnsignedInt bytes)
      return(TRUE);
    else
      return(FALSE);
+#endif
 }
 
 // Same note goes for the output buffer
 
 Int UDP::SetOutputBuffer(UnsignedInt bytes)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_SNDBUF,
@@ -531,12 +714,16 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
      return(TRUE);
    else
      return(FALSE);
+#endif
 }
 
 // Get the system buffer sizes
 
 int UDP::GetInputBuffer()
 {
+#if defined(__EMSCRIPTEN__)
+	return 4 * 1024 * 1024;
+#else
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -544,11 +731,15 @@ int UDP::GetInputBuffer()
    retval=getsockopt(fd,SOL_SOCKET,SO_RCVBUF,
      (char *)&arg,&len);
    return(arg);
+#endif
 }
 
 
 int UDP::GetOutputBuffer()
 {
+#if defined(__EMSCRIPTEN__)
+	return 4 * 1024 * 1024;
+#else
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -556,10 +747,14 @@ int UDP::GetOutputBuffer()
    retval=getsockopt(fd,SOL_SOCKET,SO_SNDBUF,
      (char *)&arg,&len);
    return(arg);
+#endif
 }
 
 Int UDP::AllowBroadcasts(Bool status)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
 	int retval;
 	BOOL val = status;
 	retval = setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char *)&val, sizeof(BOOL));
@@ -567,4 +762,5 @@ Int UDP::AllowBroadcasts(Bool status)
 		return TRUE;
 	else
 		return FALSE;
+#endif
 }

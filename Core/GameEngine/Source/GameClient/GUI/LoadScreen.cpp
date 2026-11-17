@@ -89,8 +89,10 @@
 #define HAVE_NGMP_LOADSCREEN 1
 #endif
 #include "GameLogic/GameLogic.h"
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#endif
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/RankPointValue.h"
 
@@ -1509,6 +1511,7 @@ void MultiPlayerLoadScreen::processProgress(Int playerId, Int percentage)
 		GadgetProgressBarSetProgress(m_progressBars[m_playerLookup[playerId]], percentage );
 }
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 // GameSpyLoadScreen Class //////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 GameSpyLoadScreen::GameSpyLoadScreen()
@@ -1880,6 +1883,7 @@ void GameSpyLoadScreen::processProgress(Int playerId, Int percentage)
 	if(m_progressBars[m_playerLookup[playerId]])
 		GadgetProgressBarSetProgress(m_progressBars[m_playerLookup[playerId]], percentage );
 }
+#endif // SAGE_USE_GAMESPY || SAGE_USE_NGMP
 
 // MapTransferLoadScreen Class //////////////////////////////////////////////////
 //-----------------------------------------------------------------------------

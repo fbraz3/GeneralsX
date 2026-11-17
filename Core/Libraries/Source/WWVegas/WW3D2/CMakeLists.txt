@@ -248,12 +248,19 @@ target_sources(corei_ww3d2 INTERFACE ${WW3D2_SRC})
 
 # GeneralsX @build fbraz 11/02/2026 BenderAI - Enable FreeType text rendering on Linux/macOS
 target_compile_definitions(corei_ww3d2 INTERFACE
-    $<$<PLATFORM_ID:Linux,Darwin>:SAGE_USE_FREETYPE>
+    $<$<PLATFORM_ID:Linux,Darwin,Emscripten>:SAGE_USE_FREETYPE>
+    $<$<PLATFORM_ID:Linux,Darwin>:SAGE_USE_FONTCONFIG>
 )
 
 target_include_directories(corei_ww3d2 INTERFACE
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+if(SAGE_USE_WEBGPU)
+    target_include_directories(corei_ww3d2 INTERFACE
+        "${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Include"
+    )
+endif()
 
 if (MSVC AND NOT IS_VS6_BUILD)
     target_link_libraries(corei_ww3d2 INTERFACE
@@ -264,8 +271,12 @@ endif()
 # GeneralsX @build fbraz 11/02/2026 BenderAI - FreeType2 for Unix text rendering (Linux + macOS Phase 5)
 if(UNIX)
     find_package(Freetype REQUIRED)
+endif()
+if(UNIX AND NOT EMSCRIPTEN)
     # GeneralsX @build felipebraz 20/06/2025 fontconfig needed on macOS too (render2dsentence.cpp uses Locate_Font_FontConfig)
     find_package(Fontconfig REQUIRED)
+endif()
+if(APPLE)
     # GeneralsX @build felipebraz 24/02/2026 fontconfig static lib (vcpkg) links iconv; must be explicit on macOS
     find_package(Iconv REQUIRED)
 endif()
@@ -275,8 +286,7 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_wwlib
     core_wwmath
     corei_platform
-    $<$<PLATFORM_ID:Linux>:Freetype::Freetype>
-    $<$<PLATFORM_ID:Darwin>:Freetype::Freetype>
+    $<$<PLATFORM_ID:Linux,Darwin,Emscripten>:Freetype::Freetype>
     $<$<PLATFORM_ID:Linux>:Fontconfig::Fontconfig>
     $<$<PLATFORM_ID:Darwin>:Fontconfig::Fontconfig>
     $<$<PLATFORM_ID:Darwin>:Iconv::Iconv>

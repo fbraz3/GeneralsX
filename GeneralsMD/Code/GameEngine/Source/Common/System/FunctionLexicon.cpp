@@ -36,12 +36,14 @@
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/Gadget.h"
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 // Popup Ladder Select --------------------------------------------------------------------------
 extern void PopupLadderSelectInit( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType PopupLadderSelectSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType PopupLadderSelectInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 
 extern WindowMsgHandledType PopupBuddyNotificationSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+#endif
 
 // WOL Buddy Overlay Right Click menu callbacks --------------------------------------------------------------
 extern void RCGameDetailsMenuInit( WindowLayout *layout, void *userData );
@@ -111,9 +113,12 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 #endif
 	{ NAMEKEY_INVALID, "SaveLoadMenuSystem",                 (void*)SaveLoadMenuSystem },
 	{ NAMEKEY_INVALID, "PopupCommunicatorSystem",            (void*)PopupCommunicatorSystem },
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "PopupBuddyNotificationSystem",       (void*)PopupBuddyNotificationSystem },
+#endif
 	{ NAMEKEY_INVALID, "PopupReplaySystem",                  (void*)PopupReplaySystem },
 	{ NAMEKEY_INVALID, "KeyboardOptionsMenuSystem",          (void*)KeyboardOptionsMenuSystem },
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "WOLLadderScreenSystem",              (void*)WOLLadderScreenSystem },
 	{ NAMEKEY_INVALID, "WOLLoginMenuSystem",                 (void*)WOLLoginMenuSystem },
 	{ NAMEKEY_INVALID, "WOLLocaleSelectSystem",              (void*)WOLLocaleSelectSystem },
@@ -134,6 +139,7 @@ static FunctionLexicon::TableEntry gameWinSystemTable[] =
 	{ NAMEKEY_INVALID, "PopupHostGameSystem",                (void*)PopupHostGameSystem },
 	{ NAMEKEY_INVALID, "PopupJoinGameSystem",                (void*)PopupJoinGameSystem },
 	{ NAMEKEY_INVALID, "PopupLadderSelectSystem",            (void*)PopupLadderSelectSystem },
+#endif
 	{ NAMEKEY_INVALID, "InGamePopupMessageSystem",           (void*)InGamePopupMessageSystem },
 	{ NAMEKEY_INVALID, "ControlBarSystem",                   (void*)ControlBarSystem },
 	{ NAMEKEY_INVALID, "ControlBarObserverSystem",           (void*)ControlBarObserverSystem },
@@ -191,6 +197,7 @@ static FunctionLexicon::TableEntry gameWinInputTable[] =
 #if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	{ NAMEKEY_INVALID, "ChallengeMenuInput",                (void*)ChallengeMenuInput }, // Added in Zero Hour
 #endif
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "WOLLadderScreenInput",              (void*)WOLLadderScreenInput },
 	{ NAMEKEY_INVALID, "WOLLoginMenuInput",                 (void*)WOLLoginMenuInput },
 	{ NAMEKEY_INVALID, "WOLLocaleSelectInput",              (void*)WOLLocaleSelectInput },
@@ -209,6 +216,7 @@ static FunctionLexicon::TableEntry gameWinInputTable[] =
 	{ NAMEKEY_INVALID, "PopupHostGameInput",                (void*)PopupHostGameInput },
 	{ NAMEKEY_INVALID, "PopupJoinGameInput",                (void*)PopupJoinGameInput },
 	{ NAMEKEY_INVALID, "PopupLadderSelectInput",            (void*)PopupLadderSelectInput },
+#endif
 	{ NAMEKEY_INVALID, "InGamePopupMessageInput",           (void*)InGamePopupMessageInput },
 	{ NAMEKEY_INVALID, "ControlBarInput",                   (void*)ControlBarInput },
 	{ NAMEKEY_INVALID, "ReplayControlInput",                (void*)ReplayControlInput },
@@ -267,6 +275,7 @@ static FunctionLexicon::TableEntry winLayoutInitTable[] =
 #if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	{ NAMEKEY_INVALID, "ChallengeMenuInit",             (void*)ChallengeMenuInit }, // Added in Zero Hour
 #endif
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "WOLLadderScreenInit",           (void*)WOLLadderScreenInit },
 	{ NAMEKEY_INVALID, "WOLLoginMenuInit",              (void*)WOLLoginMenuInit },
 	{ NAMEKEY_INVALID, "WOLLocaleSelectInit",           (void*)WOLLocaleSelectInit },
@@ -287,6 +296,7 @@ static FunctionLexicon::TableEntry winLayoutInitTable[] =
 	{ NAMEKEY_INVALID, "PopupHostGameInit",             (void*)PopupHostGameInit },
 	{ NAMEKEY_INVALID, "PopupJoinGameInit",             (void*)PopupJoinGameInit },
 	{ NAMEKEY_INVALID, "PopupLadderSelectInit",         (void*)PopupLadderSelectInit },
+#endif
 	{ NAMEKEY_INVALID, "InGamePopupMessageInit",        (void*)InGamePopupMessageInit },
 	{ NAMEKEY_INVALID, "GameInfoWindowInit",            (void*)GameInfoWindowInit },
 	{ NAMEKEY_INVALID, "ScoreScreenInit",               (void*)ScoreScreenInit },
@@ -320,6 +330,7 @@ static FunctionLexicon::TableEntry winLayoutUpdateTable[] =
 #if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	{ NAMEKEY_INVALID, "ChallengeMenuUpdate",             (void*)ChallengeMenuUpdate }, // Added in Zero Hour
 #endif
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "WOLLadderScreenUpdate",           (void*)WOLLadderScreenUpdate },
 	{ NAMEKEY_INVALID, "WOLLoginMenuUpdate",              (void*)WOLLoginMenuUpdate },
 	{ NAMEKEY_INVALID, "WOLLocaleSelectUpdate",           (void*)WOLLocaleSelectUpdate },
@@ -338,6 +349,7 @@ static FunctionLexicon::TableEntry winLayoutUpdateTable[] =
 	{ NAMEKEY_INVALID, "WOLQMScoreScreenUpdate",          (void*)WOLQMScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "WOLCustomScoreScreenUpdate",      (void*)WOLCustomScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "NetworkDirectConnectUpdate",      (void*)NetworkDirectConnectUpdate },
+#endif
 	{ NAMEKEY_INVALID, "ScoreScreenUpdate",               (void*)ScoreScreenUpdate },
 	{ NAMEKEY_INVALID, "DownloadMenuUpdate",              (void*)DownloadMenuUpdate },
 	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu update callback
@@ -368,6 +380,7 @@ static FunctionLexicon::TableEntry winLayoutShutdownTable[] =
 #if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 	{ NAMEKEY_INVALID, "ChallengeMenuShutdown",             (void*)ChallengeMenuShutdown }, // Added in Zero Hour
 #endif
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	{ NAMEKEY_INVALID, "WOLLadderScreenShutdown",           (void*)WOLLadderScreenShutdown },
 	{ NAMEKEY_INVALID, "WOLLoginMenuShutdown",              (void*)WOLLoginMenuShutdown },
 	{ NAMEKEY_INVALID, "WOLLocaleSelectShutdown",           (void*)WOLLocaleSelectShutdown },
@@ -383,6 +396,7 @@ static FunctionLexicon::TableEntry winLayoutShutdownTable[] =
 	{ NAMEKEY_INVALID, "WOLQMScoreScreenShutdown",          (void*)WOLQMScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "WOLCustomScoreScreenShutdown",      (void*)WOLCustomScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "NetworkDirectConnectShutdown",      (void*)NetworkDirectConnectShutdown },
+#endif
 	{ NAMEKEY_INVALID, "ScoreScreenShutdown",               (void*)ScoreScreenShutdown },
 	{ NAMEKEY_INVALID, "DownloadMenuShutdown",              (void*)DownloadMenuShutdown },
 	// GeneralsX @feature fbraz3 14/10/2026 GeneralsX options menu shutdown callback

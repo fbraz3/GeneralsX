@@ -116,6 +116,7 @@ void DisconnectManager::update(ConnectionManager *conMgr) {
 	if (m_disconnectState != DISCONNECTSTATETYPE_SCREENOFF) {
 		updateDisconnectStatus(conMgr);
 
+#if defined(SAGE_USE_GAMESPY)
 		// check to see if we need to send pings
 		if (m_pingFrame < TheGameLogic->getFrame())
 		{
@@ -178,6 +179,7 @@ void DisconnectManager::update(ConnectionManager *conMgr) {
 				}
 			}
 		}
+#endif
 	}
 }
 

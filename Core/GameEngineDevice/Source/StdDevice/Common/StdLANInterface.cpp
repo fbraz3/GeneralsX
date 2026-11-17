@@ -28,6 +28,9 @@
 
 #include "StdDevice/Common/StdLANInterface.h"
 #include "Common/Debug.h"
+#if defined(__EMSCRIPTEN__)
+#include "GameNetwork/udp.h"
+#endif
 
 #ifndef _WIN32
 #include <arpa/inet.h>
@@ -138,7 +141,15 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 		return 0;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	const UnsignedInt webIP = GetWebLanVirtualIP();
+	if (webIP != 0)
+	{
+		outAddrs[0] = webIP;
+		return 1;
+	}
+	return 0;
+#elif !defined(_WIN32)
 	struct ifaddrs *ifaddr = nullptr;
 	if (getifaddrs(&ifaddr) != 0)
 	{
@@ -203,7 +214,9 @@ Bool StdLANInterface::isRealLocalInterfaceAddress(UnsignedInt ip)
 		return FALSE;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	return (ip == GetWebLanVirtualIP()) ? TRUE : FALSE;
+#elif !defined(_WIN32)
 	UnsignedInt addrs[16];
 	Int count = getLocalHostAddresses(addrs, ARRAY_SIZE(addrs));
 	for (Int i = 0; i < count; ++i)
@@ -243,7 +256,9 @@ Int StdLANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedIn
 		return 0;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	return 0;
+#elif !defined(_WIN32)
 	Int count = 0;
 	struct ifaddrs *ifaddr = nullptr;
 	if (getifaddrs(&ifaddr) != 0)

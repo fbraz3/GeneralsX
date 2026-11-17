@@ -61,6 +61,7 @@ public:
 	void									getFileListInDirectory(const AsciiString& currentDirectory, const AsciiString& originalDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const;
 
 	void									addFile(const AsciiString& path, const ArchivedFileInfo *fileInfo); ///< add this file to our directory tree.
+	const ArchivedFileInfo *				friend_getArchivedFileInfo(const AsciiString& filename) const { return getArchivedFileInfo(filename); }
 
 protected:
 	void									getFileListInDirectory(const DetailedArchivedDirectoryInfo *dirInfo, const AsciiString& currentDirectory, const AsciiString& searchName, FilenameList &filenameList, Bool searchSubdirectories) const;
