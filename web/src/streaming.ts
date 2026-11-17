@@ -185,8 +185,15 @@ export class ArchiveStreamer {
         if (spent >= budget) return;
         const start = index * CHUNK_SIZE;
         const end = Math.min(start + CHUNK_SIZE * READAHEAD, entry.size) - 1;
-        const key = `${entry.url}#${index}`;
-        if (this.cache.has(key)) {
+        const chunkCount = Math.ceil((end - start + 1) / CHUNK_SIZE);
+        let allCached = true;
+        for (let offset = 0; offset < chunkCount; offset++) {
+          if (!this.cache.has(`${entry.url}#${index + offset}`)) {
+            allCached = false;
+            break;
+          }
+        }
+        if (allCached) {
           // Already resident chunks still count as progress, or the bar stalls on cached stretches.
           spent += end - start + 1;
           onProgress(spent, entry.name);

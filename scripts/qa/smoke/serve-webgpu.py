@@ -13,7 +13,9 @@ import hmac
 import json
 import os
 import re
+import select
 import socket
+import ssl
 import secrets
 import struct
 import time
@@ -74,40 +76,44 @@ class LanRelay:
             return lock
 
     def _ensure_udp_socket(self, port: int) -> None:
-        with self._port_lock(port):
-            with self._lock:
-                if port in self._udp_sockets:
+        while True:
+            retiring: threading.Thread | None = None
+            with self._port_lock(port):
+                with self._lock:
+                    if port in self._udp_sockets or not any(key[1] == port for key in self._clients):
+                        return
+                    retiring = self._retiring_workers.pop(port, None)
+                if retiring is None or retiring is threading.current_thread() or not retiring.is_alive():
+                    with self._lock:
+                        if port in self._udp_sockets or not any(key[1] == port for key in self._clients):
+                            return
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                        if hasattr(socket, "SO_REUSEPORT"):
+                            try:
+                                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                            except OSError:
+                                pass
+                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                        sock.settimeout(0.5)
+                        try:
+                            sock.bind(("0.0.0.0", port))
+                        except OSError as exc:
+                            print(f"[LanRelay] Warning: failed to bind UDP 0.0.0.0:{port}: {exc}", file=sys.stderr)
+                            sock.close()
+                            return
+                        stop_event = threading.Event()
+                        thread = threading.Thread(
+                            target=self._udp_recv_loop,
+                            args=(port, sock, stop_event),
+                            daemon=True,
+                        )
+                        self._udp_sockets[port] = sock
+                        self._udp_workers[port] = (stop_event, thread)
+                        thread.start()
                     return
-                retiring = self._retiring_workers.pop(port, None)
-            if retiring is not None and retiring is not threading.current_thread() and retiring.is_alive():
-                retiring.join()
-            with self._lock:
-                if port in self._udp_sockets:
-                    return
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                if hasattr(socket, "SO_REUSEPORT"):
-                    try:
-                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-                    except OSError:
-                        pass
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                sock.settimeout(0.5)
-                try:
-                    sock.bind(("0.0.0.0", port))
-                except OSError as exc:
-                    print(f"[LanRelay] Warning: failed to bind UDP 0.0.0.0:{port}: {exc}", file=sys.stderr)
-                    sock.close()
-                    return
-                stop_event = threading.Event()
-                thread = threading.Thread(
-                    target=self._udp_recv_loop,
-                    args=(port, sock, stop_event),
-                    daemon=True,
-                )
-                self._udp_sockets[port] = sock
-                self._udp_workers[port] = (stop_event, thread)
-                thread.start()
+            # Join outside _port_lock(port) and self._lock so concurrent unregister() cannot deadlock.
+            retiring.join()
 
     def _udp_recv_loop(self, port: int, sock: socket.socket, stop_event: threading.Event) -> None:
         while not stop_event.is_set():
@@ -145,6 +151,7 @@ class LanRelay:
                 client.send_websocket_frame(2, bytes((3,)) + struct.pack("!I", lan_ip_int))
             except OSError:
                 self.unregister(client)
+                return
         self._ensure_udp_socket(key[1])
 
     def unregister(self, client: "WebGPURequestHandler") -> None:
@@ -558,15 +565,27 @@ document.getElementById("log").textContent =
         else:
             header = bytes((0x80 | opcode, 126)) + struct.pack("!H", len(payload))
         with self._websocket_send_lock:
-            prev_timeout = self.connection.gettimeout()
-            self.connection.settimeout(1.0)
-            try:
-                self.connection.sendall(header + payload)
-            finally:
-                try:
-                    self.connection.settimeout(prev_timeout)
-                except OSError:
-                    pass
+            frame = memoryview(header + payload)
+            deadline = time.monotonic() + 1.0
+            use_dontwait = not isinstance(self.connection, ssl.SSLSocket) and hasattr(socket, "MSG_DONTWAIT")
+            sent_total = 0
+            while sent_total < len(frame):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("WebSocket write deadline exceeded")
+                _, writable, _ = select.select([], [self.connection], [], remaining)
+                if not writable:
+                    raise TimeoutError("WebSocket write deadline exceeded")
+                if use_dontwait:
+                    try:
+                        sent = self.connection.send(frame[sent_total:], socket.MSG_DONTWAIT)
+                    except BlockingIOError:
+                        continue
+                else:
+                    sent = self.connection.send(frame[sent_total:])
+                if sent == 0:
+                    raise ConnectionError("WebSocket closed")
+                sent_total += sent
 
     def _read_exact(self, length: int) -> bytes:
         data = bytearray()
