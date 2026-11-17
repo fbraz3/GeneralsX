@@ -191,19 +191,31 @@ export class ArchiveStreamer {
           continue;
         }
         try {
-          const bytes = entry.file
-            ? new Uint8Array(await entry.file.slice(start, end + 1).arrayBuffer())
-            : entry.handle
-            ? new Uint8Array(await (await entry.handle.getFile()).slice(start, end + 1).arrayBuffer())
-            : new Uint8Array(await (await fetch(entry.url, {
-                headers: { Range: `bytes=${start}-${end}` },
-              })).arrayBuffer());
+          let bytes: Uint8Array;
+          if (entry.file) {
+            bytes = new Uint8Array(await entry.file.slice(start, end + 1).arrayBuffer());
+          } else if (entry.handle) {
+            bytes = new Uint8Array(await (await entry.handle.getFile()).slice(start, end + 1).arrayBuffer());
+          } else {
+            const response = await fetch(entry.url, {
+              headers: { Range: `bytes=${start}-${end}` },
+            });
+            if (!response.ok || (response.status !== 206 && response.status !== 200)) {
+              throw new Error(`HTTP ${response.status} fetching ${entry.url}`);
+            }
+            bytes = new Uint8Array(await response.arrayBuffer());
+          }
           for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
             const partKey = `${entry.url}#${index + offset / CHUNK_SIZE}`;
             if (this.cache.has(partKey)) continue;
             const part = bytes.subarray(offset, Math.min(offset + CHUNK_SIZE, bytes.length));
             this.cache.set(partKey, part);
             this.cached += part.length;
+          }
+          while (this.cached > CACHE_LIMIT && this.cache.size > 1) {
+            const oldest = this.cache.keys().next().value as string;
+            this.cached -= this.cache.get(oldest)?.length ?? 0;
+            this.cache.delete(oldest);
           }
           spent += bytes.length;
           onProgress(spent, entry.name);

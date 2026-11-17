@@ -69,7 +69,7 @@
 #include "GameClient/GlobalLanguage.h"
 #include "GameNetwork/FirewallHelper.h"
 #include "GameNetwork/IPEnumeration.h"
-#if defined(SAGE_USE_GAMESPY)
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #endif
@@ -1622,7 +1622,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				comboBoxLANIP = nullptr;
 				comboBoxOnlineIP = nullptr;
 
-#if defined(SAGE_USE_GAMESPY)
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 				if(GameSpyIsOverlayOpen(GSOVERLAY_OPTIONS))
 					GameSpyCloseOverlay(GSOVERLAY_OPTIONS);
 				else
@@ -1650,7 +1650,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 					destroyQuitMenu(); // if we're in a game, the change res then enter the same kind of game, we nee the quit menu to be gone.
 
 
-#if defined(SAGE_USE_GAMESPY)
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 				if(GameSpyIsOverlayOpen(GSOVERLAY_OPTIONS))
 					GameSpyCloseOverlay(GSOVERLAY_OPTIONS);
 				else

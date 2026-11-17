@@ -1012,13 +1012,23 @@ bool WebGPUD3DDevice::hasDepthTarget() const
 WGPURenderPipeline WebGPUD3DDevice::pipeline(D3DPRIMITIVETYPE type)
 {
 	WGPUPrimitiveTopology topology = WGPUPrimitiveTopology_TriangleList;
+	uint64_t topologyKey = 2;
 	switch (type) {
-		case D3DPT_POINTLIST: topology = WGPUPrimitiveTopology_PointList; break;
+		case D3DPT_POINTLIST:
+			topology = WGPUPrimitiveTopology_PointList;
+			topologyKey = 0;
+			break;
 		case D3DPT_LINELIST:
-		case D3DPT_LINESTRIP: topology = WGPUPrimitiveTopology_LineList; break;
-		default: topology = WGPUPrimitiveTopology_TriangleList; break;
+		case D3DPT_LINESTRIP:
+			topology = WGPUPrimitiveTopology_LineList;
+			topologyKey = 1;
+			break;
+		default:
+			topology = WGPUPrimitiveTopology_TriangleList;
+			topologyKey = 2;
+			break;
 	}
-	const uint64_t key = static_cast<uint64_t>(topology) |
+	const uint64_t key = topologyKey |
 		(static_cast<uint64_t>(m_renderStates[D3DRS_ALPHABLENDENABLE] != FALSE) << 2) |
 		(static_cast<uint64_t>(m_renderStates[D3DRS_ZENABLE] != D3DZB_FALSE) << 3) |
 		(static_cast<uint64_t>(m_renderStates[D3DRS_ZWRITEENABLE] != FALSE) << 4) |
@@ -3858,6 +3868,9 @@ HRESULT WebGPUDirect3D8::CreateDevice(UINT adapter, D3DDEVTYPE type, HWND window
 {
 	if (adapter || !parameters || !device) {
 		return D3DERR_INVALIDCALL;
+	}
+	if (parameters->BackBufferWidth > 0 && parameters->BackBufferHeight > 0) {
+		m_context.resize(parameters->BackBufferWidth, parameters->BackBufferHeight);
 	}
 	auto *created = new WebGPUD3DDevice(this, &m_context, *parameters);
 	created->m_creation.AdapterOrdinal = adapter;

@@ -55,7 +55,6 @@ jobs:
         with:
           name: wasm-webgpu-GeneralsXZH.zip
           path: /tmp/wasm-pages-artifact
-          skip-decompress: true
 
       - name: Extract workflow build artifact
         if: github.event_name == 'workflow_dispatch' && inputs.tag == ''

@@ -169,7 +169,7 @@ export function initConsole(deps: ConsoleDeps): void {
     if (result) write(result);
   });
 
-  input.addEventListener("keydown", (event) => {
+  const handleConsoleKey = (event: KeyboardEvent): void => {
     if (event.key === "ArrowUp" && historyIndex > 0) {
       historyIndex -= 1;
       input.value = history[historyIndex] ?? "";
@@ -185,7 +185,7 @@ export function initConsole(deps: ConsoleDeps): void {
       if (parts.length === 1 && matches.length === 1) input.value = `${matches[0]} `;
       else if (matches.length > 1) write(matches.join("  "));
     }
-  });
+  };
 
   // Capture phase, ahead of the engine's own listeners: while the console is open the game must
   // not see any keys, and the backtick itself must never reach it.
@@ -200,6 +200,8 @@ export function initConsole(deps: ConsoleDeps): void {
       if (event.key === "Escape") {
         event.preventDefault();
         setOpen(false);
+      } else if (event.target === input) {
+        handleConsoleKey(event);
       }
       event.stopImmediatePropagation();
     }

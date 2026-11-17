@@ -121,10 +121,21 @@ class LanRelay:
         self._ensure_udp_socket(key[1])
 
     def unregister(self, client: "WebGPURequestHandler") -> None:
+        sockets_to_close: list[socket.socket] = []
         with self._lock:
             stale = [key for key, value in self._clients.items() if value is client]
             for key in stale:
                 del self._clients[key]
+            active_ports = {key[1] for key in self._clients}
+            for port in list(self._udp_sockets):
+                if port not in active_ports:
+                    sock = self._udp_sockets.pop(port)
+                    sockets_to_close.append(sock)
+        for sock in sockets_to_close:
+            try:
+                sock.close()
+            except OSError:
+                pass
 
     def route(self, source: tuple[int, int], destination: tuple[int, int], payload: bytes) -> None:
         with self._lock:
@@ -257,9 +268,10 @@ document.getElementById("log").textContent =
                 address = "127.0.0.1"
             finally:
                 probe.close()
-            # Always hand out https: guests need a secure context for SharedArrayBuffer, so the plain
-            # listener would give them a page that can never stream.
-            body = json.dumps({"url": f"https://{address}:{TLS_PORT}/"}).encode()
+            # Advertise the active listener scheme and port; remote guests require HTTPS for SharedArrayBuffer.
+            scheme = "https" if getattr(self.server, "is_tls", False) else "http"
+            port = self.server.server_port
+            body = json.dumps({"url": f"{scheme}://{address}:{port}/"}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -536,6 +548,7 @@ def main() -> int:
     # A browser opening many parallel range reads must not out-run the accept queue.
     server.daemon_threads = True
     server.request_queue_size = 128
+    server.is_tls = bool(args.cert)  # type: ignore[attr-defined]
     scheme = "http"
     if args.cert:
         import ssl

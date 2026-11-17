@@ -259,6 +259,9 @@ AsciiString GetWSAErrorString( Int error )
 UDP::UDP()
 {
   fd=0;
+#if defined(__EMSCRIPTEN__)
+  myPort = 0;
+#endif
 }
 
 UDP::~UDP()
