@@ -1709,6 +1709,9 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 					fflush(stderr);
 #endif
 					DEBUG_LOG(("ERROR - Unable to read in multiplayer scripts."));
+#if defined(__EMSCRIPTEN__)
+					GeneralsXBrowserResumeAudio();
+#endif
 					return;
 				}
 				ScriptList *scripts[MAX_PLAYER_COUNT];
