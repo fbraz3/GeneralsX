@@ -51,8 +51,6 @@ jobs:
       - name: Export Emscripten Environment
         run: |
           echo "EMSCRIPTEN_ROOT=${EMSDK}/upstream/emscripten" >> $GITHUB_ENV
-          echo "EM_LLVM_ROOT=${EMSDK}/upstream/bin" >> $GITHUB_ENV
-          echo "EM_BINARYEN_ROOT=${EMSDK}/upstream/bin" >> $GITHUB_ENV
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
