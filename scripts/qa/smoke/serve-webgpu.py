@@ -13,7 +13,6 @@ import hmac
 import json
 import os
 import re
-import select
 import socket
 import ssl
 import secrets
@@ -82,9 +81,11 @@ class LanRelay:
                 with self._lock:
                     if port in self._udp_sockets or not any(key[1] == port for key in self._clients):
                         return
-                    retiring = self._retiring_workers.pop(port, None)
+                    retiring = self._retiring_workers.get(port)
                 if retiring is None or retiring is threading.current_thread() or not retiring.is_alive():
                     with self._lock:
+                        if self._retiring_workers.get(port) is retiring:
+                            self._retiring_workers.pop(port, None)
                         if port in self._udp_sockets or not any(key[1] == port for key in self._clients):
                             return
                         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -112,8 +113,12 @@ class LanRelay:
                         self._udp_workers[port] = (stop_event, thread)
                         thread.start()
                     return
-            # Join outside _port_lock(port) and self._lock so concurrent unregister() cannot deadlock.
+            # Join outside _port_lock(port) and self._lock while keeping _retiring_workers[port] visible.
             retiring.join()
+            with self._port_lock(port):
+                with self._lock:
+                    if self._retiring_workers.get(port) is retiring and not retiring.is_alive():
+                        self._retiring_workers.pop(port, None)
 
     def _udp_recv_loop(self, port: int, sock: socket.socket, stop_event: threading.Event) -> None:
         while not stop_event.is_set():
@@ -128,6 +133,8 @@ class LanRelay:
             except OSError:
                 continue
             with self._lock:
+                if stop_event.is_set():
+                    return
                 if src_ip_int == self.lan_ip_int and src_port == port:
                     continue
                 targets = [client for (_, cport), client in self._clients.items() if cport == port]
@@ -517,6 +524,9 @@ document.getElementById("log").textContent =
         self.send_header("Sec-WebSocket-Accept", accept)
         self.end_headers()
         self.wfile.flush()
+        # Set a fixed 1.0s socket timeout once before concurrent reads/writes; _read_exact()
+        # retries on timeout so idle clients stay connected while stalled sends fail within 1.0s.
+        self.connection.settimeout(1.0)
 
         source: tuple[int, int] | None = None
         try:
@@ -541,9 +551,7 @@ document.getElementById("log").textContent =
             LAN_RELAY.unregister(self)
 
     def read_websocket_frame(self) -> tuple[int, bytes]:
-        header = self.rfile.read(2)
-        if len(header) != 2:
-            raise ConnectionError("WebSocket closed")
+        header = self._read_exact(2)
         opcode = header[0] & 0x0F
         masked = bool(header[1] & 0x80)
         length = header[1] & 0x7F
@@ -565,32 +573,15 @@ document.getElementById("log").textContent =
         else:
             header = bytes((0x80 | opcode, 126)) + struct.pack("!H", len(payload))
         with self._websocket_send_lock:
-            frame = memoryview(header + payload)
-            deadline = time.monotonic() + 1.0
-            use_dontwait = not isinstance(self.connection, ssl.SSLSocket) and hasattr(socket, "MSG_DONTWAIT")
-            sent_total = 0
-            while sent_total < len(frame):
-                remaining = deadline - time.monotonic()
-                if remaining <= 0:
-                    raise TimeoutError("WebSocket write deadline exceeded")
-                _, writable, _ = select.select([], [self.connection], [], remaining)
-                if not writable:
-                    raise TimeoutError("WebSocket write deadline exceeded")
-                if use_dontwait:
-                    try:
-                        sent = self.connection.send(frame[sent_total:], socket.MSG_DONTWAIT)
-                    except BlockingIOError:
-                        continue
-                else:
-                    sent = self.connection.send(frame[sent_total:])
-                if sent == 0:
-                    raise ConnectionError("WebSocket closed")
-                sent_total += sent
+            self.connection.sendall(header + payload)
 
     def _read_exact(self, length: int) -> bytes:
         data = bytearray()
         while len(data) < length:
-            chunk = self.rfile.read(length - len(data))
+            try:
+                chunk = self.connection.recv(length - len(data))
+            except (socket.timeout, TimeoutError):
+                continue
             if not chunk:
                 raise ConnectionError("WebSocket closed")
             data.extend(chunk)
