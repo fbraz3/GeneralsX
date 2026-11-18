@@ -573,7 +573,14 @@ document.getElementById("log").textContent =
         else:
             header = bytes((0x80 | opcode, 126)) + struct.pack("!H", len(payload))
         with self._websocket_send_lock:
-            self.connection.sendall(header + payload)
+            try:
+                self.connection.sendall(header + payload)
+            except OSError:
+                try:
+                    self.connection.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+                raise
 
     def _read_exact(self, length: int) -> bytes:
         data = bytearray()
