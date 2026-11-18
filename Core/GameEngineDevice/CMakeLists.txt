@@ -330,6 +330,7 @@ if(SAGE_USE_WEBGPU)
         Include/WebGPUDevice/WebGPUContext.h
         Source/WebGPUDevice/WebGPUD3D8.cpp
         Source/WebGPUDevice/WebGPUContext.cpp
+        Source/WebGPUDevice/WebGPUBrowserBridge.cpp
     )
     target_include_directories(webgpu_context PUBLIC
         Include

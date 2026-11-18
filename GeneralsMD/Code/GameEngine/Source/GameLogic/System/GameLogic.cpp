@@ -29,7 +29,13 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #if defined(__EMSCRIPTEN__)
-#include <emscripten.h>
+// GeneralsX @refactor Meeseeks 17/11/2026 Delegate Emscripten browser hooks to Core/GameEngineDevice/WebGPUDevice/WebGPUBrowserBridge.cpp.
+extern "C" {
+void GeneralsXBrowserYield(unsigned int ms);
+void GeneralsXBrowserSuspendAudio(void);
+void GeneralsXBrowserResumeAudio(void);
+int GeneralsXBrowserShouldHoldMatch(void);
+}
 #endif
 
 #ifndef _WIN32
@@ -1153,8 +1159,8 @@ void GameLogic::updateLoadProgress( Int progress )
 	{
 		m_loadScreen->update( progress );
 #if defined(__EMSCRIPTEN__)
-		EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio && d.webaudio.state === "running") d.webaudio.suspend(); }); });
-		emscripten_sleep(0);
+		GeneralsXBrowserSuspendAudio();
+		GeneralsXBrowserYield(0);
 #endif
 	}
 
@@ -1238,8 +1244,8 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 
 	setLoadingMap( TRUE );
 #if defined(__EMSCRIPTEN__)
-	emscripten_sleep(250);
-	EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio && d.webaudio.state === "running") d.webaudio.suspend(); }); });
+	GeneralsXBrowserYield(250);
+	GeneralsXBrowserSuspendAudio();
 #endif
 
 	if( loadingSaveGame == FALSE )
@@ -2339,10 +2345,10 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 #if defined(__EMSCRIPTEN__)
 	{
 		Int holdTicks = 0;
-		while (EM_ASM_INT({ return globalThis.__gxHoldMatch ? 1 : 0; }) && holdTicks++ < 9000)
+		while (GeneralsXBrowserShouldHoldMatch() && holdTicks++ < 9000)
 		{
 			updateLoadProgress(101);
-			emscripten_sleep(100);
+			GeneralsXBrowserYield(100);
 		}
 	}
 #endif
@@ -2560,7 +2566,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	//setGameLoading(FALSE);
 	setLoadingMap( FALSE );
 #if defined(__EMSCRIPTEN__)
-	EM_ASM({ if (window.miniaudio) window.miniaudio.devices.forEach(function(d) { if (d && d.webaudio) d.webaudio.resume(); }); });
+	GeneralsXBrowserResumeAudio();
 #endif
 
 #ifdef DUMP_PERF_STATS
