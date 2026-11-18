@@ -106,9 +106,9 @@ static bool IsUsableInterface(const struct ifaddrs *ifa)
 	}
 
 	// GeneralsX @bugfix Maxim Sintsov 17/11/2026 Accept broadcast links and subnetted point-to-point
-	// tunnels (WireGuard-style VPN meshes; the tunnel fans the subnet-directed broadcast out to its
-	// peers). P2P links with /0 or /32 netmasks stay excluded, as under the blanket rule replaced
-	// here (GeneralsX @feature Mr. Meesseeks 11/07/2026).
+	// tunnels (WireGuard-style VPN meshes) so their addresses can be used for LAN games. P2P links
+	// with /0 or /32 netmasks stay excluded, as under the blanket rule replaced here
+	// (GeneralsX @feature Mr. Meesseeks 11/07/2026).
 	const bool isBroadcastLink = (ifa->ifa_flags & IFF_BROADCAST) != 0;
 	const bool isSubnetP2PLink = (ifa->ifa_flags & (IFF_POINTOPOINT | IFF_BROADCAST)) == IFF_POINTOPOINT
 		&& HasSubnetNetmask(ifa);
