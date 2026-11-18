@@ -45,6 +45,7 @@
 
 
 Bool TheDebugIgnoreSyncErrors = FALSE;
+Bool TheDebugIgnoreReplaySyncErrors = FALSE;
 extern Int DX8Wrapper_PreserveFPU;
 
 #ifdef DEBUG_CRC
@@ -480,6 +481,29 @@ Int parseSetCwd(char *args[], int num)
 	return 1;
 }
 
+// GeneralsX @feature felipebraz 13/11/2026 Support -assetPath and -generalsAssetPath for launcher workspaces
+Int parseAssetPath(char *args[], int num)
+{
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_assetPath = args[1];
+		return 2;
+	}
+	return 1;
+}
+
+#if RTS_ZEROHOUR
+Int parseGeneralsAssetPath(char *args[], int num)
+{
+	if (num > 1)
+	{
+		TheWritableGlobalData->m_generalsAssetPath = args[1];
+		return 2;
+	}
+	return 1;
+}
+#endif
+
 Int parseXRes(char *args[], int num)
 {
 	if (num > 1)
@@ -761,6 +785,13 @@ Int parseLoadReplay(char *args[], int num)
 
 		return 2;
 	}
+	return 1;
+}
+
+Int parseIgnoreReplaySyncErrors(char *args[], int)
+{
+	TheDebugIgnoreReplaySyncErrors = true;
+
 	return 1;
 }
 
@@ -1175,10 +1206,23 @@ Int parseClearDebugLevel(char *args[], int num)
 }
 #endif
 
+// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Allow loose files on disk to override mod archives (#397)
+Int parseLooseWins(char *args[], int num)
+{
+	if (TheWritableGlobalData)
+	{
+		TheWritableGlobalData->m_looseFilesWin = TRUE;
+	}
+	return 1;
+}
+
 // Initial Params are parsed before Windows Creation.
 // Note that except for TheGlobalData, no other global objects exist yet when these are parsed.
 static CommandLineParam paramsForStartup[] =
 {
+	// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Force loose files on disk to override mod archives (#397)
+	{ "-looseWins", parseLooseWins },
+
 	{ "-win", parseWin },
 	{ "-fullscreen", parseNoWin },
 
@@ -1203,6 +1247,12 @@ static CommandLineParam paramsForStartup[] =
 	// The last successful selection wins; otherwise use the executable directory.
 	{ "-setCwd", parseSetCwd },
 	{ "-useCwd", parseUseCwd },
+
+	// GeneralsX @feature felipebraz 13/11/2026 Support -assetPath and -generalsAssetPath for launcher workspaces
+	{ "-assetPath", parseAssetPath },
+#if RTS_ZEROHOUR
+	{ "-generalsAssetPath", parseGeneralsAssetPath },
+#endif
 };
 
 // Parsed on its own, before GameData.ini is loaded, so the mod's archives are mounted
@@ -1233,6 +1283,9 @@ static CommandLineParam paramsForEngineInit[] =
 
 	// TheSuperHackers @feature bobtista 08/08/2026 Play a replay file from the command line.
 	{ "-loadreplay", parseLoadReplay },
+
+	// TheSuperHackers @feature bobtista 08/08/2026 Continue replay playback on CRC mismatches and only log them.
+	{ "-ignoreReplaySyncErrors", parseIgnoreReplaySyncErrors },
 
 	// TheSuperHackers @feature xezon 03/08/2025 Force full viewport for 'Control Bar Pro' Addons like GenTool did it.
 	{ "-forcefullviewport", parseFullViewport },

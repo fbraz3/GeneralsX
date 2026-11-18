@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "Common/ArchiveFileSystem.h"
 #include "Common/FileSystem.h"
 #include "Common/STLTypedefs.h"
 #include "Lib/PathUtil.h"
@@ -233,4 +234,29 @@ TEST(PathUtil, MapPathMatching)
 
 	// Nested map directory suffix collisions must NOT match
 	EXPECT_FALSE(isMapPathMatching("Maps/Arena/Arena.map", "Maps/B/Maps/Arena/Arena.map"));
+}
+
+TEST(ArchiveFileSystem, StockLooseFileIdentification)
+{
+	// Stock loose script files that EA Zero Hour shipped on disk (#335)
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data/Scripts/SkirmishScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data\\Scripts\\SkirmishScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("SkirmishScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data/Scripts/MultiplayerScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data\\Scripts\\MultiplayerScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("MultiplayerScripts.scb"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data/Scripts/Scripts.ini"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Data\\Scripts\\Scripts.ini"));
+	EXPECT_TRUE(ArchiveFileSystem::isStockLooseFile("Scripts.ini"));
+
+	// All other asset paths are NEVER stock loose files (loose files must take priority, #397)
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Data/INI/Locomotor.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Data\\INI\\Locomotor.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Locomotor.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Data/INI/Weapon.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Data/INI/Armor.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Data/INI/Object/AmericaVehicle.ini"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile("Art/Textures/Tank.tga"));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile(""));
+	EXPECT_FALSE(ArchiveFileSystem::isStockLooseFile(nullptr));
 }

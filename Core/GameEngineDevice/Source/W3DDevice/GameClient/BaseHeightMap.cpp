@@ -911,8 +911,13 @@ Real BaseHeightMapRenderObjClass::getHeightMapHeight(Real x, Real y, Coord3D* no
 	float xdiv = x * MAP_XY_FACTOR_INV;
 	float ydiv = y * MAP_XY_FACTOR_INV;
 
-	float ixf = FAST_REAL_FLOOR(xdiv);
-	float iyf = FAST_REAL_FLOOR(ydiv);
+#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+	float ixf = fast_float_floor(xdiv);
+	float iyf = fast_float_floor(ydiv);
+#else
+	float ixf = WWMath::Floorf(xdiv);
+	float iyf = WWMath::Floorf(ydiv);
+#endif
 
 	float fx = xdiv - ixf; //get fraction
 	float fy = ydiv - iyf; //get fraction
@@ -2351,7 +2356,7 @@ void BaseHeightMapRenderObjClass::renderShoreLines(CameraClass *pCamera)
 	DX8Wrapper::Set_Material(vmat);
 	REF_PTR_RELEASE(vmat);
 	DX8Wrapper::Set_Texture(0,m_destAlphaTexture);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,Matrix3D(true));
+	Renderer::Set_Transform(RenderTransform_World,Matrix3D(true));
 	//Enabled writes to destination alpha only
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_ALPHA);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,  D3DTSS_TEXCOORDINDEX, 0);
@@ -2537,7 +2542,7 @@ void BaseHeightMapRenderObjClass::renderShoreLinesSorted(CameraClass *pCamera)
 	DX8Wrapper::Set_Material(vmat);
 	REF_PTR_RELEASE(vmat);
 	DX8Wrapper::Set_Texture(0,m_destAlphaTexture);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,Matrix3D(true));
+	Renderer::Set_Transform(RenderTransform_World,Matrix3D(true));
 	//Enabled writes to destination alpha only
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_ALPHA);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,  D3DTSS_TEXCOORDINDEX, 0);
@@ -2841,7 +2846,7 @@ void BaseHeightMapRenderObjClass::renderTrees(CameraClass * camera)
 	if (m_map==nullptr) return;
 	if (Scene==nullptr) return;
 	if (m_treeBuffer) {
-		DX8Wrapper::Set_Transform(D3DTS_WORLD,Transform);
+		Renderer::Set_Transform(RenderTransform_World,Transform);
 		DX8Wrapper::Set_Material(m_vertexMaterialClass);
 		RTS3DScene *pMyScene = (RTS3DScene *)Scene;
 		RefRenderObjListIterator pDynamicLightsIterator(pMyScene->getDynamicLights());

@@ -69,7 +69,6 @@ int GeneralsXBrowserShouldHoldMatch(void);
 #include "Common/LatchRestore.h"
 #include "Common/MapObject.h"
 #include "Common/MultiplayerSettings.h"
-#include "Common/OSDisplay.h"
 #include "Common/PerfTimer.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -1188,7 +1187,7 @@ void GameLogic::updateDisplayBusyState()
 	const Bool busySystem = isInInteractiveGame() && !isGamePaused();
 	const Bool busyDisplay = busySystem && !TheGlobalData->m_headless;
 
-	OSDisplaySetBusyState(busyDisplay, busySystem);
+	TheGameEngine->setBusyState(busyDisplay, busySystem);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -4026,6 +4025,12 @@ void GameLogic::update()
 	Bool isMPGameOrReplay = (TheRecorder && TheRecorder->isMultiplayer() && getGameMode() != GAME_SHELL && getGameMode() != GAME_NONE);
 	Bool isSoloGameOrReplay = (TheRecorder && !TheRecorder->isMultiplayer() && getGameMode() != GAME_SHELL && getGameMode() != GAME_NONE);
 	Bool generateForMP = (isMPGameOrReplay && (m_frame % TheGameInfo->getCRCInterval()) == 0);
+#if RETAIL_COMPATIBLE_CRC
+	// TheSuperHackers @info The local player of a network game only goes in game on logic frame 1.
+	// Retail clients therefore never sent the CRC of logic frame 0, and their replays do not contain it.
+	if (generateForMP && m_frame == 0 && rts::isMultiplayerGame(TheRecorder->getGameMode()))
+		generateForMP = FALSE;
+#endif
 #ifdef DEBUG_CRC
 	Bool generateForSolo = isSoloGameOrReplay && ((m_frame && (m_frame%100 == 0)) ||
 		(getFrame() >= TheCRCFirstFrameToLog && getFrame() < TheCRCLastFrameToLog && ((m_frame % REPLAY_CRC_INTERVAL) == 0)));
