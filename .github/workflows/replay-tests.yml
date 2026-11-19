@@ -203,6 +203,10 @@ jobs:
           fi
           echo "Extracting: $ZIP_FILE"
           unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          if [ -f /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip ]; then
+            unzip -qo /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip -d /tmp/game-bundle
+            rm -f /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip
+          fi
           echo "GAME_DIR=/tmp/game-bundle" >> $GITHUB_ENV
           ls -la /tmp/game-bundle/
 
