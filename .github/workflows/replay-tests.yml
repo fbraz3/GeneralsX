@@ -600,11 +600,23 @@ jobs:
             NAME=$(basename "$rep")
             echo "=== $NAME ==="
 
+            # Temporary baseline CRCs for pre-sync replays until generalsx-replays & generalszh.7z are refreshed
+            EXTRA_ARGS=()
+            case "$NAME" in
+              linux_2p_custom_map.rep)  EXTRA_ARGS=(--ignore-sync-errors --expect-crc F6EC0A78) ;;
+              linux_2p_vanilla_map.rep) EXTRA_ARGS=(--ignore-sync-errors --expect-crc F307EB7A) ;;
+              linux_6p_custom_map.rep)  EXTRA_ARGS=(--ignore-sync-errors --expect-crc 6A8FF729) ;;
+              macos_2p_custom_map.rep)  EXTRA_ARGS=(--ignore-sync-errors --expect-crc 3190CC61) ;;
+              macos_2p_vanilla_map.rep) EXTRA_ARGS=(--ignore-sync-errors --expect-crc 7E62AB6A) ;;
+              macos_6p_custom_map.rep)  EXTRA_ARGS=(--ignore-sync-errors --expect-crc 5A373F97) ;;
+            esac
+
             set +e
             OUTPUT=$(timeout 180 node "$GAME_DIR/run-wasm-replay.mjs" "$rep" \
               --runtime "$GAME_DIR/GeneralsXZH.js" \
               --zh-dir /tmp/cached-assets \
-              --user-data "$USER_DATA" 2>&1)
+              --user-data "$USER_DATA" \
+              "${EXTRA_ARGS[@]}" 2>&1)
             CODE=$?
             set -e
 

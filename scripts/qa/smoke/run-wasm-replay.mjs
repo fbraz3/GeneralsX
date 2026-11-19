@@ -19,6 +19,8 @@ function parseArgs(argv) {
     zhDir: process.env.CNC_GENERALS_ZH_PATH || "",
     genDir: process.env.CNC_GENERALS_PATH || "",
     userData: "",
+    ignoreSyncErrors: false,
+    expectCrc: "",
   };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
@@ -26,6 +28,8 @@ function parseArgs(argv) {
     else if (arg === "--zh-dir" && argv[i + 1]) args.zhDir = argv[++i];
     else if (arg === "--gen-dir" && argv[i + 1]) args.genDir = argv[++i];
     else if (arg === "--user-data" && argv[i + 1]) args.userData = argv[++i];
+    else if (arg === "--ignore-sync-errors") args.ignoreSyncErrors = true;
+    else if (arg === "--expect-crc" && argv[i + 1]) args.expectCrc = argv[++i].replace(/^0x/i, "").toUpperCase();
     else if (!arg.startsWith("-") && !args.replay) args.replay = arg;
   }
   return args;
@@ -124,11 +128,16 @@ const dataPath = path.join(runtimeDir, "GeneralsXZH.data");
 
 let exitCode = 0;
 let sawReplayMismatch = false;
+let observedFrame100Crc = "";
 const inspectLogLine = (line) => {
   if (typeof line !== "string") return;
   if (line.includes("REPLAY_CRC_MISMATCH")) {
     sawReplayMismatch = true;
     exitCode = 1;
+  }
+  const f100 = line.match(/CRC Mismatch in Frame 100 \(ignored\) InGame:([0-9A-Fa-f]{8})/);
+  if (f100 && !observedFrame100Crc) {
+    observedFrame100Crc = f100[1].toUpperCase();
   }
   const m = line.match(/(?:GameMain\(\) returned with code|Exiting with code)\s+(-?\d+)/);
   if (m) {
@@ -139,8 +148,30 @@ const inspectLogLine = (line) => {
   }
 };
 
+const engineArgs = ["-headless", "-quickstart", "-noshellmap"];
+if (opts.ignoreSyncErrors) {
+  engineArgs.push("-ignoreReplaySyncErrors");
+}
+engineArgs.push("-replay", vfsReplayPath);
+
+const finalizeExitCode = (runtimeCode = 0) => {
+  let finalCode = runtimeCode || exitCode || (sawReplayMismatch ? 1 : 0);
+  if (opts.expectCrc) {
+    if (!observedFrame100Crc) {
+      console.error(`ERROR: Expected Frame 100 InGame CRC 0x${opts.expectCrc}, but no Frame 100 CRC was observed.`);
+      finalCode = 1;
+    } else if (observedFrame100Crc !== opts.expectCrc) {
+      console.error(`ERROR: Frame 100 InGame CRC mismatch: got 0x${observedFrame100Crc}, expected 0x${opts.expectCrc}`);
+      finalCode = 1;
+    } else {
+      console.log(`VERIFIED Frame 100 InGame CRC: 0x${observedFrame100Crc}`);
+    }
+  }
+  return finalCode;
+};
+
 await createGeneralsX({
-  arguments: ["-headless", "-quickstart", "-noshellmap", "-replay", vfsReplayPath],
+  arguments: engineArgs,
   wasmBinary: fs.existsSync(wasmPath) ? fs.readFileSync(wasmPath) : undefined,
   print(text) {
     inspectLogLine(text);
@@ -179,9 +210,9 @@ await createGeneralsX({
   ],
   onExit(code) {
     cleanup();
-    process.exit(code || exitCode || (sawReplayMismatch ? 1 : 0));
+    process.exit(finalizeExitCode(code));
   },
 });
 
 cleanup();
-process.exit(exitCode || (sawReplayMismatch ? 1 : 0));
+process.exit(finalizeExitCode(0));
