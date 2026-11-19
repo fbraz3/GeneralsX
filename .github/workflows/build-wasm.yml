@@ -126,6 +126,7 @@ jobs:
              build/webgpu/generalsx.big \
              dist-wasm-bundle/
           cp scripts/qa/smoke/serve-webgpu.py dist-wasm-bundle/
+          cp scripts/qa/smoke/run-wasm-replay.mjs dist-wasm-bundle/
           (cd dist-wasm-bundle && zip -r ../wasm-webgpu-GeneralsXZH.zip .)
 
       - name: Upload WebAssembly Bundle

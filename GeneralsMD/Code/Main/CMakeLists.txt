@@ -45,8 +45,10 @@ if(SAGE_USE_WEBGPU)
         # Emit an ES module only: the page around the game is a TypeScript + Tailwind app in web/.
         "-sMODULARIZE=1"
         "-sEXPORT_ES6=1"
+        "-sENVIRONMENT=web,worker,node"
+        "-lnodefs.js"
         "-sEXPORT_NAME=createGeneralsX"
-        "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,addRunDependency,removeRunDependency,callMain,ccall"
+        "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,NODEFS,addRunDependency,removeRunDependency,callMain,ccall"
     )
     set_target_properties(z_generals PROPERTIES SUFFIX ".js")
 

@@ -9,6 +9,8 @@ EM_JS(unsigned int, GeneralsXWebLanVirtualIP, (), {
 	if (!globalThis.generalsXLanVirtualIP) {
 		if (typeof globalThis.generalsXLanHostIP === "number" && globalThis.generalsXLanHostIP !== 0) {
 			globalThis.generalsXLanVirtualIP = globalThis.generalsXLanHostIP >>> 0;
+		} else if (!globalThis.location || !globalThis.sessionStorage) {
+			globalThis.generalsXLanVirtualIP = 0x0A000001 >>> 0;
 		} else {
 			const queryValue = new URLSearchParams(globalThis.location.search).get("lanClient");
 			let clientId = /^(?:[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-4])$/.test(queryValue || "")
@@ -136,13 +138,16 @@ EM_JS(int, GeneralsXWebLanRead,
 
 void GeneralsXBrowserYield(unsigned int ms)
 {
-	emscripten_sleep(ms);
+	const int isBrowser = EM_ASM_INT({ return typeof window !== "undefined" ? 1 : 0; });
+	if (isBrowser) {
+		emscripten_sleep(ms);
+	}
 }
 
 void GeneralsXBrowserSuspendAudio(void)
 {
 	EM_ASM({
-		if (window.miniaudio) {
+		if (typeof window !== "undefined" && window.miniaudio) {
 			window.miniaudio.devices.forEach(function(d) {
 				if (d && d.webaudio && d.webaudio.state === "running") d.webaudio.suspend();
 			});
@@ -153,7 +158,7 @@ void GeneralsXBrowserSuspendAudio(void)
 void GeneralsXBrowserResumeAudio(void)
 {
 	EM_ASM({
-		if (window.miniaudio) {
+		if (typeof window !== "undefined" && window.miniaudio) {
 			window.miniaudio.devices.forEach(function(d) {
 				if (d && d.webaudio) d.webaudio.resume();
 			});

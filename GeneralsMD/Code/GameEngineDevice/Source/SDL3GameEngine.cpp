@@ -462,6 +462,11 @@ void SDL3GameEngine::execute(void)
 {
 	fprintf(stderr, "INFO: SDL3GameEngine::execute() - entering main loop\n");
 #if defined(__EMSCRIPTEN__)
+	if (TheGlobalData && TheGlobalData->m_headless) {
+		GameEngine::execute();
+		fprintf(stderr, "INFO: SDL3GameEngine::execute() - exited headless main loop\n");
+		return;
+	}
 	TheFramePacer->reset();
 	emscripten_set_main_loop_arg(browserFrame, this, 0, true);
 	emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 16);
@@ -850,8 +855,9 @@ WebBrowser *SDL3GameEngine::createWebBrowser(void)
  */
 AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
+	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
-	if (dummy || (TheGlobalData && !TheGlobalData->m_audioOn)) {
+	if (TheGlobalData && !TheGlobalData->m_audioOn) {
 		fprintf(stderr, "INFO: Creating NullAudio audio backend\n");
 		return new NullAudioManager();
 	}

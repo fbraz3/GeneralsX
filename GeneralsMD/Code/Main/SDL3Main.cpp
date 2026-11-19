@@ -267,6 +267,10 @@ int main(int argc, char* argv[])
 		CommandLine::parseCommandLineForStartup();
 
 		// GeneralsX @bugfix Copilot 17/05/2026 Skip SDL3 window bootstrap for CLI/headless replay execution.
+#if defined(SAGE_USE_WEBGPU)
+		setenv("CNC_GENERALS_ZH_PATH", "/GeneralsZH", 0);
+		setenv("CNC_GENERALS_PATH", "/Generals", 0);
+#endif
 		const bool isHeadlessMode = (TheGlobalData != nullptr && TheGlobalData->m_headless);
 		if (isHeadlessMode) {
 			fprintf(stderr, "INFO: Headless mode detected, skipping SDL3 video/Vulkan window initialization\n");
