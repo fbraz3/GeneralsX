@@ -1047,6 +1047,14 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 			? (TheGameLogic->getFrame() - m_crcInfo.GetQueueSize() - 1)
 			: 0;
 
+		// GeneralsX @tweak Meeseeks 19/11/2026 Emit Frame 100 CRC checkpoint in headless mode regardless of match/mismatch.
+		if (TheGlobalData && TheGlobalData->m_headless && mismatchFrame == 100)
+		{
+			fprintf(stderr, "[GeneralsX] REPLAY_CRC_CHECKPOINT frame=%u inGame=0x%08X replay=0x%08X\n",
+				mismatchFrame, playbackCRC, newCRC);
+			fflush(stderr);
+		}
+
 		// GeneralsX @bugfix fbraz3 22/09/2026 Require mismatchFrame > 0 to report desync (#315).
 		// Frame 0 CRC compares uninitialized pre-simulation state where subtle mode differences
 		// (e.g. GAME_SKIRMISH vs GAME_REPLAY AIGroup allocation order) cause false positive mismatches.

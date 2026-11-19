@@ -135,6 +135,10 @@ const inspectLogLine = (line) => {
     sawReplayMismatch = true;
     exitCode = 1;
   }
+  const checkpoint = line.match(/REPLAY_CRC_CHECKPOINT\s+frame=100\s+inGame=0x([0-9A-Fa-f]{8})/);
+  if (checkpoint && !observedFrame100Crc) {
+    observedFrame100Crc = checkpoint[1].toUpperCase();
+  }
   const f100 = line.match(/CRC Mismatch in Frame 100 \(ignored\) InGame:([0-9A-Fa-f]{8})/);
   if (f100 && !observedFrame100Crc) {
     observedFrame100Crc = f100[1].toUpperCase();
@@ -155,9 +159,12 @@ if (opts.ignoreSyncErrors) {
 engineArgs.push("-replay", vfsReplayPath);
 
 const finalizeExitCode = (runtimeCode = 0) => {
-  let finalCode = runtimeCode || exitCode || (sawReplayMismatch ? 1 : 0);
-  if (opts.expectCrc && observedFrame100Crc) {
-    if (observedFrame100Crc !== opts.expectCrc) {
+  let finalCode = runtimeCode !== 0 ? runtimeCode : (exitCode || (sawReplayMismatch ? 1 : 0));
+  if (opts.expectCrc) {
+    if (!observedFrame100Crc) {
+      console.error(`ERROR: Expected Frame 100 InGame CRC 0x${opts.expectCrc}, but no Frame 100 checkpoint was observed.`);
+      finalCode = 1;
+    } else if (observedFrame100Crc !== opts.expectCrc) {
       console.error(`ERROR: Frame 100 InGame CRC mismatch: got 0x${observedFrame100Crc}, expected 0x${opts.expectCrc}`);
       finalCode = 1;
     } else {
