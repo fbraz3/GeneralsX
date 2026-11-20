@@ -80,6 +80,7 @@ public:
 	enum
 	{
 		ZoomHeightPerSecond = 10,
+		WheelZoomStepCount = 6, // Number of ticks required to fully zoom in or out
 	};
 
 	/// Add an impulse force to shake the camera
@@ -207,6 +208,8 @@ public:
 	virtual Real getZoom() { return m_zoom; }
 	virtual void setZoom(Real z) { m_zoom = z; }
 	virtual Real getHeightAboveGround() { return m_heightAboveGround; }
+	virtual Real getMaxHeightAboveGround() const { return m_maxHeightAboveGround; } ///< Maximum camera height above ground
+	virtual Real getMinHeightAboveGround() const { return m_minHeightAboveGround; } ///< Minimum camera height above ground
 	virtual void setHeightAboveGround(Real z);
 	virtual void zoom( Real height ); ///< Zoom in/out, closer to the ground, limit to min, or farther away from the ground, limit to max
 	virtual void setZoomToMax();
