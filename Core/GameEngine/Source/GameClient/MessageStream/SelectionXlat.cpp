@@ -246,6 +246,7 @@ SelectionTranslator::SelectionTranslator()
 {
 	m_leftMouseButtonIsDown = FALSE;
 	m_dragSelecting = FALSE;
+	m_ignoreNextLeftButtonUp = FALSE;
 	m_lastGroupSelTime = 0;
 	m_lastGroupSelGroup = -1;
 	m_leftMouseDownAnchor.zero();
@@ -1018,8 +1019,10 @@ GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSE
 	// GeneralsX @feature fbraz3 20/11/2026 Let LookAtTranslator handle Command+Left-Click-Drag panning
 	if (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScroll())
 	{
+		m_ignoreNextLeftButtonUp = TRUE;
 		return KEEP_MESSAGE;
 	}
+	m_ignoreNextLeftButtonUp = FALSE;
 
 	// cannot actually start area selection yet - have to wait for cursor to move a bit
 	m_leftMouseButtonIsDown = true;
@@ -1031,8 +1034,9 @@ GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSE
 GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonUp(MAYBE_UNUSED const GameMessage *msg)
 {
 	// GeneralsX @feature fbraz3 20/11/2026 Skip click/deselect handling when finishing Command+Left-Click-Drag pan
-	if (TheLookAtTranslator && TheLookAtTranslator->isCommandDragScrollActive())
+	if (m_ignoreNextLeftButtonUp || (TheLookAtTranslator && TheLookAtTranslator->isCommandDragScrollActive()))
 	{
+		m_ignoreNextLeftButtonUp = FALSE;
 		return KEEP_MESSAGE;
 	}
 

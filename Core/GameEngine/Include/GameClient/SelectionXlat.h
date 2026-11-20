@@ -44,6 +44,8 @@ private:
 
 	Bool m_leftMouseButtonIsDown;
 	Bool m_dragSelecting;
+	// GeneralsX @feature fbraz3 20/11/2026 Record Command+LMB pan decision on press for same-frame release handling
+	Bool m_ignoreNextLeftButtonUp;
 	Bool m_displayedMaxWarning;	// did we already display a warning about selecting too many units?
 	UnsignedInt m_lastGroupSelTime;
 	Int m_lastGroupSelGroup;
