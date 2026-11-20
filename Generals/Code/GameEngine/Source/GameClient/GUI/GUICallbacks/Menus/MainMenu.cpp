@@ -455,6 +455,68 @@ static void initLabelVersion()
 	}
 }
 
+// GeneralsX @bugfix fbraz3 20/11/2026 Dynamically inject ButtonGeneralsX instead of overriding MainMenu.wnd in generalsx.big
+static GameWindow *createGeneralsXMainMenuButton( GameWindow *buttonCredits, GameWindow *buttonExit, NameKeyType generalsxID )
+{
+	if (!buttonCredits || !buttonExit || !TheWindowManager)
+		return nullptr;
+
+	GameWindow *earthMap = buttonCredits->winGetParent();
+	if (!earthMap)
+		return nullptr;
+
+	ICoord2D credPos, credSize, exitPos;
+	buttonCredits->winGetPosition( &credPos.x, &credPos.y );
+	buttonCredits->winGetSize( &credSize.x, &credSize.y );
+	buttonExit->winGetPosition( &exitPos.x, &exitPos.y );
+
+	Int deltaY = exitPos.y - credPos.y;
+	if (deltaY <= 0)
+		deltaY = credSize.y + 4;
+
+	if (GameWindow *mapBorder = earthMap->winGetParent())
+	{
+		ICoord2D mapSize;
+		mapBorder->winGetSize( &mapSize.x, &mapSize.y );
+		mapBorder->winSetSize( mapSize.x, mapSize.y + deltaY );
+	}
+
+	ICoord2D earthSize;
+	earthMap->winGetSize( &earthSize.x, &earthSize.y );
+	earthMap->winSetSize( earthSize.x, earthSize.y + deltaY );
+
+	buttonCredits->winSetPosition( credPos.x, credPos.y + deltaY );
+	buttonExit->winSetPosition( exitPos.x, exitPos.y + deltaY );
+
+	WinInstanceData instData;
+	instData.init();
+	if (WinInstanceData *credInst = buttonCredits->winGetInstanceData())
+	{
+		instData = *credInst;
+		instData.m_text = nullptr;
+		instData.m_tooltip = nullptr;
+		instData.m_videoBuffer = nullptr;
+	}
+	instData.m_id = generalsxID;
+	instData.m_decoratedNameString = "MainMenu.wnd:ButtonGeneralsX";
+	instData.m_textLabelString = "GUI:GeneralsXOptions";
+	instData.m_tooltipString.clear();
+
+	GameWindow *btnGX = TheWindowManager->gogoGadgetPushButton(
+		earthMap,
+		buttonCredits->winGetStatus(),
+		credPos.x, credPos.y,
+		credSize.x, credSize.y,
+		&instData,
+		nullptr,
+		FALSE );
+
+	if (btnGX && buttonCredits->winGetFont())
+		btnGX->winSetFont( buttonCredits->winGetFont() );
+
+	return btnGX;
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Initialize the main menu */
 //-------------------------------------------------------------------------------------------------
@@ -533,6 +595,10 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonLoad = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonLoadID );
 	buttonCredits = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCreditsID );
 	GameWindow *btnGX = TheWindowManager->winGetWindowFromId( parentMainMenu, generalsxID );
+	if (!btnGX)
+	{
+		btnGX = createGeneralsXMainMenuButton( buttonCredits, buttonExit, generalsxID );
+	}
 	if (btnGX)
 	{
 		UnicodeString ustr = TheGameText->fetch("GUI:GeneralsXOptions");
