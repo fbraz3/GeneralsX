@@ -448,6 +448,7 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "KeyboardScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardScrollFactor ) },
 	// GeneralsX @feature Gabriel Petry 30/09/2026 Load configurable mouse scrolling speed.
 	{ "MouseScrollSpeedFactor",		INI::parseReal,				nullptr,			offsetof( GlobalData, m_mouseScrollFactor ) },
+	{ "WheelZoomStepCount",			INI::parseInt,				nullptr,			offsetof( GlobalData, m_wheelZoomStepCount ) },
 	{ "KeyboardDefaultScrollSpeedFactor",	INI::parseReal,				nullptr,			offsetof( GlobalData, m_keyboardDefaultScrollFactor ) },
 	{ "KeyboardCameraRotateSpeed", INI::parseReal, nullptr, offsetof( GlobalData, m_keyboardCameraRotateSpeed ) },
 	{ "MovementPenaltyDamageState",	INI::parseIndexList,	TheBodyDamageTypeNames,	 offsetof( GlobalData, m_movementPenaltyDamageState ) },
@@ -1088,6 +1089,7 @@ GlobalData::GlobalData()
 	m_keyboardDefaultScrollFactor = m_keyboardScrollFactor = 0.5f;
 	// GeneralsX @bugfix Gabriel Petry 30/09/2026 Preserve retail mouse-wheel zoom speed by default.
 	m_mouseScrollFactor = 1.0f;
+	m_wheelZoomStepCount = 6;
 	m_drawScrollAnchor = FALSE;
 	m_moveScrollAnchor = FALSE;
 	m_scrollAmountCutoff = 10.0f;
@@ -1315,6 +1317,9 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 			drawDist = 2.0f;
 		TheWritableGlobalData->m_terrainDrawDistanceScale = drawDist;
 	}
+	// GeneralsX @feature fbraz 18/11/2026 Wheel zoom step count overridden from Options.ini
+	if (optionPref.find("WheelZoomStepCount") != optionPref.end())
+		TheWritableGlobalData->m_wheelZoomStepCount = optionPref.getWheelZoomStepCount();
 	// GeneralsX @feature felipebraz 17/09/2026 Skirmish simulation tick rate configuration (#281)
 	TheWritableGlobalData->m_skirmishTickRate = optionPref.getSkirmishTickRate();
 

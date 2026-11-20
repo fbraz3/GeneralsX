@@ -906,6 +906,23 @@ Real OptionPreferences::getMaxCameraHeight() const
 	return val;
 }
 
+// GeneralsX: Wheel zoom step count (can be configured in Options.ini)
+Int OptionPreferences::getWheelZoomStepCount() const
+{
+	OptionPreferences::const_iterator it = find("WheelZoomStepCount");
+	if (it == end())
+	{
+		return TheGlobalData ? TheGlobalData->m_wheelZoomStepCount : 6;
+	}
+
+	Int val = atoi(it->second.str());
+	if (val < 1)
+		val = 1;
+	else if (val > 20)
+		val = 20;
+	return val;
+}
+
 Real OptionPreferences::getMinCameraHeight() const
 {
 	OptionPreferences::const_iterator it = find("MinCameraHeight");
