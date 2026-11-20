@@ -477,7 +477,7 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			m_nextUpShouldCreateDoubleClick[index] = FALSE;
 			if (index == 0)
 			{
-				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScroll());
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch());
 			}
 			break;
 		}
@@ -494,7 +494,7 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			m_nextUpShouldCreateDoubleClick[index] = TRUE;
 			if (index == 0)
 			{
-				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScroll());
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch());
 			}
 			break;
 		}
@@ -510,7 +510,7 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			--index;
 
 			// GeneralsX @feature fbraz3 20/11/2026 Suppress synthetic left-click when ending Command+Left-Click-Drag pan
-			if (index == 0 && (m_ignoreNextLeftClick || (TheLookAtTranslator && TheLookAtTranslator->isCommandDragScrollActive())))
+			if (index == 0 && m_ignoreNextLeftClick)
 			{
 				m_ignoreNextLeftClick = FALSE;
 				break;

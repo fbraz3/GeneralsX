@@ -57,6 +57,7 @@ public:
 	void resetModes(); //Used when disabling input, so when we reenable it we aren't stuck in a mode.
 	// GeneralsX @feature fbraz3 20/11/2026 Command+Left-Click-Drag map panning on macOS
 	Bool canStartCommandDragScroll() const;
+	Bool canStartCommandDragScrollForBatch() const;
 	Bool isCommandDragScrollActive() const;
 
 private:
