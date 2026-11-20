@@ -81,12 +81,12 @@
 #include "WWMath/vp.h"
 #include "WWMath/matrix4.h"
 #include "dx8wrapper.h"
+#include "Renderer.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
 #include "rinfo.h"
 #include "camera.h"
 #include "dx8fvf.h"
-#include "d3dx8math.h"
 #include "sortingrenderer.h"
 
 // Upgraded to DX8 2/2/01 HY
@@ -116,10 +116,6 @@ Vector3 PointGroupClass::_ScreenspaceVertexLocationSizeTable[2][3] =
 	Vector3(2.7f, 2.0f, -1.0f),
 	Vector3(-0.7f, 2.0f, -1.0f)
 };
-
-// useful for particles that aren't aligned with the screen.
-static Vector3 GroundMultiplierX(1.0f, 0.0f, 0.0f);
-static Vector3 GroundMultiplierY(0.0f, 1.0f, 0.0f);
 
 // Some internal variables
 VectorClass<Vector3>			VertexLoc;		// camera-space vertex locations
@@ -880,7 +876,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 
 	// Get the world and view matrices
 	Matrix4x4 view;
-	DX8Wrapper::Get_Transform(D3DTS_VIEW,view);
+	Renderer::Get_Transform(RenderTransform_View,view);
 
 	// Transform the point locations from worldspace to camera space if needed
 	// (i.e. if they are not already in camera space):
@@ -919,8 +915,8 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 	// so set world and view matrices to identity and render
 
 	Matrix4x4 identity(true);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,identity);
-	DX8Wrapper::Set_Transform(D3DTS_VIEW,identity);
+	Renderer::Set_Transform(RenderTransform_World,identity);
+	Renderer::Set_Transform(RenderTransform_View,identity);
 
 	DX8Wrapper::Set_Material(PointMaterial);
 	DX8Wrapper::Set_Shader(Shader);
@@ -996,7 +992,7 @@ void PointGroupClass::Render(RenderInfoClass &rinfo)
 	}
 
 	// restore the matrices
-	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
+	Renderer::Set_Transform(RenderTransform_View,view);
 }
 
 
@@ -1220,18 +1216,21 @@ void PointGroupClass::Update_Arrays(
 				Matrix4x4 view;
 				Vector4 result;
 				if (!Billboard) {
-					DX8Wrapper::Get_Transform(D3DTS_VIEW,view);
+					Renderer::Get_Transform(RenderTransform_View,view);
 				}
 
 				// Scale vertex offsets and add them to point locations to get vertex locations
 				for (i = 0; i < active_points; i++) {
 					if (!Billboard) {
 						// If we're not billboarding, then the coordinate we have is in screen space.
-						Matrix4x4 rotMat;
-						D3DXMatrixRotationZ(&(D3DXMATRIX&) rotMat, ((float)point_orientation[i] / 255.0f * 2 * D3DX_PI));
+						const float angle = (float)point_orientation[i] / 255.0f * 2 * WWMATH_PI;
+						const float c = WWMath::Cos(angle);
+						const float s = WWMath::Sin(angle);
 
-						Vector4 orientedVecX = rotMat * GroundMultiplierX;
-						Vector4 orientedVecY = rotMat * GroundMultiplierY;
+						Vector2 orientedVecX(1.0f, 0.0f);
+						Vector2 orientedVecY(0.0f, 1.0f);
+						orientedVecX.Rotate(-s, c);
+						orientedVecY.Rotate(-s, c);
 
 						vertex_loc[vert + 0].X = point_loc[i].X +	(orientedVecX.X + orientedVecY.X) * point_size[i];
 						vertex_loc[vert + 0].Y = point_loc[i].Y +	(orientedVecX.Y + orientedVecY.Y) * point_size[i];
@@ -1710,7 +1709,7 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 
 		// Get the world and view matrices
 		Matrix4x4 view;
-		DX8Wrapper::Get_Transform(D3DTS_VIEW,view);
+		Renderer::Get_Transform(RenderTransform_View,view);
 
 
 
@@ -1849,8 +1848,8 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 		// so set world and view matrices to identity and render
 
 		Matrix4x4 identity(true);
-		DX8Wrapper::Set_Transform(D3DTS_WORLD,identity);
-		DX8Wrapper::Set_Transform(D3DTS_VIEW,identity);
+		Renderer::Set_Transform(RenderTransform_World,identity);
+		Renderer::Set_Transform(RenderTransform_View,identity);
 
 		DX8Wrapper::Set_Material(PointMaterial);
 		DX8Wrapper::Set_Shader(Shader);
@@ -1932,5 +1931,5 @@ void PointGroupClass::RenderVolumeParticle(RenderInfoClass &rinfo, unsigned int 
 
 
 	// restore the matrices
-	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
+	Renderer::Set_Transform(RenderTransform_View,view);
 }

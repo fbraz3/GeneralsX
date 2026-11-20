@@ -56,6 +56,7 @@
 #include "WWLib/WWFILE.h"
 #include "WWLib/inisup.h"
 #include "dx8wrapper.h"
+#include "Renderer.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
 #include "sortingrenderer.h"
@@ -284,48 +285,12 @@ static void Init_Shaders()
 }
 
 /*
-** Derived INI to support Vector4
+** Reads four comma separated floats from an INI entry
 */
-class DazzleINIClass : public INIClass {
-public:
-	DazzleINIClass(FileClass & file) : INIClass(file) {}
-	const Vector2	Get_Vector2(char const *section, char const *entry, const Vector2 & defvalue = Vector2(0,0) );
-	const Vector3	Get_Vector3(char const *section, char const *entry, const Vector3 & defvalue = Vector3(0,0,0) );
-	const Vector4	Get_Vector4(char const *section, char const *entry, const Vector4 & defvalue = Vector4(0,0,0,0) ) const;
-};
-
-const Vector2 DazzleINIClass::Get_Vector2(char const *section, char const *entry, const Vector2 & defvalue)
+static Vector4 Get_INI_Vector4(const INIClass& ini, const char* section, const char* entry, const Vector4& defvalue)
 {
 	if (section != nullptr && entry != nullptr) {
-		INIEntry * entryptr = Find_Entry(section, entry);
-		if (entryptr && entryptr->Value != nullptr) {
-			Vector2	ret;
-			if ( sscanf( entryptr->Value, "%f,%f", &ret[0], &ret[1] ) == 2 ) {
-				return ret;
-			}
-		}
-	}
-	return defvalue;
-}
-
-const Vector3 DazzleINIClass::Get_Vector3(char const *section, char const * entry, const Vector3 & defvalue )
-{
-	if (section != nullptr && entry != nullptr) {
-		INIEntry * entryptr = Find_Entry(section, entry);
-		if (entryptr && entryptr->Value != nullptr) {
-			Vector3	ret;
-			if ( sscanf( entryptr->Value, "%f,%f,%f", &ret[0], &ret[1], &ret[2] ) == 3 ) {
-				return ret;
-			}
-		}
-	}
-	return defvalue;
-}
-
-const Vector4 DazzleINIClass::Get_Vector4(char const *section, char const *entry, const Vector4 & defvalue) const
-{
-	if (section != nullptr && entry != nullptr) {
-		INIEntry * entryptr = Find_Entry(section, entry);
+		INIEntry * entryptr = ini.Find_Entry(section, entry);
 		if (entryptr && entryptr->Value != nullptr) {
 			Vector4	ret;
 			if ( sscanf( entryptr->Value, "%f,%f,%f,%f", &ret[0], &ret[1], &ret[2], &ret[3] ) == 4 ) {
@@ -586,9 +551,8 @@ void DazzleRenderObjClass::Init_From_INI(const INIClass* ini)
 			TPoint3D<float> tp=ini->Get_Point(section_name,tmp_name,TPoint3D<float>(1.0f,1.0f,1.0f));
 			lic.flare_colors[flare]=Vector3(tp.X,tp.Y,tp.Z);
 			// Flare uv
-			const DazzleINIClass* dini=reinterpret_cast<const DazzleINIClass*>(ini);
 			tmp_name.Format("%s%d",FLARE_UV_STRING,flare+1);
-			lic.flare_uv[flare]=dini->Get_Vector4(section_name,tmp_name,Vector4(0.0f,0.0f,1.0f,1.0f));
+			lic.flare_uv[flare]=Get_INI_Vector4(*ini,section_name,tmp_name,Vector4(0.0f,0.0f,1.0f,1.0f));
 		}
 		lic.type=entry;
 
@@ -908,8 +872,8 @@ void DazzleRenderObjClass::Render(RenderInfoClass & rinfo)
 //			visibility = _VisibilityHandler->Compute_Dazzle_Visibility(rinfo,this,position);
 
 			Matrix4x4 view_transform,projection_transform;
-			DX8Wrapper::Get_Transform(D3DTS_VIEW,view_transform);
-			DX8Wrapper::Get_Transform(D3DTS_PROJECTION,projection_transform);
+			Renderer::Get_Transform(RenderTransform_View,view_transform);
+			Renderer::Get_Transform(RenderTransform_Projection,projection_transform);
 			Vector3 camera_loc(rinfo.Camera.Get_Position());
 			Vector3 camera_dir(-view_transform[2][0],-view_transform[2][1],-view_transform[2][2]);
 
@@ -983,9 +947,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 	Matrix4x4 view_transform;
 	Matrix4x4 world_transform;
 	Matrix4x4 projection_transform;
-	DX8Wrapper::Get_Transform(D3DTS_VIEW,view_transform);
-	DX8Wrapper::Get_Transform(D3DTS_WORLD,world_transform);
-	DX8Wrapper::Get_Transform(D3DTS_PROJECTION,projection_transform);
+	Renderer::Get_Transform(RenderTransform_View,view_transform);
+	Renderer::Get_Transform(RenderTransform_World,world_transform);
+	Renderer::Get_Transform(RenderTransform_Projection,projection_transform);
 	old_view_transform=view_transform;
 	old_world_transform=world_transform;
 	old_projection_transform=projection_transform;
@@ -1186,9 +1150,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 		}
 	}
 
-	DX8Wrapper::Set_World_Identity();
-	DX8Wrapper::Set_View_Identity();
-	DX8Wrapper::Set_Transform(D3DTS_PROJECTION,Matrix4x4(true));
+	Renderer::Set_World_Identity();
+	Renderer::Set_View_Identity();
+	Renderer::Set_Transform(RenderTransform_Projection,Matrix4x4(true));
 
 	if (halo_poly_count) {
 		DX8Wrapper::Set_Index_Buffer(ib_access,dazzle_vertex_count);
@@ -1211,9 +1175,9 @@ void DazzleRenderObjClass::Render_Dazzle(CameraClass* camera)
 		DX8Wrapper::Draw_Triangles(0,lensflare_poly_count,0,vertex_count);
 	}
 
-	DX8Wrapper::Set_Transform(D3DTS_PROJECTION,old_projection_transform);
-	DX8Wrapper::Set_Transform(D3DTS_VIEW,old_view_transform);
-	DX8Wrapper::Set_Transform(D3DTS_WORLD,old_world_transform);
+	Renderer::Set_Transform(RenderTransform_Projection,old_projection_transform);
+	Renderer::Set_Transform(RenderTransform_View,old_view_transform);
+	Renderer::Set_Transform(RenderTransform_World,old_world_transform);
 }
 
 // ----------------------------------------------------------------------------

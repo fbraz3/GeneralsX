@@ -18,4 +18,6 @@ target_sources(corei_wwdownload INTERFACE ${WWDOWNLOAD_SRC})
 
 target_link_libraries(corei_wwdownload INTERFACE
     core_wwcommon
+    # GeneralsX @build Mr. Meeseeks 15/11/2026 Link ws2_32 only on Windows
+    $<$<BOOL:${WIN32}>:ws2_32>
 )

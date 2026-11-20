@@ -87,10 +87,10 @@
 #include "missingtexture.h"
 #include "WWLib/thread.h"
 #include <d3dx8core.h>
-#include "WWMath/pot.h"
 #include "WWDebug/wwprofile.h"
 #include "WWLib/ffactory.h"
 #include "dx8caps.h"
+#include "dx8convert.h"
 #include "formconv.h"
 #include "dx8texman.h"
 #include "WWLib/bound.h"
@@ -560,34 +560,55 @@ void DX8Wrapper::Pillarbox_Process_Resize()
 **
 ***********************************************************************************/
 
+static const char* Get_DX8_Error_Code_Name(HRESULT res)
+{
+#define CASE_LABEL(x) case x: return #x;
+
+	switch (res)
+	{
+	CASE_LABEL(D3D_OK)
+	CASE_LABEL(D3DERR_WRONGTEXTUREFORMAT)
+	CASE_LABEL(D3DERR_UNSUPPORTEDCOLOROPERATION)
+	CASE_LABEL(D3DERR_UNSUPPORTEDCOLORARG)
+	CASE_LABEL(D3DERR_UNSUPPORTEDALPHAOPERATION)
+	CASE_LABEL(D3DERR_UNSUPPORTEDALPHAARG)
+	CASE_LABEL(D3DERR_TOOMANYOPERATIONS)
+	CASE_LABEL(D3DERR_CONFLICTINGTEXTUREFILTER)
+	CASE_LABEL(D3DERR_UNSUPPORTEDFACTORVALUE)
+	CASE_LABEL(D3DERR_CONFLICTINGRENDERSTATE)
+	CASE_LABEL(D3DERR_UNSUPPORTEDTEXTUREFILTER)
+	CASE_LABEL(D3DERR_CONFLICTINGTEXTUREPALETTE)
+	CASE_LABEL(D3DERR_DRIVERINTERNALERROR)
+	CASE_LABEL(D3DERR_NOTFOUND)
+	CASE_LABEL(D3DERR_MOREDATA)
+	CASE_LABEL(D3DERR_DEVICELOST)
+	CASE_LABEL(D3DERR_DEVICENOTRESET)
+	CASE_LABEL(D3DERR_NOTAVAILABLE)
+	CASE_LABEL(D3DERR_OUTOFVIDEOMEMORY)
+	CASE_LABEL(D3DERR_INVALIDDEVICE)
+	CASE_LABEL(D3DERR_INVALIDCALL)
+	CASE_LABEL(D3DERR_DRIVERINVALIDCALL)
+	CASE_LABEL(E_OUTOFMEMORY)
+	CASE_LABEL(E_INVALIDARG)
+	CASE_LABEL(E_NOTIMPL)
+	CASE_LABEL(E_FAIL)
+	}
+
+#undef CASE_LABEL
+
+	return "Unknown";
+}
+
 void Log_DX8_ErrorCode(unsigned res)
 {
-	char tmp[256]="";
-
-	HRESULT new_res=D3DXGetErrorStringA(
-		res,
-		tmp,
-		sizeof(tmp));
-
-	if (new_res==D3D_OK) {
-		WWDEBUG_SAY(("%s", tmp));
-	}
+	WWDEBUG_SAY(("DX8 Error: %s (0x%08X)",Get_DX8_Error_Code_Name(res),res));
 
 	WWASSERT(0);
 }
 
 void Non_Fatal_Log_DX8_ErrorCode(unsigned res,const char * file,int line)
 {
-	char tmp[256]="";
-
-	HRESULT new_res=D3DXGetErrorStringA(
-		res,
-		tmp,
-		sizeof(tmp));
-
-	if (new_res==D3D_OK) {
-		WWDEBUG_SAY(("DX8 Error: %s, File: %s, Line: %d",tmp,file,line));
-	}
+	WWDEBUG_SAY(("DX8 Error: %s (0x%08X), File: %s, Line: %d",Get_DX8_Error_Code_Name(res),res,file,line));
 }
 
 // TheSuperHackers @info helmutbuhler 14/04/2025
@@ -2505,48 +2526,7 @@ void DX8Wrapper::Draw(
 		DWORD passes=0;		// GeneralsX @build BenderAI 10/02/2026 - Use DWORD (32-bit) instead of unsigned long (platform-dependent)
 		SNAPSHOT_SAY(("ValidateDevice:"));
 		HRESULT res=D3DDevice->ValidateDevice(&passes);
-		switch (res) {
-		case D3D_OK:
-			SNAPSHOT_SAY(("OK"));
-			break;
-
-		case D3DERR_CONFLICTINGTEXTUREFILTER:
-			SNAPSHOT_SAY(("D3DERR_CONFLICTINGTEXTUREFILTER"));
-			break;
-		case D3DERR_CONFLICTINGTEXTUREPALETTE:
-			SNAPSHOT_SAY(("D3DERR_CONFLICTINGTEXTUREPALETTE"));
-			break;
-		case D3DERR_DEVICELOST:
-			SNAPSHOT_SAY(("D3DERR_DEVICELOST"));
-			break;
-		case D3DERR_TOOMANYOPERATIONS:
-			SNAPSHOT_SAY(("D3DERR_TOOMANYOPERATIONS"));
-			break;
-		case D3DERR_UNSUPPORTEDALPHAARG:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDALPHAARG"));
-			break;
-		case D3DERR_UNSUPPORTEDALPHAOPERATION:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDALPHAOPERATION"));
-			break;
-		case D3DERR_UNSUPPORTEDCOLORARG:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDCOLORARG"));
-			break;
-		case D3DERR_UNSUPPORTEDCOLOROPERATION:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDCOLOROPERATION"));
-			break;
-		case D3DERR_UNSUPPORTEDFACTORVALUE:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDFACTORVALUE"));
-			break;
-		case D3DERR_UNSUPPORTEDTEXTUREFILTER:
-			SNAPSHOT_SAY(("D3DERR_UNSUPPORTEDTEXTUREFILTER"));
-			break;
-		case D3DERR_WRONGTEXTUREFORMAT:
-			SNAPSHOT_SAY(("D3DERR_WRONGTEXTUREFORMAT"));
-			break;
-		default:
-			SNAPSHOT_SAY(("UNKNOWN Error"));
-			break;
-		}
+		SNAPSHOT_SAY(("%s",Get_DX8_Error_Code_Name(res)));
 	}
 
 	SNAPSHOT_SAY(("DX8 - draw %d polygons (%d vertices)",polygon_count,vertex_count));
@@ -3501,10 +3481,10 @@ void DX8Wrapper::Set_Light(unsigned index,const LightClass &light)
 	dlight.Ambient.a=1.0f;
 
 	temp=light.Get_Position();
-	dlight.Position=*(D3DVECTOR*) &temp;
+	dlight.Position=To_D3DVECTOR(temp);
 
 	light.Get_Spot_Direction(temp);
-	dlight.Direction=*(D3DVECTOR*) &temp;
+	dlight.Direction=To_D3DVECTOR(temp);
 
 	dlight.Range=light.Get_Attenuation_Range();
 	dlight.Falloff=light.Get_Spot_Exponent();
@@ -3556,9 +3536,8 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 			::ZeroMemory(&light, sizeof(D3DLIGHT8));
 
 			light.Type=D3DLIGHT_DIRECTIONAL;
-			(Vector3&)light.Diffuse=light_env->Get_Light_Diffuse(l);
-			Vector3 dir=-light_env->Get_Light_Direction(l);
-			light.Direction=(const D3DVECTOR&)(dir);
+			light.Diffuse=To_D3DCOLORVALUE(light_env->Get_Light_Diffuse(l),0.0f);
+			light.Direction=To_D3DVECTOR(-light_env->Get_Light_Direction(l));
 
 			// (gth) TODO: put specular into LightEnvironment?  Much work to be done on lights :-)'
 			if (l==0) {
@@ -3567,9 +3546,9 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 
 			if (light_env->isPointLight(l)) {
 				light.Type = D3DLIGHT_POINT;
-				(Vector3&)light.Diffuse=light_env->getPointDiffuse(l);
-				(Vector3&)light.Ambient=light_env->getPointAmbient(l);
-				light.Position = (const D3DVECTOR&)light_env->getPointCenter(l);
+				light.Diffuse=To_D3DCOLORVALUE(light_env->getPointDiffuse(l),0.0f);
+				light.Ambient=To_D3DCOLORVALUE(light_env->getPointAmbient(l),0.0f);
+				light.Position=To_D3DVECTOR(light_env->getPointCenter(l));
 				light.Range = light_env->getPointOrad(l);
 
 				// Inverse linear light 1/(1+D)
@@ -3669,7 +3648,7 @@ DX8Wrapper::Create_Render_Target (int width, int height, WW3DFormat format)
 	if (height > 0 && height < width) {
 		poweroftwosize = height;
 	}
-	poweroftwosize = ::Find_POT (poweroftwosize);
+	poweroftwosize = std::bit_ceil(static_cast<unsigned int>(poweroftwosize));
 
 	if (poweroftwosize>dx8caps.MaxTextureWidth) {
 		poweroftwosize=dx8caps.MaxTextureWidth;
@@ -3753,7 +3732,7 @@ void DX8Wrapper::Create_Render_Target
 	{
 		poweroftwosize = height;
 	}
-	poweroftwosize = ::Find_POT (poweroftwosize);
+	poweroftwosize = std::bit_ceil(static_cast<unsigned int>(poweroftwosize));
 
 	if (poweroftwosize>dx8caps.MaxTextureWidth)
 	{
