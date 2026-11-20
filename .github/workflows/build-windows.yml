@@ -57,6 +57,18 @@ jobs:
         with:
           arch: x86
 
+      - name: Resolve MSVC ABI cache key
+        id: toolchain_id
+        shell: pwsh
+        run: |
+          $vcVer = ($env:VCToolsVersion -replace '[^0-9A-Za-z._-]', '')
+          $sdkVer = ($env:WindowsSDKVersion -replace '[^0-9A-Za-z._-]', '')
+          if (-not $vcVer) { $vcVer = "unknown" }
+          if (-not $sdkVer) { $sdkVer = "unknown" }
+          $abi = "vc${vcVer}-sdk${sdkVer}"
+          Write-Host "Resolved MSVC ABI key segment: $abi"
+          "msvc_abi=$abi" >> $env:GITHUB_OUTPUT
+
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
@@ -69,10 +81,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-v4-${{ runner.os }}-x86-msvc-v143-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml') }}
+          key: vcpkg-bincache-v5-${{ runner.os }}-x86-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml') }}
           restore-keys: |
-            vcpkg-bincache-v4-${{ runner.os }}-x86-msvc-v143-
-            vcpkg-bincache-v3-${{ runner.os }}-x86-msvc-v143-
+            vcpkg-bincache-v5-${{ runner.os }}-x86-${{ steps.toolchain_id.outputs.msvc_abi }}-
 
       - name: Configure vcpkg cache directory
         shell: pwsh
@@ -111,7 +122,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v4-{0}-x86-msvc-v143-{1}', runner.os, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v5-{0}-x86-{1}-{2}', runner.os, steps.toolchain_id.outputs.msvc_abi, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml')) }}
 
       - name: Build
         shell: pwsh

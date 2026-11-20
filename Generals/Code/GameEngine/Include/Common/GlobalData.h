@@ -617,6 +617,10 @@ public:
 
 	AsciiString m_modDir;
 	AsciiString m_modBIG;
+	// GeneralsX @feature felipebraz 13/11/2026 Runtime asset path overrides via command line (-assetPath)
+	AsciiString m_assetPath;
+	// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Force loose files on disk to override mod archives (#397)
+	Bool        m_looseFilesWin;
 
 	// the trailing '\' is included!
 	AsciiString getPath_UserData() const;

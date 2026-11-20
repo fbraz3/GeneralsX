@@ -84,9 +84,35 @@ enum RecorderModeType CPP_11(: Int) {
 	RECORDERMODETYPE_NONE // this is a valid state to be in on the shell map, or in saved games
 };
 
-class CRCInfo;
+class RecorderClass : public SubsystemInterface
+{
+protected:
+	// TheSuperHackers @info helmutbuhler 03/04/2025 CRC overview:
+	// Each peer periodically computes a CRC from its local game state and broadcasts it to all peers, including itself,
+	// to verify synchronization. CRC messages are received a few frames later in network games to avoid stalling every
+	// frame while waiting for all peers. This works because all peers compare the same received CRCs on the same frame.
+	//
+	// Replays are different: recorded CRC messages appear on the frame they were originally received, so directly
+	// comparing them against the current local state would mismatch. To handle this, local CRCs must be queued until the
+	// corresponding replay CRC messages arrive. This class implements that queue.
+	class CRCInfo
+	{
+	public:
+		CRCInfo();
+		CRCInfo(UnsignedInt localPlayer);
+		void addCRC(UnsignedInt val);
+		UnsignedInt readCRC();
+		int GetQueueSize() const { return m_data.size(); }
+		UnsignedInt getLocalPlayer() const { return m_localPlayer; }
+		void setSawCRCMismatch() { m_sawCRCMismatch = TRUE; }
+		Bool sawCRCMismatch() const { return m_sawCRCMismatch; }
 
-class RecorderClass : public SubsystemInterface {
+	protected:
+		Bool m_sawCRCMismatch;
+		UnsignedInt m_localPlayer;
+		std::list<UnsignedInt> m_data;
+	};
+
 public:
 	struct ReplayHeader;
 
@@ -119,7 +145,7 @@ public:
 public:
 	void handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool fromPlayback);
 protected:
-	CRCInfo *m_crcInfo;
+	CRCInfo m_crcInfo;
 public:
 
 	// read in info relating to a replay, conditionally setting up m_file for playback
@@ -208,7 +234,7 @@ protected:
 	Bool m_doingAnalysis;
 	Bool m_archiveReplays;														///< if true, each replay is archived to the replay archive folder after recording
 
-	GameMode m_originalGameMode; // valid in replays
+	GameMode m_originalGameMode; // valid while recording and in replays
 
 	UnsignedInt m_nextFrame;												///< The Frame that the next message is to be executed on.  This can be -1.
 };

@@ -324,7 +324,8 @@ void W3DPropBuffer::drawProps(RenderInfoClass &rinfo)
 	USE_PERF_TIMER(Prop_Render)
 
 	Int i;
-	if (m_doCull) {
+	// GeneralsX @bugfix fbraz3 13/11/2026 Do not let water mirror reflection pass consume m_doCull and cull props to the reflection frustum
+	if (m_doCull && !ShaderClass::Is_Backface_Culling_Inverted()) {
 		cull(&rinfo.Camera);
 	}
 	const GlobalData::TerrainLighting *objectLighting = TheGlobalData->m_terrainObjectsLighting[TheGlobalData->m_timeOfDay];

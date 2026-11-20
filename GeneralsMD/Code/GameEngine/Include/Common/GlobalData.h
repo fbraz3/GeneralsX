@@ -620,6 +620,11 @@ public:
 	Bool				m_breakTheMovie;								///< The user has hit escape!
 	AsciiString m_modDir;
 	AsciiString m_modBIG;
+	// GeneralsX @feature felipebraz 13/11/2026 Runtime asset path overrides via command line (-assetPath / -generalsAssetPath)
+	AsciiString m_assetPath;
+	AsciiString m_generalsAssetPath;
+	// GeneralsX @feature dogefly233/felipebraz 13/11/2026 Force loose files on disk to override mod archives (#397)
+	Bool        m_looseFilesWin;
 
 	//-allAdvice feature
 	//Bool m_allAdvice;
