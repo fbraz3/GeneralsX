@@ -1125,6 +1125,8 @@ GlobalData::GlobalData()
 	m_useAlternateMouse = FALSE;
 	// GeneralsX @bugfix Meeseeks 18/06/2026 Default to TRUE to allow right-click drag scrolling under alternate controls by default
 	m_useRightMouseScrollWithAlternateMouse = TRUE;
+	// GeneralsX @feature fbraz3 20/11/2026 Enable Command+Left-Click-Drag map panning on macOS by default
+	m_useCommandDragScroll = TRUE;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
@@ -1268,6 +1270,7 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	OptionPreferences optionPref;
 	TheWritableGlobalData->m_useAlternateMouse = optionPref.getAlternateMouseModeEnabled();
 	TheWritableGlobalData->m_useRightMouseScrollWithAlternateMouse = optionPref.getRightMouseScrollWithAlternateMouseEnabled();
+	TheWritableGlobalData->m_useCommandDragScroll = optionPref.getCommandDragScrollEnabled();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
 	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();

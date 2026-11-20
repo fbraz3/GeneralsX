@@ -43,6 +43,7 @@
 #include "GameClient/GameClient.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/KeyDefs.h"
+#include "GameClient/LookAtXlat.h"
 #include "GameClient/ParticleSys.h"	// for ParticleSystemDebugDisplay
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
@@ -498,6 +499,12 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
 			--index;
+
+			// GeneralsX @feature fbraz3 20/11/2026 Suppress synthetic left-click when ending Command+Left-Click-Drag pan
+			if (index == 0 && TheLookAtTranslator && TheLookAtTranslator->isCommandDragScrollActive())
+			{
+				break;
+			}
 
 			constexpr const GameMessage::Type SingleClickMessages[3] =
 			{

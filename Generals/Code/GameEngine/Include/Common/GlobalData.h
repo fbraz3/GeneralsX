@@ -148,6 +148,8 @@ public:
 	Int m_terrainLODTargetTimeMS;
 	Bool m_useAlternateMouse;
 	Bool m_useRightMouseScrollWithAlternateMouse; // TheSuperHackers @feature User option for RMB scroll in Alternate Mouse mode.
+	// GeneralsX @feature fbraz3 20/11/2026 Enable Command+Left-Click-Drag map panning on macOS
+	Bool m_useCommandDragScroll;
 	Bool m_clientRetaliationModeEnabled;
 	Bool m_doubleClickAttackMove;
 	Bool m_rightMouseAlwaysScrolls;

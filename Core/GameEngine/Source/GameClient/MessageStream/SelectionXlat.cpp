@@ -52,6 +52,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Keyboard.h"
+#include "GameClient/LookAtXlat.h"
 #include "GameClient/SelectionInfo.h"
 #include "GameClient/SelectionXlat.h"
 #include "GameClient/TerrainVisual.h"
@@ -1014,6 +1015,12 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 
 GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSED const GameMessage *msg)
 {
+	// GeneralsX @feature fbraz3 20/11/2026 Let LookAtTranslator handle Command+Left-Click-Drag panning
+	if (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScroll())
+	{
+		return KEEP_MESSAGE;
+	}
+
 	// cannot actually start area selection yet - have to wait for cursor to move a bit
 	m_leftMouseButtonIsDown = true;
 	m_leftMouseDownAnchor = msg->getArgument( 0 )->pixel;
@@ -1023,6 +1030,12 @@ GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSE
 
 GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonUp(MAYBE_UNUSED const GameMessage *msg)
 {
+	// GeneralsX @feature fbraz3 20/11/2026 Skip click/deselect handling when finishing Command+Left-Click-Drag pan
+	if (TheLookAtTranslator && TheLookAtTranslator->isCommandDragScrollActive())
+	{
+		return KEEP_MESSAGE;
+	}
+
 	m_leftMouseButtonIsDown = FALSE;
 
 	if (m_dragSelecting) {
