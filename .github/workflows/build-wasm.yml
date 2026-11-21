@@ -1,0 +1,137 @@
+name: Build WebAssembly (WebGPU)
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ""
+        description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
+  workflow_dispatch:
+
+jobs:
+  build-wasm:
+    name: generalsxzh@webgpu
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Populate Git Info for Version Headers
+        run: |
+          echo "GENERALS_GIT_OVERRIDE_TSTAMP=$(git log -1 --format=%ct 2>/dev/null || echo '0')" >> $GITHUB_ENV
+          echo "GENERALS_GIT_OVERRIDE_TAG=$(git describe --tags --exact-match 2>/dev/null || echo '')" >> $GITHUB_ENV
+
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            ninja-build \
+            pkg-config \
+            python3 \
+            ccache \
+            zip
+
+      - name: Setup Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: "6.0.2"
+          actions-cache-folder: "emsdk-cache"
+
+      - name: Export Emscripten Environment
+        run: |
+          echo "EMSCRIPTEN_ROOT=${EMSDK}/upstream/emscripten" >> $GITHUB_ENV
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
+          runVcpkgInstall: false
+          doNotCache: true
+
+      - name: Cache vcpkg Binary Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-bincache-v1-Linux-wasm32-emscripten-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-wasm.yml') }}
+          restore-keys: |
+            vcpkg-bincache-v1-Linux-wasm32-emscripten-
+
+      - name: Configure vcpkg Binary Cache
+        run: |
+          cache_dir="${{ github.workspace }}/vcpkg-bincache"
+          mkdir -p "$cache_dir"
+          echo "VCPKG_BINARY_SOURCES=clear;files,${cache_dir},readwrite" >> $GITHUB_ENV
+
+      - name: Cache CMake FetchContent Dependencies
+        uses: actions/cache@v5
+        with:
+          path: build/webgpu/_deps
+          key: wasm-deps-${{ runner.os }}-${{ hashFiles('cmake/*.cmake', 'CMakeLists.txt', 'CMakePresets.json') }}
+          restore-keys: |
+            wasm-deps-${{ runner.os }}-
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ccache-wasm-webgpu-${{ github.ref_name }}
+          max-size: 500M
+
+      - name: Configure & Build WASM Engine
+        run: |
+          cmake --preset webgpu \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build build/webgpu --target z_generals
+
+      - name: Verify Generated WASM Outputs
+        run: |
+          for f in \
+            build/webgpu/GeneralsMD/GeneralsXZH.js \
+            build/webgpu/GeneralsMD/GeneralsXZH.wasm \
+            build/webgpu/GeneralsMD/GeneralsXZH.data \
+            build/webgpu/generalsx.big; do
+            test -s "$f" || { echo "Missing or empty WASM output: $f"; exit 1; }
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Typecheck & Build Web Frontend
+        run: |
+          cd web
+          npm install
+          npx tsc --noEmit
+          npm run build
+
+      - name: Package WebAssembly Bundle
+        run: |
+          mkdir -p dist-wasm-bundle
+          cp -r web/dist/* dist-wasm-bundle/
+          cp build/webgpu/GeneralsMD/GeneralsXZH.js \
+             build/webgpu/GeneralsMD/GeneralsXZH.wasm \
+             build/webgpu/GeneralsMD/GeneralsXZH.data \
+             build/webgpu/generalsx.big \
+             dist-wasm-bundle/
+          cp scripts/qa/smoke/serve-webgpu.py dist-wasm-bundle/
+          cp scripts/qa/smoke/run-wasm-replay.mjs dist-wasm-bundle/
+          (cd dist-wasm-bundle && zip -r ../wasm-webgpu-GeneralsXZH.zip .)
+
+      - name: Upload WebAssembly Bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-webgpu-GeneralsXZH.zip
+          path: wasm-webgpu-GeneralsXZH.zip
+          if-no-files-found: error

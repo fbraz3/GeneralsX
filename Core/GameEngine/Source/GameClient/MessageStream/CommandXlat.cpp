@@ -86,8 +86,10 @@
 
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameInfo.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
+#endif
 
 #include "WW3D2/ww3d.h"
 
@@ -4158,8 +4160,10 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			{
 				ToggleDiplomacy( FALSE );
 			}
+#if defined(SAGE_USE_GAMESPY)
 			else if( TheShell && TheShell->isShellActive() && TheGameSpyBuddyMessageQueue)
 				GameSpyToggleOverlay(GSOVERLAY_BUDDY);
+#endif
 			disp = DESTROY_MESSAGE;
 			break;
 

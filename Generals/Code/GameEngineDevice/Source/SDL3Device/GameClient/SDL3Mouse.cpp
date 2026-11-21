@@ -299,7 +299,9 @@ AnimatedCursor* SDL3Mouse::loadCursorFromFile(const char* filepath)
 				}
 
 				// GeneralsX @bugfix felipebraz 28/04/2026 Use SDL native animated cursor to ensure frame playback.
+#if !defined(__EMSCRIPTEN__)
 				cursor->m_cursor = SDL_CreateAnimatedCursor(frame_infos, frame_index, hot_spot_x, hot_spot_y);
+#endif
 				if (!cursor->m_cursor)
 				{
 					DEBUG_LOG(("SDL3Mouse::loadCursorFromFile: SDL_CreateAnimatedCursor failed [%s]", SDL_GetError()));
@@ -458,6 +460,14 @@ void SDL3Mouse::setCursor(MouseCursor cursor)
 		return;	//stop messing with mouse cursor if we don't have focus.
 
 	setCursorDirection(cursor);
+
+#if defined(__EMSCRIPTEN__)
+	// Emscripten's SDL_SetCursor is a no-op until the canvas has mouse focus; do not cache m_lastSetCursor before then.
+	if (SDL_GetMouseFocus() == nullptr)
+	{
+		return;
+	}
+#endif
 
 	if (cursor == m_lastSetCursor && m_directionFrame == m_lastSetDirectionFrame)
 	{

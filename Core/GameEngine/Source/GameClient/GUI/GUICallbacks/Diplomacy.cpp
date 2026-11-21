@@ -54,8 +54,10 @@
 #include "GameLogic/VictoryConditions.h"
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkInterface.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/BuddyDefs.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif
 
 
 //-------------------------------------------------------------------------------------------------
@@ -89,10 +91,12 @@ static Int slotNumInRow[MAX_SLOTS];
 static WindowLayout *theLayout = nullptr;
 static GameWindow *theWindow = nullptr;
 static AnimateWindowManager *theAnimateWindowManager = nullptr;
+#if defined(SAGE_USE_GAMESPY)
 WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 														 WindowMsgData mData1, WindowMsgData mData2);
 void InitBuddyControls(Int type);
 void updateBuddyInfo();
+#endif
 static void grabWindowPointers()
 {
 	for (Int i=0; i<MAX_SLOTS; ++i)
@@ -266,6 +270,7 @@ void ShowDiplomacy( Bool immediate )
 	grabWindowPointers();
 	PopulateInGameDiplomacyPopup();
 
+#if defined(SAGE_USE_GAMESPY)
 	if(TheGameSpyInfo && TheGameSpyInfo->getLocalProfileID() != 0)
 	{
 		radioButtonInGame->winHide(FALSE);
@@ -274,6 +279,7 @@ void ShowDiplomacy( Bool immediate )
 		PopulateOldBuddyMessages();
 		updateBuddyInfo();
 	}
+#endif
 
 }
 
@@ -286,7 +292,9 @@ void ResetDiplomacy()
 		TheInGameUI->unregisterWindowLayout(theLayout);
 		theLayout->destroyWindows();
 		deleteInstance(theLayout);
+#if defined(SAGE_USE_GAMESPY)
 		InitBuddyControls(-1);
+#endif
 		theLayout = nullptr;
 	}
 	theWindow = nullptr;
@@ -379,10 +387,12 @@ WindowMsgHandledType DiplomacyInput( GameWindow *window, UnsignedInt msg,
 WindowMsgHandledType DiplomacySystem( GameWindow *window, UnsignedInt msg,
 																			 WindowMsgData mData1, WindowMsgData mData2 )
 {
+#if defined(SAGE_USE_GAMESPY)
 	if(BuddyControlSystem(window, msg, mData1, mData2) == MSG_HANDLED)
 	{
 		return MSG_HANDLED;
 	}
+#endif
 	switch( msg )
 	{
 		//---------------------------------------------------------------------------------------------

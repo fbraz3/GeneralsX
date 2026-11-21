@@ -615,6 +615,13 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 	extern SDL_Window* TheSDL3Window;
 	if (!TheSDL3Window) return;
 
+#if defined(__EMSCRIPTEN__)
+	if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
+		fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+	}
+	return;
+#endif
+
 	if (!windowed) {
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
 			fprintf(stderr, "WARNING: SDL_SetWindowFullscreen(false) failed: %s\n", SDL_GetError());

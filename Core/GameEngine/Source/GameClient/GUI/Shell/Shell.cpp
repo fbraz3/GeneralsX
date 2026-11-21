@@ -39,8 +39,10 @@
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ShellMenuScheme.h"
 #include "GameLogic/GameLogic.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/PeerDefsImplementation.h"
+#endif
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 Shell *TheShell = nullptr;  ///< the shell singleton definition
@@ -355,8 +357,10 @@ Bool Shell::push( AsciiString filename, Bool shutdownImmediate )
 	// sanity
 	if( filename.isEmpty() )
 		return FALSE;
+#if defined(SAGE_USE_GAMESPY)
 	if(TheGameSpyInfo)
 			GameSpyCloseAllOverlays();
+#endif
 
 
 #ifdef DEBUG_LOGGING
@@ -428,8 +432,10 @@ Bool Shell::push( AsciiString filename, Bool shutdownImmediate )
 void Shell::pop()
 {
 	WindowLayout *screen = top();
+#if defined(SAGE_USE_GAMESPY)
 	if(TheGameSpyInfo)
 			GameSpyCloseAllOverlays();
+#endif
 
 
 	// sanity
@@ -721,8 +727,10 @@ Bool Shell::doPush( AsciiString layoutFile, Bool restoreTopOnFail )
 	fprintf(stderr, "DEBUG: Shell::doPush() called with layoutFile='%s'\n", layoutFile.str());
 	fflush(stderr);
 
+#if defined(SAGE_USE_GAMESPY)
 	if(TheGameSpyInfo)
 			GameSpyCloseAllOverlays();
+#endif
 	WindowLayout *newScreen;
 
 	// create new layout and load from window manager

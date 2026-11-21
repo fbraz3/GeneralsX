@@ -92,13 +92,15 @@
 #include "GameClient/CampaignManager.h"
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/VideoPlayer.h"
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/GameResultsThread.h"
-#include "GameNetwork/NetworkDefs.h"
-#include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#endif
+#include "GameNetwork/NetworkDefs.h"
+#include "GameNetwork/LANAPICallbacks.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/ChallengeGenerals.h"
 
@@ -289,10 +291,12 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	//Play music after subsystems get reset including the audio...
 	g_playMusic = TRUE;
 
+#if defined(SAGE_USE_GAMESPY)
 	if (TheGameSpyInfo)
 	{
 		DEBUG_LOG(("ScoreScreenInit(): TheGameSpyInfo->stuff(%s/%s/%s)", TheGameSpyInfo->getLocalBaseName().str(), TheGameSpyInfo->getLocalEmail().str(), TheGameSpyInfo->getLocalPassword().str()));
 	}
+#endif
 
 	DontShowMainMenu = TRUE; //KRIS
 	buttonIsFinishCampaign = FALSE;
@@ -627,7 +631,9 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if ( controlID == buttonBuddiesID )
 			{
+#if defined(SAGE_USE_GAMESPY)
 				GameSpyToggleOverlay( GSOVERLAY_BUDDY );
+#endif
 			}
 			else if ( controlID == buttonSaveReplayID )
 			{
@@ -655,6 +661,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 					}
 					//add the gamespy chat request here
 			}
+#if defined(SAGE_USE_GAMESPY)
 			for(Int i = 0; i < MAX_SLOTS; ++i)
 			{
 				AsciiString name;
@@ -686,6 +693,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 					}
 				}
 			}
+#endif
 
 			break;
 		}
@@ -1185,6 +1193,7 @@ void initInternetMultiPlayer()
 	if (chatBoxBorder)
 		chatBoxBorder->winHide(FALSE);
 
+#if defined(SAGE_USE_GAMESPY)
 	if(TheGameSpyInfo && TheGameSpyInfo->getLocalProfileID() ==0)
 		buttonBuddies->winHide(TRUE);
 	else
@@ -1198,6 +1207,10 @@ void initInternetMultiPlayer()
 	strcpy(req.arg.status.statusString, "Online");
 	strcpy(req.arg.status.locationString, "");
 	TheGameSpyBuddyMessageQueue->addRequest(req);
+#else
+	if (buttonBuddies)
+		buttonBuddies->winHide(TRUE);
+#endif
 }
 
 /** Special Init path for making this a Multiplayer Score Screen(Replay) */
@@ -1378,6 +1391,7 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 	}
 }
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 static void updateMPBattleHonors(Int& honors, PSPlayerStats& stats)
 {
 	DEBUG_LOG(("Updating MP battle honors"));
@@ -1456,6 +1470,7 @@ static void updateMPBattleHonors(Int& honors, PSPlayerStats& stats)
 	//	BATTLE_HONOR_CAMPAIGN_CHINA	= 0x0001000,
 	//	BATTLE_HONOR_CAMPAIGN_GLA  	= 0x0002000,
 }
+#endif
 
 // challenge medals are beating 1-7 Brutal AIs
 static void updateChallengeMedals(Int& medals)
@@ -1632,7 +1647,12 @@ void populatePlayerInfo( Player *player, Int pos)
 				{
 					for( UnsignedInt i = 0; i < info.numTips; i++ )
 					{
-						GadgetListBoxAddEntryText( listboxAcademyWindowScoreScreen, info.advice[ i ],	GameSpyColor[GSCOLOR_DEFAULT], -1 );
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
+						Color tipColor = GameSpyColor[GSCOLOR_DEFAULT];
+#else
+						Color tipColor = GameMakeColor(255, 255, 255, 255);
+#endif
+						GadgetListBoxAddEntryText( listboxAcademyWindowScoreScreen, info.advice[ i ],	tipColor, -1 );
 					}
 				}
 			}
@@ -1751,6 +1771,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 		stats.write();
 	}
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	if ( screenType == SCORESCREEN_INTERNET )
 	{
 		DEBUG_LOG(("populatePlayerInfo() - SCORESCREEN_INTERNET"));
@@ -2157,6 +2178,7 @@ winName.format("ScoreScreen.wnd:StaticTextScore%d", pos);
 			}
 		}
 	}
+#endif
 }
 
 /** We Grab information about the players differently in Multiplayer.  We only want the players

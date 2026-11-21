@@ -30,7 +30,9 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(SAGE_USE_GAMESPY)
 #include "gamespy/ghttp/ghttp.h"
+#endif
 
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -62,16 +64,22 @@
 #include "GameClient/GameClient.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpyOverlay.h"
+#endif
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/ChallengeGenerals.h"
 
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
+#endif
 
 #include "GameNetwork/DownloadManager.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
+#endif
 
 #include "GameClient/InGameUI.h"
 
@@ -636,9 +644,17 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
 	buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCustomMissionID );
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
+#if !defined(SAGE_USE_GAMESPY) && !defined(SAGE_USE_NGMP)
+	if (buttonOnline)
+		buttonOnline->winEnable(FALSE);
+#endif
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
 	buttonExit = TheWindowManager->winGetWindowFromId( parentMainMenu, exitID );
+#if defined(__EMSCRIPTEN__)
+	if (buttonExit)
+		buttonExit->winHide(TRUE);
+#endif
 	buttonMOTD = TheWindowManager->winGetWindowFromId( parentMainMenu, motdID );
 	buttonWorldBuilder = TheWindowManager->winGetWindowFromId( parentMainMenu, worldBuilderID );
 	buttonReplay = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonReplayID );
@@ -758,6 +774,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	UpdateChecker::start();
 #endif
 
+#if defined(SAGE_USE_GAMESPY)
 	if (TheGameSpyPeerMessageQueue && !TheGameSpyPeerMessageQueue->isConnected())
 	{
 		DEBUG_LOG(("Tearing down GameSpy from MainMenuInit()"));
@@ -765,6 +782,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 		TearDownGameSpy();
 #endif
 	}
+#endif
 	if (TheMapCache)
 		TheMapCache->updateCache();
 
@@ -842,7 +860,9 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 #endif
 #endif
 
+#if defined(SAGE_USE_GAMESPY)
 	CancelPatchCheckCallback();
+#endif
 
 	// if we are shutting down for an immediate pop, skip the animations
 	Bool popImmediate = *(Bool *)userData;
@@ -871,7 +891,11 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 //		localAnimateWindowManager->reverseAnimateWindow();
 }
 
+#if !defined(SAGE_USE_GAMESPY) && !defined(SAGE_USE_NGMP)
+Bool DontShowMainMenu = FALSE;
+#else
 extern Bool DontShowMainMenu;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 //Allows the user to confirm the change, goes back to the previous mode
@@ -1192,14 +1216,20 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 //			initialGadgetDelay--;
 //	}
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	if (raiseMessageBoxes)
 	{
 		RaiseGSMessageBox();
 		raiseMessageBoxes = FALSE;
 	}
+#endif
 
+#if defined(SAGE_USE_GAMESPY)
 	HTTPThinkWrapper();
 	GameSpyUpdateOverlays();
+#elif defined(SAGE_USE_NGMP)
+	GameSpyUpdateOverlays();
+#endif
 //	if(localAnimateWindowManager)
 //		localAnimateWindowManager->update();
 //	if(localAnimateWindowManager && pendingDropDown != DROPDOWN_NONE && localAnimateWindowManager->isFinished())
@@ -1320,19 +1350,23 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 		//---------------------------------------------------------------------------------------------
 		case GWM_CREATE:
 		{
+#if defined(SAGE_USE_GAMESPY)
 			ghttpStartup();
+#endif
 			break;
 		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
+#if defined(SAGE_USE_GAMESPY)
 			ghttpCleanup();
 			DEBUG_LOG(("Tearing down GameSpy from MainMenuSystem(GWM_DESTROY)"));
 #ifndef SAGE_USE_NGMP
 			TearDownGameSpy();
 #endif
 			StopAsyncDNSCheck(); // kill off the async DNS check thread in case it is still running
+#endif
 			break;
 
 		}
@@ -1798,7 +1832,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
 					NGMP_OnlineServicesManager::getInstance().beginLogin();
 				}
-#else
+#elif defined(SAGE_USE_GAMESPY)
 				StartPatchCheck();
 #endif
 //				localAnimateWindowManager->reverseAnimateWindow();
@@ -1857,7 +1891,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #ifdef SAGE_UPDATE_CHECK
 				// GeneralsX @feature BenderAI 21/04/2026 Open GitHub releases page instead of legacy GameSpy patch download
 				SDL_OpenURL("https://github.com/fbraz3/GeneralsX/releases");
-#else
+#elif defined(SAGE_USE_GAMESPY)
 				StartDownloadingPatches();
 #endif
 			}

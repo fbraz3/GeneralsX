@@ -28,6 +28,15 @@ if(SAGE_USE_DX8)
   FetchContent_MakeAvailable(dx8)
   message(STATUS "Using DirectX 8 SDK (Windows native)")
 
+elseif(SAGE_USE_WEBGPU)
+  # GeneralsX @feature Reuse only Direct3D 8 API headers for the WebGPU backend.
+  FetchContent_Declare(
+    dxvk
+    URL https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-native-2.6-steamrt-sniper.tar.gz
+  )
+  FetchContent_MakeAvailable(dxvk)
+  message(STATUS "Using DXVK Direct3D 8 headers with the WebGPU backend")
+
 elseif(APPLE AND SAGE_USE_MOLTENVK)
   # macOS: Build DXVK 2.6 from source using Meson + MoltenVK
   # GeneralsX @build BenderAI 24/02/2026 - Phase 5 macOS port (Session 61)

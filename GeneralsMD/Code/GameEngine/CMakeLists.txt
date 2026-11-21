@@ -1160,6 +1160,15 @@ if(SAGE_USE_NGMP)
     )
 endif()
 
+if(NOT SAGE_USE_GAMESPY AND NOT SAGE_USE_NGMP)
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/WOL")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "Source/GameNetwork/GameSpy")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/NetworkDirectConnect.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupHostGame.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupJoinGame.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupLadderSelect.cpp$")
+endif()
+
 add_library(z_gameengine STATIC)
 
 target_sources(z_gameengine PRIVATE ${GAMEENGINE_SRC})

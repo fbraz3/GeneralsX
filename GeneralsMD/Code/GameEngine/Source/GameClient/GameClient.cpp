@@ -114,6 +114,7 @@ GameClient::GameClient()
 	TheDrawGroupInfo = new DrawGroupInfo;
 
 	m_intro = nullptr;
+	m_drawingEnabled = TRUE;
 }
 
 //std::vector<std::string>	preloadTextureNamesGlobalHack;
@@ -590,7 +591,10 @@ void GameClient::update()
 	{
 		// redraw all views, update the GUI
 		TheDisplay->UPDATE();
-		TheDisplay->DRAW();
+		if (m_drawingEnabled)
+		{
+			TheDisplay->DRAW();
+		}
 		return;
 	}
 
@@ -727,7 +731,10 @@ void GameClient::update()
 	// redraw all views, update the GUI
 	//if(TheGameLogic->getFrame() >= 2)
 
-		TheDisplay->DRAW();
+		if (m_drawingEnabled)
+		{
+			TheDisplay->DRAW();
+		}
 	}
 
 	{

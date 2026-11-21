@@ -12,8 +12,9 @@ if(SAGE_USE_NGMP)
         FetchContent_MakeAvailable(json)
     endif()
 
-    find_package(CURL REQUIRED)
-    find_package(GameNetworkingSockets CONFIG QUIET)
+    if(NOT EMSCRIPTEN)
+        find_package(CURL REQUIRED)
+        find_package(GameNetworkingSockets CONFIG QUIET)
     if(NOT GameNetworkingSockets_FOUND)
         find_package(GameNetworkingSockets QUIET)
     endif()
@@ -146,6 +147,7 @@ if(SAGE_USE_NGMP)
     if(EXISTS "/opt/homebrew/include")
         target_include_directories(core_config BEFORE INTERFACE "/opt/homebrew/include")
     endif()
+    endif() # NOT EMSCRIPTEN
 
     if(TARGET nlohmann_json::nlohmann_json)
         target_link_libraries(core_config INTERFACE nlohmann_json::nlohmann_json)
@@ -153,6 +155,7 @@ if(SAGE_USE_NGMP)
         target_link_libraries(core_config INTERFACE nlohmann_json)
     endif()
 
+    if(NOT EMSCRIPTEN)
     if(TARGET GameNetworkingSockets::GameNetworkingSockets)
         target_link_libraries(core_config INTERFACE GameNetworkingSockets::GameNetworkingSockets)
         target_compile_definitions(core_config INTERFACE SAGE_USE_GAMENETWORKINGSOCKETS=1)
@@ -212,6 +215,7 @@ if(SAGE_USE_NGMP)
 
     target_link_libraries(core_config INTERFACE ${CURL_LIBRARIES})
     target_include_directories(core_config INTERFACE ${CURL_INCLUDE_DIRS})
+    endif() # NOT EMSCRIPTEN
 
     # NGMP Server Host & Port configuration (File > Environment > Default)
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/ngmp_env.cmake")

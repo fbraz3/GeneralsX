@@ -86,6 +86,7 @@ public:
 
 protected:
 
+	void executeFrame();
 	virtual void resetSubsystems();
 
 	Bool canUpdateGameLogic(UnsignedInt logicTimeQueryFlags = 0);

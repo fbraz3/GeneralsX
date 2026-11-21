@@ -267,6 +267,10 @@ int main(int argc, char* argv[])
 		CommandLine::parseCommandLineForStartup();
 
 		// GeneralsX @bugfix Copilot 17/05/2026 Skip SDL3 window bootstrap for CLI/headless replay execution.
+#if defined(SAGE_USE_WEBGPU)
+		setenv("CNC_GENERALS_ZH_PATH", "/GeneralsZH", 0);
+		setenv("CNC_GENERALS_PATH", "/Generals", 0);
+#endif
 		const bool isHeadlessMode = (TheGlobalData != nullptr && TheGlobalData->m_headless);
 		if (isHeadlessMode) {
 			fprintf(stderr, "INFO: Headless mode detected, skipping SDL3 video/Vulkan window initialization\n");
@@ -283,6 +287,10 @@ int main(int argc, char* argv[])
 		}
 
 		// Set DXVK WSI driver before loading Vulkan
+#if defined(SAGE_USE_WEBGPU)
+		setenv("CNC_GENERALS_ZH_PATH", "/GeneralsZH", 1);
+		setenv("CNC_GENERALS_PATH", "/Generals", 1);
+#else
 		setenv("DXVK_WSI_DRIVER", "SDL3", 1);
 
 		// GeneralsX @bugfix BenderAI 06/03/2026 - Exclude LLVMpipe Vulkan ICD before loading Vulkan.
@@ -297,10 +305,16 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "WARNING: Failed to load Vulkan: %s\n", SDL_GetError());
 			fprintf(stderr, "WARNING: Continuing without Vulkan (may use software rendering)\n");
 		}
+#endif
 
-		// Create SDL3 window with Vulkan support
-		fprintf(stderr, "INFO: Creating SDL3 Vulkan window...\n");
+		// Create SDL3 window
+		fprintf(stderr, "INFO: Creating SDL3 window...\n");
+#if defined(SAGE_USE_WEBGPU)
+		// Browser canvas size is synced by WebGPUContext/W3DDisplay; avoid SDL_WINDOW_RESIZABLE so CSS letterboxing does not skew mouse scaling.
+		Uint32 windowFlags = SDL_WINDOW_HIDDEN;
+#else
 		Uint32 windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;  // Start hidden, show after D3D init
+#endif
 #ifdef __APPLE__
 		// GeneralsX @bugfix macOS HiDPI: request a native-resolution (Retina) Metal drawable so the
 		// DXVK swapchain renders at physical pixels instead of being upscaled by the compositor.
@@ -325,6 +339,7 @@ int main(int argc, char* argv[])
 		// order — not necessarily the OS primary display. On multi-monitor setups the game could open on
 		// a secondary monitor, and fullscreen then inherited that same wrong display. Pin the initial
 		// placement to the primary display while the window is still hidden, so there is no visible jump.
+#if !defined(SAGE_USE_WEBGPU)
 		{
 			const SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
 			if (primaryDisplay != 0) {
@@ -338,6 +353,7 @@ int main(int argc, char* argv[])
 				fprintf(stderr, "WARNING: SDL_GetPrimaryDisplay failed: %s\n", SDL_GetError());
 			}
 		}
+#endif
 
 		// Store window handle globally (cast SDL_Window* to HWND for compatibility)
 		ApplicationHWnd = (HWND)TheSDL3Window;

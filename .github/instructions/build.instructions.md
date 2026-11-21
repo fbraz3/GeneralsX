@@ -8,10 +8,11 @@ applyTo: 'cmake/**,CMakeLists.txt,CMakePresets.json'
 - **`vc6`** — Visual Studio 6 (C++98), 32-bit, DirectX 8 + Miles
 - **`win32`** — MSVC 2022 (C++20), experimental upstream path
 
-### Cross-Platform (SDL3 + DXVK + MiniAudio) — Active Targets
+### Cross-Platform (SDL3 + DXVK/WebGPU + MiniAudio) — Active Targets
 - **`linux64-deploy`** — GCC/Clang x86_64, Release — **PRIMARY LINUX**
 - **`linux64-testing`** — Linux debug variant
 - **`macos-vulkan`** — macOS ARM64, RelWithDebInfo — **PRIMARY MACOS**
+- **`webgpu`** — Emscripten 32-bit WebAssembly + WebGPU (`z_generals` / `GeneralsXZH`, exception to DXVK — uses `WebGPUDevice` + `web/` frontend)
 - **`mingw-w64-i686`** — exploratory MinGW-w64 cross-compile for Windows
 - **`windows64-deploy`** — planned MinGW-w64 x86_64 (issue #29, not active)
 
@@ -29,6 +30,10 @@ cmake --build build/linux64-deploy --target z_generals
 # macOS
 cmake --preset macos-vulkan
 cmake --build build/macos-vulkan --target z_generals
+
+# WebAssembly + WebGPU (Emscripten)
+cmake --preset webgpu
+cmake --build build/webgpu --target z_generals
 
 # Windows cross-build (exploratory)
 cmake --preset mingw-w64-i686

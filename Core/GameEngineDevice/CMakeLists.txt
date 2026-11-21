@@ -236,6 +236,12 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
     corei_gameengine_public
 )
 
+if(NOT SAGE_USE_OPENAL)
+    target_sources(corei_gameenginedevice_private INTERFACE
+        Include/NullAudioDevice/NullAudioManager.h
+    )
+endif()
+
 if(WIN32)
     target_link_libraries(corei_gameenginedevice_public INTERFACE
         deps_bink
@@ -312,4 +318,33 @@ if(RTS_BUILD_OPTION_FFMPEG)
         target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
         target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
     endif()
+endif()
+
+# GeneralsX @feature Build reusable WebGPU context and its browser acceptance probe.
+if(SAGE_USE_WEBGPU)
+    add_library(webgpu_context STATIC
+        Include/WebGPUDevice/WebGPUD3D8.h
+        Include/WebGPUDevice/WebGPUContext.h
+        Source/WebGPUDevice/WebGPUD3D8.cpp
+        Source/WebGPUDevice/WebGPUContext.cpp
+        Source/WebGPUDevice/WebGPUBrowserBridge.cpp
+    )
+    target_include_directories(webgpu_context PUBLIC
+        Include
+        ${dxvk_SOURCE_DIR}/include/dxvk
+        ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
+        ${CMAKE_SOURCE_DIR}/Dependencies/Utility
+    )
+    target_compile_features(webgpu_context PRIVATE cxx_std_20)
+    target_link_libraries(webgpu_context PUBLIC webgpu_runtime)
+
+    add_executable(webgpu_context_probe
+        Source/WebGPUDevice/WebGPUContextProbe.cpp
+    )
+    target_compile_features(webgpu_context_probe PRIVATE cxx_std_20)
+    target_link_libraries(webgpu_context_probe PRIVATE webgpu_context)
+    set_target_properties(webgpu_context_probe PROPERTIES
+        OUTPUT_NAME WebGPUContextProbe
+        SUFFIX ".html"
+    )
 endif()

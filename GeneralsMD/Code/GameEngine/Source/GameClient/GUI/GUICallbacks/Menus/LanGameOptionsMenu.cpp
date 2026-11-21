@@ -50,7 +50,7 @@
 #include "GameClient/Mouse.h"
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/ChallengeGenerals.h"
-#include "GameNetwork/GameSpy/LobbyUtils.h"
+#include "GameNetwork/LobbyTooltips.h"
 
 #include "GameNetwork/FirewallHelper.h"
 #include "GameNetwork/LANAPI.h"
@@ -65,7 +65,6 @@ extern char *LANnextScreen;
 extern Bool LANisShuttingDown;
 extern Bool LANbuttonPushed;
 extern void MapSelectorTooltip(GameWindow *window, WinInstanceData *instData,	UnsignedInt mouse);
-extern void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse);
 Color white = GameMakeColor( 255, 255, 255, 255 );
 static bool s_isIniting = FALSE;
 // window ids ------------------------------------------------------------------------------

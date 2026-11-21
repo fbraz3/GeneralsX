@@ -51,7 +51,7 @@
     #if defined(__APPLE__)
         #include <TargetConditionals.h>
     #endif
-    #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+    #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && !defined(__EMSCRIPTEN__)
         #include <fontconfig/fontconfig.h>
     #endif
 #endif

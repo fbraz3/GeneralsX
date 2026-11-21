@@ -1,0 +1,89 @@
+name: Deploy WebGPU to GitHub Pages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional release tag to deploy (leave empty to build from current branch)"
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-from-branch:
+    if: github.event_name == 'workflow_dispatch' && inputs.tag == ''
+    uses: ./.github/workflows/build-wasm.yml
+    with:
+      checkout_ref: ${{ github.ref }}
+    secrets: inherit
+
+  deploy:
+    needs: [build-from-branch]
+    if: always() && (needs.build-from-branch.result == 'success' || needs.build-from-branch.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Prepare bundle from release asset
+        if: github.event_name == 'release' || inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}"
+          mkdir -p /tmp/wasm-pages pages-dist
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "Web-WebGPU-GeneralsXZH.zip" \
+            --dir /tmp/wasm-pages
+          unzip -q /tmp/wasm-pages/Web-WebGPU-GeneralsXZH.zip -d pages-dist
+
+      - name: Prepare bundle from workflow build artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.tag == ''
+        uses: actions/download-artifact@v8
+        with:
+          name: wasm-webgpu-GeneralsXZH.zip
+          path: /tmp/wasm-pages-artifact
+
+      - name: Extract workflow build artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.tag == ''
+        run: |
+          mkdir -p pages-dist
+          unzip -q /tmp/wasm-pages-artifact/wasm-webgpu-GeneralsXZH.zip -d pages-dist
+
+      - name: Finalize GitHub Pages payload
+        run: |
+          rm -f pages-dist/serve-webgpu.py
+          touch pages-dist/.nojekyll
+          for f in \
+            pages-dist/index.html \
+            pages-dist/coi-serviceworker.js \
+            pages-dist/GeneralsXZH.js \
+            pages-dist/GeneralsXZH.wasm \
+            pages-dist/GeneralsXZH.data \
+            pages-dist/generalsx.big; do
+            test -s "$f" || { echo "Missing or empty GitHub Pages file: $f"; exit 1; }
+          done
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

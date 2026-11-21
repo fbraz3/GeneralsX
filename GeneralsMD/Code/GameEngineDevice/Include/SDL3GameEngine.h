@@ -120,6 +120,13 @@ protected:
 	void handleMouseButtonEvent(const SDL_MouseButtonEvent& event);
 	void handleMouseWheelEvent(const SDL_MouseWheelEvent& event);  //TheSuperHackers @build 10/02/2026 Bender
 	void handleWindowEvent(const SDL_WindowEvent& event);
+#if defined(__EMSCRIPTEN__)
+public:
+	// Called by GeneralsXPump so a hidden tab's worker can keep driving frames (window timers
+	// are throttled there); reentry is guarded inside.
+	static void browserFrame(void* engine);
+protected:
+#endif
 };
 
 #endif // !_WIN32

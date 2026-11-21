@@ -15,6 +15,12 @@ option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
 option(SAGE_USE_OPENAL "Use OpenAL for audio backend (Linux/macOS) [LEGACY/DEPRECATED]" OFF)
 option(SAGE_USE_MINIAUDIO "Use MiniAudio for audio backend (Linux/macOS)" OFF)
+option(SAGE_USE_GAMESPY "Enable legacy GameSpy networking" ON)
+option(SAGE_USE_WEBGPU "Use WebGPU through Emscripten" OFF)
+
+if(SAGE_USE_WEBGPU AND NOT EMSCRIPTEN)
+    message(FATAL_ERROR "SAGE_USE_WEBGPU requires the Emscripten toolchain")
+endif()
 
 # GeneralsX @feature BenderAI 21/04/2026 In-game update checker via GitHub Releases API (SDL3+libcurl builds only)
 # Default ON when SDL3 is enabled, but only if the user has not explicitly set SAGE_UPDATE_CHECK.
@@ -51,6 +57,8 @@ add_feature_info(DeepCRC RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on
 add_feature_info(SDL3Windowing SAGE_USE_SDL3 "Using SDL3 for windowing (Linux/macOS)")
 add_feature_info(OpenALAudio SAGE_USE_OPENAL "Using OpenAL for audio (Legacy/Deprecated)")
 add_feature_info(MiniAudioAudio SAGE_USE_MINIAUDIO "Using MiniAudio for audio (Linux/macOS - Primary)")
+add_feature_info(GameSpySupport SAGE_USE_GAMESPY "Using legacy GameSpy networking")
+add_feature_info(WebGPURenderer SAGE_USE_WEBGPU "Using WebGPU renderer through Emscripten")
 add_feature_info(UpdateCheck SAGE_UPDATE_CHECK "In-game update check via GitHub Releases API")
 add_feature_info(SagePatch RTS_BUILD_OPTION_SAGE_PATCH "Build SagePatch QoL extras (macOS)")
 add_feature_info(Tests RTS_BUILD_OPTION_TESTS "Building the unit tests")
@@ -155,6 +163,15 @@ add_feature_info(NGMPProtocol SAGE_USE_NGMP "Using NGMP multiplayer protocol (Ge
 
 if(SAGE_USE_NGMP)
     target_compile_definitions(core_config INTERFACE SAGE_USE_NGMP)
+endif()
+
+if(SAGE_USE_GAMESPY)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_GAMESPY)
+endif()
+
+if(SAGE_USE_WEBGPU)
+    target_compile_definitions(core_config INTERFACE SAGE_USE_WEBGPU)
+    target_link_libraries(core_config INTERFACE webgpu_runtime)
 endif()
 
 if(SAGE_USE_GLM)

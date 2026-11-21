@@ -1566,8 +1566,10 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 			*exists = FALSE;
 
 		// See if we already have the missing string
+		AsciiString missingLabel;
+		missingLabel.format("MISSING: '%s'", label);
 		UnicodeString missingString;
-		missingString.format(L"MISSING: '%hs'", label);
+		missingString.translate(missingLabel);
 
 		NoString *noString = m_noStringList;
 

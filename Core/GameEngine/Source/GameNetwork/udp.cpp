@@ -39,6 +39,22 @@
 typedef int socklen_t;
 #endif
 
+#if defined(__EMSCRIPTEN__)
+// GeneralsX @refactor Meeseeks 17/11/2026 Delegate Emscripten WebSocket LAN bridge to Core/GameEngineDevice/WebGPUDevice/WebGPUBrowserBridge.cpp.
+extern "C" {
+UnsignedInt GeneralsXWebLanVirtualIP();
+Int GeneralsXWebLanBind(UnsignedInt ip, UnsignedShort port);
+void GeneralsXWebLanClose(UnsignedShort port);
+Int GeneralsXWebLanWrite(const unsigned char *message, UnsignedInt length, UnsignedInt ip, UnsignedShort port, UnsignedShort localPort);
+Int GeneralsXWebLanRead(unsigned char *message, UnsignedInt capacity, UnsignedShort localPort, UnsignedInt *sourceIP, UnsignedShort *sourcePort);
+}
+
+UnsignedInt GetWebLanVirtualIP()
+{
+	return GeneralsXWebLanVirtualIP();
+}
+#endif
+
 //-------------------------------------------------------------------------
 
 #ifdef DEBUG_LOGGING
@@ -120,12 +136,20 @@ AsciiString GetWSAErrorString( Int error )
 UDP::UDP()
 {
   fd=0;
+#if defined(__EMSCRIPTEN__)
+  myPort = 0;
+#endif
 }
 
 UDP::~UDP()
 {
+#if defined(__EMSCRIPTEN__)
+	if (myPort)
+		GeneralsXWebLanClose(myPort);
+#else
 	if (fd)
 		closesocket(fd);
+#endif
 }
 
 Int UDP::Bind(const char *Host,UnsignedShort port)
@@ -147,6 +171,13 @@ Int UDP::Bind(const char *Host,UnsignedShort port)
 //   Well... you can get implicit binding if you pass 0 for either arg
 Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
 {
+#if defined(__EMSCRIPTEN__)
+	myIP = IP ? IP : GetWebLanVirtualIP();
+	myPort = Port;
+	fd = Port;
+	m_lastError = GeneralsXWebLanBind(myIP, myPort);
+	return m_lastError == 0 ? OK : UNKNOWN;
+#else
   int retval;
   int status;
   UnsignedInt ipHostOrder = IP;
@@ -206,6 +237,7 @@ Int UDP::Bind(UnsignedInt IP,UnsignedShort Port)
     fprintf(stderr,"Couldn't set nonblocking mode!\n");
 
   return(OK);
+#endif
 }
 
 Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
@@ -219,6 +251,9 @@ Int UDP::getLocalAddr(UnsignedInt &ip, UnsignedShort &port)
 // private function
 Int UDP::SetBlocking(Int block)
 {
+#if defined(__EMSCRIPTEN__)
+	return OK;
+#else
   #ifdef _WIN32
    unsigned long flag=1;
    if (block)
@@ -242,11 +277,18 @@ Int UDP::SetBlocking(Int block)
    }
    return(OK);
   #endif
+#endif
 }
 
 
 Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedShort port)
 {
+#if defined(__EMSCRIPTEN__)
+	if ((IP == 0) || (port == 0)) return ADDRNOTAVAIL;
+	const Int written = GeneralsXWebLanWrite(msg, len, IP, port, myPort);
+	if (written < 0) m_lastError = EAGAIN;
+	return written;
+#else
   Int retval;
   struct sockaddr_in to;
 
@@ -281,10 +323,23 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 	}
 
   return(retval);
+#endif
 }
 
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
+#if defined(__EMSCRIPTEN__)
+	UnsignedInt sourceIP = 0;
+	UnsignedShort sourcePort = 0;
+	const Int received = GeneralsXWebLanRead(msg, len, myPort, &sourceIP, &sourcePort);
+	if (received > 0 && from != nullptr) {
+		memset(from, 0, sizeof(*from));
+		from->sin_family = AF_INET;
+		from->sin_addr.s_addr = htonl(sourceIP);
+		from->sin_port = htons(sourcePort);
+	}
+	return received;
+#else
   Int retval;
   // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
   socklen_t alen=sizeof(sockaddr_in);
@@ -336,6 +391,7 @@ Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 		}
   }
   return(retval);
+#endif
 }
 
 
@@ -509,6 +565,9 @@ int UDP::Wait(Int sec,Int usec,fd_set &givenSet,fd_set &returnSet)
 
 Int UDP::SetInputBuffer(UnsignedInt bytes)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_RCVBUF,
@@ -517,12 +576,16 @@ Int UDP::SetInputBuffer(UnsignedInt bytes)
      return(TRUE);
    else
      return(FALSE);
+#endif
 }
 
 // Same note goes for the output buffer
 
 Int UDP::SetOutputBuffer(UnsignedInt bytes)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
    int retval,arg=bytes;
 
    retval=setsockopt(fd,SOL_SOCKET,SO_SNDBUF,
@@ -531,12 +594,16 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
      return(TRUE);
    else
      return(FALSE);
+#endif
 }
 
 // Get the system buffer sizes
 
 int UDP::GetInputBuffer()
 {
+#if defined(__EMSCRIPTEN__)
+	return 4 * 1024 * 1024;
+#else
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -544,11 +611,15 @@ int UDP::GetInputBuffer()
    retval=getsockopt(fd,SOL_SOCKET,SO_RCVBUF,
      (char *)&arg,&len);
    return(arg);
+#endif
 }
 
 
 int UDP::GetOutputBuffer()
 {
+#if defined(__EMSCRIPTEN__)
+	return 4 * 1024 * 1024;
+#else
    int retval,arg=0;
    // GeneralsX @bugfix BenderAI 13/02/2026 Use socklen_t for POSIX socket functions (fighter19 pattern)
    socklen_t len=sizeof(int);
@@ -556,10 +627,14 @@ int UDP::GetOutputBuffer()
    retval=getsockopt(fd,SOL_SOCKET,SO_SNDBUF,
      (char *)&arg,&len);
    return(arg);
+#endif
 }
 
 Int UDP::AllowBroadcasts(Bool status)
 {
+#if defined(__EMSCRIPTEN__)
+	return TRUE;
+#else
 	int retval;
 	BOOL val = status;
 	retval = setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char *)&val, sizeof(BOOL));
@@ -567,4 +642,5 @@ Int UDP::AllowBroadcasts(Bool status)
 		return TRUE;
 	else
 		return FALSE;
+#endif
 }

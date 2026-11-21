@@ -33,6 +33,23 @@
 #include "Common/INI.h"
 #include "Common/MultiplayerSettings.h"
 
+#if !defined(SAGE_USE_GAMESPY) && !defined(SAGE_USE_NGMP)
+namespace
+{
+	const FieldParse ignoredOnlineChatColorFieldParse[] =
+	{
+		{ nullptr, INI::parseColorInt, nullptr, 0 }
+	};
+}
+
+// GeneralsX @port Codex 04/08/2026 Consume optional GameSpy color data without enabling its retired transport.
+void INI::parseOnlineChatColorDefinition(INI* ini)
+{
+	Color ignoredColor = 0;
+	ini->initFromINI(&ignoredColor, ignoredOnlineChatColorFieldParse);
+}
+#endif
+
 void INI::parseMultiplayerSettingsDefinition( INI* ini )
 {
 	if( TheMultiplayerSettings )

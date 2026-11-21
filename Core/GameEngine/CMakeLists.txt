@@ -562,6 +562,7 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/NetPacket.h
     Include/GameNetwork/NetPacketStructs.h
     Include/GameNetwork/NetworkDefs.h
+    Include/GameNetwork/LobbyTooltips.h
     Include/GameNetwork/NetworkInterface.h
     Include/GameNetwork/networkutil.h
     Include/GameNetwork/RankPointValue.h
@@ -1173,11 +1174,21 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/Network.cpp
     Source/GameNetwork/NetworkUtil.cpp
     Source/GameNetwork/Transport.cpp
+    Source/GameNetwork/LobbyTooltips.cpp
     Source/GameNetwork/udp.cpp
     Source/GameNetwork/User.cpp
     Source/GameNetwork/WOLBrowser/WebBrowser.cpp
     Source/Precompiled/PreRTS.cpp
 )
+
+if(NOT SAGE_USE_GAMESPY AND NOT SAGE_USE_NGMP)
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "GameNetwork/GameSpy")
+    list(REMOVE_ITEM GAMEENGINE_SRC
+        Source/GameNetwork/FirewallHelper.cpp
+        Source/GameNetwork/NAT.cpp
+    )
+    list(APPEND GAMEENGINE_SRC Source/GameNetwork/GameSpy/Thread/ThreadUtils.cpp)
+endif()
 
 
 add_library(corei_gameengine_private INTERFACE)
@@ -1213,7 +1224,7 @@ target_link_libraries(corei_gameengine_public INTERFACE
     corei_platform
     d3d8lib
     deps_dbghelp
-    gamespy::gamespy
+    $<$<BOOL:${SAGE_USE_GAMESPY}>:gamespy::gamespy>
     stlport
 )
 

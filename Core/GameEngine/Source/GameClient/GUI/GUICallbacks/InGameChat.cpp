@@ -154,10 +154,12 @@ Bool IsInGameChatActive() {
 }
 
 // Slash commands -------------------------------------------------------------------------
+#if defined(SAGE_USE_GAMESPY)
 extern "C" {
 int getQR2HostingStatus();
 }
 extern int isThreadHosting;
+#endif
 
 Bool handleInGameSlashCommands(UnicodeString uText)
 {
@@ -174,6 +176,7 @@ Bool handleInGameSlashCommands(UnicodeString uText)
 	remainder.nextToken(&token);
 	token.toLower();
 
+#if defined(SAGE_USE_GAMESPY)
 	if (token == "host")
 	{
 		UnicodeString s;
@@ -181,6 +184,7 @@ Bool handleInGameSlashCommands(UnicodeString uText)
 		TheInGameUI->message(s);
 		return TRUE; // was a slash command
 	}
+#endif
 
 	return FALSE; // not a slash command
 }

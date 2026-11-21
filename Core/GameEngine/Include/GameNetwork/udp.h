@@ -121,3 +121,7 @@ class UDP
 #ifdef DEBUG_LOGGING
 AsciiString GetWSAErrorString( Int error );
 #endif
+
+#if defined(__EMSCRIPTEN__)
+UnsignedInt GetWebLanVirtualIP();
+#endif
