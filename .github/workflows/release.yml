@@ -18,6 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -474,6 +475,14 @@ jobs:
             "${{ steps.assets.outputs.macos_asset }}" \
             "${{ steps.assets.outputs.windows_generals_asset }}" \
             "${{ steps.assets.outputs.windows_asset }}"
+
+      - name: Dispatch GitHub Pages deployment
+        if: success() && inputs.release_mode == 'New Release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
+        run: |
+          gh workflow run deploy-pages.yml --repo "${{ github.repository }}" -f tag="$VERSION"
 
       - name: Summary
         env:
