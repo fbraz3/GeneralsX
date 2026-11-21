@@ -476,14 +476,6 @@ jobs:
             "${{ steps.assets.outputs.windows_generals_asset }}" \
             "${{ steps.assets.outputs.windows_asset }}"
 
-      - name: Dispatch GitHub Pages deployment
-        if: success() && inputs.release_mode == 'New Release'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.create-tag.outputs.release_version }}
-        run: |
-          gh workflow run deploy-pages.yml --repo "${{ github.repository }}" -f tag="$VERSION"
-
       - name: Summary
         env:
           VERSION: ${{ needs.create-tag.outputs.release_version }}
@@ -507,6 +499,18 @@ jobs:
           else
             echo "Release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  deploy-pages:
+    if: inputs.release_mode == 'New Release'
+    needs: [create-tag, prepare-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch GitHub Pages deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
+        run: |
+          gh workflow run deploy-pages.yml --repo "${{ github.repository }}" -f tag="$VERSION"
 
   # GeneralsX @build Meeseeks 14/09/2026 Roll back the pushed tag when anything downstream of create-tag fails or is cancelled,
   # including prepare-release, preventing orphaned tags from advancing SemVer on subsequent pipeline runs.
