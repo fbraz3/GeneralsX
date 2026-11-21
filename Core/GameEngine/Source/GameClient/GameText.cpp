@@ -1552,6 +1552,15 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 			return s_postProc;
 		}
 
+		// GeneralsX @feature fbraz3 20/11/2026 Label for Command+Left-Click-Drag map panning option
+		if ( stricmp(label, "GUI:CommandDragScroll") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_cmdDragScroll(L"Command + Left-Click Drag to Pan Map (macOS)");
+			return s_cmdDragScroll;
+		}
+
 		// string not found
 		if( exists )
 			*exists = FALSE;

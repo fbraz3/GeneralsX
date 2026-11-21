@@ -47,6 +47,8 @@ static NameKeyType sliderMaxCameraHeightID = NAMEKEY_INVALID;
 static NameKeyType checkAdvancedShadowsID = NAMEKEY_INVALID;
 static NameKeyType checkAdvancedLightingID = NAMEKEY_INVALID;
 static NameKeyType checkEnablePostProcessingID = NAMEKEY_INVALID;
+// GeneralsX @feature fbraz3 20/11/2026 macOS Command+Left-Click-Drag map panning toggle
+static NameKeyType checkCommandDragScrollID = NAMEKEY_INVALID;
 
 static NameKeyType buttonDefaultsID = NAMEKEY_INVALID;
 static NameKeyType buttonAcceptID = NAMEKEY_INVALID;
@@ -57,6 +59,7 @@ static GameWindow *sliderMaxCameraHeight = nullptr;
 static GameWindow *checkAdvancedShadows = nullptr;
 static GameWindow *checkAdvancedLighting = nullptr;
 static GameWindow *checkEnablePostProcessing = nullptr;
+static GameWindow *checkCommandDragScroll = nullptr;
 
 static GameWindow *buttonDefaults = nullptr;
 static GameWindow *buttonAccept = nullptr;
@@ -144,6 +147,15 @@ static void saveOptions()
 		pref->setEnablePostProcessing(val);
 	}
 
+#ifdef __APPLE__
+	if (checkCommandDragScroll)
+	{
+		Bool val = GadgetCheckBoxIsChecked(checkCommandDragScroll);
+		TheWritableGlobalData->m_useCommandDragScroll = val;
+		pref->setCommandDragScrollEnabled(val);
+	}
+#endif
+
 	pref->write();
 }
 
@@ -164,6 +176,11 @@ static void setDefaults()
 
 	if (checkEnablePostProcessing)
 		GadgetCheckBoxSetChecked(checkEnablePostProcessing, TRUE);
+
+#ifdef __APPLE__
+	if (checkCommandDragScroll)
+		GadgetCheckBoxSetChecked(checkCommandDragScroll, TRUE);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -177,6 +194,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	checkAdvancedShadowsID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckAdvancedShadows");
 	checkAdvancedLightingID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckAdvancedLighting");
 	checkEnablePostProcessingID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckEnablePostProcessing");
+	checkCommandDragScrollID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckCommandDragScroll");
 
 	buttonDefaultsID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:ButtonDefaults");
 	buttonAcceptID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:ButtonAccept");
@@ -187,6 +205,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	checkAdvancedShadows = TheWindowManager->winGetWindowFromId(nullptr, checkAdvancedShadowsID);
 	checkAdvancedLighting = TheWindowManager->winGetWindowFromId(nullptr, checkAdvancedLightingID);
 	checkEnablePostProcessing = TheWindowManager->winGetWindowFromId(nullptr, checkEnablePostProcessingID);
+	checkCommandDragScroll = TheWindowManager->winGetWindowFromId(nullptr, checkCommandDragScrollID);
 
 	buttonDefaults = TheWindowManager->winGetWindowFromId(nullptr, buttonDefaultsID);
 	buttonAccept = TheWindowManager->winGetWindowFromId(nullptr, buttonAcceptID);
@@ -235,6 +254,15 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	if (checkEnablePostProcessing)
 		GadgetCheckBoxSetChecked(checkEnablePostProcessing, TheGlobalData->m_enablePostProcessing);
 
+	if (checkCommandDragScroll)
+	{
+#ifdef __APPLE__
+		GadgetCheckBoxSetChecked(checkCommandDragScroll, TheGlobalData->m_useCommandDragScroll);
+#else
+		checkCommandDragScroll->winHide(TRUE);
+#endif
+	}
+
 	// Localized texts
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelTitle", "GUI:GeneralsXTitle");
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelCameraTitle", "GUI:SagePatchOptions");
@@ -245,6 +273,7 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckAdvancedShadows", "GUI:AdvancedShadows");
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckAdvancedLighting", "GUI:AdvancedLighting");
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckEnablePostProcessing", "GUI:EnablePostProcessing");
+	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckCommandDragScroll", "GUI:CommandDragScroll");
 
 	setButtonTextSafe("GeneralsXMenu.wnd:ButtonDefaults", "GUI:Defaults");
 	setButtonTextSafe("GeneralsXMenu.wnd:ButtonAccept", "GUI:Accept");
@@ -272,6 +301,7 @@ void GeneralsXMenuShutdown(WindowLayout *layout, void *userData)
 	checkAdvancedShadows = nullptr;
 	checkAdvancedLighting = nullptr;
 	checkEnablePostProcessing = nullptr;
+	checkCommandDragScroll = nullptr;
 
 	buttonDefaults = nullptr;
 	buttonAccept = nullptr;

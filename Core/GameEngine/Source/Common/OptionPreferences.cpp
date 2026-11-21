@@ -229,6 +229,11 @@ Bool OptionPreferences::getCommandDragScrollEnabled() const
 	return FALSE;
 }
 
+void OptionPreferences::setCommandDragScrollEnabled(Bool val)
+{
+	(*this)["UseCommandDragScroll"] = val ? "yes" : "no";
+}
+
 Bool OptionPreferences::getRetaliationModeEnabled()
 {
 	OptionPreferences::const_iterator it = find("Retaliation");
