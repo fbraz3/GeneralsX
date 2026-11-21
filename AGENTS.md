@@ -208,6 +208,7 @@ git merge thesuperhackers/main
 ## GitHub PR/Issue Formatting
 - Use `--body-file` with real Markdown file instead of `--body`
 - Avoid literal `\n` sequences; prefer actual newlines in multi-line strings
+- Do not write `#<number>` in commit messages, PR descriptions, or comments unless linking that exact GitHub issue/PR (GitHub cross-links it permanently); number local items as `F7` or `item 7` instead
 
 ## Git Commit Standards
 - **Conventional Commits**: Format must be `<type>(optional scope): <description>`. (e.g. `fix(audio): restart sound groups in reset`)

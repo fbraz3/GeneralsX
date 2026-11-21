@@ -18,6 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -173,13 +174,6 @@ jobs:
           path: artifacts/windows-generals
           skip-decompress: true
 
-      - name: Download WebAssembly (WebGPU) artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: wasm-webgpu-GeneralsXZH.zip
-          path: artifacts/wasm
-          skip-decompress: true
-
       - name: Normalize bundle files for release assets
         id: assets
         env:
@@ -270,13 +264,6 @@ jobs:
             fi
           fi
 
-          WASM_ZIP=$(find artifacts/wasm -type f -name "*.zip" | head -1)
-          if [ -z "$WASM_ZIP" ] || [ ! -f "$WASM_ZIP" ]; then
-            echo "ERROR: WebAssembly (WebGPU) bundle zip not found in artifacts/wasm"
-            find artifacts/wasm -maxdepth 3 -type f || true
-            exit 1
-          fi
-
           if [ "$RELEASE_MODE" = "Dry Run" ]; then
             echo "Dry run enabled: skipping zip normalization to avoid large preview artifacts."
             echo "linux_generals_asset=" >> "$GITHUB_OUTPUT"
@@ -285,7 +272,6 @@ jobs:
             echo "macos_asset=" >> "$GITHUB_OUTPUT"
             echo "windows_generals_asset=" >> "$GITHUB_OUTPUT"
             echo "windows_asset=" >> "$GITHUB_OUTPUT"
-            echo "wasm_asset=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -324,15 +310,12 @@ jobs:
             (cd artifacts/windows-generals && zip -r "$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" .)
           fi
 
-          cp "$WASM_ZIP" release-assets/Web-WebGPU-GeneralsXZH.zip
-
           echo "linux_generals_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsX.flatpak" >> "$GITHUB_OUTPUT"
           echo "linux_asset=$GITHUB_WORKSPACE/release-assets/Linux-GeneralsXZH.flatpak" >> "$GITHUB_OUTPUT"
           echo "macos_generals_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsX.zip" >> "$GITHUB_OUTPUT"
           echo "macos_asset=$GITHUB_WORKSPACE/release-assets/macOS-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
           echo "windows_generals_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsX.zip" >> "$GITHUB_OUTPUT"
           echo "windows_asset=$GITHUB_WORKSPACE/release-assets/Windows-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
-          echo "wasm_asset=$GITHUB_WORKSPACE/release-assets/Web-WebGPU-GeneralsXZH.zip" >> "$GITHUB_OUTPUT"
 
       - name: Build changelog from local PRs only
         id: changelog
@@ -403,6 +386,7 @@ jobs:
             echo "* **macOS (Apple Silicon)**: Download \`macOS-GeneralsXZH.zip\` (Zero Hour) or \`macOS-GeneralsX.zip\` (Generals)."
             echo "* **Linux**: Download \`Linux-GeneralsXZH.flatpak\` (Zero Hour) or \`Linux-GeneralsX.flatpak\` (Generals)."
             echo "* **Windows**: Download \`Windows-GeneralsXZH.zip\` (Zero Hour) or \`Windows-GeneralsX.zip\` (Generals)."
+            echo "* **Browser (WebAssembly + WebGPU)**: No download needed — play **Zero Hour** single-player directly in your browser at [play.generalsx.org](https://play.generalsx.org/)."
             echo ""
             echo "👉 Follow the [Installation & Setup Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) on our Wiki to set up your original game data files."
             echo ""
@@ -486,8 +470,7 @@ jobs:
             "${{ steps.assets.outputs.macos_generals_asset }}" \
             "${{ steps.assets.outputs.macos_asset }}" \
             "${{ steps.assets.outputs.windows_generals_asset }}" \
-            "${{ steps.assets.outputs.windows_asset }}" \
-            "${{ steps.assets.outputs.wasm_asset }}"
+            "${{ steps.assets.outputs.windows_asset }}"
 
       - name: Summary
         env:
@@ -503,7 +486,6 @@ jobs:
           echo "- macOS asset: macOS-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset (Generals): Windows-GeneralsX.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "- Windows asset: Windows-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
-          echo "- WebAssembly (WebGPU) asset: Web-WebGPU-GeneralsXZH.zip" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${{ inputs.release_mode }}" = "Dry Run" ]; then
@@ -513,6 +495,18 @@ jobs:
           else
             echo "Release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  deploy-pages:
+    if: inputs.release_mode == 'New Release'
+    needs: [create-tag, prepare-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch GitHub Pages deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
+        run: |
+          gh workflow run deploy-pages.yml --repo "${{ github.repository }}" -f tag="$VERSION"
 
   # GeneralsX @build Meeseeks 14/09/2026 Roll back the pushed tag when anything downstream of create-tag fails or is cancelled,
   # including prepare-release, preventing orphaned tags from advancing SemVer on subsequent pipeline runs.

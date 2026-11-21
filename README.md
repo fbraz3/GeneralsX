@@ -5,7 +5,7 @@
 <h1 align="center">GeneralsX</h1>
 
 <p align="center">
-  <strong>Play Command & Conquer: Generals & Zero Hour on macOS, Linux, and Windows — with native cross-platform online multiplayer.</strong>
+  <strong>Play Command & Conquer: Generals & Zero Hour on macOS, Linux, and Windows (with native cross-platform online multiplayer), plus Zero Hour single-player in your browser.</strong>
 </p>
 
 <p align="center">
@@ -28,10 +28,16 @@
 - 🔊 **Updated Audio & Video**: Crystal-clear cross-platform audio powered by **MiniAudio** and full video cinematics support via FFmpeg.
 - 🎯 **100% Retail Compatibility**: Full support for original singleplayer campaigns, Skirmish vs AI, replays, and community mods.
 - 📦 **Generals & Zero Hour**: Play both the base game and the expansion from a unified, modern codebase.
+- 🌍 **Play in Your Browser**: Play **Command & Conquer: Generals Zero Hour** single-player (campaigns and Skirmish vs AI) directly in a WebGPU-capable browser at **[play.generalsx.org](https://play.generalsx.org/)** (WebAssembly + WebGPU) — no desktop installer required.
 
 ---
 
 ## 🚀 Getting Started
+
+### 🌍 Play in Your Browser (Zero Hour — Single-Player)
+No desktop installer needed — you can play **Command & Conquer: Generals Zero Hour** single-player (campaigns and Skirmish vs AI) directly in your browser via WebAssembly + WebGPU:
+
+* 🎮 **[Play Zero Hour at play.generalsx.org](https://play.generalsx.org/)** – Instant browser play (requires your own original game data files; multiplayer is currently desktop-only)
 
 ### Download & Play
 Ready-to-run releases are available for macOS, Linux, and Windows:

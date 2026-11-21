@@ -136,4 +136,4 @@ docs: update macOS build instructions for Vulkan SDK setup
 
 ---
 
-**Note**: For GeneralsX code changes, also see `.github/copilot-instructions.md` for the code annotation standard (`// GeneralsX @keyword author DD/MM/YYYY Description`), which complements commit message discipline.
+**Note**: For GeneralsX code changes, also see `AGENTS.md` and `.github/instructions/cpp-conventions.instructions.md` for the code annotation standard (`// GeneralsX @keyword author DD/MM/YYYY Description`), which complements commit message discipline.
