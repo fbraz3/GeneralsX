@@ -236,7 +236,7 @@ knowledge_base:
     enabled: true
   code_guidelines:
     enabled: true
-    file_patterns:
+    filePatterns:
       - "AGENTS.md"
       - ".github/instructions/**/*.md"
       - "CONTRIBUTING.md"

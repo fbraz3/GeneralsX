@@ -424,11 +424,7 @@ jobs:
             fi
             echo "## 📱 Ecosystem & Community Ports"
             echo ""
-            echo "If you enjoy GeneralsX, check out these community ports powered by the engine:"
-            echo ""
-            echo "* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [@ammaarreshi](https://github.com/ammaarreshi)"
-            echo "* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [@fadi-labib](https://github.com/fadi-labib)"
-            echo "* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - Browser port by [@ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)"
+            echo "If you enjoy GeneralsX, check out the community ports and forks highlighted in our [Ecosystem & Community Ports discussion](https://github.com/fbraz3/GeneralsX/discussions/436)."
             echo ""
             echo "---"
             echo ""

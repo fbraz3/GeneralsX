@@ -3,6 +3,9 @@ contact_links:
 - name: Feature Request
   url: https://github.com/fbraz3/GeneralsX/discussions/categories/ideas
   about: Share your ideas or request new features to enhance the game
+- name: Third-Party Forks & Community Ports
+  url: https://github.com/fbraz3/GeneralsX/discussions/436
+  about: Using a mobile or third-party fork? Find the right repository in our Ecosystem & Community Ports discussion
 
 #- name: Community Outpost Discord Server
 #  url: https://discord.gg/WzxQDZersE
