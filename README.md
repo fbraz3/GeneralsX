@@ -56,11 +56,7 @@ See the [Running from a Launcher or Portable Workspace Guide](https://github.com
 
 ## 📱 Ecosystem & Community Ports
 
-The flexibility and modern foundation of GeneralsX have enabled several community-driven ports across mobile and web platforms:
-
-* **[Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad)** – iOS and iPadOS port by [@ammaarreshi](https://github.com/ammaarreshi)
-* **[Generals-Android](https://github.com/fadi-labib/Generals-Android)** – Android port by [@fadi-labib](https://github.com/fadi-labib)
-* **[wasm-generals](https://github.com/origami-ltd/wasm-generals)** – WebAssembly + WebGPU browser port by [@ebellumat](https://github.com/ebellumat) (playable at [generals.wasm.com.br](https://generals.wasm.com.br))
+The flexibility and modern foundation of GeneralsX have enabled several community-driven ports across mobile and web platforms. Check out our **[Ecosystem & Community Ports discussion](https://github.com/fbraz3/GeneralsX/discussions/436)** to explore highlighted forks and community projects—or share one of your own!
 
 ---
 
