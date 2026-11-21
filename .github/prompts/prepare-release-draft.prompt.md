@@ -145,11 +145,7 @@ A special thank you to our community contributors who made this release possible
 
 ## 📱 Ecosystem & Community Ports
 
-If you enjoy GeneralsX, check out these community ports powered by the engine:
-
-* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [@ammaarreshi](https://github.com/ammaarreshi)
-* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [@fadi-labib](https://github.com/fadi-labib)
-* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - Browser port by [@ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)
+If you enjoy GeneralsX, check out the community ports and forks highlighted in our [Ecosystem & Community Ports discussion](https://github.com/fbraz3/GeneralsX/discussions/436).
 
 ---
 
