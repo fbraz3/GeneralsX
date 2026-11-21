@@ -57,6 +57,8 @@ public:
 	// Keyboard interface
 	virtual KeyboardIO *getKeyboard(void);
 	virtual Bool getCapsState(void);  // GeneralsX @build fbraz 12/02/2026 BenderAI - Caps Lock state
+	// GeneralsX @feature fbraz3 20/11/2026 Query macOS Command (GUI) modifier state
+	virtual Bool isCommand(void) const override;
 	
 	// SDL3-specific methods - Fighter19 pattern
 	// GeneralsX @refactor felipebraz 16/02/2026 Add direct addSDLEvent() method

@@ -45,6 +45,7 @@
 #include "GameClient/Shell.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/KeyDefs.h"
+#include "GameClient/Keyboard.h"
 #include "GameClient/View.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/LookAtXlat.h"
@@ -165,11 +166,36 @@ LookAtTranslator::~LookAtTranslator()
 
 const ICoord2D* LookAtTranslator::getRMBScrollAnchor()
 {
-	if (m_isScrolling && m_scrollType == SCROLL_RMB)
+	if (m_isScrolling && (m_scrollType == SCROLL_RMB || m_scrollType == SCROLL_COMMAND_LMB))
 	{
 		return &m_anchor;
 	}
 	return nullptr;
+}
+
+// GeneralsX @feature fbraz3 20/11/2026 Command+Left-Click-Drag map panning on macOS
+Bool LookAtTranslator::canStartCommandDragScrollForBatch(Bool ignoreSelecting) const
+{
+	return TheGlobalData->m_useCommandDragScroll
+		&& TheKeyboard
+		&& TheKeyboard->isCommand()
+		&& (!TheShell || !TheShell->isShellActive())
+		&& TheInGameUI
+		&& TheInGameUI->getInputEnabled()
+		&& (ignoreSelecting || !TheInGameUI->isSelecting())
+		&& !TheInGameUI->getGUICommand()
+		&& TheInGameUI->getPendingPlaceType() == nullptr
+		&& (!m_isScrolling || m_scrollType == SCROLL_COMMAND_LMB);
+}
+
+Bool LookAtTranslator::canStartCommandDragScroll() const
+{
+	return canStartCommandDragScrollForBatch() && !m_isScrolling;
+}
+
+Bool LookAtTranslator::isCommandDragScrollActive() const
+{
+	return m_isScrolling && m_scrollType == SCROLL_COMMAND_LMB;
 }
 
 Bool LookAtTranslator::hasMouseMovedRecently()
@@ -251,6 +277,33 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			else if (!numDirs && m_isScrolling)
 			{
 				stopScrolling();
+			}
+			break;
+		}
+
+		//-----------------------------------------------------------------------------
+		case GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK:
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
+		{
+			if (canStartCommandDragScroll())
+			{
+				m_lastMouseMoveTimeMsec = timeGetTime();
+				m_anchor = msg->getArgument( 0 )->pixel;
+				m_currentPos = msg->getArgument( 0 )->pixel;
+				setScrolling(SCROLL_COMMAND_LMB);
+				disp = DESTROY_MESSAGE;
+			}
+			break;
+		}
+
+		//-----------------------------------------------------------------------------
+		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP:
+		{
+			if (m_scrollType == SCROLL_COMMAND_LMB)
+			{
+				m_lastMouseMoveTimeMsec = timeGetTime();
+				stopScrolling();
+				disp = DESTROY_MESSAGE;
 			}
 			break;
 		}
@@ -458,6 +511,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 				switch (m_scrollType)
 				{
 				case SCROLL_RMB:
+				case SCROLL_COMMAND_LMB:
 					{
 						if (TheInGameUI->shouldMoveRMBScrollAnchor())
 						{

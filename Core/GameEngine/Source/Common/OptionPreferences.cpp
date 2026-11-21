@@ -216,6 +216,24 @@ Bool OptionPreferences::getRightMouseScrollWithAlternateMouseEnabled() const
 	return FALSE;
 }
 
+// GeneralsX @feature fbraz3 20/11/2026 Option to enable/disable Command+Left-Click-Drag map panning on macOS
+Bool OptionPreferences::getCommandDragScrollEnabled() const
+{
+	OptionPreferences::const_iterator it = find("UseCommandDragScroll");
+	if (it == end())
+		return TheGlobalData->m_useCommandDragScroll;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void OptionPreferences::setCommandDragScrollEnabled(Bool val)
+{
+	(*this)["UseCommandDragScroll"] = val ? "yes" : "no";
+}
+
 Bool OptionPreferences::getRetaliationModeEnabled()
 {
 	OptionPreferences::const_iterator it = find("Retaliation");

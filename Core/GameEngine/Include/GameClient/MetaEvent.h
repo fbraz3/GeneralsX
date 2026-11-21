@@ -365,6 +365,9 @@ private:
 	enum { NUM_MOUSE_BUTTONS = 3 };
 	ICoord2D m_mouseDownPosition[NUM_MOUSE_BUTTONS];
 	Bool	m_nextUpShouldCreateDoubleClick[NUM_MOUSE_BUTTONS];
+	// GeneralsX @feature fbraz3 20/11/2026 Record Command+LMB pan decision on press for same-frame release handling
+	Bool	m_ignoreNextLeftClick;
+	Bool	m_selectionReleasedPending;
 
 public:
 	MetaEventTranslator();

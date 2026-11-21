@@ -70,6 +70,9 @@ public:
 	Bool getArchiveReplaysEnabled() const;
 	Bool getAlternateMouseModeEnabled();
 	Bool getRightMouseScrollWithAlternateMouseEnabled() const;
+	// GeneralsX @feature fbraz3 20/11/2026 Option to enable/disable Command+Left-Click-Drag map panning on macOS
+	Bool getCommandDragScrollEnabled() const;
+	void setCommandDragScrollEnabled(Bool val);
 	Bool getRetaliationModeEnabled();
 	Bool getDoubleClickAttackMoveEnabled();
 	Int getJpegQuality() const;

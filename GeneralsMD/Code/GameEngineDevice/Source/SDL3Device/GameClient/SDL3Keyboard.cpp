@@ -331,4 +331,14 @@ KeyVal SDL3Keyboard::translateScanCodeToKeyVal(unsigned char scan)
 	}
 }
 
+// GeneralsX @feature fbraz3 20/11/2026 Query macOS Command (GUI) modifier state
+Bool SDL3Keyboard::isCommand(void) const
+{
+#ifdef __APPLE__
+	return (SDL_GetModState() & SDL_KMOD_GUI) != 0;
+#else
+	return FALSE;
+#endif
+}
+
 #endif // !_WIN32

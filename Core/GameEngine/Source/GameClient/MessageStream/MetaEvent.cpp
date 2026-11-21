@@ -43,6 +43,7 @@
 #include "GameClient/GameClient.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/KeyDefs.h"
+#include "GameClient/LookAtXlat.h"
 #include "GameClient/ParticleSys.h"	// for ParticleSystemDebugDisplay
 #include "GameClient/Shell.h"
 #include "GameClient/WindowLayout.h"
@@ -384,7 +385,9 @@ static const FieldParse TheMetaMapFieldParseTable[] =
 //-------------------------------------------------------------------------------------------------
 MetaEventTranslator::MetaEventTranslator() :
 	m_lastKeyDown(MK_NONE),
-	m_lastModState(0)
+	m_lastModState(0),
+	m_ignoreNextLeftClick(FALSE),
+	m_selectionReleasedPending(FALSE)
 {
 	for (Int i = 0; i < NUM_MOUSE_BUTTONS; ++i) {
 		m_nextUpShouldCreateDoubleClick[i] = FALSE;
@@ -473,6 +476,15 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			--index;
 			m_mouseDownPosition[index] = msg->getArgument(0)->pixel;
 			m_nextUpShouldCreateDoubleClick[index] = FALSE;
+			if (index == 0)
+			{
+				if (!TheInGameUI || !TheInGameUI->isSelecting())
+				{
+					m_selectionReleasedPending = FALSE;
+				}
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch(m_selectionReleasedPending));
+				m_selectionReleasedPending = FALSE;
+			}
 			break;
 		}
 
@@ -486,6 +498,15 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 		{
 			--index;
 			m_nextUpShouldCreateDoubleClick[index] = TRUE;
+			if (index == 0)
+			{
+				if (!TheInGameUI || !TheInGameUI->isSelecting())
+				{
+					m_selectionReleasedPending = FALSE;
+				}
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch(m_selectionReleasedPending));
+				m_selectionReleasedPending = FALSE;
+			}
 			break;
 		}
 
@@ -498,6 +519,17 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
 			--index;
+
+			// GeneralsX @feature fbraz3 20/11/2026 Suppress synthetic left-click when ending Command+Left-Click-Drag pan
+			if (index == 0 && m_ignoreNextLeftClick)
+			{
+				m_ignoreNextLeftClick = FALSE;
+				break;
+			}
+			if (index == 0 && TheInGameUI && TheInGameUI->isSelecting())
+			{
+				m_selectionReleasedPending = TRUE;
+			}
 
 			constexpr const GameMessage::Type SingleClickMessages[3] =
 			{

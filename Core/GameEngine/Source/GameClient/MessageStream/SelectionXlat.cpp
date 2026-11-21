@@ -52,6 +52,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Keyboard.h"
+#include "GameClient/LookAtXlat.h"
 #include "GameClient/SelectionInfo.h"
 #include "GameClient/SelectionXlat.h"
 #include "GameClient/TerrainVisual.h"
@@ -245,6 +246,7 @@ SelectionTranslator::SelectionTranslator()
 {
 	m_leftMouseButtonIsDown = FALSE;
 	m_dragSelecting = FALSE;
+	m_ignoreNextLeftButtonUp = FALSE;
 	m_lastGroupSelTime = 0;
 	m_lastGroupSelGroup = -1;
 	m_leftMouseDownAnchor.zero();
@@ -400,6 +402,20 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 		// Note that the raw left messages are only used to draw feedback now when
 		// appropriate. All actual selection code takes place in
 		// MSG_MOUSE_LEFT_CLICK & MSG_MOUSE_LEFT_DOUBLE_CLICK
+		// GeneralsX @feature fbraz3 20/11/2026 Track Command+Left-Click double-click pan ownership before release
+		case GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK:
+		{
+			if (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch())
+			{
+				m_ignoreNextLeftButtonUp = TRUE;
+			}
+			else
+			{
+				m_ignoreNextLeftButtonUp = FALSE;
+			}
+			disp = KEEP_MESSAGE;
+			break;
+		}
 		case GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN:
 		{
 			disp = onRawMouseLeftButtonDown(msg);
@@ -1014,6 +1030,14 @@ GameMessageDisposition SelectionTranslator::onMouseLeftClick(MAYBE_UNUSED const 
 
 GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSED const GameMessage *msg)
 {
+	// GeneralsX @feature fbraz3 20/11/2026 Let LookAtTranslator handle Command+Left-Click-Drag panning
+	if (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch())
+	{
+		m_ignoreNextLeftButtonUp = TRUE;
+		return KEEP_MESSAGE;
+	}
+	m_ignoreNextLeftButtonUp = FALSE;
+
 	// cannot actually start area selection yet - have to wait for cursor to move a bit
 	m_leftMouseButtonIsDown = true;
 	m_leftMouseDownAnchor = msg->getArgument( 0 )->pixel;
@@ -1023,6 +1047,13 @@ GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonDown(MAYBE_UNUSE
 
 GameMessageDisposition SelectionTranslator::onRawMouseLeftButtonUp(MAYBE_UNUSED const GameMessage *msg)
 {
+	// GeneralsX @feature fbraz3 20/11/2026 Skip click/deselect handling when finishing Command+Left-Click-Drag pan
+	if (m_ignoreNextLeftButtonUp)
+	{
+		m_ignoreNextLeftButtonUp = FALSE;
+		return KEEP_MESSAGE;
+	}
+
 	m_leftMouseButtonIsDown = FALSE;
 
 	if (m_dragSelecting) {
