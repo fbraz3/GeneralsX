@@ -174,7 +174,7 @@ const ICoord2D* LookAtTranslator::getRMBScrollAnchor()
 }
 
 // GeneralsX @feature fbraz3 20/11/2026 Command+Left-Click-Drag map panning on macOS
-Bool LookAtTranslator::canStartCommandDragScrollForBatch() const
+Bool LookAtTranslator::canStartCommandDragScrollForBatch(Bool ignoreSelecting) const
 {
 	return TheGlobalData->m_useCommandDragScroll
 		&& TheKeyboard
@@ -182,7 +182,7 @@ Bool LookAtTranslator::canStartCommandDragScrollForBatch() const
 		&& (!TheShell || !TheShell->isShellActive())
 		&& TheInGameUI
 		&& TheInGameUI->getInputEnabled()
-		&& !TheInGameUI->isSelecting()
+		&& (ignoreSelecting || !TheInGameUI->isSelecting())
 		&& !TheInGameUI->getGUICommand()
 		&& TheInGameUI->getPendingPlaceType() == nullptr
 		&& (!m_isScrolling || m_scrollType == SCROLL_COMMAND_LMB);

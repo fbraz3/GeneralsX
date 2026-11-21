@@ -367,6 +367,7 @@ private:
 	Bool	m_nextUpShouldCreateDoubleClick[NUM_MOUSE_BUTTONS];
 	// GeneralsX @feature fbraz3 20/11/2026 Record Command+LMB pan decision on press for same-frame release handling
 	Bool	m_ignoreNextLeftClick;
+	Bool	m_selectionReleasedPending;
 
 public:
 	MetaEventTranslator();

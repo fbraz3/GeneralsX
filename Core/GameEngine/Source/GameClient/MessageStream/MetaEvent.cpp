@@ -386,7 +386,8 @@ static const FieldParse TheMetaMapFieldParseTable[] =
 MetaEventTranslator::MetaEventTranslator() :
 	m_lastKeyDown(MK_NONE),
 	m_lastModState(0),
-	m_ignoreNextLeftClick(FALSE)
+	m_ignoreNextLeftClick(FALSE),
+	m_selectionReleasedPending(FALSE)
 {
 	for (Int i = 0; i < NUM_MOUSE_BUTTONS; ++i) {
 		m_nextUpShouldCreateDoubleClick[i] = FALSE;
@@ -477,7 +478,12 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			m_nextUpShouldCreateDoubleClick[index] = FALSE;
 			if (index == 0)
 			{
-				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch());
+				if (!TheInGameUI || !TheInGameUI->isSelecting())
+				{
+					m_selectionReleasedPending = FALSE;
+				}
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch(m_selectionReleasedPending));
+				m_selectionReleasedPending = FALSE;
 			}
 			break;
 		}
@@ -494,7 +500,12 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			m_nextUpShouldCreateDoubleClick[index] = TRUE;
 			if (index == 0)
 			{
-				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch());
+				if (!TheInGameUI || !TheInGameUI->isSelecting())
+				{
+					m_selectionReleasedPending = FALSE;
+				}
+				m_ignoreNextLeftClick = (TheLookAtTranslator && TheLookAtTranslator->canStartCommandDragScrollForBatch(m_selectionReleasedPending));
+				m_selectionReleasedPending = FALSE;
 			}
 			break;
 		}
@@ -514,6 +525,10 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 			{
 				m_ignoreNextLeftClick = FALSE;
 				break;
+			}
+			if (index == 0 && TheInGameUI && TheInGameUI->isSelecting())
+			{
+				m_selectionReleasedPending = TRUE;
 			}
 
 			constexpr const GameMessage::Type SingleClickMessages[3] =
