@@ -106,6 +106,24 @@ static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much t
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
 
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen: views wider than this aspect ratio keep the
+// vertical field of view of the reference aspect ratio and widen the horizontal field of view instead.
+constexpr const Real HorPlusReferenceAspectRatio = 16.0f / 9.0f;
+constexpr const Real DefaultHorizontalFOVDegrees = 50.0f; ///< Default W3D horizontal fov for a full-screen view.
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 Returns the factor by which the view plane is widened
+// horizontally for the given view aspect ratio. This is render-only math (CRT, not WWMath) and
+// never feeds the simulation.
+//-------------------------------------------------------------------------------------------------
+static Real calcHorPlusWidening(Real aspectRatio)
+{
+	if (aspectRatio <= HorPlusReferenceAspectRatio)
+		return 1.0f;
+
+	return aspectRatio / HorPlusReferenceAspectRatio;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Normalizes angle to +- PI.
 //-------------------------------------------------------------------------------------------------
@@ -208,7 +226,7 @@ void W3DView::setHeight(Int height)
 	View::setHeight(height);
 
 	Vector2 vMin,vMax;
-	m_3DCamera->Set_Aspect_Ratio((Real)getWidth()/(Real)height);
+	updateViewPlane(getDefaultHorizontalFOV());
  	m_3DCamera->Get_Viewport(vMin,vMax);
  	vMax.Y=(Real)(m_originY+height)/(Real)TheDisplay->getHeight();
  	m_3DCamera->Set_Viewport(vMin,vMax);
@@ -229,18 +247,49 @@ void W3DView::setWidth(Int width)
 	View::setWidth(width);
 
 	Vector2 vMin,vMax;
-	m_3DCamera->Set_Aspect_Ratio((Real)width/(Real)getHeight());
  	m_3DCamera->Get_Viewport(vMin,vMax);
  	vMax.X=(Real)(m_originX+width)/(Real)TheDisplay->getWidth();
  	m_3DCamera->Set_Viewport(vMin,vMax);
 
 	//we want to maintain the same scale, so we'll need to adjust the fov.
 	//default W3D fov for full-screen is 50 degrees.
-	m_3DCamera->Set_View_Plane((Real)width/(Real)TheDisplay->getWidth()*DEG_TO_RADF(50.0f),-1);
+	updateViewPlane(getDefaultHorizontalFOV());
 
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
 	m_lastScreenToTerrainValid = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Returns the horizontal field of view this view uses by default. It scales with the share of the
+	display width the view covers, so that a narrower view keeps the same scale. */
+//-------------------------------------------------------------------------------------------------
+Real W3DView::getDefaultHorizontalFOV() const
+{
+	return (Real)m_width / (Real)TheDisplay->getWidth() * DEG_TO_RADF(DefaultHorizontalFOVDegrees);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Rebuilds the 3D camera view plane from a base horizontal field of view and the view size.
+	Picking, frustum culling, the radar view box and the camera area constraints all read the
+	camera view plane, so this is the single place that decides the projection. */
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen. Up to the reference aspect ratio the
+// base horizontal fov is used as is. Wider views keep the vertical fov of the reference aspect
+// ratio and extend the view sideways instead of narrowing it vertically.
+//-------------------------------------------------------------------------------------------------
+void W3DView::updateViewPlane(Real baseHorizontalFOV)
+{
+	const Int width = getWidth();
+	const Int height = getHeight();
+
+	if (width <= 0 || height <= 0)
+		return;
+
+	const Real aspectRatio = (Real)width / (Real)height;
+	const Real halfWidth = tan(baseHorizontalFOV * 0.5f) * calcHorPlusWidening(aspectRatio);
+	const Real halfHeight = halfWidth / aspectRatio;
+
+	m_3DCamera->Set_View_Plane(Vector2(-halfWidth, -halfHeight), Vector2(halfWidth, halfHeight));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -836,7 +885,7 @@ void W3DView::setCameraTransform(const Matrix3D &transform)
 	m_lastScreenToTerrainValid = false;
 
 #if defined(RTS_DEBUG)
-	m_3DCamera->Set_View_Plane( m_FOV, -1 );
+	updateViewPlane( m_FOV );
 #endif
 
 	m_3DCamera->Set_Transform(transform);

@@ -308,6 +308,10 @@ private:
 	Real getMaxZoom(Real x, Real y) const;
 	void updateCameraTransform(); ///< update the transform matrix of m_3DCamera, based on m_pos & m_angle
 	void updateCameraClipPlanes(const Matrix3D &transform);
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 Single place that builds the 3D camera view plane (Hor+ widescreen).
+	Real getDefaultHorizontalFOV() const;
+	void updateViewPlane(Real baseHorizontalFOV);
 	void setCameraTransform(const Matrix3D &transform);
 	void buildCameraPosition(Vector3 &sourcePos, Vector3 &targetPos);
 	void buildCameraTransform(Matrix3D *transform, const Vector3 &sourcePos, const Vector3 &targetPos); ///< calculate (but do not set) the transform matrix of m_3DCamera, based on m_pos & m_angle
