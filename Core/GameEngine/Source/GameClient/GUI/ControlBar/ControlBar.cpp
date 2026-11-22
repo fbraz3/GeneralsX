@@ -3299,6 +3299,20 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	NameKeyType id = TheNameKeyGenerator->nameToKey( tempName );
 	m_specialPowerShortcutParent = TheWindowManager->winGetWindowFromId( nullptr, id );//m_scienceLayout->getFirstWindow();
 
+	// GeneralsX @tweak ClaudeCode 22/11/2026 The shortcut bar sits at the right edge of its layout. With the
+	// centred UI rect that edge is in the middle of an ultrawide display, on top of the game world. Move the
+	// bar out by the width of the side margin so it stays at the right edge of the display.
+	if (m_specialPowerShortcutParent && m_specialPowerShortcutParent->winGetParent() == nullptr)
+	{
+		const Int sideMargin = TheDisplay->getUILayoutOriginX();
+		if (sideMargin > 0)
+		{
+			Int x, y;
+			m_specialPowerShortcutParent->winGetPosition(&x, &y);
+			m_specialPowerShortcutParent->winSetPosition(x + sideMargin, y);
+		}
+	}
+
 	tempName = layoutName;
 	tempName.concat(":ButtonCommand%d");
 	parentName = layoutName;
