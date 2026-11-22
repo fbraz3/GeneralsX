@@ -38,21 +38,26 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```
 
 ### Step 2: Gather Commits & Pull Requests
-1. Resolve a valid end ref (`END_REF`, preferring `$TARGET_TAG` if it exists locally, otherwise `HEAD`) and inspect all commits in the release range:
+1. Fetch tags and verify both `PREVIOUS_TAG` and `TARGET_TAG` resolve to commits before collecting the release range (stop with an error if either tag cannot be resolved):
    ```bash
-   END_REF="$TARGET_TAG"
-   git rev-parse --verify "$END_REF" >/dev/null 2>&1 || END_REF="HEAD"
-   git log --oneline "$PREVIOUS_TAG..$END_REF"
+   git fetch origin --tags
+   git rev-parse --verify "refs/tags/$PREVIOUS_TAG^{commit}" >/dev/null || { echo "ERROR: PREVIOUS_TAG ($PREVIOUS_TAG) not found" >&2; exit 1; }
+   git rev-parse --verify "refs/tags/$TARGET_TAG^{commit}" >/dev/null || { echo "ERROR: TARGET_TAG ($TARGET_TAG) not found" >&2; exit 1; }
+   SHAS=$(git rev-list "refs/tags/$PREVIOUS_TAG..refs/tags/$TARGET_TAG") || exit 1
+   git log --oneline "refs/tags/$PREVIOUS_TAG..refs/tags/$TARGET_TAG"
    ```
-2. Retrieve PR metadata associated with the commits in this release range without arbitrary limits, failing immediately if any `gh api` call errors:
+2. Retrieve merged PR metadata associated with the commits in this release range without arbitrary limits, failing immediately if any `gh api` call errors:
    ```bash
-   PR_ROWS=$(
+   if ! PR_ROWS=$(
      set -euo pipefail
-     for SHA in $(git rev-list "$PREVIOUS_TAG..$END_REF"); do
+     for SHA in $SHAS; do
        env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" \
-         --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX") | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"'
+         --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX" and .merged_at != null) | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"' || exit 1
      done | sort -u -t'|' -k1,1n
-   )
+   ); then
+     echo "ERROR: Failed to query PRs for release range $PREVIOUS_TAG..$TARGET_TAG" >&2
+     exit 1
+   fi
    ```
 3. View specific PR descriptions to understand key technical details:
    ```bash
@@ -65,9 +70,9 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
 ### Step 3: Identify External Contributors
 1. Extract unique authors from the PR list collected in Step 2:
    - Identify author logins excluding the core maintainer (`fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
-2. Resolve each commit author in `$PREVIOUS_TAG..$END_REF` to a GitHub login while pairing with commit SHAs, checking the exit status of `gh api` before falling back to the Git author name:
+2. Resolve each commit author in `$SHAS` to a GitHub login while pairing with commit SHAs, checking the exit status of `gh api` before falling back to the Git author name:
    ```bash
-   for SHA in $(git rev-list "$PREVIOUS_TAG..$END_REF"); do
+   for SHA in $SHAS; do
      if ! LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty'); then
        echo "ERROR: gh api failed for commit $SHA" >&2
        exit 1

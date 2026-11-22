@@ -34,17 +34,24 @@ Triage, address, or technically rebut all review comments, pre-merge checks, out
 ## 2. Step-by-Step Workflow
 
 ### Step 1: Gather PR Context & CodeRabbit Comments
-1. Verify the working tree is clean, determine the PR number (supporting PR numbers, branches, or review URLs with `#pullrequestreview-<id>`), and check out the PR branch:
+1. Verify the working tree is clean, determine the PR number (rejecting cross-repo PR URLs and extracting any `#pullrequestreview-<id>`), and check out the PR branch:
    ```bash
    test -z "$(git status --porcelain)" || { echo "Working tree is not clean"; exit 1; }
    PR_INPUT="" # Optional PR number, branch, or URL; leave empty to infer from current branch
+   CURRENT_REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
    if [ -n "$PR_INPUT" ]; then
-     PR_NUMBER="$(gh pr view "$PR_INPUT" --json number --jq .number)"
+     PR_JSON="$(gh pr view "$PR_INPUT" --json number,url)"
      REVIEW_ID="$(printf '%s' "$PR_INPUT" | sed -n 's/.*pullrequestreview-\([0-9]*\).*/\1/p')"
    else
-     PR_NUMBER="$(gh pr view --json number --jq .number)"
+     PR_JSON="$(gh pr view --json number,url)"
      REVIEW_ID=""
    fi
+   PR_NUMBER="$(printf '%s' "$PR_JSON" | jq -r '.number')"
+   PR_URL="$(printf '%s' "$PR_JSON" | jq -r '.url')"
+   case "$PR_URL" in
+     "https://github.com/${CURRENT_REPO}/pull/"*) ;;
+     *) echo "ERROR: PR URL ($PR_URL) does not belong to current repo ($CURRENT_REPO)" >&2; exit 1 ;;
+   esac
    gh pr checkout "$PR_NUMBER"
    ```
 2. Fetch active inline review comments from CodeRabbit:
@@ -57,14 +64,13 @@ Triage, address, or technically rebut all review comments, pre-merge checks, out
    gh api --paginate --slurp repos/:owner/:repo/issues/"$PR_NUMBER"/comments \
      | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]")] | last | .body'
    ```
-4. Inspect CodeRabbit reviews for **Outside diff range comments** (fetching the specific `$REVIEW_ID` if supplied, otherwise all matching reviews, and skipping threads/items already resolved):
+4. Inspect CodeRabbit reviews for **Outside diff range comments** (fetching all matching reviews — and the specific `$REVIEW_ID` if supplied — while skipping threads/items already resolved):
    ```bash
+   gh api --paginate --slurp repos/:owner/:repo/pulls/"$PR_NUMBER"/reviews \
+     | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | map({id: .id, submitted_at: .submitted_at, body: .body})'
    if [ -n "$REVIEW_ID" ]; then
      gh api repos/:owner/:repo/pulls/"$PR_NUMBER"/reviews/"$REVIEW_ID" \
-       --jq 'if .user.login == "coderabbitai[bot]" then .body else error("review is not authored by coderabbitai[bot]") end'
-   else
-     gh api --paginate --slurp repos/:owner/:repo/pulls/"$PR_NUMBER"/reviews \
-       | jq -r 'add | [.[] | select(.user.login == "coderabbitai[bot]" and (.body | test("Outside diff range comments")))] | map({id: .id, submitted_at: .submitted_at, body: .body})'
+       --jq 'if .user.login == "coderabbitai[bot]" then {id: .id, submitted_at: .submitted_at, body: .body} else error("review is not authored by coderabbitai[bot]") end'
    fi
    ```
 5. Inspect CodeRabbit reviews for **Suppressed / Additional comments** (`<summary>🔇 Additional comments:`):
