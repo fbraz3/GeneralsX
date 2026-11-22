@@ -168,6 +168,29 @@ Bool Display::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bi
 // Display::setWidth ==========================================================
 /** Set the width of the display */
 //=============================================================================
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 Width of the centred rect the UI is laid out in. See Display.h.
+//-------------------------------------------------------------------------------------------------
+Int Display::getUILayoutWidth()
+{
+	const Int width = (Int)getWidth();
+	const Int height = (Int)getHeight();
+
+	if (TheGlobalData == nullptr || !TheGlobalData->m_ultrawideUI || height <= 0)
+		return width;
+
+	const Int maxWidth = (Int)((Real)height * UILayoutMaxAspectRatio + 0.5f);
+	return width > maxWidth ? maxWidth : width;
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 Left edge of the centred rect the UI is laid out in. See Display.h.
+//-------------------------------------------------------------------------------------------------
+Int Display::getUILayoutOriginX()
+{
+	return ((Int)getWidth() - getUILayoutWidth()) / 2;
+}
+
 void Display::setWidth( UnsignedInt width )
 {
 

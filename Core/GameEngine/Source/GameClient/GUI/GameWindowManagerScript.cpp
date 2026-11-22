@@ -560,11 +560,15 @@ static Bool parseScreenRect( const char *token, char *buffer,
 	// shrink or expand the screen region by the ratio of the current
 	// resolution divided by the creation resolution
 	//
-	Real xScale = (Real)TheDisplay->getWidth() / (Real)createRes.x;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Scale into the centred UI layout rect instead of the whole display width,
+	// so layouts are not stretched on displays wider than 16:9. Child positions stay consistent because
+	// they are made relative to the parent's screen position below.
+	const Int uiOriginX = TheDisplay->getUILayoutOriginX();
+	Real xScale = (Real)TheDisplay->getUILayoutWidth() / (Real)createRes.x;
 	Real yScale = (Real)TheDisplay->getHeight() / (Real)createRes.y;
-	screenRegion.lo.x = (Int)((Real)screenRegion.lo.x * xScale);
+	screenRegion.lo.x = (Int)((Real)screenRegion.lo.x * xScale) + uiOriginX;
 	screenRegion.lo.y = (Int)((Real)screenRegion.lo.y * yScale);
-	screenRegion.hi.x = (Int)((Real)screenRegion.hi.x * xScale);
+	screenRegion.hi.x = (Int)((Real)screenRegion.hi.x * xScale) + uiOriginX;
 	screenRegion.hi.y = (Int)((Real)screenRegion.hi.y * yScale);
 
 	//
@@ -2394,7 +2398,7 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	}
 	else
 	{
-		parentSize.x = TheDisplay->getWidth();
+		parentSize.x = TheDisplay->getUILayoutWidth();
 		parentSize.y = TheDisplay->getHeight();
 	}
 

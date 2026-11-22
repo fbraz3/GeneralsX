@@ -1110,6 +1110,8 @@ GlobalData::GlobalData()
 	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection on by default, horizontal fov capped at 70 degrees
 	m_ultrawideHorPlus = TRUE;
 	m_ultrawideMaxHorizontalFOV = 70.0f;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on wider displays, on by default
+	m_ultrawideUI = TRUE;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
@@ -1267,6 +1269,7 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_useCommandDragScroll = optionPref.getCommandDragScrollEnabled();
 	TheWritableGlobalData->m_ultrawideHorPlus = optionPref.getUltrawideHorPlusEnabled();
 	TheWritableGlobalData->m_ultrawideMaxHorizontalFOV = optionPref.getUltrawideMaxHorizontalFOV();
+	TheWritableGlobalData->m_ultrawideUI = optionPref.getUltrawideUIEnabled();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
 	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();

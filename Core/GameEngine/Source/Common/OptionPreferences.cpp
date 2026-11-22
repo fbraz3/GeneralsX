@@ -283,6 +283,26 @@ Real OptionPreferences::getUltrawideMaxHorizontalFOV() const
 	return fov;
 }
 
+// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 layout for menus and the HUD on displays wider than 16:9.
+// The GENERALSX_ULTRAWIDE_UI environment variable overrides the Options.ini key UltrawideUI.
+Bool OptionPreferences::getUltrawideUIEnabled() const
+{
+	const char *value = getenv("GENERALSX_ULTRAWIDE_UI");
+	if (value == nullptr || value[0] == '\0')
+	{
+		OptionPreferences::const_iterator it = find("UltrawideUI");
+		if (it == end())
+			return TheGlobalData->m_ultrawideUI;
+
+		value = it->second.str();
+	}
+
+	if (stricmp(value, "no") == 0 || stricmp(value, "0") == 0 || stricmp(value, "false") == 0 || stricmp(value, "off") == 0)
+		return FALSE;
+
+	return TRUE;
+}
+
 Bool OptionPreferences::getRetaliationModeEnabled()
 {
 	OptionPreferences::const_iterator it = find("Retaliation");

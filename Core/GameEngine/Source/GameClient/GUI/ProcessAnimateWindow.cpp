@@ -70,7 +70,8 @@
 
 static Real getDisplayWidthScaler()
 {
-	return static_cast<Real>(TheDisplay->getWidth()) / DEFAULT_DISPLAY_WIDTH;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Window speeds scale with the UI layout rect the windows live in.
+	return static_cast<Real>(TheDisplay->getUILayoutWidth()) / DEFAULT_DISPLAY_WIDTH;
 }
 
 static Real getDisplayHeightScaler()

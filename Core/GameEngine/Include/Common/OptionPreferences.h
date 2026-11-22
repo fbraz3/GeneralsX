@@ -76,6 +76,8 @@ public:
 	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection options for displays wider than 16:9
 	Bool getUltrawideHorPlusEnabled() const;
 	Real getUltrawideMaxHorizontalFOV() const;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on displays wider than 16:9
+	Bool getUltrawideUIEnabled() const;
 	Bool getRetaliationModeEnabled();
 	Bool getDoubleClickAttackMoveEnabled();
 	Int getJpegQuality() const;

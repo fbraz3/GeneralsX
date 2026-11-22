@@ -152,6 +152,7 @@ public:
 	Bool m_useCommandDragScroll;
 	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection for displays wider than 16:9 (client only, never part of the simulation)
 	Bool m_ultrawideHorPlus;						///< Keep the 16:9 vertical fov on wider displays and widen the horizontal fov instead
+	Bool m_ultrawideUI;									///< Lay out menus and the HUD in a centred 16:9 rect on wider displays instead of stretching them
 	Real m_ultrawideMaxHorizontalFOV;		///< Upper limit in degrees for the widened horizontal fov; the rest is covered by camera height
 	Bool m_clientRetaliationModeEnabled;
 	Bool m_doubleClickAttackMove;
