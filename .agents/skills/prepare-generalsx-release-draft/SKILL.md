@@ -49,14 +49,18 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    SHAS=$(git rev-list "refs/tags/$PREVIOUS_TAG..refs/tags/$TARGET_TAG") || exit 1
    git log --oneline "refs/tags/$PREVIOUS_TAG..refs/tags/$TARGET_TAG"
    ```
-2. Retrieve merged PR metadata associated with the commits in this release range without arbitrary limits, failing immediately if any `gh api` call errors:
+2. Retrieve merged PR metadata associated with the commits in this release range without arbitrary limits, failing immediately if any `gh api` call errors, and keep only PRs whose landed `merge_commit_sha` is inside `$SHAS` (`PREVIOUS_TAG..TARGET_TAG`):
    ```bash
    if ! PR_ROWS=$(
      set -euo pipefail
      for SHA in $SHAS; do
        env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" \
-         --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX" and .merged_at != null) | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"' || exit 1
-     done | sort -u -t'|' -k1,1n
+         --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX" and .merged_at != null and .merge_commit_sha != null) | "\(.number)|\(.merge_commit_sha)|\(.title)|\(.user.login)|\(.html_url)"' || exit 1
+     done | sort -u -t'|' -k1,1n | while IFS='|' read -r NUM MERGE_SHA TITLE LOGIN URL; do
+       if printf '%s\n' "$SHAS" | grep -qxF "$MERGE_SHA"; then
+         printf '%s|%s|%s|%s\n' "$NUM" "$TITLE" "$LOGIN" "$URL"
+       fi
+     done
    ); then
      echo "ERROR: Failed to query PRs for release range $PREVIOUS_TAG..$TARGET_TAG" >&2
      exit 1
