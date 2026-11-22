@@ -150,7 +150,8 @@ void W3DGadgetHorizontalSliderImageDraw( GameWindow *window,
 
 	SliderData *s = (SliderData *)window->winGetUserData();
 
-	Real xMulti = INT_TO_REAL(TheDisplay->getWidth()) / DEFAULT_DISPLAY_WIDTH;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Slider boxes scale with the UI layout rect, like the slider window itself.
+	Real xMulti = INT_TO_REAL(TheDisplay->getUILayoutWidth()) / DEFAULT_DISPLAY_WIDTH;
 
 	// figure out how many boxes we draw for this slider
 	Int numBoxes = 0;

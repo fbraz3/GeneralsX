@@ -3102,7 +3102,13 @@ void ControlBar::setLowControlBarConfig()
 	ICoord2D pos;
 	pos.x = m_defaultControlBarPosition.x;
 	pos.y = TheDisplay->getHeight() - .1 * TheDisplay->getHeight();
-	setFullViewportHeight();
+	// GeneralsX @tweak ClaudeCode 22/11/2026 With the centred UI rect the world is already drawn at full height
+	// behind the bar, so lowering the bar only needs to move the bar. Keeping the camera framing avoids the
+	// picture jumping down. Without the centred UI rect the view grows as before.
+	if (TheDisplay->getUILayoutOriginX() > 0)
+		setScaledViewportHeight();
+	else
+		setFullViewportHeight();
 	m_contextParent[ CP_MASTER ]->winSetPosition(pos.x, pos.y);
 	m_contextParent[ CP_MASTER ]->winHide(FALSE);
 	setUpDownImages();
@@ -3292,6 +3298,20 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	tempName.concat(":GenPowersShortcutBarParent");
 	NameKeyType id = TheNameKeyGenerator->nameToKey( tempName );
 	m_specialPowerShortcutParent = TheWindowManager->winGetWindowFromId( nullptr, id );//m_scienceLayout->getFirstWindow();
+
+	// GeneralsX @tweak ClaudeCode 22/11/2026 The shortcut bar sits at the right edge of its layout. With the
+	// centred UI rect that edge is in the middle of an ultrawide display, on top of the game world. Move the
+	// bar out by the width of the side margin so it stays at the right edge of the display.
+	if (m_specialPowerShortcutParent && m_specialPowerShortcutParent->winGetParent() == nullptr)
+	{
+		const Int sideMargin = TheDisplay->getUILayoutOriginX();
+		if (sideMargin > 0)
+		{
+			Int x, y;
+			m_specialPowerShortcutParent->winGetPosition(&x, &y);
+			m_specialPowerShortcutParent->winSetPosition(x + sideMargin, y);
+		}
+	}
 
 	tempName = layoutName;
 	tempName.concat(":ButtonCommand%d");
@@ -3843,12 +3863,27 @@ void ControlBar::hideSpecialPowerShortcut()
 
 void ControlBar::setFullViewportHeight()
 {
+	TheTacticalView->setFramingHeight(0);
 	TheTacticalView->setHeight(TheDisplay->getHeight());
 }
 
 void ControlBar::setScaledViewportHeight()
 {
-	TheTacticalView->setHeight(TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale);
+	const Int scaledHeight = TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale;
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 When the control bar is laid out in the centred UI rect it no longer
+	// spans the display, so the world stays visible on both sides of it. Draw the view at full height and
+	// only frame the camera for the scaled height, instead of leaving black areas beside the bar.
+	if (TheDisplay->getUILayoutOriginX() > 0)
+	{
+		TheTacticalView->setFramingHeight(scaledHeight);
+		TheTacticalView->setHeight(TheDisplay->getHeight());
+	}
+	else
+	{
+		TheTacticalView->setFramingHeight(0);
+		TheTacticalView->setHeight(scaledHeight);
+	}
 }
 
 // GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)

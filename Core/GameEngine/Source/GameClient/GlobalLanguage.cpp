@@ -227,6 +227,11 @@ Real GlobalLanguage::getResolutionFontSizeScale(ResolutionFontSizeMethod method,
 {
 	Real adjustFactor;
 
+	// GeneralsX @bugfix ClaudeCode 22/11/2026 Fonts scale with the width of the UI layout rect, not the display width.
+	// On displays wider than 16:9 the windows keep their 16:9 size, so fonts sized from the full display width
+	// overflowed buttons and list rows (most visibly at 32:9).
+	const Real uiWidth = (Real)TheDisplay->getUILayoutWidth();
+
 	switch (method)
 	{
 	default:
@@ -234,7 +239,7 @@ Real GlobalLanguage::getResolutionFontSizeScale(ResolutionFontSizeMethod method,
 	{
 		// TheSuperHackers @info The original font scaling for this game.
 		// Useful for not breaking legacy Addons and Mods. Scales poorly with large resolutions.
-		adjustFactor = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
+		adjustFactor = uiWidth / (Real)DEFAULT_DISPLAY_WIDTH;
 		adjustFactor = 1.0f + (adjustFactor - 1.0f) * scaler;
 		if (adjustFactor > 2.0f)
 			adjustFactor = 2.0f;
@@ -244,7 +249,7 @@ Real GlobalLanguage::getResolutionFontSizeScale(ResolutionFontSizeMethod method,
 	{
 		// TheSuperHackers @feature The original font scaling, but without ceiling.
 		// Useful for not changing the original look of the game. Scales alright with large resolutions.
-		adjustFactor = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
+		adjustFactor = uiWidth / (Real)DEFAULT_DISPLAY_WIDTH;
 		adjustFactor = 1.0f + (adjustFactor - 1.0f) * scaler;
 		break;
 	}
@@ -252,7 +257,7 @@ Real GlobalLanguage::getResolutionFontSizeScale(ResolutionFontSizeMethod method,
 	{
 		// TheSuperHackers @feature The strict method scales fonts based on the smallest screen
 		// dimension so they scale independent of aspect ratio.
-		const Real wScale = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
+		const Real wScale = uiWidth / (Real)DEFAULT_DISPLAY_WIDTH;
 		const Real hScale = TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT;
 		adjustFactor = min(wScale, hScale);
 		adjustFactor = 1.0f + (adjustFactor - 1.0f) * scaler;
@@ -265,7 +270,7 @@ Real GlobalLanguage::getResolutionFontSizeScale(ResolutionFontSizeMethod method,
 		// prevent oversizing.
 		constexpr const Real maxAspect = 1.8f;
 		constexpr const Real minAspect = 1.0f;
-		Real w = TheDisplay->getWidth();
+		Real w = uiWidth;
 		Real h = TheDisplay->getHeight();
 		const Real aspect = w / h;
 		Real wScale = w / (Real)DEFAULT_DISPLAY_WIDTH;
