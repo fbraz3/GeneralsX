@@ -3102,7 +3102,13 @@ void ControlBar::setLowControlBarConfig()
 	ICoord2D pos;
 	pos.x = m_defaultControlBarPosition.x;
 	pos.y = TheDisplay->getHeight() - .1 * TheDisplay->getHeight();
-	setFullViewportHeight();
+	// GeneralsX @tweak ClaudeCode 22/11/2026 With the centred UI rect the world is already drawn at full height
+	// behind the bar, so lowering the bar only needs to move the bar. Keeping the camera framing avoids the
+	// picture jumping down. Without the centred UI rect the view grows as before.
+	if (TheDisplay->getUILayoutOriginX() > 0)
+		setScaledViewportHeight();
+	else
+		setFullViewportHeight();
 	m_contextParent[ CP_MASTER ]->winSetPosition(pos.x, pos.y);
 	m_contextParent[ CP_MASTER ]->winHide(FALSE);
 	setUpDownImages();
