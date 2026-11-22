@@ -1269,7 +1269,11 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_useCommandDragScroll = optionPref.getCommandDragScrollEnabled();
 	TheWritableGlobalData->m_ultrawideHorPlus = optionPref.getUltrawideHorPlusEnabled();
 	TheWritableGlobalData->m_ultrawideMaxHorizontalFOV = optionPref.getUltrawideMaxHorizontalFOV();
-	TheWritableGlobalData->m_ultrawideUI = optionPref.getUltrawideUIEnabled();
+	// GeneralsX @bugfix ClaudeCode 22/11/2026 The UI layout rect must not change while layouts exist. A map.ini with a
+	// GameData block re-runs this parse as an override load; keep the value the running layouts were built with
+	// (the override copy inherits it) so a choice saved in the GeneralsX menu only applies after a restart.
+	if (ini->getLoadType() != INI_LOAD_CREATE_OVERRIDES)
+		TheWritableGlobalData->m_ultrawideUI = optionPref.getUltrawideUIEnabled();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
 	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();
