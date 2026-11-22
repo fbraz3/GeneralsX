@@ -2375,6 +2375,19 @@ AGAIN:
 					TheW3DPostProcess->endSceneAndApply();
 				}
 
+				// GeneralsX @feature ClaudeCode 22/11/2026 Menus are laid out in the centred UI layout rect on displays wider
+				// than 16:9. Cover the shell map on both sides of that rect so the menu sits between black bars.
+				if (TheGameLogic && TheGameLogic->isInShellGame())
+				{
+					const Int uiOriginX = getUILayoutOriginX();
+					if (uiOriginX > 0)
+					{
+						const UnsignedInt barColor = 0xFF000000;
+						drawFillRect( 0, 0, uiOriginX, m_height, barColor );
+						drawFillRect( uiOriginX + getUILayoutWidth(), 0, m_width - uiOriginX - getUILayoutWidth(), m_height, barColor );
+					}
+				}
+
 				// draw the user interface
 				TheInGameUI->DRAW();
 
