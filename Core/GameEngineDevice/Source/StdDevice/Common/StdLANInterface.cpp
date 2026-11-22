@@ -314,7 +314,27 @@ Int StdLANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedIn
 			{
 				continue;
 			}
-			bcast = (hostAddr & mask) | (~mask);
+			if (mask == 0xFFFFFFFEu)
+			{
+				// GeneralsX @bugfix Maxim Sintsov 22/11/2026 A /31 (RFC 3021) carries no
+				// subnet-directed broadcast: the all-ones derivation would return the local
+				// address on the odd host of the pair. Send to the reported peer instead; when
+				// no peer is known (WireGuard tunnels report none) emit nothing and let LANAPI
+				// fall back to the global broadcast.
+				if (ifa->ifa_dstaddr == nullptr || ifa->ifa_dstaddr->sa_family != AF_INET)
+				{
+					continue;
+				}
+				bcast = ntohl(reinterpret_cast<const sockaddr_in *>(ifa->ifa_dstaddr)->sin_addr.s_addr);
+				if (bcast == 0 || bcast == hostAddr)
+				{
+					continue;
+				}
+			}
+			else
+			{
+				bcast = (hostAddr & mask) | (~mask);
+			}
 		}
 		else if (ifa->ifa_broadaddr != nullptr && ifa->ifa_broadaddr->sa_family == AF_INET)
 		{
