@@ -254,6 +254,11 @@ Bool OptionPreferences::getUltrawideHorPlusEnabled() const
 	return TRUE;
 }
 
+void OptionPreferences::setUltrawideHorPlusEnabled(Bool val)
+{
+	(*this)["UltrawideHorPlus"] = val ? "yes" : "no";
+}
+
 // GeneralsX @feature ClaudeCode 22/11/2026 Upper limit in degrees for the Hor+ horizontal field of view.
 // The GENERALSX_ULTRAWIDE_MAX_HFOV environment variable overrides the Options.ini key UltrawideMaxHorizontalFOV.
 Real OptionPreferences::getUltrawideMaxHorizontalFOV() const
@@ -283,6 +288,17 @@ Real OptionPreferences::getUltrawideMaxHorizontalFOV() const
 	return fov;
 }
 
+void OptionPreferences::setUltrawideMaxHorizontalFOV(Real val)
+{
+	if (!(val >= 50.0f))
+		val = 50.0f;
+	else if (val > 170.0f)
+		val = 170.0f;
+	AsciiString s;
+	s.format("%.1f", val);
+	(*this)["UltrawideMaxHorizontalFOV"] = s;
+}
+
 // GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 layout for menus and the HUD on displays wider than 16:9.
 // The GENERALSX_ULTRAWIDE_UI environment variable overrides the Options.ini key UltrawideUI.
 Bool OptionPreferences::getUltrawideUIEnabled() const
@@ -301,6 +317,11 @@ Bool OptionPreferences::getUltrawideUIEnabled() const
 		return FALSE;
 
 	return TRUE;
+}
+
+void OptionPreferences::setUltrawideUIEnabled(Bool val)
+{
+	(*this)["UltrawideUI"] = val ? "yes" : "no";
 }
 
 Bool OptionPreferences::getRetaliationModeEnabled()

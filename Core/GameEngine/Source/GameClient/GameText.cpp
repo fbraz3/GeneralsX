@@ -1561,6 +1561,31 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 			return s_cmdDragScroll;
 		}
 
+		// GeneralsX @feature ClaudeCode 22/11/2026 Labels for the ultrawide options in the GeneralsX menu
+		if ( stricmp(label, "GUI:UltrawideHorPlus") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideHorPlus(L"Ultrawide Hor+ Camera");
+			return s_ultrawideHorPlus;
+		}
+
+		if ( stricmp(label, "GUI:UltrawideMaxFOV") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideMaxFOV(L"HOR+ MAX HORIZONTAL FOV");
+			return s_ultrawideMaxFOV;
+		}
+
+		if ( stricmp(label, "GUI:UltrawideUI") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideUI(L"Centered 16:9 Menus and HUD on Ultrawide (Requires Restart)");
+			return s_ultrawideUI;
+		}
+
 		// string not found
 		if( exists )
 			*exists = FALSE;
