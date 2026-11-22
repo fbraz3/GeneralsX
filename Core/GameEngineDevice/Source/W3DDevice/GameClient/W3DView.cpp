@@ -218,6 +218,8 @@ W3DView::W3DView()
 	m_FXPitch = 1.0f;
 	m_freezeTimeForCameraMovement = false;
 	m_lastScreenToTerrainValid = false;
+	m_footprintTerrainDrawSize.x = 0;
+	m_footprintTerrainDrawSize.y = 0;
 
 	//Enhancements from CNC3 WST 4/15/2003. JSC Integrated 5/20/03.
 	m_scriptedState = 0;
@@ -1021,6 +1023,9 @@ void W3DView::reset()
 	setGuardBandBias( &gb );
 
 	m_recalcCameraConstraintsAfterScrolling = false;
+
+	m_footprintTerrainDrawSize.x = 0;
+	m_footprintTerrainDrawSize.y = 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3922,6 +3927,81 @@ bool W3DView::getDesiredTerrainDrawSize(ICoord2D &dimensions) const
 	return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix ClaudeCode 22/11/2026 The normal terrain draw size is a fixed square that was
+// tuned for a 4:3 view at the default camera height. Wide views and high cameras see more ground
+// than that, which left untextured black areas with floating objects near the screen edges.
+// This projects the four view corners onto the lowest terrain height and returns the draw size,
+// in whole vertex buffer tiles, that covers the resulting footprint. Returns false when the view
+// reaches the horizon or the camera pitch is low, where the regular draw sizes apply.
+//-------------------------------------------------------------------------------------------------
+bool W3DView::getViewFootprintTerrainDrawSize(ICoord2D &dimensions) const
+{
+	if (TheTerrainRenderObject == nullptr)
+		return false;
+
+	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
+	if (cameraPitch <= ViewDefaultLowPitchRadians)
+		return false;
+
+	// Rays flatter than this are treated as reaching the horizon.
+	constexpr const Real minDownwardDirZ = -0.05f;
+	// Extra cells around the footprint for terrain that rises into view from just outside of it.
+	constexpr const Int marginCells = VERTEX_BUFFER_TILE_LENGTH;
+
+	static const Vector2 viewCorners[] =
+	{
+		Vector2(-1.0f, -1.0f), Vector2(1.0f, -1.0f), Vector2(1.0f, 1.0f), Vector2(-1.0f, 1.0f)
+	};
+
+	const Vector3 cameraPos = m_3DCamera->Get_Position();
+	const Real groundZ = TheTerrainRenderObject->getMinHeight();
+
+	Real minX = 0.0f;
+	Real maxX = 0.0f;
+	Real minY = 0.0f;
+	Real maxY = 0.0f;
+
+	for (Int i = 0; i < ARRAY_SIZE(viewCorners); ++i)
+	{
+		Vector3 direction;
+		m_3DCamera->Un_Project(direction, viewCorners[i]);
+		direction -= cameraPos;
+		direction.Normalize();
+
+		if (direction.Z > minDownwardDirZ)
+			return false;
+
+		const Real distance = (groundZ - cameraPos.Z) / direction.Z;
+		if (distance <= 0.0f)
+			return false;
+
+		const Real x = cameraPos.X + direction.X * distance;
+		const Real y = cameraPos.Y + direction.Y * distance;
+
+		if (i == 0)
+		{
+			minX = maxX = x;
+			minY = maxY = y;
+		}
+		else
+		{
+			minX = std::min(minX, x);
+			maxX = std::max(maxX, x);
+			minY = std::min(minY, y);
+			maxY = std::max(maxY, y);
+		}
+	}
+
+	const Int cellsX = (Int)ceil((maxX - minX) / MAP_XY_FACTOR) + 2 * marginCells;
+	const Int cellsY = (Int)ceil((maxY - minY) / MAP_XY_FACTOR) + 2 * marginCells;
+
+	// Draw sizes are one vertex larger than a whole number of vertex buffer tiles.
+	dimensions.x = 1 + ((cellsX + VERTEX_BUFFER_TILE_LENGTH - 1) / VERTEX_BUFFER_TILE_LENGTH) * VERTEX_BUFFER_TILE_LENGTH;
+	dimensions.y = 1 + ((cellsY + VERTEX_BUFFER_TILE_LENGTH - 1) / VERTEX_BUFFER_TILE_LENGTH) * VERTEX_BUFFER_TILE_LENGTH;
+	return true;
+}
+
 void W3DView::updateTerrain()
 {
 	DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
@@ -3942,6 +4022,18 @@ void W3DView::updateTerrain()
 			drawSize.x = static_cast<Int>(drawSize.x * terrainScale);
 			drawSize.y = static_cast<Int>(drawSize.y * terrainScale);
 		}
+
+		// GeneralsX @bugfix ClaudeCode 22/11/2026 Enlarge the draw size to cover the visible ground on
+		// wide views and high cameras. setTerrainDrawSize() bounds it by the map extent.
+		ICoord2D footprintSize;
+		if (getViewFootprintTerrainDrawSize(footprintSize))
+		{
+			m_footprintTerrainDrawSize.x = std::max(m_footprintTerrainDrawSize.x, footprintSize.x);
+			m_footprintTerrainDrawSize.y = std::max(m_footprintTerrainDrawSize.y, footprintSize.y);
+		}
+		drawSize.x = std::max(drawSize.x, m_footprintTerrainDrawSize.x);
+		drawSize.y = std::max(drawSize.y, m_footprintTerrainDrawSize.y);
+
 		TheTerrainRenderObject->setTerrainDrawSize(drawSize.x, drawSize.y);
 	}
 

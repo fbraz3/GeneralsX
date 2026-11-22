@@ -300,6 +300,10 @@ private:
 	Bool m_recalcCameraConstraintsAfterScrolling; ///< Recalculates the camera area constraints after the user has moved the camera
 	Bool m_recalcCamera; ///< Recalculates the camera transform in the next render update
 
+	// GeneralsX @bugfix ClaudeCode 22/11/2026 Largest terrain draw size the view footprint has needed since the last reset.
+	// It only grows, so that zooming and scrolling do not keep rebuilding the terrain buffers.
+	ICoord2D m_footprintTerrainDrawSize;
+
 	Real getHeightAroundPos(Real x, Real y, Real terrainSampleSize = TERRAIN_SAMPLE_SIZE) const;
 	Real getCameraOffsetZ() const;
 	Real getDesiredHeight(Real x, Real y) const;
@@ -336,6 +340,8 @@ private:
 	void getAxisAlignedViewRegion(Region3D &axisAlignedRegion);	///< Find 3D Region enclosing all possible drawables.
 	void calcDeltaScroll(Coord2D &screenDelta);
 	bool getDesiredTerrainDrawSize(ICoord2D &dimensions) const;
+	// GeneralsX @bugfix ClaudeCode 22/11/2026 Terrain draw size needed to cover the ground the camera currently sees.
+	bool getViewFootprintTerrainDrawSize(ICoord2D &dimensions) const;
 	void updateTerrain();
 
 	// (gth) C&C3 animation controlled camera feature
