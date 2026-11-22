@@ -117,11 +117,11 @@ Categorize each finding:
 
 ### Step 4: Commit & Push
 
-1. Commit using Conventional Commits format without `@` in the subject:
+1. Commit using Conventional Commits format without `@` in the subject, and push to the PR's configured head remote/branch (`gh pr checkout` sets this up; do not hardcode `origin` for contributor forks, and abort before posting completion replies if the push fails):
    ```bash
    git add <modified_files>
    git commit -m "<type>(scope): <description>"
-   git push origin HEAD
+   git push || exit 1
    ```
 
 ---

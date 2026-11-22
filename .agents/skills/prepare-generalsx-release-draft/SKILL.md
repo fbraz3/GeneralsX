@@ -38,9 +38,12 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```
 
 ### Step 2: Gather Commits & Pull Requests
-1. Fetch tags and verify both `PREVIOUS_TAG` and `TARGET_TAG` resolve to commits before collecting the release range (stop with an error if either tag cannot be resolved):
+1. Fetch tags, ensure full history (unshallow if needed), and verify both `PREVIOUS_TAG` and `TARGET_TAG` resolve to commits before collecting the release range (stop with an error if fetch or tag resolution fails):
    ```bash
-   git fetch origin --tags
+   git fetch origin --tags || exit 1
+   if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+     git fetch --unshallow origin || exit 1
+   fi
    git rev-parse --verify "refs/tags/$PREVIOUS_TAG^{commit}" >/dev/null || { echo "ERROR: PREVIOUS_TAG ($PREVIOUS_TAG) not found" >&2; exit 1; }
    git rev-parse --verify "refs/tags/$TARGET_TAG^{commit}" >/dev/null || { echo "ERROR: TARGET_TAG ($TARGET_TAG) not found" >&2; exit 1; }
    SHAS=$(git rev-list "refs/tags/$PREVIOUS_TAG..refs/tags/$TARGET_TAG") || exit 1
@@ -51,7 +54,7 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    if ! PR_ROWS=$(
      set -euo pipefail
      for SHA in $SHAS; do
-       env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" \
+       env -u GITHUB_TOKEN -u GH_TOKEN gh api --paginate "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" \
          --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX" and .merged_at != null) | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"' || exit 1
      done | sort -u -t'|' -k1,1n
    ); then
