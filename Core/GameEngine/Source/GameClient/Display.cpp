@@ -150,7 +150,8 @@ Bool Display::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bi
 	UnsignedInt oldDisplayHeight=getHeight();
 	UnsignedInt oldDisplayWidth=getWidth();
 	Int oldViewWidth=TheTacticalView->getWidth();
-	Int oldViewHeight=TheTacticalView->getHeight();
+	// GeneralsX @feature ClaudeCode 22/11/2026 The framed height is what was scaled for the control bar.
+	Int oldFramingHeight=TheTacticalView->getFramingHeight();
 	Int oldViewOriginX,oldViewOriginY;
 	TheTacticalView->getOrigin(&oldViewOriginX,&oldViewOriginY);
 
@@ -159,7 +160,20 @@ Bool Display::setDisplayMode( UnsignedInt xres, UnsignedInt yres, UnsignedInt bi
 
 	//Adjust view to match previous proportions
 	TheTacticalView->setWidth((Real)oldViewWidth/(Real)oldDisplayWidth*(Real)xres);
-	TheTacticalView->setHeight((Real)oldViewHeight/(Real)oldDisplayHeight*(Real)yres);
+	// GeneralsX @feature ClaudeCode 22/11/2026 Keep the framed proportion. If the view was shortened for the
+	// control bar and the new display lays the UI out in a centred rect, draw the view at full height and only
+	// frame the camera for the shortened height (see ControlBar::setScaledViewportHeight).
+	const Int newFramingHeight = (Int)((Real)oldFramingHeight/(Real)oldDisplayHeight*(Real)yres);
+	if (oldFramingHeight < (Int)oldDisplayHeight && getUILayoutOriginX() > 0)
+	{
+		TheTacticalView->setFramingHeight(newFramingHeight);
+		TheTacticalView->setHeight(yres);
+	}
+	else
+	{
+		TheTacticalView->setFramingHeight(0);
+		TheTacticalView->setHeight(newFramingHeight);
+	}
 	TheTacticalView->setOrigin((Real)oldViewOriginX/(Real)oldDisplayWidth*(Real)xres,
 	(Real)oldViewOriginY/(Real)oldDisplayHeight*(Real)yres);
 	return TRUE;

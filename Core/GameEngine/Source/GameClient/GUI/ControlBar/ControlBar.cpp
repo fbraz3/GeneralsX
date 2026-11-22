@@ -3843,12 +3843,27 @@ void ControlBar::hideSpecialPowerShortcut()
 
 void ControlBar::setFullViewportHeight()
 {
+	TheTacticalView->setFramingHeight(0);
 	TheTacticalView->setHeight(TheDisplay->getHeight());
 }
 
 void ControlBar::setScaledViewportHeight()
 {
-	TheTacticalView->setHeight(TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale);
+	const Int scaledHeight = TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale;
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 When the control bar is laid out in the centred UI rect it no longer
+	// spans the display, so the world stays visible on both sides of it. Draw the view at full height and
+	// only frame the camera for the scaled height, instead of leaving black areas beside the bar.
+	if (TheDisplay->getUILayoutOriginX() > 0)
+	{
+		TheTacticalView->setFramingHeight(scaledHeight);
+		TheTacticalView->setHeight(TheDisplay->getHeight());
+	}
+	else
+	{
+		TheTacticalView->setFramingHeight(0);
+		TheTacticalView->setHeight(scaledHeight);
+	}
 }
 
 // GeneralsX @bugfix w1semannn 07/06/2026 Fix tooltip height clipping with Unicode fonts (Issue #153)

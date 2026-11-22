@@ -3778,7 +3778,8 @@ void InGameUI::postDraw()
 		Int startX = TheDisplay->getUILayoutOriginX() + (Int)(m_superweaponPosition.x * TheDisplay->getUILayoutWidth());
 		Int startY = (Int)(m_superweaponPosition.y * TheDisplay->getHeight());
 
-		Int bottomMargin = (Int)( (Real)TheTacticalView->getHeight() * 0.82f );
+		// GeneralsX @feature ClaudeCode 22/11/2026 Stay above the control bar even when the view is drawn at full height behind it.
+		Int bottomMargin = (Int)( (Real)TheTacticalView->getFramingHeight() * 0.82f );
 
 
 

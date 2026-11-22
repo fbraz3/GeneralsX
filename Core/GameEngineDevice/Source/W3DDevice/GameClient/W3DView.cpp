@@ -267,6 +267,20 @@ void W3DView::setHeight(Int height)
 }
 
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 See View::setFramingHeight.
+//-------------------------------------------------------------------------------------------------
+void W3DView::setFramingHeight(Int height)
+{
+	View::setFramingHeight(height);
+
+	updateViewPlane(getDefaultHorizontalFOV());
+
+	m_cameraAreaConstraintsValid = false;
+	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Sets the width of the viewport, while maintaining original camera perspective. */
 //-------------------------------------------------------------------------------------------------
 void W3DView::setWidth(Int width)
@@ -318,11 +332,18 @@ void W3DView::updateViewPlane(Real baseHorizontalFOV)
 	// is shorter than the display while the control bar is shown, and that must only crop the picture
 	// vertically, as it always did, instead of changing the horizontal fov.
 	const Real displayAspectRatio = (Real)TheDisplay->getWidth() / (Real)TheDisplay->getHeight();
-	const Real viewAspectRatio = (Real)width / (Real)height;
+	const Int framingHeight = getFramingHeight();
+	const Real viewAspectRatio = (Real)width / (Real)framingHeight;
 	const Real halfWidth = tan(baseHorizontalFOV * 0.5f) * calcHorPlusLayout(displayAspectRatio, baseHorizontalFOV).widening;
 	const Real halfHeight = halfWidth / viewAspectRatio;
 
-	m_3DCamera->Set_View_Plane(Vector2(-halfWidth, -halfHeight), Vector2(halfWidth, halfHeight));
+	// GeneralsX @feature ClaudeCode 22/11/2026 The camera frames the scene for the framing height. Rows of the view below
+	// that keep the same scale and extend the view plane downwards (an off-centre projection), so the
+	// world shows beside and behind the centred control bar without shifting what the camera centres on.
+	// Picking, culling and the radar view box read this view plane, so they cover the extra rows as well.
+	const Real bottom = halfHeight - 2.0f * halfHeight * ((Real)height / (Real)framingHeight);
+
+	m_3DCamera->Set_View_Plane(Vector2(-halfWidth, bottom), Vector2(halfWidth, halfHeight));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -659,7 +680,10 @@ Real W3DView::calcCameraAreaOffset(Real maxEdgeZ)
 
 	// Pick at the center
 	screen.x = 0.5f * getWidth() + m_originX;
-	screen.y = 0.5f * getHeight() + m_originY;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Measure within the framed part of the view so rows drawn below it
+	// (behind the control bar) do not tighten the constraints.
+	const Int framingHeight = getFramingHeight();
+	screen.y = 0.5f * framingHeight + m_originY;
 	getPickRay(&screen, &rayStart, &rayEnd);
 
 	// Looking at the horizon would yield infinite numbers.
@@ -670,7 +694,7 @@ Real W3DView::calcCameraAreaOffset(Real maxEdgeZ)
 	center.y = Vector3::Find_Y_At_Z(maxEdgeZ, rayStart, rayEnd);
 
 	const Bool isLookingDown = rayStart.Z >= rayEnd.Z;
-	const Real height = isLookingDown ? getHeight() : 0.0f;
+	const Real height = isLookingDown ? framingHeight : 0.0f;
 	screen.y = height + m_originY;
 	getPickRay(&screen, &rayStart, &rayEnd);
 

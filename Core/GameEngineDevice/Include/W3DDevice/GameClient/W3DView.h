@@ -162,6 +162,7 @@ public:
 
 	virtual void setWidth( Int width ) override;
 	virtual void setHeight( Int height ) override;
+	virtual void setFramingHeight( Int height ) override;	///< GeneralsX @feature ClaudeCode 22/11/2026 See View::setFramingHeight
 	virtual void setOrigin( Int x, Int y) override;			///< Sets location of top-left view corner on display
 
 	virtual void scrollBy( const Coord2D *delta ) override;  ///< Shift the view by the given delta
