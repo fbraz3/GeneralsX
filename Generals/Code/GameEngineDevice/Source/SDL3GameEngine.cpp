@@ -50,7 +50,6 @@
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
 #include "W3DDevice/Common/W3DRadar.h"
 #include "W3DDevice/GameClient/W3DParticleSys.h"
-#include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "Common/BIGFileSystem.h"
 #include "Common/GlobalData.h"
@@ -559,14 +558,6 @@ ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
 	}
 	fprintf(stderr, "INFO: SDL3GameEngine::createParticleSystemManager() -> W3DParticleSystemManager\n");
 	return NEW W3DParticleSystemManager;
-}
-
-WebBrowser *SDL3GameEngine::createWebBrowser(void)
-{
-	// WebBrowser uses Windows COM (CComObject<W3DWebBrowser>)
-	// Not available on Linux - return nullptr
-	fprintf(stderr, "WARNING: WebBrowser not available on Linux platform\n");
-	return nullptr;
 }
 
 /**

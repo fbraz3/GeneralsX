@@ -31,15 +31,13 @@
  *                                                                                             *
  *                  Last Update : June 26, 1997 [GH]                                           *
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include <max.h>
+#include "max_sdk.h"
 #include "w3dmtl.h"
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 
 
 // GameMtl flags values

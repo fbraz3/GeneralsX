@@ -29,13 +29,6 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
-#include <cstdint>
-#include <set>
-
-#if !defined(_WIN32)
-#include <filesystem>
-static std::set<std::string> s_failedMapLookups;
-#endif
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -336,15 +329,20 @@ AsciiString MapCache::getMapExtension() const
 	return "map";
 }
 
+AsciiString MapCache::getCachePath( const AsciiString &mapDir )
+{
+	AsciiString path = mapDir;
+	FileSystem::ensureTrailingPathSeparatorInPath(path);
+	path.concat(m_mapCacheName);
+	return path;
+}
+
 void MapCache::writeCacheINI( const AsciiString &mapDir )
 {
-	AsciiString filepath = mapDir;
-	// GeneralsX @bugfix fbraz 06/05/2026 Use portable separator for host filesystem paths to avoid creating literal "\\" filenames on POSIX.
-	filepath.concat('/');
+	AsciiString filepath = getCachePath(mapDir);
 
 	TheFileSystem->createDirectory(mapDir);
 
-	filepath.concat(m_mapCacheName);
 	FILE *fp = fopen(filepath.str(), "w");
 	DEBUG_ASSERTCRASH(fp != nullptr, ("Failed to create %s", filepath.str()));
 	if (fp == nullptr) {
@@ -456,29 +454,6 @@ void MapCache::updateCache()
 		m_doLoadStandardMapCacheINI = TRUE;
 	}
 
-#if !defined(_WIN32)
-	s_failedMapLookups.clear();
-	// GeneralsX @feature fbraz3 03/09/2026 Check user Documents directory for Zero Hour custom maps
-	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
-	const char* homeDir = getenv("HOME");
-	if (homeDir)
-	{
-		std::vector<std::string> docMapDirs = {
-			std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
-		};
-		for (const auto& dmd : docMapDirs)
-		{
-			std::error_code ec;
-			if (std::filesystem::exists(dmd, ec) && std::filesystem::is_directory(dmd, ec))
-			{
-				AsciiString docMaps(dmd.c_str());
-				loadMapsFromDisk(docMaps, FALSE);
-			}
-		}
-	}
-#endif
-
 	// Load standard maps from map cache last.
 	// This overwrites matching user maps to prevent munkees getting rowdy :)
 	if (m_doLoadStandardMapCacheINI)
@@ -530,9 +505,7 @@ Bool MapCache::clearUnseenMaps( const AsciiString &mapDir )
 void MapCache::loadMapsFromMapCacheINI( const AsciiString &mapDir )
 {
 	INI ini;
-	AsciiString fname;
-	// GeneralsX @bugfix fbraz 06/05/2026 Keep MapCache INI path consistent with writeCacheINI() on POSIX hosts.
-	fname.format("%s/%s", mapDir.str(), m_mapCacheName);
+	AsciiString fname = getCachePath(mapDir);
 
 	if (TheFileSystem->doesFileExist(fname.str()))
 	{
@@ -606,7 +579,7 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 }
 
 Bool MapCache::addMap(
-	const AsciiString &/*mapDir*/,
+	const AsciiString &mapDir,
 	const AsciiString &fname,
 	const AsciiString &lowerFname,
 	FileInfo &fileInfo,
@@ -696,17 +669,10 @@ Bool MapCache::addMap(
 	}
 	else
 	{
-		AsciiString stringFileName = fname;
+		AsciiString stringFileName;
+		stringFileName.format("%s\\%s", mapDir.str(), fname.str());
 		stringFileName.truncateBy(4);
-		const char *stringFileSeparator = getLastPathSeparator(stringFileName.str());
-		if (stringFileSeparator && *stringFileSeparator == '/')
-		{
-			stringFileName.concat("/map.str");
-		}
-		else
-		{
-			stringFileName.concat("\\map.str");
-		}
+		stringFileName.concat("\\map.str");
 		TheGameText->initMapStringFile(stringFileName);
 		md.m_displayName = TheGameText->fetch(nameLookupTag);
 		if (md.m_numPlayers >= 2)
@@ -881,23 +847,13 @@ static Bool addMapToMapListbox(
 
 		if (lbData.numColumns > 1)
 		{
-			GadgetListBoxSetItemData( lbData.listbox, reinterpret_cast<void*>(std::uintptr_t(imageItemData)), index, 1 );
+			GadgetListBoxSetItemData( lbData.listbox, (void *)imageItemData, index, 1 );
 		}
 
-		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Grow the listbox instead of truncating the custom map list when it fills up.
-		// >= instead of == guards against future refactors that add entries in batches or non-sequential order.
-		if (index >= lbData.numLength - 1)
+		// TheSuperHackers @performance Now stops processing when the list is full.
+		if (index == lbData.numLength - 1)
 		{
-			const Int newLength = lbData.numLength * 2;
-			GadgetListBoxSetListLength( lbData.listbox, newLength );
-
-			// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Bail out if the resize failed (e.g. allocation failure) instead of assuming growth succeeded.
-			if (GadgetListBoxGetListLength( lbData.listbox ) != newLength)
-			{
-				return false;
-			}
-
-			lbData.numLength = newLength;
+			return false;
 		}
 	}
 
@@ -1127,126 +1083,11 @@ Bool isOfficialMap( AsciiString mapName )
 
 const MapMetaData *MapCache::findMap(AsciiString mapName)
 {
-	if (mapName.isEmpty())
-		return nullptr;
-
-	auto normalizePath = [](const std::string& input) -> std::string {
-		std::string s = input;
-		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-		for (char &c : s) {
-			if (c == '\\') c = '/';
-		}
-		while (s.length() > 1 && s.back() == '/') s.pop_back();
-		return s;
-	};
-
-	auto extractBaseLeaf = [](const std::string& normalized) -> std::string {
-		size_t lastSlash = normalized.find_last_of('/');
-		std::string base = (lastSlash != std::string::npos) ? normalized.substr(lastSlash + 1) : normalized;
-		if (base.length() > 4 && base.substr(base.length() - 4) == ".map") {
-			base = base.substr(0, base.length() - 4);
-		}
-		return base;
-	};
-
-	std::string normQuery = normalizePath(mapName.str());
-	std::string baseQuery = extractBaseLeaf(normQuery);
-
-	// Direct lookup with exact key or normalized keys
+	mapName.toLower();
 	MapCache::iterator it = find(mapName);
-	if (it != end()) return &(it->second);
-
-	it = find(AsciiString(normQuery.c_str()));
-	if (it != end()) return &(it->second);
-
-	std::string normBackslash = normQuery;
-	for (char &c : normBackslash) { if (c == '/') c = '\\'; }
-	it = find(AsciiString(normBackslash.c_str()));
-	if (it != end()) return &(it->second);
-
-	// Comprehensive iterate fallback matching
-	for (it = begin(); it != end(); ++it)
-	{
-		AsciiString asciiDisplay;
-		asciiDisplay.translate(it->second.m_displayName);
-		std::string normDisplay = normalizePath(asciiDisplay.str());
-		if (normDisplay == normQuery || (!baseQuery.empty() && normDisplay == baseQuery))
-			return &(it->second);
-
-		std::string normKey = normalizePath(it->first.str());
-		std::string baseKey = extractBaseLeaf(normKey);
-		if (normKey == normQuery ||
-			(!normQuery.empty() && normKey.length() >= normQuery.length() && normKey.rfind(normQuery) == (normKey.length() - normQuery.length())) ||
-			(!normKey.empty() && normQuery.length() >= normKey.length() && normQuery.rfind(normKey) == (normQuery.length() - normKey.length())))
-		{
-			return &(it->second);
-		}
-
-		std::string normFn = normalizePath(it->second.m_fileName.str());
-		std::string baseFn = extractBaseLeaf(normFn);
-		if (!normFn.empty() && (
-			normFn == normQuery ||
-			(!normQuery.empty() && normFn.length() >= normQuery.length() && normFn.rfind(normQuery) == (normFn.length() - normQuery.length())) ||
-			(!normFn.empty() && normQuery.length() >= normFn.length() && normQuery.rfind(normFn) == (normQuery.length() - normFn.length()))))
-		{
-			return &(it->second);
-		}
-
-		if (!baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
-		{
-			return &(it->second);
-		}
-	}
-
-#if !defined(_WIN32)
-	// Fallback 2: Check standard custom map folders on POSIX if not in cache
-	const char* home = getenv("HOME");
-	if (home && !baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
-	{
-		std::vector<std::string> searchDirs = {
-			std::string(home) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps",
-			std::string(home) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
-		};
-
-		for (const auto& sdir : searchDirs)
-		{
-			std::error_code ec;
-			if (!std::filesystem::exists(sdir, ec)) continue;
-
-			for (const auto& entry : std::filesystem::recursive_directory_iterator(sdir, std::filesystem::directory_options::skip_permission_denied, ec))
-			{
-				if (ec) break;
-				if (entry.is_regular_file(ec) && entry.path().extension() == ".map")
-				{
-					std::string candidateStem = entry.path().stem().string();
-					std::string normCandidateStem = normalizePath(candidateStem);
-					if (normCandidateStem == baseQuery)
-					{
-						FileInfo fileInfo;
-						AsciiString fullPath(entry.path().string().c_str());
-						AsciiString fullPathLower = fullPath;
-						fullPathLower.toLower();
-						if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
-						{
-							AsciiString mapDir(sdir.c_str());
-							addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
-							MapCache::iterator foundIt = find(fullPathLower);
-							if (foundIt != end()) return &(foundIt->second);
-							for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
-								if (fit->second.m_fileName == fullPath) return &(fit->second);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		s_failedMapLookups.insert(baseQuery);
-	}
-#endif
-
-	return nullptr;
+	if (it == end())
+		return nullptr;
+	return &(it->second);
 }
 
 // ------------------------------------------------------------------------------------------------

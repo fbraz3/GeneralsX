@@ -30,49 +30,6 @@
  *                                                                                             *
  *                    $Revision:: 27                                                          $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
- *   MeshModelClass::Load_W3D -- Load a mesh from a W3D file                                   *
- *   MeshModelClass::read_chunks -- read all of the chunks for a mesh                          *
- *   MeshModelClass::read_vertices -- reads the vertex chunk                                   *
- *   MeshModelClass::read_texcoords -- read in the texture coordinates chunk                   *
- *   MeshModelClass::read_vertex_normals -- reads a vertex normal chunk from the w3d file      *
- *   MeshModelClass::read_v3_materials -- Reads in version 3 materials.                        *
- *   MeshModelClass::read_triangles -- read the triangles chunk                                *
- *   MeshModelClass::read_per_tri_materials -- read the material indices for each triangle     *
- *   MeshModelClass::read_user_text -- read in the user text chunk                             *
- *   MeshModelClass::read_vertex_colors -- read in the vertex colors chunk                     *
- *   MeshModelClass::read_vertex_influences -- read in the vertex influences chunk             *
- *   MeshModelClass::read_vertex_shade_indices -- read the shade index chunk                   *
- *   MeshModelClass::read_material_info -- read the material info chunk                        *
- *   MeshModelClass::read_shaders -- read the shaders chunk                                    *
- *   MeshModelClass::read_vertex_materials -- read the vertex materials chunk                  *
- *   MeshModelClass::read_textures -- read the textures chunk                                  *
- *   MeshModelClass::read_material_pass -- read a material pass chunk                          *
- *   MeshModelClass::read_vertex_material_ids -- read the vmat ids for a pass                  *
- *   MeshModelClass::read_shader_ids -- read the shader indexes for a pass                     *
- *   MeshModelClass::read_dcg -- read the per-vertex diffuse color for a pass                  *
- *   MeshModelClass::read_dig -- read the per-vertex diffuse illumination for a pass           *
- *   MeshModelClass::read_scg -- read the specular color for a pass                            *
- *   MeshModelClass::read_texture_stage -- read texture stage chunks                           *
- *   MeshModelClass::read_texture_ids -- read the texture ids for a pass,stage                 *
- *   MeshModelClass::read_stage_texcoords -- read the texcoords for a pass,stage               *
- *	  MeshModelClass::read_per_face_texcoord_ids -- read uv indices for given (pass,stage).	  *
- *	  MeshModelClass::read_prelit_material -- read prelit material chunks.							  *
- *   MeshModelClass::read_aabtree -- loads the aabtree chunk                                   *
- *   MeshModelClass::Save -- Save this mesh model!                                             *
- *   MeshLoadContextClass::MeshLoadContextClass -- constructor for MeshLoadContextClass        *
- *   MeshLoadContextClass::~MeshLoadContextClass -- destructor                                 *
- *   MeshLoadContextClass::Get_Texcoord_Array -- returns the texture coordinates array         *
- *   MeshLoadContextClass::Add_Shader -- adds a shader to the array                            *
- *   MeshLoadContextClass::Add_Vertex_Materail -- adds a vertex material                       *
- *   MeshLoadContextClass::Add_Texture -- adds a texture                                       *
- *   MeshLoadContextClass::Add_Legacy_Material -- adds a legacy material                       *
- *   MeshLoadContextClass::Peek_Legacy_Shader -- returns a legacy shader                       *
- *   MeshLoadContextClass::Peek_Legacy_Vertex_Material -- returns a pointer to a legacy vmat   *
- *   MeshLoadContextClass::Peek_Legacy_Texture -- returns a pointer to a texture               *
- *   MeshSaveContextClass::MeshSaveContextClass -- constructor                                 *
- *   MeshSaveContextClass::~MeshSaveContextClass -- destructor                                 *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "meshmdl.h"
@@ -223,18 +180,6 @@ public:
 };
 
 
-/***********************************************************************************************
- * MeshModelClass::Load_W3D -- Load a mesh from a W3D file                                     *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::Load_W3D(ChunkLoadClass & cload)
 {
 	MeshLoadContextClass * context = nullptr;
@@ -427,18 +372,6 @@ Error:
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_chunks -- read all of the chunks for a mesh                            *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_chunks(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -569,19 +502,6 @@ WW3DErrorType MeshModelClass::read_chunks(ChunkLoadClass & cload,MeshLoadContext
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_texcoords -- read in the texture coordinates chunk                     *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   3/6/98     GTH : Created.                                                                 *
- *   2/16/99    GTH : Moved into MeshModel                                                     *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_texcoords(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	W3dTexCoordStruct texcoord;
@@ -609,19 +529,6 @@ WW3DErrorType MeshModelClass::read_texcoords(ChunkLoadClass & cload,MeshLoadCont
 	return WW3D_ERROR_OK;
 }
 
-/***********************************************************************************************
- * MeshModelClass::read_v3_materials -- Reads in version 3 materials.                          *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   4/2/98     GTH : Created.                                                                 *
- *   2/16/99    GTH : Moved into MeshModelClass                                                *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_v3_materials(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	for (unsigned int mi=0; mi<context->Header.NumMaterials; mi++) {
@@ -799,18 +706,6 @@ Error:
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_per_tri_materials -- read the material indices for each triangle       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   4/7/98     GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_per_tri_materials(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	if (context->Header.NumMaterials == 1) return WW3D_ERROR_OK;
@@ -861,19 +756,6 @@ WW3DErrorType MeshModelClass::read_per_tri_materials(ChunkLoadClass & cload,Mesh
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_vertex_colors -- read in the vertex colors chunk                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/28/1997 GH  : Created.                                                                 *
- *   2/16/99    GTH : Moved into MeshModelClass                                                *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_vertex_colors(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -908,18 +790,6 @@ WW3DErrorType MeshModelClass::read_vertex_colors(ChunkLoadClass & cload,MeshLoad
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_material_info -- read the material info chunk                          *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_material_info(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	if (cload.Read(&(context->MatInfo),sizeof(W3dMaterialInfoStruct)) != sizeof(W3dMaterialInfoStruct)) {
@@ -930,18 +800,6 @@ WW3DErrorType MeshModelClass::read_material_info(ChunkLoadClass & cload,MeshLoad
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_shaders -- read the shaders chunk                                      *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_shaders(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	W3dShaderStruct shader;
@@ -960,18 +818,6 @@ WW3DErrorType MeshModelClass::read_shaders(ChunkLoadClass & cload,MeshLoadContex
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_vertex_materials -- read the vertex materials chunk                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_vertex_materials(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	while (cload.Open_Chunk()) {
@@ -990,19 +836,6 @@ WW3DErrorType MeshModelClass::read_vertex_materials(ChunkLoadClass & cload,MeshL
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_textures -- read the textures chunk                                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   3/05/99	 PDS : Broke the guts of this function into a util function in texture.cpp		  *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_textures(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	// Keep reading textures until there are no more...
@@ -1019,18 +852,6 @@ WW3DErrorType MeshModelClass::read_textures(ChunkLoadClass & cload,MeshLoadConte
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_material_pass -- read a material pass chunk                            *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_material_pass(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	context->CurTexStage = 0;
@@ -1076,19 +897,6 @@ WW3DErrorType MeshModelClass::read_material_pass(ChunkLoadClass & cload,MeshLoad
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_vertex_material_ids -- read the vmat ids for a pass                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_vertex_material_ids(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -1127,19 +935,6 @@ WW3DErrorType MeshModelClass::read_vertex_material_ids(ChunkLoadClass & cload,Me
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_shader_ids -- read the shader indexes for a pass                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_shader_ids(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -1220,20 +1015,7 @@ WW3DErrorType MeshModelClass::read_shader_ids(ChunkLoadClass & cload,MeshLoadCon
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_dcg -- read the per-vertex diffuse color for a pass                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *   2/9/2001   gth : converted to handle dx8 limitations                                      *
- *=============================================================================================*/
+// Read the per-vertex diffuse color for a pass.
 WW3DErrorType MeshModelClass::read_dcg(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -1288,20 +1070,7 @@ WW3DErrorType MeshModelClass::read_dcg(ChunkLoadClass & cload,MeshLoadContextCla
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_dig -- read the per-vertex diffuse illumination for a pass             *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *   2/9/2001   gth : converted to handle dx8 limitations                                      *
- *=============================================================================================*/
+// Read the per-vertex diffuse illumination for a pass.
 WW3DErrorType MeshModelClass::read_dig(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	/*
@@ -1350,38 +1119,13 @@ WW3DErrorType MeshModelClass::read_dig(ChunkLoadClass & cload,MeshLoadContextCla
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_scg -- read the specular color for a pass                              *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *   2/9/2001   gth : new dx8 code no longer supports this chunk                               *
- *=============================================================================================*/
+// Read the specular color for a pass. The dx8 code no longer supports this chunk.
 WW3DErrorType MeshModelClass::read_scg(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	return WW3D_ERROR_OK;
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_texture_stage -- read texture stage chunks                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_texture_stage(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	while (cload.Open_Chunk()) {
@@ -1416,19 +1160,6 @@ WW3DErrorType MeshModelClass::read_texture_stage(ChunkLoadClass & cload,MeshLoad
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_texture_ids -- read the texture ids for a pass,stage                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_texture_ids(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	uint32 texid;
@@ -1472,20 +1203,7 @@ WW3DErrorType MeshModelClass::read_texture_ids(ChunkLoadClass & cload,MeshLoadCo
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_stage_texcoords -- read the texcoords for a pass,stage                 *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *   7/14/99    IML : Lightmap support: calculate vertex count directly from chunk size.		  *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *=============================================================================================*/
+// The vertex count is calculated directly from the chunk size.
 WW3DErrorType MeshModelClass::read_stage_texcoords(ChunkLoadClass & cload,MeshLoadContextClass * context)
 {
 	unsigned				elementcount;
@@ -1520,19 +1238,6 @@ WW3DErrorType MeshModelClass::read_stage_texcoords(ChunkLoadClass & cload,MeshLo
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_per_face_texcoord_ids -- read uv indices for given (pass,stage).		  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/02/99    IML : Created.                                                                *
- *   9/1/2000   gth : Added alternate material desc support                                    *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_per_face_texcoord_ids (ChunkLoadClass &cload, MeshLoadContextClass *context)
 {
 	unsigned size;
@@ -1569,18 +1274,6 @@ WW3DErrorType MeshModelClass::read_per_face_texcoord_ids (ChunkLoadClass &cload,
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::read_prelit_material -- read prelit material chunks.								  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/02/99    IML : Created.                                                                *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::read_prelit_material (ChunkLoadClass &cload, MeshLoadContextClass *context)
 {
 	// If this chunk ID matches the selected prelit chunk ID then load it, otherwise skip it.
@@ -1627,19 +1320,7 @@ WW3DErrorType MeshModelClass::read_prelit_material (ChunkLoadClass &cload, MeshL
 }
 
 
-/***********************************************************************************************
- * MeshModelClass::post_process -- post loading, perform any processing on this model.			  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   05/02/00   IML : Created.                                                                 *
- *   7/13/2001  hy : Added static sort postprocessing                                          *
- *=============================================================================================*/
+// Includes static sort postprocessing.
 void MeshModelClass::post_process()
 {
 #if 0
@@ -1926,18 +1607,6 @@ void MeshModelClass::install_alternate_material_desc(MeshLoadContextClass * cont
 	}
 }
 
-/***********************************************************************************************
- * MeshLoadContextClass::MeshLoadContextClass -- constructor for MeshLoadContextClass          *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 MeshLoadContextClass::MeshLoadContextClass()
 {
 	memset(&Header,0,sizeof(Header));
@@ -1950,18 +1619,6 @@ MeshLoadContextClass::MeshLoadContextClass()
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::~MeshLoadContextClass -- destructor                                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 MeshLoadContextClass::~MeshLoadContextClass()
 {
 	int i;
@@ -1981,20 +1638,7 @@ MeshLoadContextClass::~MeshLoadContextClass()
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Get_Texcoord_Array -- returns the texture coordinates array           *
- *                                                                                             *
- * This function mainly exists to support the obsolete version 3.0 w3d files                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
+// This function mainly exists to support the obsolete version 3.0 w3d files.
 W3dTexCoordStruct * MeshLoadContextClass::Get_Texcoord_Array()
 {
 	if (TexCoords == nullptr) {
@@ -2004,18 +1648,6 @@ W3dTexCoordStruct * MeshLoadContextClass::Get_Texcoord_Array()
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Add_Shader -- adds a shader to the array                              *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 int MeshLoadContextClass::Add_Shader(ShaderClass shader)
 {
 	int index = Shaders.Count();
@@ -2024,18 +1656,6 @@ int MeshLoadContextClass::Add_Shader(ShaderClass shader)
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Add_Vertex_Materail -- adds a vertex material                         *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 int MeshLoadContextClass::Add_Vertex_Material(VertexMaterialClass * vmat)
 {
 	WWASSERT(vmat != nullptr);
@@ -2046,18 +1666,6 @@ int MeshLoadContextClass::Add_Vertex_Material(VertexMaterialClass * vmat)
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Add_Texture -- adds a texture                                         *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 int MeshLoadContextClass::Add_Texture(TextureClass * tex)
 {
 	WWASSERT(tex != nullptr);
@@ -2068,21 +1676,7 @@ int MeshLoadContextClass::Add_Texture(TextureClass * tex)
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Add_Legacy_Material -- adds a legacy material                         *
- *                                                                                             *
- * This function will check to see if the parameters of any of the parts of the material are   *
- * duplicated.  Only unique shaders/vertexmaterials will be actually added.                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
+// Only unique shaders/vertexmaterials will be actually added.
 void MeshLoadContextClass::Add_Legacy_Material(ShaderClass shader,VertexMaterialClass * vmat,TextureClass * tex)
 {
 	// create a new legacy material
@@ -2137,21 +1731,7 @@ void MeshLoadContextClass::Add_Legacy_Material(ShaderClass shader,VertexMaterial
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Peek_Legacy_Shader -- returns a legacy shader								  *
- *                                                                                             *
- * This function does the re-indexing to go from the legacy shader index to the actual shader  *
- * index and then returns that shader                                                          *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
+// Re-indexes from the legacy shader index to the actual shader index and then returns that shader.
 ShaderClass MeshLoadContextClass::Peek_Legacy_Shader(int legacy_material_index)
 {
 	WWASSERT(legacy_material_index >= 0);
@@ -2161,18 +1741,6 @@ ShaderClass MeshLoadContextClass::Peek_Legacy_Shader(int legacy_material_index)
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Peek_Legacy_Vertex_Material -- returns a pointer to a legacy vertex ma*
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 VertexMaterialClass * MeshLoadContextClass::Peek_Legacy_Vertex_Material(int legacy_material_index)
 {
 	WWASSERT(legacy_material_index >= 0);
@@ -2186,18 +1754,6 @@ VertexMaterialClass * MeshLoadContextClass::Peek_Legacy_Vertex_Material(int lega
 }
 
 
-/***********************************************************************************************
- * MeshLoadContextClass::Peek_Legacy_Texture -- returns a pointer to a texture                 *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/10/98   GTH : Created.                                                                 *
- *=============================================================================================*/
 TextureClass * MeshLoadContextClass::Peek_Legacy_Texture(int legacy_material_index)
 {
 	WWASSERT(legacy_material_index >= 0);
@@ -2219,17 +1775,6 @@ Vector2 * MeshLoadContextClass::Get_Temporary_UV_Array(int elementcount)
 
 
 
-/***********************************************************************************************
- * MeshSaveContextClass::MeshSaveContextClass -- constructor                                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *=============================================================================================*/
 MeshSaveContextClass::MeshSaveContextClass() :
 	CurPass(0),
 	CurStage(0)
@@ -2237,17 +1782,6 @@ MeshSaveContextClass::MeshSaveContextClass() :
 }
 
 
-/***********************************************************************************************
- * MeshSaveContextClass::~MeshSaveContextClass -- destructor                                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *=============================================================================================*/
 MeshSaveContextClass::~MeshSaveContextClass()
 {
 }
@@ -2258,18 +1792,6 @@ MeshSaveContextClass::~MeshSaveContextClass()
 
 #if 0 // MESH SAVING CODE HAS NOT BEEN MAINTAINED... Leaving here for future reference if we ever need it :-)
 
-/***********************************************************************************************
- * MeshModelClass::Save -- Save this mesh model!                                               *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   2/16/99    GTH : Created.                                                                 *
- *=============================================================================================*/
 WW3DErrorType MeshModelClass::Save_W3D(ChunkSaveClass & csave)
 {
 	MeshSaveContextClass * context = W3DNEW MeshSaveContextClass;

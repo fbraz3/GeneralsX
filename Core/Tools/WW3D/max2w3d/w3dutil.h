@@ -31,13 +31,11 @@
  *                                                                                             *
  *                    $Revision:: 29                                                          $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include <max.h>
+#include "max_sdk.h"
 #include "utilapi.h"
 #include "dllmain.h"
 #include "resource.h"
