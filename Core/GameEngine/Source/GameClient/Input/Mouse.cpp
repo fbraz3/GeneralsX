@@ -875,7 +875,8 @@ void Mouse::setCursorTooltip( UnicodeString tooltip, Int delay, const RGBColor *
 	if ( !tooltip.isEmpty() && width != m_lastTooltipWidth )
 	{
 		forceRecalc = TRUE;
-		Int widthInPixels = (Int)(TheDisplay->getWidth()*m_tooltipWidth*width);
+		// GeneralsX @feature ClaudeCode 22/11/2026 Tooltip width follows the UI layout rect so tooltips are not twice as wide on 32:9.
+		Int widthInPixels = (Int)(TheDisplay->getUILayoutWidth()*m_tooltipWidth*width);
 		if (widthInPixels < 10)
 		{
 			widthInPixels = 120;

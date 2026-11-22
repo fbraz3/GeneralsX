@@ -458,7 +458,7 @@ void ResetBattleHonorInsertion()
 }
 void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int itemData, Int& row, Int& column, UnicodeString text = UnicodeString::TheEmptyString)
 {
-	Int width = MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH);
+	Int width = MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getUILayoutWidth() / (Real)DEFAULT_DISPLAY_WIDTH);
 	Int height = MAX_BATTLE_HONOR_IMAGE_HEIGHT * (TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT);
 
 	static Int enabledColor = 0xFFFFFFFF;
