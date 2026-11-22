@@ -73,6 +73,9 @@ public:
 	// GeneralsX @feature fbraz3 20/11/2026 Option to enable/disable Command+Left-Click-Drag map panning on macOS
 	Bool getCommandDragScrollEnabled() const;
 	void setCommandDragScrollEnabled(Bool val);
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection options for displays wider than 16:9
+	Bool getUltrawideHorPlusEnabled() const;
+	Real getUltrawideMaxHorizontalFOV() const;
 	Bool getRetaliationModeEnabled();
 	Bool getDoubleClickAttackMoveEnabled();
 	Int getJpegQuality() const;

@@ -54,6 +54,20 @@ Test multiple replays in parallel without graphics (requires optimized VC6 build
 ```
 Test in windowed mode at 1440p resolution.
 
+## Ultrawide Camera (Hor+)
+
+On displays wider than 16:9 the tactical camera keeps the 16:9 vertical field of view and widens the horizontal field of view instead. These are settings, not command-line flags:
+
+| `Options.ini` key | Environment override | Default | Description |
+|-------------------|----------------------|---------|-------------|
+| `UltrawideHorPlus = yes/no` | `GENERALSX_ULTRAWIDE_HORPLUS=1/0` | `yes` | Turns Hor+ on or off. Off restores the fixed 50 degree horizontal field of view with aspect-scaled camera height. |
+| `UltrawideMaxHorizontalFOV = <degrees>` | `GENERALSX_ULTRAWIDE_MAX_HFOV=<degrees>` | `70` | Upper limit for the widened horizontal field of view (50 to 170). Past the limit the remaining width is covered by camera height. |
+
+```bash
+GENERALSX_ULTRAWIDE_MAX_HFOV=120 ./GeneralsXZH -win -xres 5120 -yres 1440
+```
+Runs 32:9 without an effective limit (86 degree horizontal field of view).
+
 ## Platform-Specific Notes
 
 ### Windows

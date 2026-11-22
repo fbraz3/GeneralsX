@@ -1131,6 +1131,9 @@ GlobalData::GlobalData()
 	m_useRightMouseScrollWithAlternateMouse = TRUE;
 	// GeneralsX @feature fbraz3 20/11/2026 Enable Command+Left-Click-Drag map panning on macOS by default
 	m_useCommandDragScroll = TRUE;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection on by default, horizontal fov capped at 70 degrees
+	m_ultrawideHorPlus = TRUE;
+	m_ultrawideMaxHorizontalFOV = 70.0f;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
@@ -1275,6 +1278,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_useAlternateMouse = optionPref.getAlternateMouseModeEnabled();
 	TheWritableGlobalData->m_useRightMouseScrollWithAlternateMouse = optionPref.getRightMouseScrollWithAlternateMouseEnabled();
 	TheWritableGlobalData->m_useCommandDragScroll = optionPref.getCommandDragScrollEnabled();
+	TheWritableGlobalData->m_ultrawideHorPlus = optionPref.getUltrawideHorPlusEnabled();
+	TheWritableGlobalData->m_ultrawideMaxHorizontalFOV = optionPref.getUltrawideMaxHorizontalFOV();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
 	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();

@@ -112,16 +112,42 @@ constexpr const Real HorPlusReferenceAspectRatio = 16.0f / 9.0f;
 constexpr const Real DefaultHorizontalFOVDegrees = 50.0f; ///< Default W3D horizontal fov for a full-screen view.
 
 //-------------------------------------------------------------------------------------------------
-// GeneralsX @feature ClaudeCode 22/11/2026 Returns the factor by which the view plane is widened
-// horizontally for the given view aspect ratio. This is render-only math (CRT, not WWMath) and
-// never feeds the simulation.
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ layout for a view of the given aspect ratio.
+// Up to the limit of TheGlobalData->m_ultrawideMaxHorizontalFOV the extra width is covered purely by
+// a wider horizontal fov. Past that limit the fov stops growing and the remaining aspect ratio is
+// covered by raising the camera, which keeps the vertical ground coverage of the reference aspect.
+// This is render-only math (CRT, not WWMath) and never feeds the simulation.
 //-------------------------------------------------------------------------------------------------
-static Real calcHorPlusWidening(Real aspectRatio)
+struct HorPlusLayout
 {
-	if (aspectRatio <= HorPlusReferenceAspectRatio)
-		return 1.0f;
+	Real widening;          ///< Factor applied to the view plane half-width of the base horizontal fov.
+	Real heightAspectRatio; ///< Aspect ratio the default camera height limits are derived from.
+	Real heightScale;       ///< Additional camera height factor for the width the fov limit left uncovered.
+};
 
-	return aspectRatio / HorPlusReferenceAspectRatio;
+static HorPlusLayout calcHorPlusLayout(Real aspectRatio, Real baseHorizontalFOV)
+{
+	HorPlusLayout layout;
+	layout.widening = 1.0f;
+	layout.heightAspectRatio = aspectRatio;
+	layout.heightScale = 1.0f;
+
+	if (!TheGlobalData->m_ultrawideHorPlus || aspectRatio <= HorPlusReferenceAspectRatio)
+		return layout;
+
+	const Real tanHalfBase = tan(baseHorizontalFOV * 0.5f);
+	if (tanHalfBase <= 0.0f)
+		return layout;
+
+	const Real tanHalfMax = tan(DEG_TO_RADF(TheGlobalData->m_ultrawideMaxHorizontalFOV) * 0.5f);
+	const Real maxWidening = std::max(1.0f, tanHalfMax / tanHalfBase);
+	const Real fullWidening = aspectRatio / HorPlusReferenceAspectRatio;
+
+	layout.widening = std::min(fullWidening, maxWidening);
+	layout.heightAspectRatio = HorPlusReferenceAspectRatio;
+	layout.heightScale = fullWidening / layout.widening;
+
+	return layout;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -275,7 +301,8 @@ Real W3DView::getDefaultHorizontalFOV() const
 	camera view plane, so this is the single place that decides the projection. */
 // GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen. Up to the reference aspect ratio the
 // base horizontal fov is used as is. Wider views keep the vertical fov of the reference aspect
-// ratio and extend the view sideways instead of narrowing it vertically.
+// ratio and extend the view sideways instead of narrowing it vertically, up to the configured
+// horizontal fov limit. With Hor+ switched off this reproduces the previous fixed horizontal fov.
 //-------------------------------------------------------------------------------------------------
 void W3DView::updateViewPlane(Real baseHorizontalFOV)
 {
@@ -286,7 +313,7 @@ void W3DView::updateViewPlane(Real baseHorizontalFOV)
 		return;
 
 	const Real aspectRatio = (Real)width / (Real)height;
-	const Real halfWidth = tan(baseHorizontalFOV * 0.5f) * calcHorPlusWidening(aspectRatio);
+	const Real halfWidth = tan(baseHorizontalFOV * 0.5f) * calcHorPlusLayout(aspectRatio, baseHorizontalFOV).widening;
 	const Real halfHeight = halfWidth / aspectRatio;
 
 	m_3DCamera->Set_View_Plane(Vector2(-halfWidth, -halfHeight), Vector2(halfWidth, halfHeight));
@@ -2297,11 +2324,10 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 
 	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen: beyond the reference aspect ratio the
 	// extra width is covered by the wider horizontal fov (see updateViewPlane), so the camera height
-	// stays at the value of the reference aspect ratio instead of rising further.
-	if (currentAspectRatio > HorPlusReferenceAspectRatio)
-	{
-		currentAspectRatio = HorPlusReferenceAspectRatio;
-	}
+	// stays at the value of the reference aspect ratio. Only the width that the horizontal fov limit
+	// leaves uncovered still raises the camera.
+	const HorPlusLayout horPlus = calcHorPlusLayout(currentAspectRatio, DEG_TO_RADF(DefaultHorizontalFOVDegrees));
+	currentAspectRatio = horPlus.heightAspectRatio;
 
 	if (currentAspectRatio > baseAspectRatio)
 	{
@@ -2311,6 +2337,8 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 	{
 		aspectRatioScale = fabs(( 1 - ( baseAspectRatio - currentAspectRatio) ));
 	}
+
+	aspectRatioScale *= horPlus.heightScale;
 
 	m_maxHeightAboveGround = TheGlobalData->m_maxCameraHeight * aspectRatioScale * heightScale;
 	m_minHeightAboveGround = TheGlobalData->m_minCameraHeight * aspectRatioScale;
