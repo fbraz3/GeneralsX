@@ -41,6 +41,8 @@ class STLSpecialAlloc;
 //--------------------------------------------------------------------------------- System Includes
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
+    // GeneralsX @build fbraz 22/11/2026 Include winsock2.h before windows.h so NGMP's ws2ipdef.h never collides with winsock.h.
+    #include <winsock2.h>
     #include <windows.h>
 #else
     // GeneralsX @build BenderAI 09/02/2026 Linux compatibility - Windows API stubs
