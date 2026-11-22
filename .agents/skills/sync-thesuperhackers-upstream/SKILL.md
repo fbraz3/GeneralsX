@@ -75,6 +75,8 @@ Never use blanket conflict strategies (`--ours` / `--theirs`) across large areas
 - Preserve **SDL3** (windowing/input), **DXVK** (graphics), **MiniAudio** (primary audio; OpenAL is deprecated), and **FFmpeg** (video).
 - Enforce strict platform isolation: no Win32, Cocoa, or X11 calls in game logic (`GameEngine/`).
 - Treat INI parser changes as high risk on macOS (check Apple deployment target compatibility for numeric parsing).
+- **Windows transitive header removals**: When upstream removes broad Windows/ATL headers (e.g., `atlbase.h` from `PreRTS.h`), Windows-only NGMP/networking headers (such as `NetworkMesh.h` including `<ws2ipdef.h>`) can lose transitive `<winsock2.h>` includes. Ensure `<winsock2.h>` is explicitly included before `<ws2ipdef.h>` / `<ws2tcpip.h>`.
+- **Emscripten/POSIX macro collisions**: New upstream constants (e.g., `TextureAtlas::PAGE_SIZE`) may collide with C/POSIX macros in Emscripten/musl `<limits.h>` (`PAGE_SIZE`, etc.). Guard with `#ifdef <MACRO> / #undef <MACRO> / #endif` after system includes when needed, and verify `webgpu` and Windows `generalsxzh` CI targets.
 
 ### NGMP (GeneralsOnline) Preservation
 - Upstream does not know about NGMP and actively modifies legacy GameSpy/Peer networking.

@@ -2,6 +2,8 @@
 #pragma once
 
 #ifdef _WIN32
+// GeneralsX @build fbraz 22/11/2026 Include winsock2.h before ws2ipdef.h (no longer pulled transitively after PreRTS.h removed atlbase.h).
+#include <winsock2.h>
 #include <ws2ipdef.h>
 #endif
 #include <mutex>

@@ -25,6 +25,11 @@
 #include <map>
 #include <vector>
 
+// GeneralsX @build fbraz 22/11/2026 Emscripten/musl <limits.h> defines PAGE_SIZE as a macro, breaking TextureAtlas::PAGE_SIZE.
+#ifdef PAGE_SIZE
+#undef PAGE_SIZE
+#endif
+
 namespace TextureAtlas
 {
 constexpr const int MIP_LEVEL_COUNT = 5;
