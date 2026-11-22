@@ -46,7 +46,6 @@ class StdBIGFileSystem;
 class W3DModuleFactory;
 class W3DGameLogic;
 class W3DGameClient;
-class W3DWebBrowser;
 class W3DFunctionLexicon;
 class W3DRadar;
 class W3DThingFactory;
@@ -95,7 +94,6 @@ public:
 	virtual FunctionLexicon *createFunctionLexicon(void);
 	// GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signatures after sync.
 	virtual Radar *createRadar(Bool dummy);
-	virtual WebBrowser *createWebBrowser(void);
 	virtual ParticleSystemManager* createParticleSystemManager(Bool dummy);
 	virtual AudioManager *createAudioManager(Bool dummy);
 
