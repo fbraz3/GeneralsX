@@ -2295,6 +2295,14 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 	Real currentAspectRatio = (Real)TheTacticalView->getWidth() / (Real)TheTacticalView->getHeight();
 	Real aspectRatioScale = 0.0f;
 
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen: beyond the reference aspect ratio the
+	// extra width is covered by the wider horizontal fov (see updateViewPlane), so the camera height
+	// stays at the value of the reference aspect ratio instead of rising further.
+	if (currentAspectRatio > HorPlusReferenceAspectRatio)
+	{
+		currentAspectRatio = HorPlusReferenceAspectRatio;
+	}
+
 	if (currentAspectRatio > baseAspectRatio)
 	{
 		aspectRatioScale = fabs(( 1 + ( currentAspectRatio - baseAspectRatio) ));
