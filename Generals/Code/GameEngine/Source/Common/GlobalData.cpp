@@ -1107,11 +1107,11 @@ GlobalData::GlobalData()
 	m_useRightMouseScrollWithAlternateMouse = TRUE;
 	// GeneralsX @feature fbraz3 20/11/2026 Enable Command+Left-Click-Drag map panning on macOS by default
 	m_useCommandDragScroll = TRUE;
-	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection on by default, horizontal fov capped at 70 degrees
-	m_ultrawideHorPlus = TRUE;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection, opt-in (GeneralsX menu or Options.ini), horizontal fov capped at 70 degrees
+	m_ultrawideHorPlus = FALSE;
 	m_ultrawideMaxHorizontalFOV = 70.0f;
-	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on wider displays, on by default
-	m_ultrawideUI = TRUE;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on wider displays, opt-in (GeneralsX menu or Options.ini)
+	m_ultrawideUI = FALSE;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
