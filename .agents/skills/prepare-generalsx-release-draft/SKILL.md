@@ -38,29 +38,40 @@ Generate engaging, highly structured, and accurate release notes for a `Generals
    ```
 
 ### Step 2: Gather Commits & Pull Requests
-1. Inspect all commits between the previous release and target release (or `HEAD` if targeting current unreleased checkout):
+1. Resolve a valid end ref (`END_REF`, preferring `$TARGET_TAG` if it exists locally, otherwise `HEAD`) and inspect all commits in the release range:
    ```bash
-   git log --oneline "$PREVIOUS_TAG..$TARGET_TAG"
+   END_REF="$TARGET_TAG"
+   git rev-parse --verify "$END_REF" >/dev/null 2>&1 || END_REF="HEAD"
+   git log --oneline "$PREVIOUS_TAG..$END_REF"
    ```
-2. Retrieve PR metadata associated with the commits in this release range without arbitrary limits:
+2. Retrieve PR metadata associated with the commits in this release range without arbitrary limits, failing immediately if any `gh api` call errors:
    ```bash
-   for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
-     env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX") | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"'
-   done | sort -u -t'|' -k1,1n
+   PR_ROWS=$(
+     set -euo pipefail
+     for SHA in $(git rev-list "$PREVIOUS_TAG..$END_REF"); do
+       env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}/pulls" \
+         --jq '.[] | select(.base.repo.full_name == "fbraz3/GeneralsX") | "\(.number)|\(.title)|\(.user.login)|\(.html_url)"'
+     done | sort -u -t'|' -k1,1n
+   )
    ```
 3. View specific PR descriptions to understand key technical details:
    ```bash
-   env -u GITHUB_TOKEN -u GH_TOKEN gh pr view "$PR_NUMBER" --json title,body,author
+   for PR_NUMBER in $(printf '%s\n' "$PR_ROWS" | cut -d'|' -f1); do
+     env -u GITHUB_TOKEN -u GH_TOKEN gh pr view "$PR_NUMBER" --json title,body,author
+   done
    ```
 4. Check recent worklog entries in `docs/WORKLOG/YYYY-MM-DIARY.md` and active planning documents in `docs/WORKDIR/` for additional context.
 
 ### Step 3: Identify External Contributors
 1. Extract unique authors from the PR list collected in Step 2:
    - Identify author logins excluding the core maintainer (`fbraz3`) and automated bots (`*bot*`, `github-actions[bot]`, `dependabot[bot]`, `coderabbitai[bot]`).
-2. Resolve each commit author in `$PREVIOUS_TAG..$TARGET_TAG` to a GitHub login while pairing with commit SHAs, ensuring direct or non-PR commits are accurately attributed without losing commit context:
+2. Resolve each commit author in `$PREVIOUS_TAG..$END_REF` to a GitHub login while pairing with commit SHAs, checking the exit status of `gh api` before falling back to the Git author name:
    ```bash
-   for SHA in $(git rev-list "$PREVIOUS_TAG..$TARGET_TAG"); do
-     LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty')
+   for SHA in $(git rev-list "$PREVIOUS_TAG..$END_REF"); do
+     if ! LOGIN=$(env -u GITHUB_TOKEN -u GH_TOKEN gh api "repos/fbraz3/GeneralsX/commits/${SHA}" --jq '.author.login // empty'); then
+       echo "ERROR: gh api failed for commit $SHA" >&2
+       exit 1
+     fi
      if [ -n "$LOGIN" ]; then
        echo "${SHA}|${LOGIN}|github"
      else

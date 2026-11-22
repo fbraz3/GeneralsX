@@ -9,4 +9,4 @@ agent: Bender
 
 The canonical instructions for this workflow live in [`.agents/skills/coderabbit-triage/SKILL.md`](../../.agents/skills/coderabbit-triage/SKILL.md).
 
-Read and follow [`.agents/skills/coderabbit-triage/SKILL.md`](../../.agents/skills/coderabbit-triage/SKILL.md) in full for the pull request specified in the prompt arguments.
+Before delegating, ensure the working tree is clean (`git status --porcelain`), check out the PR branch (`gh pr checkout <PR_NUMBER>`), and pass any specific review ID from a `#pullrequestreview-<id>` URL to `.agents/skills/coderabbit-triage/SKILL.md` so fixes are applied to the PR branch and the requested review's outside-diff findings are inspected.

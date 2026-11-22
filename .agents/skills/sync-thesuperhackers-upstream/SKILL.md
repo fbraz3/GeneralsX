@@ -25,7 +25,7 @@ Perform a full upstream sync from the `thesuperhackers` remote into `GeneralsX` 
 3. **Configure Remote & Fetch**:
    - Check if `thesuperhackers` remote exists; if not, add it (`git@github.com:TheSuperHackers/GeneralsGameCode.git`).
    - Run `git fetch thesuperhackers`.
-4. **Merge Upstream**: Run `git merge thesuperhackers/main` into the new sync branch.
+4. **Merge Upstream**: Run `git merge --no-commit --no-ff thesuperhackers/main` into the new sync branch so the merge stays uncommitted until validation and the worklog update are complete.
 5. **Conflict Resolution Plan**:
    Before editing conflicted files, analyze the conflict list and structure a resolution plan by subsystem:
    - Build system & CMake presets

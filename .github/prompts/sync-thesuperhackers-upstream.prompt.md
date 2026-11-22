@@ -1,7 +1,7 @@
 ---
 name: sync-thesuperhackers-upstream
 description: Sync the repository with the TheSuperHackers upstream repository using a dated sync branch, carefully resolving conflicts while keeping GeneralsX's cross-platform strategy and reporting deliverables.
-argument-hint: Optional branch suffix or target ref (defaults to thesuperhackers/main)
+argument-hint: Optional notes or focus areas for the upstream sync (defaults to merging thesuperhackers/main into a dated sync branch)
 ---
 
 # Sync TheSuperHackers Upstream
