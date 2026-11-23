@@ -1175,6 +1175,7 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 	if (it != end()) return &(it->second);
 
 	// Comprehensive iterate fallback matching
+	const bool isUnqualifiedQuery = (normQuery.find('/') == std::string::npos);
 	auto endsWithPathComponent = [](const std::string& full, const std::string& suffix) -> bool {
 		if (suffix.empty() || full.length() < suffix.length())
 			return false;
@@ -1189,7 +1190,7 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 		AsciiString asciiDisplay;
 		asciiDisplay.translate(it->second.m_displayName);
 		std::string normDisplay = normalizePath(asciiDisplay.str());
-		if (normDisplay == normQuery || (!baseQuery.empty() && normDisplay == baseQuery))
+		if (normDisplay == normQuery || (isUnqualifiedQuery && !baseQuery.empty() && normDisplay == baseQuery))
 			return &(it->second);
 
 		std::string normKey = normalizePath(it->first.str());
@@ -1211,18 +1212,23 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 			return &(it->second);
 		}
 
-		if (!baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
+		if (isUnqualifiedQuery && !baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
 		{
 			return &(it->second);
 		}
 	}
 
 	// Fallback 2: Check platform extra custom map folders if not in cache
-	if (!baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
+	if (!baseQuery.empty() && s_failedMapLookups.find(normQuery) == s_failedMapLookups.end())
 	{
 		std::string matchedDir;
 		const std::string foundPath = Platform::FindCustomMapByStem(baseQuery, matchedDir);
-		if (!foundPath.empty())
+		const std::string normFound = normalizePath(foundPath);
+		const bool pathMatchesQuery = isUnqualifiedQuery ||
+			normFound == normQuery ||
+			endsWithPathComponent(normFound, normQuery) ||
+			endsWithPathComponent(normQuery, normFound);
+		if (!foundPath.empty() && pathMatchesQuery)
 		{
 			FileInfo fileInfo;
 			AsciiString fullPath(foundPath.c_str());
@@ -1240,7 +1246,7 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 			}
 		}
 
-		s_failedMapLookups.insert(baseQuery);
+		s_failedMapLookups.insert(normQuery);
 	}
 
 	return nullptr;
