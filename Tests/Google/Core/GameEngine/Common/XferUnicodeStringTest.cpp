@@ -26,9 +26,45 @@
 #include <string>
 #include <vector>
 
+#include "Common/Debug.h"
 #include "Common/UnicodeString.h"
 #include "Common/XferLoad.h"
 #include "Common/XferSave.h"
+
+namespace
+{
+
+bool g_crashCaptured = false;
+std::string g_crashMessage;
+
+void captureCrash(const char *message)
+{
+	g_crashCaptured = true;
+	g_crashMessage = message != nullptr ? message : "";
+}
+
+// XferSave reports a string it refuses with DEBUG_CRASH before it throws, and the test executable
+// turns every crash into a test failure, so the expected one is taken out of the way here.
+class ScopedCrashCapture
+{
+public:
+	ScopedCrashCapture() : m_previous(DebugGetCrashHandler())
+	{
+		g_crashCaptured = false;
+		g_crashMessage.clear();
+		DebugSetCrashHandler(captureCrash);
+	}
+
+	~ScopedCrashCapture()
+	{
+		DebugSetCrashHandler(m_previous);
+	}
+
+private:
+	DebugCrashHandler m_previous;
+};
+
+}  // namespace
 
 // The save file format stores a unicode string as a length byte followed by 2 byte UTF-16 code
 // units, the width of wchar_t on Windows. The port writes and reads that width on every platform,
@@ -141,7 +177,7 @@ TEST_F(XferUnicodeStringTest, WritesAnEmptyStringAsItsLengthAlone)
 	EXPECT_STREQ(readString().str(), L"");
 }
 
-// A character outside the basic multilingual plane is one wchar_t on Linux and macOS and a
+// A character outside the basic multilingual plane is one wchar_t where wchar_t is 4 bytes and a
 // surrogate pair on Windows. The file holds the surrogate pair either way, so the length header
 // counts two code units for it and the saves stay interchangeable.
 TEST_F(XferUnicodeStringTest, WritesASupplementaryCharacterAsASurrogatePair)
@@ -194,8 +230,16 @@ TEST_F(XferUnicodeStringTest, RefusesAStringThatEncodesToMoreThan255CodeUnits)
 
 	XferSave xfer;
 	xfer.open(AsciiString(m_path.c_str()));
-	EXPECT_THROW(xfer.xferUnicodeString(&text), XferStatus);
+	{
+		ScopedCrashCapture crash;
+		EXPECT_THROW(xfer.xferUnicodeString(&text), XferStatus);
+	}
 	xfer.close();
+
+#ifdef DEBUG_CRASHING
+	EXPECT_TRUE(g_crashCaptured);
+	EXPECT_NE(g_crashMessage.find("too long"), std::string::npos);
+#endif
 }
 
 TEST_F(XferUnicodeStringTest, WritesTheLargestStringThatStillFits)
