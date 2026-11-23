@@ -64,6 +64,14 @@ protected:
 			std::istreambuf_iterator<char>());
 	}
 
+	// Puts bytes in the test file as they would come from a save written elsewhere, so that the
+	// reader is exercised on input the writer did not produce.
+	void writeBytes(const std::vector<UnsignedByte> &bytes)
+	{
+		std::ofstream file(m_path, std::ios::binary | std::ios::trunc);
+		file.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+	}
+
 	// Reads a string back from the test file.
 	UnicodeString readString()
 	{
@@ -131,4 +139,75 @@ TEST_F(XferUnicodeStringTest, WritesAnEmptyStringAsItsLengthAlone)
 	ASSERT_EQ(bytes.size(), 1u);
 	EXPECT_EQ(bytes[0], 0u);
 	EXPECT_STREQ(readString().str(), L"");
+}
+
+// A character outside the basic multilingual plane is one wchar_t on Linux and macOS and a
+// surrogate pair on Windows. The file holds the surrogate pair either way, so the length header
+// counts two code units for it and the saves stay interchangeable.
+TEST_F(XferUnicodeStringTest, WritesASupplementaryCharacterAsASurrogatePair)
+{
+	const std::vector<UnsignedByte> bytes = writeString(UnicodeString(L"\U0001F600"));
+
+	ASSERT_EQ(bytes.size(), 1u + 2u * 2u);
+	EXPECT_EQ(bytes[0], 2u);
+
+	const UnsignedByte expected[] = { 0x3D, 0xD8, 0x00, 0xDE };
+	EXPECT_TRUE(std::equal(std::begin(expected), std::end(expected), bytes.begin() + 1));
+}
+
+TEST_F(XferUnicodeStringTest, ReadsBackASupplementaryCharacter)
+{
+	writeString(UnicodeString(L"Mission \U0001F600 ok"));
+
+	EXPECT_STREQ(readString().str(), L"Mission \U0001F600 ok");
+}
+
+// The reader has to rebuild the character from a pair it did not write itself, which is what a save
+// coming from the retail game or from another platform looks like.
+TEST_F(XferUnicodeStringTest, DecodesASurrogatePairFromAForeignSave)
+{
+	writeBytes({ 3u, 0x3D, 0xD8, 0x00, 0xDE, 'A', 0x00 });
+
+	EXPECT_STREQ(readString().str(), L"\U0001F600A");
+}
+
+// An unpaired surrogate has no character behind it, so it goes through as it is rather than
+// swallowing the code unit that follows it.
+TEST_F(XferUnicodeStringTest, KeepsAnUnpairedSurrogateAsItIs)
+{
+	writeBytes({ 2u, 0x3D, 0xD8, 'A', 0x00 });
+
+	const UnicodeString text = readString();
+
+	ASSERT_EQ(text.getLength(), 2);
+	EXPECT_EQ((UnsignedInt)text.getCharAt(0), 0xD83Du);
+	EXPECT_EQ((UnsignedInt)text.getCharAt(1), (UnsignedInt)L'A');
+}
+
+// The length header is a single byte, so the limit is 255 code units once encoded, not 255
+// characters: 128 supplementary characters already need 256 of them.
+TEST_F(XferUnicodeStringTest, RefusesAStringThatEncodesToMoreThan255CodeUnits)
+{
+	UnicodeString text;
+	for (int i = 0; i < 128; ++i)
+		text.concat(L"\U0001F600");
+
+	XferSave xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	EXPECT_THROW(xfer.xferUnicodeString(&text), XferStatus);
+	xfer.close();
+}
+
+TEST_F(XferUnicodeStringTest, WritesTheLargestStringThatStillFits)
+{
+	UnicodeString text;
+	for (int i = 0; i < 127; ++i)
+		text.concat(L"\U0001F600");
+	text.concat(L"A");
+
+	const std::vector<UnsignedByte> bytes = writeString(text);
+
+	ASSERT_EQ(bytes.size(), 1u + 2u * 255u);
+	EXPECT_EQ(bytes[0], 255u);
+	EXPECT_STREQ(readString().str(), text.str());
 }
