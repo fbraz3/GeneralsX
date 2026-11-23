@@ -32,10 +32,9 @@
 #include <cstdint>
 #include <set>
 
-#if !defined(_WIN32)
-#include <filesystem>
+#include "PlatformPaths.h"
+
 static std::set<std::string> s_failedMapLookups;
-#endif
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -461,28 +460,13 @@ void MapCache::updateCache()
 		m_doLoadStandardMapCacheINI = TRUE;
 	}
 
-#if !defined(_WIN32)
 	s_failedMapLookups.clear();
-	// GeneralsX @feature fbraz3 03/09/2026 Check user Documents directory for Zero Hour custom maps
-	// On macOS/Linux, also scan user Documents directory if it exists and differs from userMapDir
-	const char* homeDir = getenv("HOME");
-	if (homeDir)
+	// GeneralsX @feature fbraz3 03/09/2026 Check extra platform user map directories (e.g. Documents on macOS/Linux)
+	for (const auto& extraDir : Platform::GetExtraUserMapDirectories(false))
 	{
-		std::vector<std::string> docMapDirs = {
-			std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
-		};
-		for (const auto& dmd : docMapDirs)
-		{
-			std::error_code ec;
-			if (std::filesystem::exists(dmd, ec) && std::filesystem::is_directory(dmd, ec))
-			{
-				AsciiString docMaps(dmd.c_str());
-				loadMapsFromDisk(docMaps, FALSE);
-			}
-		}
+		AsciiString docMaps(extraDir.c_str());
+		loadMapsFromDisk(docMaps, FALSE);
 	}
-#endif
 
 	// Load standard maps from map cache last.
 	// This overwrites matching user maps to prevent munkees getting rowdy :)
@@ -816,6 +800,7 @@ struct MapListBoxData
 	AsciiString mapToSelect;
 	Int selectionIndex;
 	Bool isMultiplayer;
+	std::vector<AsciiString> extraMapDirs;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -825,7 +810,20 @@ static Bool addMapToMapListbox(
 	const AsciiString& mapName,
 	const MapMetaData& mapMetaData)
 {
-	const Bool mapOk = mapName.startsWithNoCase(mapDir.str()) && lbData.isMultiplayer == mapMetaData.m_isMultiplayer && !mapMetaData.m_displayName.isEmpty();
+	// GeneralsX @bugfix fbraz3 23/11/2026 Include extra platform user map directories (e.g. Documents/Maps) in custom-map filtering
+	Bool matchesDir = mapName.startsWithNoCase(mapDir.str());
+	if (!matchesDir)
+	{
+		for (const auto& extraDir : lbData.extraMapDirs)
+		{
+			if (mapName.startsWithNoCase(extraDir.str()))
+			{
+				matchesDir = TRUE;
+				break;
+			}
+		}
+	}
+	const Bool mapOk = matchesDir && lbData.isMultiplayer == mapMetaData.m_isMultiplayer && !mapMetaData.m_displayName.isEmpty();
 
 	if (mapOk)
 	{
@@ -993,6 +991,13 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 	{
 		mapDir = TheGlobalData->getPath_UserData();
 		mapDir.concat(TheMapCache->getMapDir());
+		for (const auto& dir : Platform::GetExtraUserMapDirectories(false))
+		{
+			AsciiString extraDir(dir.c_str());
+			FileSystem::ensureTrailingPathSeparatorInPath(extraDir);
+			extraDir.toLower();
+			lbData.extraMapDirs.push_back(extraDir);
+		}
 	}
 	mapDir.toLower();
 
@@ -1170,6 +1175,15 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 	if (it != end()) return &(it->second);
 
 	// Comprehensive iterate fallback matching
+	auto endsWithPathComponent = [](const std::string& full, const std::string& suffix) -> bool {
+		if (suffix.empty() || full.length() < suffix.length())
+			return false;
+		const size_t offset = full.length() - suffix.length();
+		if (full.compare(offset, suffix.length(), suffix) != 0)
+			return false;
+		return offset == 0 || full[offset - 1] == '/';
+	};
+
 	for (it = begin(); it != end(); ++it)
 	{
 		AsciiString asciiDisplay;
@@ -1181,8 +1195,8 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 		std::string normKey = normalizePath(it->first.str());
 		std::string baseKey = extractBaseLeaf(normKey);
 		if (normKey == normQuery ||
-			(!normQuery.empty() && normKey.length() >= normQuery.length() && normKey.rfind(normQuery) == (normKey.length() - normQuery.length())) ||
-			(!normKey.empty() && normQuery.length() >= normKey.length() && normQuery.rfind(normKey) == (normQuery.length() - normKey.length())))
+			endsWithPathComponent(normKey, normQuery) ||
+			endsWithPathComponent(normQuery, normKey))
 		{
 			return &(it->second);
 		}
@@ -1191,8 +1205,8 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 		std::string baseFn = extractBaseLeaf(normFn);
 		if (!normFn.empty() && (
 			normFn == normQuery ||
-			(!normQuery.empty() && normFn.length() >= normQuery.length() && normFn.rfind(normQuery) == (normFn.length() - normQuery.length())) ||
-			(!normFn.empty() && normQuery.length() >= normFn.length() && normQuery.rfind(normFn) == (normFn.length() - normFn.length()))))
+			endsWithPathComponent(normFn, normQuery) ||
+			endsWithPathComponent(normQuery, normFn)))
 		{
 			return &(it->second);
 		}
@@ -1203,53 +1217,31 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 		}
 	}
 
-#if !defined(_WIN32)
-	// Fallback 2: Check standard custom map folders on POSIX if not in cache
-	const char* home = getenv("HOME");
-	if (home && !baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
+	// Fallback 2: Check platform extra custom map folders if not in cache
+	if (!baseQuery.empty() && s_failedMapLookups.find(baseQuery) == s_failedMapLookups.end())
 	{
-		std::vector<std::string> searchDirs = {
-			std::string(home) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps",
-			std::string(home) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps",
-			std::string(home) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps"
-		};
-
-		for (const auto& sdir : searchDirs)
+		std::string matchedDir;
+		const std::string foundPath = Platform::FindCustomMapByStem(baseQuery, matchedDir);
+		if (!foundPath.empty())
 		{
-			std::error_code ec;
-			if (!std::filesystem::exists(sdir, ec)) continue;
-
-			for (const auto& entry : std::filesystem::recursive_directory_iterator(sdir, std::filesystem::directory_options::skip_permission_denied, ec))
+			FileInfo fileInfo;
+			AsciiString fullPath(foundPath.c_str());
+			AsciiString fullPathLower = fullPath;
+			fullPathLower.toLower();
+			if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
 			{
-				if (ec) break;
-				if (entry.is_regular_file(ec) && entry.path().extension() == ".map")
-				{
-					std::string candidateStem = entry.path().stem().string();
-					std::string normCandidateStem = normalizePath(candidateStem);
-					if (normCandidateStem == baseQuery)
-					{
-						FileInfo fileInfo;
-						AsciiString fullPath(entry.path().string().c_str());
-						AsciiString fullPathLower = fullPath;
-						fullPathLower.toLower();
-						if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
-						{
-							AsciiString mapDir(sdir.c_str());
-							addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
-							MapCache::iterator foundIt = find(fullPathLower);
-							if (foundIt != end()) return &(foundIt->second);
-							for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
-								if (fit->second.m_fileName == fullPath) return &(fit->second);
-							}
-						}
-					}
+				AsciiString mapDir(matchedDir.c_str());
+				addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
+				MapCache::iterator foundIt = find(fullPathLower);
+				if (foundIt != end()) return &(foundIt->second);
+				for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
+					if (fit->second.m_fileName == fullPath) return &(fit->second);
 				}
 			}
 		}
 
 		s_failedMapLookups.insert(baseQuery);
 	}
-#endif
 
 	return nullptr;
 }
