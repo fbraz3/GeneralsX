@@ -1222,13 +1222,18 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 	if (!baseQuery.empty() && s_failedMapLookups.find(normQuery) == s_failedMapLookups.end())
 	{
 		std::string matchedDir;
-		const std::string foundPath = Platform::FindCustomMapByStem(baseQuery, matchedDir);
-		const std::string normFound = normalizePath(foundPath);
-		const bool pathMatchesQuery = isUnqualifiedQuery ||
-			normFound == normQuery ||
-			endsWithPathComponent(normFound, normQuery) ||
-			endsWithPathComponent(normQuery, normFound);
-		if (!foundPath.empty() && pathMatchesQuery)
+		const std::string foundPath = Platform::FindCustomMapByStem(
+			baseQuery,
+			matchedDir,
+			[&](const std::string& candidatePath) -> bool {
+				if (isUnqualifiedQuery)
+					return true;
+				const std::string normCandidate = normalizePath(candidatePath);
+				return normCandidate == normQuery ||
+					endsWithPathComponent(normCandidate, normQuery) ||
+					endsWithPathComponent(normQuery, normCandidate);
+			});
+		if (!foundPath.empty())
 		{
 			FileInfo fileInfo;
 			AsciiString fullPath(foundPath.c_str());

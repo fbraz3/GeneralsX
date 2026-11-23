@@ -403,7 +403,8 @@ inline std::vector<std::string> GetExtraUserMapDirectories(bool includeUserDataF
 }
 
 // GeneralsX @bugfix fbraz3 23/11/2026 Use non-throwing recursive_directory_iterator::increment(error_code&) for custom map fallback
-inline std::string FindCustomMapByStem(const std::string &baseQueryLower, std::string &outMapDir)
+template <typename Predicate>
+inline std::string FindCustomMapByStem(const std::string &baseQueryLower, std::string &outMapDir, Predicate &&acceptCandidate)
 {
 	outMapDir.clear();
 #if !defined(_WIN32)
@@ -428,14 +429,18 @@ inline std::string FindCustomMapByStem(const std::string &baseQueryLower, std::s
 				std::transform(candidateStem.begin(), candidateStem.end(), candidateStem.begin(),
 					[](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
 				if (candidateStem == baseQueryLower) {
-					outMapDir = sdir;
-					return entry.path().string();
+					const std::string candidatePath = entry.path().string();
+					if (acceptCandidate(candidatePath)) {
+						outMapDir = sdir;
+						return candidatePath;
+					}
 				}
 			}
 		}
 	}
 #else
 	(void)baseQueryLower;
+	(void)acceptCandidate;
 #endif
 	return std::string();
 }
