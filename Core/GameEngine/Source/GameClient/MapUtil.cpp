@@ -593,6 +593,19 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 	return mapListChanged;
 }
 
+static AsciiString buildMapStringFilePath(const AsciiString &fname)
+{
+	const char *stringFileSeparator = getLastPathSeparator(fname.str());
+	if (stringFileSeparator != nullptr)
+	{
+		AsciiString stringFileName;
+		stringFileName.set(fname.str(), static_cast<Int>(stringFileSeparator - fname.str()));
+		stringFileName.concat(*stringFileSeparator == '/' ? "/map.str" : "\\map.str");
+		return stringFileName;
+	}
+	return AsciiString("map.str");
+}
+
 Bool MapCache::addMap(
 	const AsciiString &/*mapDir*/,
 	const AsciiString &fname,
@@ -625,6 +638,8 @@ Bool MapCache::addMap(
 			else
 			{
 				// official maps with name tags
+				// GeneralsX @bugfix fbraz3 23/11/2026 Load map-local map.str before fetching cached name tag, then reset
+				TheGameText->initMapStringFile(buildMapStringFilePath(fname));
 				(*this)[lowerFname].m_displayName = TheGameText->fetch(md.m_nameLookupTag);
 				if (md.m_numPlayers >= 2)
 				{
@@ -632,6 +647,7 @@ Bool MapCache::addMap(
 					extension.format(L" (%d)", md.m_numPlayers);
 					(*this)[lowerFname].m_displayName.concat(extension);
 				}
+				TheGameText->reset();
 			}
 
 			it->second.m_doesExist = TRUE;
@@ -685,18 +701,7 @@ Bool MapCache::addMap(
 	else
 	{
 		// GeneralsX @bugfix fbraz3 23/11/2026 Build map.str from the map's parent directory while preserving separator style
-		AsciiString stringFileName;
-		const char *stringFileSeparator = getLastPathSeparator(fname.str());
-		if (stringFileSeparator != nullptr)
-		{
-			stringFileName.set(fname.str(), static_cast<Int>(stringFileSeparator - fname.str()));
-			stringFileName.concat(*stringFileSeparator == '/' ? "/map.str" : "\\map.str");
-		}
-		else
-		{
-			stringFileName = "map.str";
-		}
-		TheGameText->initMapStringFile(stringFileName);
+		TheGameText->initMapStringFile(buildMapStringFilePath(fname));
 		md.m_displayName = TheGameText->fetch(nameLookupTag);
 		if (md.m_numPlayers >= 2)
 		{

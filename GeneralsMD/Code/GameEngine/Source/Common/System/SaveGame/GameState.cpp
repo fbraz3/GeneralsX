@@ -37,6 +37,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Lib/PathUtil.h"
+#include "PlatformPaths.h"
 #include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -976,10 +977,27 @@ AsciiString GameState::realMapPathToPortableMapPath(const AsciiString& in) const
 	}
 	else
 	{
-		DEBUG_CRASH(("Map file was not found in any of the expected directories; this is impossible"));
-		//throw INI_INVALID_DATA;
-		// uncaught exceptions crash us. better to just use a bad path.
-		prefix = in;
+		// GeneralsX @bugfix fbraz3 23/11/2026 Map extra platform user map directories (e.g. Documents/Maps) to portable UserData\Maps\ identity
+		Bool matchedExtraDir = FALSE;
+		for (const auto& dir : Platform::GetExtraUserMapDirectories(false))
+		{
+			AsciiString extraDir(dir.c_str());
+			FileSystem::ensureTrailingPathSeparatorInPath(extraDir);
+			if (in.startsWithNoCase(extraDir.str()))
+			{
+				prefix = PORTABLE_USER_MAPS;
+				prefix.concat(getMapLeafAndDirName(in));
+				matchedExtraDir = TRUE;
+				break;
+			}
+		}
+		if (!matchedExtraDir)
+		{
+			DEBUG_CRASH(("Map file was not found in any of the expected directories; this is impossible"));
+			//throw INI_INVALID_DATA;
+			// uncaught exceptions crash us. better to just use a bad path.
+			prefix = in;
+		}
 	}
 	prefix.toLower();
 	// GeneralsX @bugfix felipebraz 07/11/2026 Canonical portable network format uses backslashes for cross-platform LAN CRC match.
@@ -1012,10 +1030,30 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	else if (in.startsWithNoCase(PORTABLE_USER_MAPS))
 	{
 		// the map dir DOES NOT end with "\\", must add it
+		const AsciiString leafAndDir = getMapLeafAndDirName(in);
 		prefix = TheMapCache->getUserMapDir();
 		prefix.concat(getNativePathSeparator());
 		containingBasePath = prefix;
-		prefix.concat(getMapLeafAndDirName(in));
+		prefix.concat(leafAndDir);
+
+		// GeneralsX @bugfix fbraz3 23/11/2026 Resolve portable user maps from extra platform directories (e.g. Documents/Maps) when absent from UserData/Maps
+		if (TheFileSystem && !TheFileSystem->doesFileExist(prefix.str()))
+		{
+			for (const auto& dir : Platform::GetExtraUserMapDirectories(false))
+			{
+				AsciiString candidateBase(dir.c_str());
+				FileSystem::ensureTrailingPathSeparatorInPath(candidateBase);
+				AsciiString candidatePrefix = candidateBase;
+				candidatePrefix.concat(leafAndDir);
+				if (FileSystem::isPathInDirectory(candidatePrefix, candidateBase) &&
+					TheFileSystem->doesFileExist(candidatePrefix.str()))
+				{
+					containingBasePath = candidateBase;
+					prefix = candidatePrefix;
+					break;
+				}
+			}
+		}
 	}
 	else
 	{
