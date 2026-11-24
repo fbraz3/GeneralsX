@@ -1321,11 +1321,13 @@ Image *getMapPreviewImage( AsciiString mapName )
 	name = tgaName;
 	tgaName.concat(".tga");
 
-	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(name);
+	// GeneralsX @bugfix fbraz3 24/11/2026 Key preview images by normalized physical path so maps with identical names in different roots do not collide
+	AsciiString physicalKey = name;
+	physicalKey.toLower();
 	tempName.set(AsciiString::TheEmptyString);
-	for(Int i = 0; i < portableName.getLength(); ++i)
+	for(Int i = 0; i < physicalKey.getLength(); ++i)
 	{
-		char c = portableName.getCharAt(i);
+		char c = physicalKey.getCharAt(i);
 		if (isPathSeparator(c) || c == ':')
 			tempName.concat('_');
 		else

@@ -986,7 +986,7 @@ AsciiString GameState::realMapPathToPortableMapPath(const AsciiString& in) const
 			if (in.startsWithNoCase(extraDir.str()))
 			{
 				prefix = PORTABLE_USER_MAPS;
-				prefix.concat(getMapLeafAndDirName(in));
+				prefix.concat(in.str() + extraDir.getLength());
 				matchedExtraDir = TRUE;
 				break;
 			}
@@ -1030,7 +1030,7 @@ AsciiString GameState::portableMapPathToRealMapPath(const AsciiString& in) const
 	else if (in.startsWithNoCase(PORTABLE_USER_MAPS))
 	{
 		// the map dir DOES NOT end with "\\", must add it
-		const AsciiString leafAndDir = getMapLeafAndDirName(in);
+		const AsciiString leafAndDir(in.str() + strlen(PORTABLE_USER_MAPS));
 		prefix = TheMapCache->getUserMapDir();
 		prefix.concat(getNativePathSeparator());
 		containingBasePath = prefix;
