@@ -17,6 +17,11 @@ on:
         type: string
         default: ""
         description: "Git ref to checkout (branch, tag, or SHA). Leaves empty for default."
+      runner:
+        required: false
+        type: string
+        default: "github"
+        description: "macOS runner selection: github or local"
   workflow_dispatch:
     inputs:
       preset:
@@ -25,14 +30,22 @@ on:
         options:
           - macos-vulkan
         default: macos-vulkan
+      runner:
+        type: choice
+        description: "macOS runner selection"
+        options:
+          - github
+          - local
+        default: github
 
 jobs:
   build-mac-app:
     name: ${{ matrix.game.id }}@${{ inputs.preset }}
-    runs-on: macos-latest
+    runs-on: ${{ inputs.runner == 'local' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted", "macOS", "ARM64", "local-mac"]') || 'macos-latest' }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
+      max-parallel: ${{ inputs.runner == 'local' && 1 || 2 }}
       matrix:
         game:
           - id: generalsxzh
@@ -55,7 +68,14 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Clean Stale Workspace Outputs
+        run: |
+          rm -rf logs
+          mkdir -p logs
+          rm -f "macos-arm64-${{ matrix.game.output }}.zip"
+
       - name: Cache brew packages
+        if: inputs.runner != 'local'
         id: cache-brew
         uses: actions/cache@v5
         with:
@@ -70,6 +90,7 @@ jobs:
           vcpkgGitCommitId: 'ffc071e0c08432c60c9b64f00334c0227667931b'
 
       - name: Restore vcpkg binary cache
+        if: inputs.runner != 'local'
         id: vcpkg_cache
         uses: actions/cache/restore@v4
         with:
@@ -90,8 +111,12 @@ jobs:
           export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
           echo "Installing macOS build dependencies..."
           
-          # Update Homebrew to ensure fresh formulas
-          brew update
+          if [ "${{ inputs.runner }}" = "local" ]; then
+            export HOMEBREW_NO_AUTO_UPDATE=1
+          else
+            # Update Homebrew to ensure fresh formulas
+            brew update
+          fi
           
           # Ensure xcode-select is properly configured (needed for clang/clang++)
           xcode-select --install 2>/dev/null || echo "xcode-select already installed"
@@ -149,6 +174,7 @@ jobs:
           echo "Build tools installed"
 
       - name: Cache Vulkan SDK
+        if: inputs.runner != 'local'
         id: cache-vulkan
         uses: actions/cache@v5
         with:
@@ -158,6 +184,10 @@ jobs:
       - name: Install Vulkan SDK
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
+          if [ -f "$HOME/VulkanSDK/1.4.341.1/macOS/lib/libMoltenVK.dylib" ]; then
+            echo "✅ Complete Vulkan SDK already present at $HOME/VulkanSDK/1.4.341.1/macOS, skipping install."
+            exit 0
+          fi
           echo "Installing Vulkan SDK (required for DXVK + MoltenVK)..."
           
           # Strategy 1: Direct download of versioned SDK with SHA256 validation (PREFERRED)
@@ -343,6 +373,7 @@ jobs:
           fi
 
       - name: Cache ccache
+        if: inputs.runner != 'local'
         uses: actions/cache@v5
         with:
           path: ~/Library/Caches/ccache
@@ -376,7 +407,7 @@ jobs:
           if [ $CONFIG_STATUS -eq 0 ]; then echo "✅ CMake configuration complete"; else echo "❌ CMake configuration failed"; exit 1; fi
 
       - name: Save vcpkg binary cache
-        if: ${{ steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
+        if: ${{ inputs.runner != 'local' && steps.vcpkg_cache.outputs.cache-hit != 'true' && matrix.game.id == 'generalsxzh' }}
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache

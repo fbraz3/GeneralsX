@@ -22,6 +22,11 @@ on:
         required: false
         type: string
         description: "Optional workflow run ID to download artifacts from"
+      macos-runner:
+        required: false
+        type: string
+        default: "github"
+        description: "macOS runner selection: github or local"
     secrets:
       ASSETS_KEY:
         required: true
@@ -30,10 +35,13 @@ on:
 jobs:
   replay-test-zh:
     name: ZH Replay Tests (${{ inputs.platform }})
-    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.platform == 'macos' && (inputs.macos-runner == 'local' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted", "macOS", "ARM64", "local-mac"]') || 'macos-latest') || 'ubuntu-latest' }}
     timeout-minutes: 45
 
     steps:
+      - name: Clean Stale Replay Workspace
+        run: |
+          rm -rf /tmp/game-artifact /tmp/game-bundle ci-assets-repo ci-replays-repo
       # -----------------------------------------------------------------------
       # 1. Download built binary artifact from upstream build job
       # -----------------------------------------------------------------------
@@ -75,7 +83,15 @@ jobs:
 
       - name: Install system dependencies (macOS)
         if: inputs.platform == 'macos'
-        run: brew install p7zip coreutils
+        run: |
+          if [ "${{ inputs.macos-runner }}" = "local" ]; then
+            if command -v 7z >/dev/null 2>&1 && command -v gtimeout >/dev/null 2>&1; then
+              echo "✅ p7zip and coreutils already available on local-mac"
+              exit 0
+            fi
+            export HOMEBREW_NO_AUTO_UPDATE=1
+          fi
+          brew install p7zip coreutils
 
       - name: Install system dependencies (WASM)
         if: inputs.platform == 'wasm'
@@ -214,6 +230,7 @@ jobs:
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
       - name: Cache Game Assets
+        if: inputs.platform != 'macos' || inputs.macos-runner != 'local'
         id: cache-assets
         uses: actions/cache@v5
         with:
@@ -223,6 +240,10 @@ jobs:
       - name: Clone game assets repo (GitLab with GitHub fallback)
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: |
+          if [ "${{ inputs.platform }}" = "macos" ] && [ "${{ inputs.macos-runner }}" = "local" ] && [ -d /tmp/cached-assets ] && [ -n "$(ls -A /tmp/cached-assets 2>/dev/null)" ]; then
+            echo "✅ Reusing existing /tmp/cached-assets on local-mac"
+            exit 0
+          fi
           # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
           TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
           clone_success=true
@@ -267,6 +288,9 @@ jobs:
       - name: Extract game assets to cache (only on cache miss)
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: |
+          if [ "${{ inputs.platform }}" = "macos" ] && [ "${{ inputs.macos-runner }}" = "local" ] && [ -d /tmp/cached-assets ] && [ -n "$(ls -A /tmp/cached-assets 2>/dev/null)" ]; then
+            exit 0
+          fi
           mkdir -p /tmp/cached-assets
           7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets" -y
 
@@ -291,6 +315,7 @@ jobs:
       #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
       # -----------------------------------------------------------------------
       - name: Cache Replay Files
+        if: inputs.platform != 'macos' || inputs.macos-runner != 'local'
         id: cache-replays
         uses: actions/cache@v5
         with:
