@@ -65,6 +65,9 @@
 #include "Common/file.h"
 #ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
+#ifndef __EMSCRIPTEN__
+#include "MiniAudioDevice/MiniAudioMusicStream.h"
+#endif
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -79,7 +82,7 @@ extern "C" int GeneralsXFileResident(const char *name);
 // read would hand the decoder zero-filled buffers and that silent decode gets cached forever.
 // Skipping leaves no cache entry, the residency probe kicks the download, and the next trigger
 // of the same sound plays for real.
-static File *gxOpenAudioFile(const char *name)
+static File *gxOpenAudioFile(const char *name, Int access = File::NONE)
 {
 #if defined(__EMSCRIPTEN__)
 	if (!GeneralsXFileResident(name))
@@ -88,7 +91,7 @@ static File *gxOpenAudioFile(const char *name)
 		return NULL;
 	}
 #endif
-	File *file = TheFileSystem->openFile(name);
+	File *file = TheFileSystem->openFile(name, access);
 	return file;
 }
 
@@ -368,6 +371,88 @@ void MiniAudioManager::stopAllAmbientsBy(Drawable *draw)
 {
 }
 
+#ifdef RTS_HAS_FFMPEG
+// The decoder takes ownership of the file and closes it on all paths.
+static ma_audio_buffer *decodeSampleBuffer(File *file, const char *filename)
+{
+	FFmpegFile ffmpegFile;
+	if (!ffmpegFile.open(file)) {
+		DEBUG_LOG(("MiniAudio: Failed to open FFmpeg file: %s\n", filename));
+		return nullptr;
+	}
+
+	// Decode all audio frames into a buffer
+	std::vector<uint8_t> pcmData;
+	int sampleRate = 0;
+	int channels = 0;
+	int bytesPerSample = 0;
+
+	auto onFrame = [&](AVFrame *frame, int stream_idx, int stream_type, void *user_data) {
+		if (stream_type != AVMEDIA_TYPE_AUDIO) return;
+
+		sampleRate = frame->sample_rate;
+		channels = frame->ch_layout.nb_channels;
+		bytesPerSample = av_get_bytes_per_sample(static_cast<AVSampleFormat>(frame->format));
+
+		const int frameSize = av_samples_get_buffer_size(NULL, channels, frame->nb_samples,
+			static_cast<AVSampleFormat>(frame->format), 1);
+		if (frameSize <= 0) return;
+
+		if (av_sample_fmt_is_planar(static_cast<AVSampleFormat>(frame->format))) {
+			// Interleave planar audio
+			for (int s = 0; s < frame->nb_samples; s++) {
+				for (int c = 0; c < channels; c++) {
+					const uint8_t *src = frame->data[c] + s * bytesPerSample;
+					pcmData.insert(pcmData.end(), src, src + bytesPerSample);
+				}
+			}
+		} else {
+			pcmData.insert(pcmData.end(), frame->data[0], frame->data[0] + frameSize);
+		}
+	};
+
+	ffmpegFile.setFrameCallback(onFrame);
+	ffmpegFile.setUserData(NULL);
+
+	while (ffmpegFile.decodePacket()) {}
+
+	ffmpegFile.close();
+
+	if (pcmData.empty() || sampleRate == 0 || bytesPerSample == 0) {
+		DEBUG_LOG(("MiniAudio: No audio data decoded from: %s\n", filename));
+		return nullptr;
+	}
+
+	// Map FFmpeg bytes-per-sample to miniaudio format
+	ma_format maFmt = ma_format_unknown;
+	if (bytesPerSample == 1) maFmt = ma_format_u8;
+	else if (bytesPerSample == 2) maFmt = ma_format_s16;
+	else if (bytesPerSample == 4) maFmt = ma_format_f32;
+
+	if (maFmt == ma_format_unknown) {
+		DEBUG_LOG(("MiniAudio: Unsupported format (%d bps) for: %s\n", bytesPerSample, filename));
+		return nullptr;
+	}
+
+	// Create audio buffer — init_copy copies data into internal storage
+	// so it's safe when pcmData goes out of scope after this function returns.
+	ma_audio_buffer *audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
+	ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(maFmt, channels,
+		pcmData.size() / ma_get_bytes_per_frame(maFmt, channels),
+		pcmData.data(), NULL);
+
+	ma_result result = ma_audio_buffer_init_copy(&abConfig, audioBuffer);
+	if (result != MA_SUCCESS) {
+		DEBUG_LOG(("MiniAudio: Failed to create audio buffer: %d for '%s'\n", result, filename));
+		free(audioBuffer);
+		return nullptr;
+	}
+	audioBuffer->ref.sampleRate = sampleRate;
+
+	return audioBuffer;
+}
+#endif
+
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::playAudioEvent(AudioRequest *req)
 {
@@ -433,110 +518,45 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	}
 
 #ifdef RTS_HAS_FFMPEG
-	// Use FFmpeg to decode the file into PCM, then feed to miniaudio.
-	// This avoids miniaudio's built-in decoders which hang on MP3 via VFS.
-	File *file = gxOpenAudioFile(fileToPlay.str());
+	Int access = File::NONE;
+#ifndef __EMSCRIPTEN__
+	if (info->m_soundType == AT_Music) access = File::INDEPENDENT_STREAM;
+#endif
+	File *file = gxOpenAudioFile(fileToPlay.str(), access);
 	if (!file) {
 		DEBUG_LOG(("MiniAudio: Failed to open file: %s\n", fileToPlay.str()));
 		releasePlayingAudio(audio);
 		return;
 	}
 
-	FFmpegFile *ffmpegFile = NEW FFmpegFile();
-	if (!ffmpegFile->open(file)) {
-		DEBUG_LOG(("MiniAudio: Failed to open FFmpeg file: %s\n", fileToPlay.str()));
-		delete ffmpegFile;
+	ma_data_source *source;
+#ifndef __EMSCRIPTEN__
+	// GeneralsX @bugfix Codex 24/11/2026 Keep soundtrack decoding off the game thread.
+	if (info->m_soundType == AT_Music) {
+		audio->m_musicStream = NEW MiniAudioMusicStream();
+		source = audio->m_musicStream->open(file) ? audio->m_musicStream->source() : nullptr;
+	} else
+#endif
+	{
+		audio->m_audioBuffer = decodeSampleBuffer(file, fileToPlay.str());
+		source = audio->m_audioBuffer;
+	}
+	if (!source) {
+		DEBUG_LOG(("MiniAudio: Failed to decode '%s'\n", fileToPlay.str()));
 		releasePlayingAudio(audio);
 		return;
 	}
-
-	// Decode all audio frames into a buffer
-	std::vector<uint8_t> pcmData;
-	int sampleRate = 0;
-	int channels = 0;
-	int bytesPerSample = 0;
-
-	auto onFrame = [&](AVFrame *frame, int stream_idx, int stream_type, void *user_data) {
-		if (stream_type != AVMEDIA_TYPE_AUDIO) return;
-
-		sampleRate = frame->sample_rate;
-		channels = frame->ch_layout.nb_channels;
-		bytesPerSample = av_get_bytes_per_sample(static_cast<AVSampleFormat>(frame->format));
-
-		const int frameSize = av_samples_get_buffer_size(NULL, channels, frame->nb_samples,
-			static_cast<AVSampleFormat>(frame->format), 1);
-		if (frameSize <= 0) return;
-
-		if (av_sample_fmt_is_planar(static_cast<AVSampleFormat>(frame->format))) {
-			// Interleave planar audio
-			for (int s = 0; s < frame->nb_samples; s++) {
-				for (int c = 0; c < channels; c++) {
-					const uint8_t *src = frame->data[c] + s * bytesPerSample;
-					pcmData.insert(pcmData.end(), src, src + bytesPerSample);
-				}
-			}
-		} else {
-			pcmData.insert(pcmData.end(), frame->data[0], frame->data[0] + frameSize);
-		}
-	};
-
-	ffmpegFile->setFrameCallback(onFrame);
-	ffmpegFile->setUserData(NULL);
-
-	while (ffmpegFile->decodePacket()) {}
-
-	// Always delete ffmpegFile after decoding is complete
-	delete ffmpegFile;
-	ffmpegFile = NULL;
-
-	if (pcmData.empty() || sampleRate == 0 || bytesPerSample == 0) {
-		DEBUG_LOG(("MiniAudio: No audio data decoded from: %s\n", fileToPlay.str()));
-		releasePlayingAudio(audio);
-		return;
-	}
-
-	// Map FFmpeg bytes-per-sample to miniaudio format
-	ma_format maFmt = ma_format_unknown;
-	if (bytesPerSample == 1) maFmt = ma_format_u8;
-	else if (bytesPerSample == 2) maFmt = ma_format_s16;
-	else if (bytesPerSample == 4) maFmt = ma_format_f32;
-
-	if (maFmt == ma_format_unknown) {
-		DEBUG_LOG(("MiniAudio: Unsupported format (%d bps) for: %s\n", bytesPerSample, fileToPlay.str()));
-		releasePlayingAudio(audio);
-		return;
-	}
-
-	// Create audio buffer — init_copy copies data into internal storage
-	// so it's safe when pcmData goes out of scope after this function returns.
-	ma_audio_buffer *audioBuffer = (ma_audio_buffer *)malloc(sizeof(ma_audio_buffer));
-	ma_audio_buffer_config abConfig = ma_audio_buffer_config_init(maFmt, channels,
-		pcmData.size() / ma_get_bytes_per_frame(maFmt, channels),
-		pcmData.data(), NULL);
-
-	ma_result result = ma_audio_buffer_init_copy(&abConfig, audioBuffer);
-	if (result != MA_SUCCESS) {
-		DEBUG_LOG(("MiniAudio: Failed to create audio buffer: %d for '%s'\n", result, fileToPlay.str()));
-		free(audioBuffer);
-		releasePlayingAudio(audio);
-		return;
-	}
-	audioBuffer->ref.sampleRate = sampleRate;
 
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
-	result = ma_sound_init_from_data_source(&m_engine, audioBuffer, flags, groupToUse, sound);
+	ma_result result = ma_sound_init_from_data_source(&m_engine, source, flags, groupToUse, sound);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("MiniAudio: Failed to init sound: %d for '%s'\n", result, fileToPlay.str()));
-		ma_audio_buffer_uninit(audioBuffer);
-		free(audioBuffer);
 		free(sound);
 		releasePlayingAudio(audio);
 		return;
 	}
 
-	// Assign to PlayingAudio before any early returns below
 	audio->m_sound = sound;
-	audio->m_audioBuffer = audioBuffer;
 #else
 	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
 	ma_result result = ma_sound_init_from_file(&m_engine, fileToPlay.str(), flags, groupToUse, NULL, sound);
@@ -708,6 +728,14 @@ void MiniAudioManager::releaseMiniAudioHandles(PlayingAudio *release)
 		free(release->m_audioBuffer);
 		release->m_audioBuffer = NULL;
 	}
+#if defined(RTS_HAS_FFMPEG) && !defined(__EMSCRIPTEN__)
+	// The mixer has detached. Let any in-flight file read finish off the game thread.
+	if (release->m_musicStream) {
+		release->m_musicStream->stop();
+		m_retiringMusic.push_back(release->m_musicStream);
+		release->m_musicStream = nullptr;
+	}
+#endif
 	release->m_type = PAT_INVALID;
 }
 
@@ -984,6 +1012,10 @@ void MiniAudioManager::closeDevice(void)
 	ScopedFPUGuard fpuGuard;
 	// Stop all audio first to prevent use-after-free in audio callbacks
 	stopAllAudioImmediately();
+#if defined(RTS_HAS_FFMPEG) && !defined(__EMSCRIPTEN__)
+	for (auto *stream : m_retiringMusic) delete stream;
+	m_retiringMusic.clear();
+#endif
 
 	ma_sound_group_uninit(&m_speechGroup);
 	ma_sound_group_uninit(&m_sound3DGroup);
@@ -1330,6 +1362,9 @@ void MiniAudioManager::processPlayingList(void)
 		}
 
 		// Check if sound was explicitly marked to stop
+#if defined(RTS_HAS_FFMPEG) && !defined(__EMSCRIPTEN__)
+		if (playing->m_musicStream && playing->m_musicStream->failed()) playing->m_requestStop = true;
+#endif
 		if (playing->m_requestStop) {
 			if (playing->m_sound) ma_sound_stop(playing->m_sound);
 			it = m_playingSounds.erase(it);
@@ -1400,6 +1435,13 @@ void MiniAudioManager::processFadingList(void)
 //-------------------------------------------------------------------------------------------------
 void MiniAudioManager::processStoppedList(void)
 {
+#if defined(RTS_HAS_FFMPEG) && !defined(__EMSCRIPTEN__)
+	m_retiringMusic.remove_if([](MiniAudioMusicStream *stream) {
+		if (!stream->finished()) return false;
+		delete stream;
+		return true;
+	});
+#endif
 	for (auto it = m_stoppedAudio.begin(); it != m_stoppedAudio.end(); ) {
 		PlayingAudio *playing = *it;
 		it = m_stoppedAudio.erase(it);

@@ -47,7 +47,7 @@ FFmpegFile::~FFmpegFile()
 	close();
 }
 
-Bool FFmpegFile::open(File *file)
+Bool FFmpegFile::open(File *file, OpenMode mode)
 {
 	DEBUG_ASSERTCRASH(m_file == nullptr, ("already open"));
 	DEBUG_ASSERTCRASH(file != nullptr, ("null file pointer"));
@@ -78,7 +78,8 @@ Bool FFmpegFile::open(File *file)
 		return false;
 	}
 
-	m_avioCtx = avio_alloc_context(buffer, avio_ctx_buffer_size, 0, file, &readPacket, nullptr, nullptr);
+	m_avioCtx = avio_alloc_context(buffer, avio_ctx_buffer_size, 0, file, &readPacket, nullptr,
+		mode == LoopingAudio ? &seekPacket : nullptr);
 	if (m_avioCtx == nullptr) {
 		DEBUG_LOG(("Failed to alloc AVIOContext"));
 		close();
@@ -109,6 +110,13 @@ Bool FFmpegFile::open(File *file)
 	m_streams.resize(m_fmtCtx->nb_streams);
 	for (unsigned int stream_idx = 0; stream_idx < m_fmtCtx->nb_streams; stream_idx++) {
 		AVStream *av_stream = m_fmtCtx->streams[stream_idx];
+		// GeneralsX @bugfix Codex 25/11/2026 Play one soundtrack when the container has multiple audio streams.
+		if (mode == LoopingAudio) {
+			if (m_loopingAudioIndex >= 0 || av_stream->codecpar->codec_type != AVMEDIA_TYPE_AUDIO) {
+				continue;
+			}
+			m_loopingAudioIndex = static_cast<Int>(stream_idx);
+		}
 		const AVCodec *input_codec = avcodec_find_decoder(av_stream->codecpar->codec_id);
 		if (input_codec == nullptr) {
 			DEBUG_LOG(("Codec not supported: '%s'", avcodec_get_name(av_stream->codecpar->codec_id)));
@@ -162,11 +170,39 @@ int FFmpegFile::readPacket(void *opaque, uint8_t *buf, int buf_size)
 	File *file = static_cast<File *>(opaque);
 	const int read = file->read(buf, buf_size);
 
-	// Streaming protocol requires us to return real errors - when we read less equal 0 we're at EOF
-	if (read <= 0)
-		return AVERROR_EOF;
+	if (read < 0) return AVERROR(EIO);
+	if (read == 0) return AVERROR_EOF;
 
 	return read;
+}
+
+int64_t FFmpegFile::seekPacket(void *opaque, int64_t offset, int whence)
+{
+	File *file = static_cast<File *>(opaque);
+	whence &= ~AVSEEK_FORCE;
+	const Int size = file->size();
+	if (whence == AVSEEK_SIZE) return size;
+	Int base = 0;
+	if (whence == SEEK_CUR) base = file->position();
+	else if (whence == SEEK_END) base = size;
+	else if (whence != SEEK_SET) return AVERROR(EINVAL);
+	if (offset < -base || offset > size - base) return AVERROR(EINVAL);
+	return file->seek(base + static_cast<Int>(offset), File::START);
+}
+
+Bool FFmpegFile::rewind()
+{
+	if (m_loopingAudioIndex < 0) {
+		return false;
+	}
+	const AVStream *stream = m_fmtCtx->streams[m_loopingAudioIndex];
+	const int64_t start = stream->start_time == AV_NOPTS_VALUE ? 0 : stream->start_time;
+	if (av_seek_frame(m_fmtCtx, m_loopingAudioIndex, start, AVSEEK_FLAG_BACKWARD) < 0) {
+		return false;
+	}
+	avcodec_flush_buffers(m_streams[m_loopingAudioIndex].codec_ctx);
+	av_packet_unref(m_packet);
+	return true;
 }
 
 /**
@@ -185,6 +221,7 @@ void FFmpegFile::close()
 		}
 	}
 	m_streams.clear();
+	m_loopingAudioIndex = -1;
 
 	if (m_avioCtx != nullptr) {
 		av_freep(&m_avioCtx->buffer);
@@ -201,41 +238,61 @@ void FFmpegFile::close()
 	}
 }
 
-Bool FFmpegFile::decodePacket()
+Bool FFmpegFile::decodePacket(Bool *endOfInput)
 {
 	DEBUG_ASSERTCRASH(m_fmtCtx != nullptr, ("null format context"));
 	DEBUG_ASSERTCRASH(m_packet != nullptr, ("null packet pointer"));
 
 	int result = av_read_frame(m_fmtCtx, m_packet);
-	if (result == AVERROR_EOF)
+	if (endOfInput) {
+		*endOfInput = false;
+	}
+	if (result < 0) {
+		if (result == AVERROR_EOF && endOfInput) {
+			*endOfInput = true;
+			if (m_loopingAudioIndex >= 0) {
+				// Some audio codecs retain the last frames until they receive a flush packet.
+				FFmpegStream &stream = m_streams[m_loopingAudioIndex];
+				*endOfInput = decodeFrames(stream, nullptr);
+			}
+		}
 		return false;
+	}
 
 	const int stream_idx = m_packet->stream_index;
-	DEBUG_ASSERTCRASH(m_streams.size() > stream_idx, ("stream index out of bounds"));
+	if (stream_idx < 0 || static_cast<size_t>(stream_idx) >= m_streams.size()) {
+		av_packet_unref(m_packet);
+		return false;
+	}
 
 	auto &stream = m_streams[stream_idx];
-	AVCodecContext *codec_ctx = stream.codec_ctx;
-	result = avcodec_send_packet(codec_ctx, m_packet);
-	// Check if we need more data
-	if (result == AVERROR(EAGAIN))
-		return true;
+	const Bool decoded = !stream.codec_ctx || decodeFrames(stream, m_packet);
+	av_packet_unref(m_packet);
+	return decoded;
+}
 
-	// Handle any other errors
+Bool FFmpegFile::decodeFrames(FFmpegStream &stream, const AVPacket *packet)
+{
+	int result = avcodec_send_packet(stream.codec_ctx, packet);
+	if (result == AVERROR(EAGAIN) && receiveFrames(stream)) {
+		result = avcodec_send_packet(stream.codec_ctx, packet);
+	}
 	if (result < 0) {
 		char error_buffer[1024];
 		av_strerror(result, error_buffer, sizeof(error_buffer));
 		DEBUG_LOG(("Failed 'avcodec_send_packet': %s", error_buffer));
 		return false;
 	}
-	av_packet_unref(m_packet);
+	return receiveFrames(stream);
+}
 
-	// Get all frames in this packet
-	while (result >= 0) {
-		result = avcodec_receive_frame(codec_ctx, stream.frame);
-
-		// Check if we need more data
-		if (result == AVERROR(EAGAIN))
+Bool FFmpegFile::receiveFrames(FFmpegStream &stream)
+{
+	for (;;) {
+		const int result = avcodec_receive_frame(stream.codec_ctx, stream.frame);
+		if (result == AVERROR(EAGAIN) || result == AVERROR_EOF) {
 			return true;
+		}
 
 		// Handle any other errors
 		if (result < 0) {
@@ -246,11 +303,9 @@ Bool FFmpegFile::decodePacket()
 		}
 
 		if (m_frameCallback != nullptr) {
-			m_frameCallback(stream.frame, stream_idx, stream.stream_type, m_userData);
+			m_frameCallback(stream.frame, stream.stream_idx, stream.stream_type, m_userData);
 		}
 	}
-
-	return true;
 }
 
 void FFmpegFile::seekFrame(int frame_idx)
@@ -309,6 +364,12 @@ Int FFmpegFile::getBytesPerSample() const
 		return 0;
 
 	return av_get_bytes_per_sample(stream->codec_ctx->sample_fmt);
+}
+
+Int FFmpegFile::getAudioSampleFormat() const
+{
+	const FFmpegStream *stream = findMatch(AVMEDIA_TYPE_AUDIO);
+	return stream ? stream->codec_ctx->sample_fmt : AV_SAMPLE_FMT_NONE;
 }
 
 Int FFmpegFile::getSizeForSamples(Int numSamples) const

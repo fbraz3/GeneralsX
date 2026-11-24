@@ -141,7 +141,7 @@ Bool File::open( const Char *filename, Int access, size_t bufferSize )
 
 	setName( filename );
 
-	if( (access & ( STREAMING | WRITE )) == ( STREAMING | WRITE ))
+	if( !isValidIndependentStreamAccess(access) || (access & ( STREAMING | WRITE )) == ( STREAMING | WRITE ))
 	{
 		// illegal access
 		return FALSE;

@@ -240,8 +240,20 @@ File* ArchiveFile::openFile( const Char *filename, Int access )
 {
 	const ArchivedFileInfo *fileInfo = getArchivedFileInfo(AsciiString(filename));
 
-	if (fileInfo == nullptr) {
+	if (!fileInfo || !m_file) {
 		return nullptr;
+	}
+
+	if (access & File::INDEPENDENT_STREAM) {
+		if (!File::isValidIndependentStreamAccess(access)) return nullptr;
+		auto *stream = newInstance(StreamingArchiveFile);
+		if (stream->openIndependent(m_file->getName(), fileInfo->m_filename, fileInfo->m_offset, fileInfo->m_size)) {
+			stream->deleteOnClose();
+			return stream;
+		}
+		deleteInstance(stream);
+		// A virtual archive without a separate local handle can still supply a private RAMFile.
+		access = File::READ | File::BINARY;
 	}
 
 	RAMFile *ramFile = nullptr;

@@ -208,6 +208,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 {
 	USE_PERF_TIMER(FileSystem)
 	File *file = nullptr;
+	if (!File::isValidIndependentStreamAccess(access)) return nullptr;
 
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
 	Char keyBuffer[_MAX_PATH];
@@ -269,7 +270,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 	{
 		// Non-mod (ordinary) archives fallback if mod overrides were active, or all archives if not.
 		ArchiveFileSystem::ArchiveFilter filter = hasModOverride ? ArchiveFileSystem::ARCHIVE_FILTER_NON_MOD_ONLY : ArchiveFileSystem::ARCHIVE_FILTER_ALL;
-		file = TheArchiveFileSystem->openFile( filename, 0, remainingInstance, filter );
+		file = TheArchiveFileSystem->openFile( filename, access & File::INDEPENDENT_STREAM, remainingInstance, filter );
 	}
 
 	return file;

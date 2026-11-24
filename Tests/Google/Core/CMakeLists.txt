@@ -22,6 +22,9 @@ set(COREI_GOOGLETEST_SRC
 add_library(corei_googletest INTERFACE)
 
 target_sources(corei_googletest INTERFACE ${COREI_GOOGLETEST_SRC})
+if(SAGE_USE_MINIAUDIO AND RTS_BUILD_OPTION_FFMPEG AND NOT EMSCRIPTEN)
+    target_sources(corei_googletest INTERFACE GameEngineDevice/MiniAudioMusicStreamTest.cpp)
+endif()
 
 target_link_libraries(corei_googletest INTERFACE
     comctl32
