@@ -317,8 +317,47 @@ void XferSave::xferAsciiString( AsciiString *asciiStringData )
 void XferSave::xferUnicodeString( UnicodeString *unicodeStringData )
 {
 
+	// GeneralsX @bugfix alviss7 22/11/2026 Writes unicode strings as 2 byte UTF-16 code units
+	// instead of the native WideChar. wchar_t is 2 bytes on Windows but 4 bytes on Linux and macOS,
+	// so writing sizeof( WideChar ) made the save file layout platform dependent and incompatible
+	// with the retail save format. Where WideChar holds whole code points, a character outside the
+	// basic multilingual plane encodes to a surrogate pair, so the number of code units written is
+	// not the number of characters in the string and the length header counts the code units.
+	UnsignedShort buffer[ MAX_XFER_UNICODE_STRING_LEN ];
+	Int encodedLen = 0;
+	Bool tooLong = FALSE;
+
+	for( const WideChar *source = unicodeStringData->str(); *source != 0 && tooLong == FALSE; ++source )
+	{
+
+		UnsignedInt codePoint = (UnsignedInt)*source;
+		UnsignedShort unit[ 2 ];
+		Int unitCount = 1;
+
+		if( codePoint > 0x10FFFF )
+			unit[ 0 ] = 0xFFFD;  // outside unicode, UTF-16 has no representation for it
+		else if( codePoint > 0xFFFF )
+		{
+
+			const UnsignedInt offset = codePoint - 0x10000;
+			unit[ 0 ] = (UnsignedShort)(0xD800 + (offset >> 10));
+			unit[ 1 ] = (UnsignedShort)(0xDC00 + (offset & 0x3FF));
+			unitCount = 2;
+
+		}
+		else
+			unit[ 0 ] = (UnsignedShort)codePoint;
+
+		if( encodedLen + unitCount > MAX_XFER_UNICODE_STRING_LEN - 1 )
+			tooLong = TRUE;
+		else
+			for( Int i = 0; i < unitCount; ++i )
+				buffer[ encodedLen++ ] = unit[ i ];
+
+	}
+
 	// sanity
-	if( unicodeStringData->getLength() > 255 )
+	if( tooLong )
 	{
 
 		DEBUG_CRASH(( "XferSave cannot save this unicode string because it's too long.  Change the size of the length header (but be sure to preserve save file compatability" ));
@@ -327,12 +366,12 @@ void XferSave::xferUnicodeString( UnicodeString *unicodeStringData )
 	}
 
 	// save length of string to follow
-	UnsignedByte len = unicodeStringData->getLength();
+	UnsignedByte len = (UnsignedByte)encodedLen;
 	xferUnsignedByte( &len );
 
 	// save string data
 	if( len > 0 )
-		xferUser( (void *)unicodeStringData->str(), sizeof( WideChar ) * len );
+		xferUser( buffer, sizeof( UnsignedShort ) * len );
 
 }
 
