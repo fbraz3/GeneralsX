@@ -43,12 +43,6 @@ Connection::Connection() {
 	m_frameGrouping = 1;
 	m_isQuitting = false;
 	m_quitTime = 0;
-	m_averageLatency = 0.0f;
-	Int i;
-	for(i = 0; i < CONNECTION_LATENCY_HISTORY_LENGTH; i++)
-	{
-		m_latencies[i] = 0.0f;
-	}
 }
 
 /**
@@ -82,10 +76,8 @@ void Connection::init() {
 	m_numRetries = 0;
 	m_retryMetricsTime = 0;
 
-	for (Int i = 0; i < CONNECTION_LATENCY_HISTORY_LENGTH; ++i) {
-		m_latencies[i] = 0;
-	}
-	m_averageLatency = 0;
+	m_latestFrameAcks = {};
+	m_frameAckMs = 0;
 	m_isQuitting = FALSE;
 	m_quitTime = 0;
 }
@@ -190,6 +182,7 @@ void Connection::sendNetCommandMsg(NetCommandMsg *msg, UnsignedByte relay) {
 
 void Connection::clearCommandsExceptFrom( Int playerIndex )
 {
+	m_latestFrameAcks = {};
 	NetCommandRef *tmp = m_netCommandList->getFirstMessage();
 	while (tmp)
 	{
@@ -223,13 +216,49 @@ void Connection::setQuitting()
 	DEBUG_LOG(("Connection::setQuitting() at time %d", m_quitTime));
 }
 
+// GeneralsX @bugfix Codex 24/11/2026 Recover an isolated hole in the reliable frame stream before lockstep exhausts its buffer.
+Bool Connection::shouldSend(const NetCommandRef *ref, UnsignedInt now) const
+{
+	const time_t last = ref->getTimeLastSent();
+	const UnsignedInt age = now - static_cast<UnsignedInt>(last);
+	if (last == -1 || age > m_retryTime)
+		return TRUE;
+	const NetCommandMsg *cmd = ref->getCommand();
+	if (cmd->getNetCommandType() != NETCOMMANDTYPE_FRAMEINFO || ref->wasRetried() || cmd->getPlayerID() >= MAX_SLOTS)
+		return FALSE;
+	// Allow one early retry after three distinct later frames have been acknowledged. Leave time for reordered ACKs.
+	return cmd->getExecutionFrame() < m_latestFrameAcks[cmd->getPlayerID()].back() && age >= 50 && age >= 1.5f * m_frameAckMs;
+}
+
+void Connection::acknowledgeFrame(const NetCommandRef *ref, UnsignedInt now)
+{
+	const NetCommandMsg *cmd = ref->getCommand();
+	if (cmd->getNetCommandType() != NETCOMMANDTYPE_FRAMEINFO || cmd->getPlayerID() >= MAX_SLOTS || ref->getTimeLastSent() == -1)
+		return;
+	// An ACK after retransmission cannot identify which copy arrived.
+	if (!ref->wasRetried()) {
+		const Real sample = static_cast<Real>(now - static_cast<UnsignedInt>(ref->getTimeLastSent()));
+		m_frameAckMs = m_frameAckMs == 0 ? sample : m_frameAckMs + (sample - m_frameAckMs) / 8.0f;
+	}
+	UnsignedInt frame = cmd->getExecutionFrame();
+	for (UnsignedInt &recent : m_latestFrameAcks[cmd->getPlayerID()]) {
+		if (recent == frame)
+			break;
+		if (frame > recent)
+			std::swap(frame, recent);
+	}
+}
+
 /**
  * This is the good part. We take all the network commands queued up for this connection,
  * packetize them and put them on the transport's send queue for actual sending.
  */
 UnsignedInt Connection::doSend() {
+	return sendDueCommands(timeGetTime());
+}
+
+UnsignedInt Connection::sendDueCommands(time_t curtime) {
 	Int numpackets = 0;
-	time_t curtime = timeGetTime();
 	Bool couldQueue = TRUE;
 
 	// Do this check first, since it's an important fail-safe
@@ -240,7 +269,7 @@ UnsignedInt Connection::doSend() {
 		return 0;
 	}
 
-	if ((curtime - m_lastTimeSent) < m_frameGrouping) {
+	if ((static_cast<UnsignedInt>(curtime) - static_cast<UnsignedInt>(m_lastTimeSent)) < m_frameGrouping) {
 //		DEBUG_LOG(("not sending packet, time = %d, m_lastFrameSent = %d, m_frameGrouping = %d", curtime, m_lastTimeSent, m_frameGrouping));
 		return 0;
 	}
@@ -252,31 +281,19 @@ UnsignedInt Connection::doSend() {
 		NetPacket packet;
 		packet.setAddress(m_user->GetIPAddr(), m_user->GetPort());
 
-		Bool notDone = TRUE;
-
-		// add the command messages until either we run out of messages or the packet is full.
-		while ((msg != nullptr) && notDone) {
-			NetCommandRef *next = msg->getNext(); // Need this since msg could be deleted
-
-			time_t timeLastSent = msg->getTimeLastSent();
-
-			if (((curtime - timeLastSent) > m_retryTime) || (timeLastSent == -1)) {
-				notDone = packet.addCommand(msg);
-				if (notDone) {
-					// the msg command was added to the packet.
-					if (CommandRequiresAck(msg->getCommand())) {
-						if (timeLastSent != -1) {
-							++m_numRetries;
-						}
-						doRetryMetrics();
-						msg->setTimeLastSent(curtime);
-					} else {
-						m_netCommandList->removeMessage(msg);
-						deleteInstance(msg);
-					}
+		// Every command uses at least one wire byte. Commit this batch only after the transport accepts the datagram.
+		NetCommandRef *batch[MAX_PACKET_SIZE];
+		while (msg != nullptr) {
+			if (shouldSend(msg, static_cast<UnsignedInt>(curtime))) {
+				if (!packet.addCommand(msg)) {
+					// Oversized commands are split by sendNetCommandMsg before they reach this queue.
+					if (packet.getNumCommands() == 0)
+						msg = msg->getNext();
+					break;
 				}
+				batch[packet.getNumCommands() - 1] = msg;
 			}
-			msg = next;
+			msg = msg->getNext();
 		}
 
 		if (msg != nullptr) {
@@ -290,7 +307,21 @@ UnsignedInt Connection::doSend() {
 			// If the packet actually has any information to give, give it to the transport object
 			// for transmission.
 			couldQueue = m_transport->queueSend(packet.getAddr(), packet.getPort(), packet.getData(), packet.getLength());
-			m_lastTimeSent = curtime;
+			if (couldQueue) {
+				m_lastTimeSent = curtime;
+				for (Int i = 0; i < packet.getNumCommands(); ++i) {
+					NetCommandRef *sent = batch[i];
+					if (CommandRequiresAck(sent->getCommand())) {
+						if (sent->getTimeLastSent() != -1)
+							++m_numRetries;
+						doRetryMetrics();
+						sent->markSent(curtime);
+					} else {
+						m_netCommandList->removeMessage(sent);
+						deleteInstance(sent);
+					}
+				}
+			}
 		}
 	}
 
@@ -324,14 +355,12 @@ NetCommandRef * Connection::processAck(NetCommandMsg *msg) {
  * Take that message off the list of commands to send.
  */
 NetCommandRef * Connection::processAck(UnsignedShort commandID, UnsignedByte originalPlayerID) {
-	NetCommandRef *temp = m_netCommandList->getFirstMessage();
-	while ((temp != nullptr) && ((temp->getCommand()->getID() != commandID) || (temp->getCommand()->getPlayerID() != originalPlayerID))) {
+	return removeAcknowledgedCommand(commandID, originalPlayerID, timeGetTime());
+}
 
-		// cycle through the commands till we find the one we need to remove.
-		// Need to check for both the command ID and the player ID.
-		temp = temp->getNext();
-	}
-	if (temp == nullptr) {
+NetCommandRef *Connection::removeAcknowledgedCommand(UnsignedShort commandID, UnsignedByte originalPlayerID, UnsignedInt now) {
+	NetCommandRef *temp = m_netCommandList->findMessage(commandID, originalPlayerID);
+	if (temp == nullptr || temp->getTimeLastSent() == -1) {
 		return nullptr;
 	}
 
@@ -342,11 +371,7 @@ NetCommandRef * Connection::processAck(UnsignedShort commandID, UnsignedByte ori
 	}
 #endif
 
-	Int index = temp->getCommand()->getID() % CONNECTION_LATENCY_HISTORY_LENGTH;
-	m_averageLatency -= ((Real)(m_latencies[index])) / CONNECTION_LATENCY_HISTORY_LENGTH;
-	Real lat = timeGetTime() - temp->getTimeLastSent();
-	m_averageLatency += lat / CONNECTION_LATENCY_HISTORY_LENGTH;
-	m_latencies[index] = lat;
+	acknowledgeFrame(temp, now);
 
 #if defined(RTS_DEBUG)
 	if (doDebug == TRUE) {
@@ -369,9 +394,7 @@ void Connection::doRetryMetrics() {
 	if ((curTime - m_retryMetricsTime) > 10000) {
 		m_retryMetricsTime = curTime;
 		++numSeconds;
-//		DEBUG_LOG(("Retries in the last 10 seconds = %d, average latency = %fms", m_numRetries, m_averageLatency));
 		m_numRetries = 0;
-//		m_retryTime = m_averageLatency * 1.5;
 	}
 }
 

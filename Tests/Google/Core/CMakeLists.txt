@@ -7,6 +7,7 @@ set(COREI_GOOGLETEST_SRC
     GameEngine/Common/INITest.cpp
     GameEngine/Common/XferUnicodeStringTest.cpp
     GameEngine/GameClient/DisplayStringDummyTest.cpp
+    GameEngine/GameNetwork/ConnectionTest.cpp
     GameEngineDevice/StdDevice/Common/StdLocalFileSystemTest.cpp
     Libraries/Compression/CompressionManagerTest.cpp
     Libraries/WWVegas/WW3D2/TextureAtlasTest.cpp
