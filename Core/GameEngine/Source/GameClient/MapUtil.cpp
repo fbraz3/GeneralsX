@@ -33,6 +33,7 @@
 #include <set>
 
 #include "PlatformPaths.h"
+#include "Lib/PathUtil.h"
 
 static std::set<std::string> s_failedMapLookups;
 
@@ -683,17 +684,17 @@ Bool MapCache::addMap(
 	}
 	else
 	{
-		// GeneralsX @bugfix fbraz3 22/11/2026 Preserve separator-aware map.str lookup on POSIX hosts (restored after 1.0.8 upstream merge)
-		AsciiString stringFileName = fname;
-		stringFileName.truncateBy(4);
-		const char *stringFileSeparator = getLastPathSeparator(stringFileName.str());
-		if (stringFileSeparator && *stringFileSeparator == '/')
+		// GeneralsX @bugfix fbraz3 23/11/2026 Build map.str from the map's parent directory while preserving separator style
+		AsciiString stringFileName;
+		const char *stringFileSeparator = getLastPathSeparator(fname.str());
+		if (stringFileSeparator != nullptr)
 		{
-			stringFileName.concat("/map.str");
+			stringFileName.set(fname.str(), static_cast<Int>(stringFileSeparator - fname.str()));
+			stringFileName.concat(*stringFileSeparator == '/' ? "/map.str" : "\\map.str");
 		}
 		else
 		{
-			stringFileName.concat("\\map.str");
+			stringFileName = "map.str";
 		}
 		TheGameText->initMapStringFile(stringFileName);
 		md.m_displayName = TheGameText->fetch(nameLookupTag);
@@ -1176,6 +1177,12 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 
 	// Comprehensive iterate fallback matching
 	const bool isUnqualifiedQuery = (normQuery.find('/') == std::string::npos);
+	const MapRootType queryRoot = getMapRootType(normQuery);
+	auto hasCompatibleRoot = [&](const std::string& candidateNorm) -> bool {
+		const MapRootType candidateRoot = getMapRootType(candidateNorm);
+		return !((queryRoot == MapRootType::STOCK && candidateRoot == MapRootType::USER) ||
+		         (queryRoot == MapRootType::USER && candidateRoot == MapRootType::STOCK));
+	};
 	auto endsWithPathComponent = [](const std::string& full, const std::string& suffix) -> bool {
 		if (suffix.empty() || full.length() < suffix.length())
 			return false;
@@ -1195,16 +1202,17 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 
 		std::string normKey = normalizePath(it->first.str());
 		std::string baseKey = extractBaseLeaf(normKey);
-		if (normKey == normQuery ||
+		if (hasCompatibleRoot(normKey) && (
+			normKey == normQuery ||
 			endsWithPathComponent(normKey, normQuery) ||
-			endsWithPathComponent(normQuery, normKey))
+			endsWithPathComponent(normQuery, normKey)))
 		{
 			return &(it->second);
 		}
 
 		std::string normFn = normalizePath(it->second.m_fileName.str());
 		std::string baseFn = extractBaseLeaf(normFn);
-		if (!normFn.empty() && (
+		if (!normFn.empty() && hasCompatibleRoot(normFn) && (
 			normFn == normQuery ||
 			endsWithPathComponent(normFn, normQuery) ||
 			endsWithPathComponent(normQuery, normFn)))
@@ -1226,9 +1234,11 @@ const MapMetaData *MapCache::findMap(AsciiString mapName)
 			baseQuery,
 			matchedDir,
 			[&](const std::string& candidatePath) -> bool {
+				const std::string normCandidate = normalizePath(candidatePath);
+				if (!hasCompatibleRoot(normCandidate))
+					return false;
 				if (isUnqualifiedQuery)
 					return true;
-				const std::string normCandidate = normalizePath(candidatePath);
 				return normCandidate == normQuery ||
 					endsWithPathComponent(normCandidate, normQuery) ||
 					endsWithPathComponent(normQuery, normCandidate);
