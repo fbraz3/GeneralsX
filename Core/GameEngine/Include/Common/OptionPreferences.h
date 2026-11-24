@@ -142,6 +142,7 @@ public:
 	Bool getShowMoneyPerMinute() const;
 
 	Real getMaxCameraHeight() const;
+	Int getWheelZoomStepCount() const;
 	Real getMinCameraHeight() const;
 	Real getCameraPitch() const;
 	Real getTerrainDrawDistanceScale() const;

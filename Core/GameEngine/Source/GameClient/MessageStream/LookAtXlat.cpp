@@ -473,8 +473,15 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			m_lastMouseMoveTimeMsec = timeGetTime();
 
 			const Real spin = msg->getArgument( 1 )->real;
-			// GeneralsX @feature Gabriel Petry 28/09/2026 Apply the configurable mouse scroll speed factor.
-			const Real zoom = -spin * View::ZoomHeightPerSecond * TheGlobalData->m_mouseScrollFactor;
+			// GeneralsX: Scale the wheel step with the current zoom range so
+			// the full min-to-max travel takes about WheelZoomStepCount notches regardless of the
+			// configured MaxCameraHeight. MouseScrollSpeedFactor still acts as a speed multiplier.
+			const Real zoomRange = TheTacticalView->getMaxHeightAboveGround() - TheTacticalView->getMinHeightAboveGround();
+			const Int wheelSteps = TheGlobalData->m_wheelZoomStepCount > 0
+				? TheGlobalData->m_wheelZoomStepCount : (Int)View::WheelZoomStepCount;
+			const Real zoomStep = (zoomRange > 0.0f ? zoomRange / (Real)wheelSteps : View::ZoomHeightPerSecond)
+				* TheGlobalData->m_mouseScrollFactor;
+			const Real zoom = -spin * zoomStep;
 			TheTacticalView->userZoom(zoom);
 
 			break;

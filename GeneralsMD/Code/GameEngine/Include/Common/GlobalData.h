@@ -427,6 +427,8 @@ public:
 	Real m_keyboardScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
 	// GeneralsX @feature Gabriel Petry 30/09/2026 Add configurable mouse scrolling speed.
 	Real m_mouseScrollFactor;				///< Factor applied to game scrolling speed via mouse scrolling
+	// GeneralsX @feature grege117 18/11/2026 Configurable wheel zoom step count.
+	Int m_wheelZoomStepCount;				///< Mouse wheel notches needed to traverse the full zoom range
 	Real m_keyboardDefaultScrollFactor;			///< Factor applied to game scrolling speed via keyboard scrolling
 	Bool m_drawScrollAnchor;					///< Set that the scroll anchor should be enabled
 	Bool m_moveScrollAnchor;					///< set that the scroll anchor should move
