@@ -70,6 +70,17 @@ public:
 	Bool getArchiveReplaysEnabled() const;
 	Bool getAlternateMouseModeEnabled();
 	Bool getRightMouseScrollWithAlternateMouseEnabled() const;
+	// GeneralsX @feature fbraz3 20/11/2026 Option to enable/disable Command+Left-Click-Drag map panning on macOS
+	Bool getCommandDragScrollEnabled() const;
+	void setCommandDragScrollEnabled(Bool val);
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection options for displays wider than 16:9
+	Bool getUltrawideHorPlusEnabled() const;
+	void setUltrawideHorPlusEnabled(Bool val);
+	Real getUltrawideMaxHorizontalFOV() const;
+	void setUltrawideMaxHorizontalFOV(Real val);
+	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on displays wider than 16:9
+	Bool getUltrawideUIEnabled() const;
+	void setUltrawideUIEnabled(Bool val);
 	Bool getRetaliationModeEnabled();
 	Bool getDoubleClickAttackMoveEnabled();
 	Int getJpegQuality() const;

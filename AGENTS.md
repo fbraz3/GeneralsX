@@ -9,25 +9,26 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 - `Core/GameEngineDevice/Source/`
 
 ## Platform Focus
-- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`)
+- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`), WebAssembly + WebGPU (`webgpu`, `GeneralsXZH` / `z_generals`)
 - **Future/Exploratory**: Windows (MinGW path, issue #29)
 - **Legacy**: VC6 + DirectX 8 + Miles (reference only)
 
 ## Architecture
 | Layer   | Technology          | Replaces                     |
 |---------|---------------------|------------------------------|
-| Graphics| DXVK                | DirectX 8 (d3d8.dll)         |
-| Windowing| SDL3              | Win32 API                    |
+| Graphics| DXVK (WebGPU on WASM) | DirectX 8 (d3d8.dll)       |
+| Windowing| SDL3               | Win32 API                    |
 | Audio   | MiniAudio           | Miles Sound System           |
 | Video   | FFmpeg              | Bink Video (intro/videos)    |
-| Platform| SDL3 + libc         | Win32 POSIX calls            |
+| Platform| SDL3 + libc / Emscripten | Win32 POSIX calls       |
 
 **CRITICAL**: Platform code must be isolated to `Core/GameEngineDevice/` and `Core/Libraries/Source/Platform/`. No native Win32/Cocoa/X11 calls in game logic.
+**Web/WASM Exception**: The Emscripten WebAssembly target (`webgpu` preset) is an explicit exception to "DXVK everywhere" and "everything in `Core/`": it translates DirectX 8 via `Core/GameEngineDevice/Source/WebGPUDevice/` (using browser WebGPU instead of DXVK/Vulkan) and hosts the browser Vite/TypeScript frontend + static server config under `web/`.
 
 ## Golden Rules
-1. **Single codebase** – Linux and macOS build from same source
+1. **Single codebase** – Linux, macOS, and WebAssembly/WebGPU build from same source
 2. **SDL3 everywhere** – No native platform calls in game code
-3. **DXVK everywhere** – DX8 → Vulkan translation on all platforms
+3. **DXVK everywhere (desktop)** – DX8 → Vulkan translation on Linux/macOS (WebGPU via `WebGPUDevice` on Emscripten `webgpu` builds)
 4. **MiniAudio backend** – Cross-platform audio stack. MiniAudio is the primary and stable audio backend for all platforms (Linux, macOS). OpenAL is legacy/deprecated and no longer maintained.
 5. **64-bit native** – x86_64 only (32-bit via VC6 upstream)
 6. **Retail compatibility** – Original replays and mods must work
@@ -207,6 +208,7 @@ git merge thesuperhackers/main
 ## GitHub PR/Issue Formatting
 - Use `--body-file` with real Markdown file instead of `--body`
 - Avoid literal `\n` sequences; prefer actual newlines in multi-line strings
+- Do not write `#<number>` in commit messages, PR descriptions, or comments unless linking that exact GitHub issue/PR (GitHub cross-links it permanently); number local items as `F7` or `item 7` instead
 
 ## Git Commit Standards
 - **Conventional Commits**: Format must be `<type>(optional scope): <description>`. (e.g. `fix(audio): restart sound groups in reset`)

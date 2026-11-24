@@ -10,6 +10,8 @@ body:
     options:
       - label: I have searched for similar issues and confirmed this is not a duplicate
         required: true
+      - label: I am using an official GeneralsX build/release (not a third-party fork — see [Ecosystem & Community Ports](https://github.com/fbraz3/GeneralsX/discussions/436) to report issues on mobile or third-party forks)
+        required: true
 
 - type: checkboxes
   attributes:

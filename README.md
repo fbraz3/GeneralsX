@@ -5,7 +5,7 @@
 <h1 align="center">GeneralsX</h1>
 
 <p align="center">
-  <strong>Play Command & Conquer: Generals & Zero Hour on macOS, Linux, and Windows — with native cross-platform online multiplayer.</strong>
+  <strong>Play Command & Conquer: Generals & Zero Hour on macOS, Linux, and Windows (with native cross-platform online multiplayer), plus Zero Hour single-player in your browser.</strong>
 </p>
 
 <p align="center">
@@ -28,10 +28,16 @@
 - 🔊 **Updated Audio & Video**: Crystal-clear cross-platform audio powered by **MiniAudio** and full video cinematics support via FFmpeg.
 - 🎯 **100% Retail Compatibility**: Full support for original singleplayer campaigns, Skirmish vs AI, replays, and community mods.
 - 📦 **Generals & Zero Hour**: Play both the base game and the expansion from a unified, modern codebase.
+- 🌍 **Play in Your Browser**: Play **Command & Conquer: Generals Zero Hour** single-player (campaigns and Skirmish vs AI) directly in a WebGPU-capable browser at **[play.generalsx.org](https://play.generalsx.org/)** (WebAssembly + WebGPU) — no desktop installer required.
 
 ---
 
 ## 🚀 Getting Started
+
+### 🌍 Play in Your Browser (Zero Hour — Single-Player)
+No desktop installer needed — you can play **Command & Conquer: Generals Zero Hour** single-player (campaigns and Skirmish vs AI) directly in your browser via WebAssembly + WebGPU:
+
+* 🎮 **[Play Zero Hour at play.generalsx.org](https://play.generalsx.org/)** – Instant browser play (requires your own original game data files; multiplayer is currently desktop-only)
 
 ### Download & Play
 Ready-to-run releases are available for macOS, Linux, and Windows:
@@ -56,11 +62,7 @@ See the [Running from a Launcher or Portable Workspace Guide](https://github.com
 
 ## 📱 Ecosystem & Community Ports
 
-The flexibility and modern foundation of GeneralsX have enabled several community-driven ports across mobile and web platforms:
-
-* **[Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad)** – iOS and iPadOS port by [@ammaarreshi](https://github.com/ammaarreshi)
-* **[Generals-Android](https://github.com/fadi-labib/Generals-Android)** – Android port by [@fadi-labib](https://github.com/fadi-labib)
-* **[wasm-generals](https://github.com/origami-ltd/wasm-generals)** – WebAssembly + WebGPU browser port by [@ebellumat](https://github.com/ebellumat) (playable at [generals.wasm.com.br](https://generals.wasm.com.br))
+The flexibility and modern foundation of GeneralsX have enabled several community-driven ports across mobile and web platforms. Check out our **[Ecosystem & Community Ports discussion](https://github.com/fbraz3/GeneralsX/discussions/436)** to explore highlighted forks and community projects—or share one of your own!
 
 ---
 

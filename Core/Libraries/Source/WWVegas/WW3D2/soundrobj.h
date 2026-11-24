@@ -30,14 +30,16 @@
  *                                                                                             *
  *                    $Revision:: 4                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
 // TheSuperHackers @build xezon 05/04/2025 Compile in WWAUDIO for Renegade's w3dview tool.
+#if defined(SAGE_USE_WEBGPU)
+#define noWWAUDIO 0
+#else
 #define noWWAUDIO 1
+#endif
 
 #if noWWAUDIO // (gth) removing dependency on WWAUDIO
 

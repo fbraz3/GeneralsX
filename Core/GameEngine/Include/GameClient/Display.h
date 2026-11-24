@@ -86,6 +86,14 @@ public:
 	virtual void setHeight( UnsignedInt height );									///< Sets the height of the display
 	virtual UnsignedInt getWidth() { return m_width; }			///< Returns the width of the display
 	virtual UnsignedInt getHeight() { return m_height; }		///< Returns the height of the display
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 Ultrawide UI layout rect. Window layouts and HUD art are designed for 4:3
+	// and scaled to the display. On displays wider than UILayoutMaxAspectRatio they are laid out in a centred
+	// rect of that aspect ratio instead of being stretched across the whole width. With the option off, or on
+	// narrower displays, the rect is the whole display.
+	static constexpr Real UILayoutMaxAspectRatio = 16.0f / 9.0f;	///< The one place that defines the widest UI layout aspect ratio
+	Int getUILayoutWidth();				///< Width in pixels of the rect the UI is laid out in
+	Int getUILayoutOriginX();			///< Left edge in pixels of the rect the UI is laid out in
 	virtual void setBitDepth( UnsignedInt bitDepth ) { m_bitDepth = bitDepth; }
 	virtual UnsignedInt getBitDepth() { return m_bitDepth; }
 	virtual void setWindowed( Bool windowed ) { m_windowed = windowed; }  ///< set windowed/fullscreen flag

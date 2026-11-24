@@ -42,7 +42,9 @@
 
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameMessageParser.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif
 #include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "Common/RandomValue.h"
@@ -624,11 +626,13 @@ void RecorderClass::startRecording(GameDifficulty diff, GameMode originalGameMod
 				}
 			}
 		}
+#if defined(SAGE_USE_GAMESPY)
 		else
 		{
 			theSlotList = GameInfoToAsciiString(TheGameSpyGame);
 			localIndex = TheGameSpyGame->getLocalSlotNum();
 		}
+#endif
 	}
 	else
 	{
@@ -1042,6 +1046,14 @@ void RecorderClass::handleCRCMessage(UnsignedInt newCRC, Int playerIndex, Bool f
 		const UnsignedInt mismatchFrame = (TheGameLogic->getFrame() > m_crcInfo.GetQueueSize())
 			? (TheGameLogic->getFrame() - m_crcInfo.GetQueueSize() - 1)
 			: 0;
+
+		// GeneralsX @tweak Meeseeks 19/11/2026 Emit Frame 100 CRC checkpoint in headless mode regardless of match/mismatch.
+		if (TheGlobalData && TheGlobalData->m_headless && mismatchFrame == 100)
+		{
+			fprintf(stderr, "[GeneralsX] REPLAY_CRC_CHECKPOINT frame=%u inGame=0x%08X replay=0x%08X\n",
+				mismatchFrame, playbackCRC, newCRC);
+			fflush(stderr);
+		}
 
 		// GeneralsX @bugfix fbraz3 22/09/2026 Require mismatchFrame > 0 to report desync (#315).
 		// Frame 0 CRC compares uninitialized pre-simulation state where subtle mode differences
@@ -1786,8 +1798,10 @@ AsciiString RecorderClass::getLastReplayFileName()
 		GameInfo *game = nullptr;
 		if (TheLAN)
 			game = TheLAN->GetMyGame();
+#if defined(SAGE_USE_GAMESPY)
 		else if (TheGameSpyInfo)
 			game = TheGameSpyGame;
+#endif
 		if (game)
 		{
 			AsciiString players;

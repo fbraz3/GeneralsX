@@ -10,7 +10,7 @@ Prefer opening fewer high quality Pull Requests over many low quality ones. Prio
 
 ## AI contribution policy
 
-Ensure that you have read and understood the [AI Contribution Policy](AI_POLICY.md).
+AI-assisted contributions are welcome, provided they meet the review, build, and verification standards in the [AI Contribution Policy](AI_POLICY.md).
 
 
 ## Code guidelines

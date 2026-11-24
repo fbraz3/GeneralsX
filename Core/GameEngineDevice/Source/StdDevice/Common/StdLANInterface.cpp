@@ -28,6 +28,9 @@
 
 #include "StdDevice/Common/StdLANInterface.h"
 #include "Common/Debug.h"
+#if defined(__EMSCRIPTEN__)
+#include "GameNetwork/udp.h"
+#endif
 
 #ifndef _WIN32
 #include <arpa/inet.h>
@@ -61,6 +64,24 @@ static bool IsDockerUserBridgeName(const char *name)
 
 	return digits == 12;
 }
+// GeneralsX @bugfix Maxim Sintsov 17/11/2026 Extract the AF_INET netmask in host byte order.
+static bool HostNetmaskOf(const struct ifaddrs *ifa, UnsignedInt *outMask)
+{
+	if (ifa->ifa_netmask == nullptr || ifa->ifa_netmask->sa_family != AF_INET)
+	{
+		return false;
+	}
+
+	*outMask = ntohl(reinterpret_cast<const sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr);
+	return true;
+}
+// GeneralsX @bugfix Maxim Sintsov 17/11/2026 True if the netmask is a real subnet (not /0, not /32);
+// WireGuard-style meshes carry one, PPP dial-up and host-route VPN adapters do not.
+static bool HasSubnetNetmask(const struct ifaddrs *ifa)
+{
+	UnsignedInt mask = 0;
+	return HostNetmaskOf(ifa, &mask) && mask != 0 && mask != 0xFFFFFFFFu;
+}
 // GeneralsX @refactor Mr. Meesseeks 17/09/2026 Common interface suitability predicate for address enumeration and broadcast discovery.
 static bool IsUsableInterface(const struct ifaddrs *ifa)
 {
@@ -87,8 +108,14 @@ static bool IsUsableInterface(const struct ifaddrs *ifa)
 		return false;
 	}
 
-	// GeneralsX @feature Mr. Meesseeks 11/07/2026 Ignore point-to-point and non-broadcast interfaces.
-	if ((ifa->ifa_flags & IFF_BROADCAST) == 0 || (ifa->ifa_flags & IFF_POINTOPOINT) != 0)
+	// GeneralsX @bugfix Maxim Sintsov 17/11/2026 Accept broadcast links and subnetted point-to-point
+	// tunnels (WireGuard-style VPN meshes) so their addresses can be used for LAN games. P2P links
+	// with /0 or /32 netmasks stay excluded, as under the blanket rule replaced here
+	// (GeneralsX @feature Mr. Meesseeks 11/07/2026).
+	const bool isBroadcastLink = (ifa->ifa_flags & IFF_BROADCAST) != 0;
+	const bool isSubnetP2PLink = (ifa->ifa_flags & (IFF_POINTOPOINT | IFF_BROADCAST)) == IFF_POINTOPOINT
+		&& HasSubnetNetmask(ifa);
+	if (!isBroadcastLink && !isSubnetP2PLink)
 	{
 		return false;
 	}
@@ -138,7 +165,15 @@ Int StdLANInterface::getLocalHostAddresses(UnsignedInt *outAddrs, Int maxAddrs)
 		return 0;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	const UnsignedInt webIP = GetWebLanVirtualIP();
+	if (webIP != 0)
+	{
+		outAddrs[0] = webIP;
+		return 1;
+	}
+	return 0;
+#elif !defined(_WIN32)
 	struct ifaddrs *ifaddr = nullptr;
 	if (getifaddrs(&ifaddr) != 0)
 	{
@@ -203,7 +238,9 @@ Bool StdLANInterface::isRealLocalInterfaceAddress(UnsignedInt ip)
 		return FALSE;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	return (ip == GetWebLanVirtualIP()) ? TRUE : FALSE;
+#elif !defined(_WIN32)
 	UnsignedInt addrs[16];
 	Int count = getLocalHostAddresses(addrs, ARRAY_SIZE(addrs));
 	for (Int i = 0; i < count; ++i)
@@ -243,7 +280,9 @@ Int StdLANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedIn
 		return 0;
 	}
 
-#ifndef _WIN32
+#if defined(__EMSCRIPTEN__)
+	return 0;
+#elif !defined(_WIN32)
 	Int count = 0;
 	struct ifaddrs *ifaddr = nullptr;
 	if (getifaddrs(&ifaddr) != 0)
@@ -266,15 +305,44 @@ Int StdLANInterface::getSubnetBroadcastAddresses(UnsignedInt localIP, UnsignedIn
 		}
 
 		UnsignedInt bcast = 0;
-		if (ifa->ifa_broadaddr != nullptr && ifa->ifa_broadaddr->sa_family == AF_INET)
+		UnsignedInt mask = 0;
+		if ((ifa->ifa_flags & (IFF_POINTOPOINT | IFF_BROADCAST)) == IFF_POINTOPOINT)
+		{
+			// GeneralsX @bugfix Maxim Sintsov 17/11/2026 On point-to-point links the ifa_ifu union is
+			// the peer address, not a broadcast; derive it from the netmask instead.
+			if (!HostNetmaskOf(ifa, &mask))
+			{
+				continue;
+			}
+			if (mask == 0xFFFFFFFEu)
+			{
+				// GeneralsX @bugfix Maxim Sintsov 22/11/2026 A /31 (RFC 3021) carries no
+				// subnet-directed broadcast: the all-ones derivation would return the local
+				// address on the odd host of the pair. Send to the reported peer instead; when
+				// no peer is known (WireGuard tunnels report none) emit nothing and let LANAPI
+				// fall back to the global broadcast.
+				if (ifa->ifa_dstaddr == nullptr || ifa->ifa_dstaddr->sa_family != AF_INET)
+				{
+					continue;
+				}
+				bcast = ntohl(reinterpret_cast<const sockaddr_in *>(ifa->ifa_dstaddr)->sin_addr.s_addr);
+				if (bcast == 0 || bcast == hostAddr)
+				{
+					continue;
+				}
+			}
+			else
+			{
+				bcast = (hostAddr & mask) | (~mask);
+			}
+		}
+		else if (ifa->ifa_broadaddr != nullptr && ifa->ifa_broadaddr->sa_family == AF_INET)
 		{
 			const sockaddr_in *baddr = reinterpret_cast<const sockaddr_in *>(ifa->ifa_broadaddr);
 			bcast = ntohl(baddr->sin_addr.s_addr);
 		}
-		else if (ifa->ifa_netmask != nullptr && ifa->ifa_netmask->sa_family == AF_INET)
+		else if (HostNetmaskOf(ifa, &mask))
 		{
-			const sockaddr_in *nmask = reinterpret_cast<const sockaddr_in *>(ifa->ifa_netmask);
-			const UnsignedInt mask = ntohl(nmask->sin_addr.s_addr);
 			bcast = (hostAddr & mask) | (~mask);
 		}
 		else

@@ -1,0 +1,72 @@
+name: Deploy WebGPU to GitHub Pages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional release tag to deploy (leave empty to build from current branch)"
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-wasm:
+    uses: ./.github/workflows/build-wasm.yml
+    with:
+      checkout_ref: ${{ github.event_name == 'release' && format('refs/tags/{0}', github.event.release.tag_name) || (inputs.tag != '' && format('refs/tags/{0}', inputs.tag) || github.ref) }}
+    secrets: inherit
+
+  deploy:
+    needs: [build-wasm]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download WebAssembly build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: wasm-webgpu-GeneralsXZH.zip
+          path: /tmp/wasm-pages-artifact
+
+      - name: Extract WebAssembly build artifact
+        run: |
+          mkdir -p pages-dist
+          unzip -q /tmp/wasm-pages-artifact/wasm-webgpu-GeneralsXZH.zip -d pages-dist
+
+      - name: Finalize GitHub Pages payload
+        run: |
+          rm -f pages-dist/serve-webgpu.py
+          touch pages-dist/.nojekyll
+          for f in \
+            pages-dist/index.html \
+            pages-dist/coi-serviceworker.js \
+            pages-dist/GeneralsXZH.js \
+            pages-dist/GeneralsXZH.wasm \
+            pages-dist/GeneralsXZH.data \
+            pages-dist/generalsx.big; do
+            test -s "$f" || { echo "Missing or empty GitHub Pages file: $f"; exit 1; }
+          done
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

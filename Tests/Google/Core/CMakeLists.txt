@@ -5,9 +5,11 @@ set(COREI_GOOGLETEST_SRC
     GameEngine/Common/FileSystemTest.cpp
     GameEngine/Common/FileSystemTestFixture.h
     GameEngine/Common/INITest.cpp
+    GameEngine/Common/XferUnicodeStringTest.cpp
     GameEngine/GameClient/DisplayStringDummyTest.cpp
     GameEngineDevice/StdDevice/Common/StdLocalFileSystemTest.cpp
     Libraries/Compression/CompressionManagerTest.cpp
+    Libraries/WWVegas/WW3D2/TextureAtlasTest.cpp
     Libraries/WWVegas/WW3D2/hlod_test.cpp
     Libraries/WWVegas/WW3D2/soundrobj_test.cpp
     Libraries/WWVegas/WWMath/WWMathCalls.h

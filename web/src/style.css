@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* GeneralsX Zero Hour tactical palette: obsidian gunmetal, Zero Hour amber/gold primary, steel borders. */
+@theme {
+    --color-hud-bg: #090b0e;
+    --color-hud-surface: #10141b;
+    --color-hud-raised: #161c24;
+    --color-hud-border: #3a4454;
+    --color-hud-fg: #f1f5f9;
+    --color-hud-muted: #94a3b8;
+    --color-hud-accent: #f59e0b;
+    --color-hud-warm: #fb923c;
+    --color-hud-ready: #22c55e;
+    --color-hud-error: #ef4444;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer components {
+    /* Tactical chamfered panel with 1px steel-amber border via clipped ::before. */
+    .hud-cut {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: var(--color-hud-border);
+        clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+
+    .hud-cut::before {
+        position: absolute;
+        z-index: -1;
+        inset: 1px;
+        clip-path: inherit;
+        background: var(--hud-cut-surface, var(--color-hud-raised));
+        content: "";
+    }
+
+    .hud-button {
+        @apply min-h-9 cursor-pointer px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-hud-fg transition-colors sm:min-h-10 sm:px-3.5 sm:text-xs;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 0;
+        background: var(--color-hud-border);
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+        box-shadow: inset 0 1px 0 hsl(38 92% 50% / .12);
+    }
+
+    .hud-button::before {
+        position: absolute;
+        z-index: -1;
+        inset: 1px;
+        clip-path: inherit;
+        background: var(--color-hud-raised);
+        content: "";
+    }
+
+    .hud-button:hover {
+        background: var(--color-hud-accent);
+        color: var(--color-hud-accent);
+    }
+
+    .hud-button-primary {
+        background: var(--color-hud-accent);
+        color: #090b0e;
+    }
+
+    .hud-button-primary::before {
+        background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+    }
+
+    .hud-button-primary:hover {
+        background: #fde68a;
+        color: #090b0e;
+    }
+
+    .hud-select {
+        @apply min-h-9 border border-hud-border bg-hud-raised px-2.5 text-xs text-hud-fg outline-none transition-colors focus:border-hud-accent sm:min-h-10;
+    }
+}
+
+body {
+    background-image:
+        radial-gradient(ellipse at 50% 0%, hsl(38 92% 50% / .08), transparent 55%),
+        linear-gradient(to right, hsl(215 20% 50% / .03) 1px, transparent 1px),
+        linear-gradient(to bottom, hsl(215 20% 50% / .03) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px, 32px 32px;
+}
+
+/* The engine publishes its cursor as an inline CSS cursor; hide it only while pointer-locked,
+   when the page draws that same image itself (the browser hides the OS cursor under lock). */
+canvas.pointer-locked {
+    cursor: none !important;
+}
+
+/* ------------------------------------------------------------- guest sync screen */
+.holo-min {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+}
+
+.holo-ring-wrap {
+    position: relative;
+    width: min(38vmin, 210px);
+    aspect-ratio: 1;
+}
+
+.holo-ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.holo-ring-track {
+    fill: none;
+    stroke: hsl(38 92% 50% / .16);
+    stroke-width: 2.5;
+}
+
+.holo-ring-fill {
+    fill: none;
+    stroke: var(--color-hud-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 339.292; /* 2π × r(54) */
+    stroke-dashoffset: 339.292;
+    transition: stroke-dashoffset .3s linear;
+    filter: drop-shadow(0 0 6px hsl(38 92% 50% / .45));
+}
+
+.holo-center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+}
+
+#holo-percent {
+    font-size: clamp(26px, 6vmin, 42px);
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--color-hud-fg);
+}
+
+#holo-mb {
+    margin-top: 4px;
+    font-size: clamp(10px, 1.8vmin, 12px);
+    letter-spacing: .12em;
+    color: var(--color-hud-muted);
+}
+
+#holo-file {
+    min-height: 1.2em;
+    font-size: clamp(10px, 1.8vmin, 12px);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--color-hud-muted);
+}

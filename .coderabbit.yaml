@@ -98,10 +98,19 @@ reviews:
     - path: "{**/CMakeLists.txt,cmake/**,CMakePresets.json}"
       instructions: >-
         CMake & Build System:
-        - Single codebase for Linux and macOS.
-        - Ensure `-ffp-contract=off` is enforced to prevent FMA contraction differences across architectures.
+        - Single codebase for Linux, macOS, and WebAssembly/WebGPU (`webgpu` preset).
+        - Ensure `-ffp-contract=off` is enforced on native desktop targets to prevent FMA contraction differences across architectures.
         - SDL3 is fetched from source via FetchContent.
         - DXVK is used for DirectX 8 to Vulkan translation on Linux and macOS.
+        - WebAssembly Exception (`EMSCRIPTEN` / `webgpu` preset): Emscripten builds intentionally bypass DXVK and use `WebGPUDevice` (`Core/GameEngineDevice/Source/WebGPUDevice/`), `NullAudioDevice` / threadless MiniAudio, and `SAGE_USE_GAMESPY=OFF`.
+
+    - path: "web/**"
+      instructions: >-
+        WebAssembly + WebGPU Browser Frontend & Static Hosting (`web/`):
+        - Exception to the C++ `Core/` layout: `web/` hosts the Vite + TypeScript + Tailwind browser shell, archive streamer, `coi-serviceworker.js`, and optional `nginx:alpine` container config.
+        - SharedArrayBuffer requires Cross-Origin Isolation (`Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`), either via server headers or `coi-serviceworker.js` on static hosts (GitHub Pages).
+        - Virtual Emscripten MEMFS/IDBFS paths (e.g. `/home/web_user/...`, `/GeneralsZH`) exist only in the browser sandbox and are valid.
+        - Runtime asset URLs must resolve via `document.baseURI` (not `/assets/...`) so both root (`/`) and GitHub Pages subpaths (`/GeneralsX/`) work.
 
     - path: "scripts/**/*.sh"
       instructions: >-
@@ -155,7 +164,7 @@ reviews:
     custom_checks:
       - name: "Platform Isolation"
         mode: "warning"
-        instructions: "Verify that no platform-specific APIs (Win32, Cocoa, raw POSIX) leak into game logic (Generals/, GeneralsMD/, Core/GameEngine/). Platform code must reside in Core/GameEngineDevice/ or platform libraries."
+        instructions: "Verify that no platform-specific APIs (Win32, Cocoa, raw POSIX) leak into game logic (Generals/, GeneralsMD/, Core/GameEngine/). Platform code must reside in Core/GameEngineDevice/ or platform libraries. Note: WebGPUDevice (Core/GameEngineDevice/) and web/ are the approved platform layers for Emscripten/WebAssembly builds."
       - name: "Cross-Platform Determinism"
         mode: "error"
         instructions: >-
@@ -174,9 +183,10 @@ reviews:
       - name: "No Hardcoded Local Paths / Sensitive Info"
         mode: "error"
         instructions: >-
-          Verify that no personal hardcoded machine paths (such as '/Users/...', '/home/...', or developer home directories),
+          Verify that no personal hardcoded machine paths (such as '/Users/...', '/home/<developer>/...', or developer home directories),
           private environment variables, internal URLs, or local workspace paths are introduced in code, documentation,
           or configuration files. Portable relative paths or standard environment variables ($HOME, ~, etc.) must be used instead.
+          Exception: Emscripten virtual browser sandbox paths (such as '/home/web_user/...' for IDBFS/MEMFS) are not host machine paths and are allowed.
       - name: "NGMP Protocol Integrity"
         mode: "warning"
         instructions: >-
@@ -226,7 +236,7 @@ knowledge_base:
     enabled: true
   code_guidelines:
     enabled: true
-    file_patterns:
+    filePatterns:
       - "AGENTS.md"
       - ".github/instructions/**/*.md"
       - "CONTRIBUTING.md"

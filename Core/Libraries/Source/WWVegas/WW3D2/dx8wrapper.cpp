@@ -36,9 +36,6 @@
  * 06/27/02 KM Render to shadow buffer texture support														*
  * 06/27/02 KM Shader system updates																				*
  * 08/05/02 KM Texture class redesign
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
- *   DX8Wrapper::_Update_Texture -- Copies a texture from system memory to video memory        *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 //#define CREATE_DX8_MULTI_THREADED
@@ -51,6 +48,9 @@
 #endif
 
 #include "dx8wrapper.h"
+#if defined(SAGE_USE_WEBGPU)
+#include "WebGPUDevice/WebGPUD3D8.h"
+#endif
 // GeneralsX @build BenderAI 10/02/2026 - Need LoadLibrary/GetProcAddress/FreeLibrary for dynamic loading
 #ifndef _WIN32
 #include "module_compat.h"
@@ -58,10 +58,6 @@
 // GeneralsX @build felipebraz 16/02/2026 - Need dlerror() for dlopen() error reporting on Linux
 #ifndef _WIN32
 #include <dlfcn.h>
-#endif
-// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only (requires COM LPDISPATCH)
-#ifdef _WIN32
-#include "dx8webbrowser.h"
 #endif
 #include "dx8fvf.h"
 #include "dx8vertexbuffer.h"
@@ -680,6 +676,14 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
+#if defined(SAGE_USE_WEBGPU)
+		// GeneralsX @feature Use the browser-native WebGPU D3D8 implementation.
+		D3DInterface = CreateWebGPUDirect3D8();
+		if (!D3DInterface) {
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - WebGPU D3D8 initialization failed\n");
+			return false;
+		}
+#else
 #ifndef _WIN32
 		// GeneralsX @bugfix fbraz3 12/10/2026 Set default DXVK configuration fallback for D3D8 device resets
 		// In D3D8, swapchain resets (such as fullscreen transitions and window resizing)
@@ -742,6 +746,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			Shutdown();
 			return(false);
 		}
+#endif
 		IsInitted = true;
 
 		/*
@@ -2139,16 +2144,7 @@ void DX8Wrapper::Begin_Scene()
 {
 	DX8_THREAD_ASSERT();
 
-#if ENABLE_EMBEDDED_BROWSER
-	DX8WebBrowser::Update();
-#endif
-
 	DX8CALL(BeginScene());
-
-	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
-#ifdef _WIN32
-	DX8WebBrowser::Update();
-#endif
 }
 
 void DX8Wrapper::End_Scene(bool flip_frames)
@@ -2162,11 +2158,6 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 		Invalidate_Cached_Render_States();
 	}
 	DX8CALL(EndScene());
-
-	// GeneralsX @build BenderAI 10/02/2026 - Embedded browser Windows-only
-#ifdef _WIN32
-	DX8WebBrowser::Render(0);
-#endif
 
 	if (flip_frames) {
 		DX8_Assert();
@@ -3389,21 +3380,7 @@ IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
 }
 
 
-/***********************************************************************************************
- * DX8Wrapper::_Update_Texture -- Copies a texture from system memory to video memory          *
- *                                                                                             *
- *                                                                                             *
- *                                                                                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   4/26/2001  hy : Created.                                                                  *
- *=============================================================================================*/
+// Copies a texture from system memory to video memory.
 void DX8Wrapper::_Update_Texture(TextureClass *system, TextureClass *video)
 {
 	WWASSERT(system);

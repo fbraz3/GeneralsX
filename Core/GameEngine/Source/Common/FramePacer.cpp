@@ -61,8 +61,12 @@ FramePacer::~FramePacer()
 void FramePacer::update()
 {
 	// Uses a high resolution counter to cap the frame rate more accurately to the desired limit than retail did.
+#if defined(__EMSCRIPTEN__)
+	m_updateTime = m_frameRateLimit.wait(RenderFpsPreset::UncappedFpsValue);
+#else
 	const UnsignedInt maxFps = getActualFramesPerSecondLimit();
 	m_updateTime = m_frameRateLimit.wait(maxFps);
+#endif
 
 	if (TheGameLogic != nullptr)
 	{

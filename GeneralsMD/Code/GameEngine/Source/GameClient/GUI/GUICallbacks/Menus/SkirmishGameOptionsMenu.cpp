@@ -59,7 +59,7 @@
 #include "GameClient/MapUtil.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/GameWindowTransitions.h"
-#include "GameNetwork/GameSpy/LobbyUtils.h"
+#include "GameNetwork/LobbyTooltips.h"
 
 #include "Common/MultiplayerSettings.h"
 #include "GameClient/GameText.h"

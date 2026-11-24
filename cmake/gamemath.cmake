@@ -13,6 +13,10 @@ FetchContent_MakeAvailable(gamemath)
 # Ensure gamemath has position-independent code for 64-bit / PIE targets
 if(TARGET gamemath)
     set_target_properties(gamemath PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if(EMSCRIPTEN)
+        # GeneralsX @build WebAssembly has no floating-point exception flags; preserve numeric results with no-op flags.
+        target_compile_definitions(gamemath PRIVATE FE_INVALID=0 FE_INEXACT=0 FE_UNDERFLOW=0)
+    endif()
 endif()
 
 # Ensure GameMath includes are available to ALL targets

@@ -30,7 +30,9 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(SAGE_USE_GAMESPY)
 #include "gamespy/ghttp/ghttp.h"
+#endif
 
 #include "Common/AudioAffect.h"
 #include "Common/AudioSettings.h"
@@ -67,8 +69,10 @@
 #include "GameClient/GlobalLanguage.h"
 #include "GameNetwork/FirewallHelper.h"
 #include "GameNetwork/IPEnumeration.h"
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
 #include "WWDownload/Registry.h"
@@ -243,7 +247,11 @@ static void setDefaults()
 	//-------------------------------------------------------------------------------------------------
 	// Resolution
 	//Find index of 800x600 mode.
-	if ((TheGameLogic->isInGame() == FALSE || TheGameLogic->isInShellGame() == TRUE) && !TheGameSpyInfo) {
+	Bool canSelectResolution = (TheGameLogic->isInGame() == FALSE || TheGameLogic->isInShellGame() == TRUE);
+#if defined(SAGE_USE_GAMESPY)
+	canSelectResolution = canSelectResolution && !TheGameSpyInfo;
+#endif
+	if (canSelectResolution) {
 		Int numResolutions = TheDisplay->getDisplayModeCount();
 		Int defaultResIndex=0;
 		for( Int i = 0; i < numResolutions; ++i )
@@ -1405,7 +1413,11 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	// so checking '|| TheGameSpyInfo' previously caused resolution and detail options to always
 	// be disabled, even in the main menu. Only disable them when actually in-game or in an online staging room.
 	Bool inGame = (TheGameLogic->isInGame() && TheGameLogic->getGameMode() != GAME_SHELL);
+#if defined(SAGE_USE_GAMESPY)
 	Bool inOnlineStaging = (TheGameSpyInfo && TheGameSpyInfo->getCurrentStagingRoom() != nullptr);
+#else
+	Bool inOnlineStaging = FALSE;
+#endif
 
 	if( inGame || inOnlineStaging )
 	{
@@ -1610,9 +1622,11 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				comboBoxLANIP = nullptr;
 				comboBoxOnlineIP = nullptr;
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 				if(GameSpyIsOverlayOpen(GSOVERLAY_OPTIONS))
 					GameSpyCloseOverlay(GSOVERLAY_OPTIONS);
 				else
+#endif
 				{
 					DestroyOptionsLayout();
 				}
@@ -1636,9 +1650,11 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 					destroyQuitMenu(); // if we're in a game, the change res then enter the same kind of game, we nee the quit menu to be gone.
 
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 				if(GameSpyIsOverlayOpen(GSOVERLAY_OPTIONS))
 					GameSpyCloseOverlay(GSOVERLAY_OPTIONS);
 				else
+#endif
 				{
 					DestroyOptionsLayout();
 					if (dispChanged)

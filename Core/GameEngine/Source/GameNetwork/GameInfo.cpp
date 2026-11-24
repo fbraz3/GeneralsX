@@ -210,10 +210,12 @@ void GameSlot::setState( SlotState state, UnicodeString name, UnsignedInt IP )
 		m_playerTemplate = -1;
 		m_teamNumber = -1;
 
+#if defined(SAGE_USE_GAMESPY)
 		if (state == SLOT_OPEN && TheGameSpyGame && TheGameSpyGame->getConstSlot(0) == this)
 		{
 			DEBUG_CRASH(("Game Is Hosed!"));
 		}
+#endif
 	}
 	if (state == SLOT_PLAYER)
 	{

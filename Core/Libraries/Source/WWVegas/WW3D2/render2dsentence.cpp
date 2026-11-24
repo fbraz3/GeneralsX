@@ -30,8 +30,6 @@
  *                                                                                             *
  *                    $Revision:: 13                                                          $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "render2dsentence.h"
@@ -2081,7 +2079,7 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 	//
 	// Tier 2: System Fontconfig match (desktop Linux/macOS)
 	//
-#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && !defined(__EMSCRIPTEN__)
 	FcConfig *config = FcInitLoadConfigAndFonts();
 	if ( config != nullptr ) {
 		FcPattern *pattern = FcNameParse( (const FcChar8*)font_name );
@@ -2131,7 +2129,11 @@ FontCharsClass::Locate_Font_FontConfig (const char *font_name)
 	// Tier 3: Universal fallback to bundled Arial/Liberation font for recognized core UI fonts
 	// GeneralsX @bugfix felipebraz 26/09/2026 Guard Tier 3 so unresolved Unicode/CJK fonts return nullptr and allow caller fallback delegation
 	//
+#if defined(__EMSCRIPTEN__)
+	if ( !is_fa_brands ) {
+#else
 	if ( is_arial || is_times || is_courier ) {
+#endif
 		static const char *fallback_names_bold[] = {
 			"arialbold.ttf",
 			"arial.ttf",

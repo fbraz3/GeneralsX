@@ -46,7 +46,6 @@ class StdBIGFileSystem;
 class W3DModuleFactory;
 class W3DGameLogic;
 class W3DGameClient;
-class W3DWebBrowser;
 class W3DFunctionLexicon;
 class W3DRadar;
 class W3DThingFactory;
@@ -95,7 +94,6 @@ public:
 	virtual FunctionLexicon *createFunctionLexicon(void);
 	// GeneralsX @bugfix Copilot 15/04/2026 Match upstream GameEngine pure-virtual signatures after sync.
 	virtual Radar *createRadar(Bool dummy);
-	virtual WebBrowser *createWebBrowser(void);
 	virtual ParticleSystemManager* createParticleSystemManager(Bool dummy);
 	virtual AudioManager *createAudioManager(Bool dummy);
 
@@ -120,6 +118,13 @@ protected:
 	void handleMouseButtonEvent(const SDL_MouseButtonEvent& event);
 	void handleMouseWheelEvent(const SDL_MouseWheelEvent& event);  //TheSuperHackers @build 10/02/2026 Bender
 	void handleWindowEvent(const SDL_WindowEvent& event);
+#if defined(__EMSCRIPTEN__)
+public:
+	// Called by GeneralsXPump so a hidden tab's worker can keep driving frames (window timers
+	// are throttled there); reentry is guarded inside.
+	static void browserFrame(void* engine);
+protected:
+#endif
 };
 
 #endif // !_WIN32

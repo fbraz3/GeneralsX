@@ -228,9 +228,39 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 	const Int MAX_XFER_LOAD_STRING_BUFFER = 1024;
 	static WideChar buffer[ MAX_XFER_LOAD_STRING_BUFFER ];
 
+	// GeneralsX @bugfix alviss7 22/11/2026 Reads unicode strings as 2 byte UTF-16 code units
+	// instead of the native WideChar. wchar_t is 2 bytes on Windows but 4 bytes on Linux and macOS,
+	// so reading sizeof( WideChar ) consumed twice the bytes the string occupies, which truncated
+	// the text to every second character and desynchronized every following read in the file.
+	// Where WideChar holds whole code points, a surrogate pair in the file is one character, so the
+	// length header counts code units and the string ends up shorter than the header says.
+	Int charCount = 0;
 	if( len > 0 )
-		xferUser( buffer, sizeof( WideChar ) * len );
-	buffer[ len ] = 0;  // terminate
+	{
+
+		UnsignedShort fileBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+		xferUser( fileBuffer, sizeof( UnsignedShort ) * len );
+		for( Int i = 0; i < len; ++i )
+		{
+
+			UnsignedInt codePoint = fileBuffer[ i ];
+
+			if( sizeof( WideChar ) > 2 &&
+					codePoint >= 0xD800 && codePoint <= 0xDBFF && i + 1 < len &&
+					fileBuffer[ i + 1 ] >= 0xDC00 && fileBuffer[ i + 1 ] <= 0xDFFF )
+			{
+
+				codePoint = 0x10000 + ((codePoint - 0xD800) << 10) + (fileBuffer[ i + 1 ] - 0xDC00);
+				++i;
+
+			}
+
+			buffer[ charCount++ ] = (WideChar)codePoint;
+
+		}
+
+	}
+	buffer[ charCount ] = 0;  // terminate
 
 	// save into unicode string
 	unicodeStringData->set( buffer );

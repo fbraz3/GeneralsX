@@ -216,6 +216,114 @@ Bool OptionPreferences::getRightMouseScrollWithAlternateMouseEnabled() const
 	return FALSE;
 }
 
+// GeneralsX @feature fbraz3 20/11/2026 Option to enable/disable Command+Left-Click-Drag map panning on macOS
+Bool OptionPreferences::getCommandDragScrollEnabled() const
+{
+	OptionPreferences::const_iterator it = find("UseCommandDragScroll");
+	if (it == end())
+		return TheGlobalData->m_useCommandDragScroll;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void OptionPreferences::setCommandDragScrollEnabled(Bool val)
+{
+	(*this)["UseCommandDragScroll"] = val ? "yes" : "no";
+}
+
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection switch for displays wider than 16:9.
+// The GENERALSX_ULTRAWIDE_HORPLUS environment variable overrides the Options.ini key UltrawideHorPlus.
+Bool OptionPreferences::getUltrawideHorPlusEnabled() const
+{
+	const char *value = getenv("GENERALSX_ULTRAWIDE_HORPLUS");
+	if (value == nullptr || value[0] == '\0')
+	{
+		OptionPreferences::const_iterator it = find("UltrawideHorPlus");
+		if (it == end())
+			return TheGlobalData->m_ultrawideHorPlus;
+
+		value = it->second.str();
+	}
+
+	if (stricmp(value, "no") == 0 || stricmp(value, "0") == 0 || stricmp(value, "false") == 0 || stricmp(value, "off") == 0)
+		return FALSE;
+
+	return TRUE;
+}
+
+void OptionPreferences::setUltrawideHorPlusEnabled(Bool val)
+{
+	(*this)["UltrawideHorPlus"] = val ? "yes" : "no";
+}
+
+// GeneralsX @feature ClaudeCode 22/11/2026 Upper limit in degrees for the Hor+ horizontal field of view.
+// The GENERALSX_ULTRAWIDE_MAX_HFOV environment variable overrides the Options.ini key UltrawideMaxHorizontalFOV.
+Real OptionPreferences::getUltrawideMaxHorizontalFOV() const
+{
+	constexpr const Real minFOV = 50.0f;
+	constexpr const Real maxFOV = 170.0f;
+
+	Real fov = TheGlobalData->m_ultrawideMaxHorizontalFOV;
+
+	const char *value = getenv("GENERALSX_ULTRAWIDE_MAX_HFOV");
+	if (value != nullptr && value[0] != '\0')
+	{
+		fov = (Real)atof(value);
+	}
+	else
+	{
+		OptionPreferences::const_iterator it = find("UltrawideMaxHorizontalFOV");
+		if (it != end())
+			fov = (Real)atof(it->second.str());
+	}
+
+	if (!(fov >= minFOV))
+		fov = minFOV;
+	else if (fov > maxFOV)
+		fov = maxFOV;
+
+	return fov;
+}
+
+void OptionPreferences::setUltrawideMaxHorizontalFOV(Real val)
+{
+	if (!(val >= 50.0f))
+		val = 50.0f;
+	else if (val > 170.0f)
+		val = 170.0f;
+	AsciiString s;
+	s.format("%.1f", val);
+	(*this)["UltrawideMaxHorizontalFOV"] = s;
+}
+
+// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 layout for menus and the HUD on displays wider than 16:9.
+// The GENERALSX_ULTRAWIDE_UI environment variable overrides the Options.ini key UltrawideUI.
+Bool OptionPreferences::getUltrawideUIEnabled() const
+{
+	const char *value = getenv("GENERALSX_ULTRAWIDE_UI");
+	if (value == nullptr || value[0] == '\0')
+	{
+		OptionPreferences::const_iterator it = find("UltrawideUI");
+		if (it == end())
+			return TheGlobalData->m_ultrawideUI;
+
+		value = it->second.str();
+	}
+
+	if (stricmp(value, "no") == 0 || stricmp(value, "0") == 0 || stricmp(value, "false") == 0 || stricmp(value, "off") == 0)
+		return FALSE;
+
+	return TRUE;
+}
+
+void OptionPreferences::setUltrawideUIEnabled(Bool val)
+{
+	(*this)["UltrawideUI"] = val ? "yes" : "no";
+}
+
 Bool OptionPreferences::getRetaliationModeEnabled()
 {
 	OptionPreferences::const_iterator it = find("Retaliation");

@@ -158,6 +158,9 @@ public:
 
 	static Bool isMovieAbortRequested();
 
+	void setDrawingEnabled( Bool enabled ) { m_drawingEnabled = enabled; }
+	Bool isDrawingEnabled() const { return m_drawingEnabled; }
+
 protected:
 
 	// snapshot methods
@@ -183,6 +186,7 @@ private:
 
 	Intro* m_intro;
 	UnsignedInt m_renderedObjectCount;													///< Keeps track of the number of rendered objects -- resets each frame.
+	Bool m_drawingEnabled;
 
 	//---------------------------------------------------------------------------
 

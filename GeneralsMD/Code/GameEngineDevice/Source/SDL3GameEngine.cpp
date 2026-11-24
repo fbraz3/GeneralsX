@@ -29,6 +29,7 @@
 #ifndef _WIN32
 
 #include "SDL3GameEngine.h"
+#include "NullAudioDevice/NullAudioManager.h"
 // GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
 #ifdef SAGE_USE_MINIAUDIO
 #include "MiniAudioDevice/MiniAudioManager.h"
@@ -42,6 +43,7 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Gadget.h"
+#include "GameClient/Shell.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
@@ -49,15 +51,249 @@
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
 #include "W3DDevice/Common/W3DRadar.h"
 #include "W3DDevice/GameClient/W3DParticleSys.h"
-#include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "Common/BIGFileSystem.h"
+#include "Common/FramePacer.h"
 #include "Common/GlobalData.h"
+#include "Common/MessageStream.h"
+#include "Common/AudioAffect.h"
+#include "Common/GameAudio.h"
+#include "Common/ArchiveFileSystem.h"
+#include "Common/ArchiveFile.h"
+#include "Common/LocalFileSystem.h"
+#include "GameLogic/VictoryConditions.h"
+#include "GameClient/MapUtil.h"
+#include "GameNetwork/LANAPICallbacks.h"
+#include "GameNetwork/NetworkInterface.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#include "WebGPUDevice/WebGPUD3D8.h"
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#if defined(__EMSCRIPTEN__)
+extern int __argc;
+extern char **__argv;
+extern void StartPressed();
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXOpenLanMenu()
+{
+	if (TheShell == nullptr)
+		return FALSE;
+	TheShell->push("Menus/LanLobbyMenu.wnd", TRUE);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLogicFrame()
+{
+	return TheGameLogic != nullptr ? TheGameLogic->getFrame() : 0;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSetIdentity(Int client)
+{
+	if (TheLAN == nullptr || client < 1 || client > 254)
+		return FALSE;
+	UnicodeString name;
+	name.format(L"Browser%d", client);
+	TheLAN->RequestSetName(name);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSetName(const char *label)
+{
+	if (TheLAN == nullptr || label == nullptr || label[0] == '\0')
+		return FALSE;
+	AsciiString ascii(label);
+	UnicodeString name;
+	name.translate(ascii);
+	TheLAN->RequestSetName(name);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanHost()
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() != nullptr)
+		return FALSE;
+	TheLAN->RequestGameCreate(L"GeneralsX", FALSE);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanJoinFirst()
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() != nullptr)
+		return FALSE;
+	LANGameInfo *game = TheLAN->LookupGameByListOffset(0);
+	if (game == nullptr)
+		return FALSE;
+	TheLAN->RequestGameJoin(game);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanAccept()
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() == nullptr)
+		return FALSE;
+	TheLAN->RequestAccept();
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXMouseX()
+{
+	return TheMouse != nullptr ? TheMouse->getMouseStatus()->pos.x : -1;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXMouseY()
+{
+	return TheMouse != nullptr ? TheMouse->getMouseStatus()->pos.y : -1;
+}
+
+EM_JS(int, GeneralsXEnsureResident, (const char *big, double offset, double size), {
+	const ensure = globalThis.__gxEnsure;
+	return ensure ? ensure(UTF8ToString(big), offset, size) : 1;
+});
+
+extern "C" int GeneralsXFileResident(const char *name)
+{
+	if (TheGameLogic == nullptr || !TheGameLogic->isInGame() || TheGameLogic->isLoadingMap())
+		return 1;
+	if (name == nullptr || *name == '\0' || TheArchiveFileSystem == nullptr)
+		return 1;
+	if (TheLocalFileSystem != nullptr && TheLocalFileSystem->doesFileExist(name))
+		return 1;
+	AsciiString path(name);
+	ArchiveFile *archive = TheArchiveFileSystem->friend_getArchiveFile(path);
+	if (archive == nullptr)
+		return 1;
+	const ArchivedFileInfo *info = archive->friend_getArchivedFileInfo(path);
+	if (info == nullptr)
+		return 1;
+	if (info->m_size <= 512 * 1024)
+		return 1;
+	// Streamed music (.mp3) is read in small chunks via MA_SOUND_FLAG_STREAM; do not drop it on first trigger.
+	if (path.endsWithNoCase(".mp3"))
+		return 1;
+	return GeneralsXEnsureResident(archive->getName().str(), (double)info->m_offset, (double)info->m_size);
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXSetAudioMuted(Int muted)
+{
+	if (TheAudio == nullptr)
+		return FALSE;
+	TheAudio->setVolume(muted ? 0.0f : 1.0f, AudioAffect_All);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXSetPaused(Int paused)
+{
+	if (TheGameLogic == nullptr || !TheGameLogic->isInGame() || TheGameLogic->isLoadingMap())
+		return FALSE;
+	if (TheNetwork != nullptr)
+		return FALSE;
+	const Bool want = paused ? TRUE : FALSE;
+	if ((TheGameLogic->isGamePaused() ? TRUE : FALSE) == want)
+		return TRUE;
+	TheGameLogic->setGamePaused(want);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSetMapMinPlayers(Int minPlayers)
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() == nullptr || !TheLAN->AmIHost() || TheMapCache == nullptr)
+		return FALSE;
+	TheMapCache->updateCache();
+	const MapMetaData *best = nullptr;
+	AsciiString bestName;
+	for (std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+	{
+		const MapMetaData &meta = it->second;
+		if (!meta.m_isMultiplayer || !meta.m_isOfficial || meta.m_numPlayers < minPlayers)
+			continue;
+		if (best == nullptr || meta.m_numPlayers < best->m_numPlayers)
+		{
+			best = &it->second;
+			bestName = it->first;
+		}
+	}
+	if (best == nullptr)
+		return FALSE;
+	LANGameInfo *game = TheLAN->GetMyGame();
+	game->setMap(bestName);
+	game->getSlot(0)->setMapAvailability(true);
+	game->setMapCRC(best->m_CRC);
+	game->setMapSize(best->m_filesize);
+	game->resetStartSpots();
+	game->adjustSlotsForMap();
+	game->resetAccepted();
+	TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
+	printf("GeneralsXLanSetMapMinPlayers: %s (%d players)\n", bestName.str(), best->m_numPlayers);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSetSlotAI(Int slotIndex, Int difficulty)
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() == nullptr || !TheLAN->AmIHost())
+		return FALSE;
+	if (slotIndex < 1 || slotIndex >= MAX_SLOTS || difficulty < 0 || difficulty > 2)
+		return FALSE;
+	LANGameInfo *game = TheLAN->GetMyGame();
+	GameSlot *slot = game->getLANSlot(slotIndex);
+	if (slot == nullptr || slot->getState() == SLOT_PLAYER)
+		return FALSE;
+	static const SlotState aiStates[3] = { SLOT_EASY_AI, SLOT_MED_AI, SLOT_BRUTAL_AI };
+	slot->setState(aiStates[difficulty]);
+	game->resetAccepted();
+	TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanStart()
+{
+	if (TheLAN == nullptr || TheLAN->GetMyGame() == nullptr || !TheLAN->AmIHost())
+		return FALSE;
+	StartPressed();
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSurrender()
+{
+	if (TheGameLogic == nullptr || TheGameLogic->getGameMode() != GAME_LAN)
+		return FALSE;
+	GameMessage *msg = TheMessageStream->appendMessage(GameMessage::MSG_SELF_DESTRUCT);
+	msg->appendBooleanArgument(TRUE);
+	return TRUE;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanState()
+{
+	Int state = 0;
+	if (TheLAN != nullptr)
+		state |= 1;
+	if (TheLAN != nullptr && TheLAN->GetMyGame() != nullptr)
+		state |= 2;
+	if (TheLAN != nullptr && TheLAN->AmIHost())
+		state |= 4;
+	if (TheLAN != nullptr && TheLAN->GetMyGame() != nullptr && TheLAN->GetMyGame()->isGameInProgress())
+		state |= 8;
+	if (TheNetwork != nullptr)
+		state |= 16;
+	if (TheGameLogic != nullptr && TheGameLogic->getGameMode() == GAME_LAN)
+		state |= 32;
+	if (TheVictoryConditions != nullptr && TheVictoryConditions->getEndFrame() != 0)
+		state |= 64;
+	if (TheNetwork != nullptr && TheNetwork->sawCRCMismatch())
+		state |= 128;
+	return state;
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanEndFrame()
+{
+	return TheVictoryConditions != nullptr ? TheVictoryConditions->getEndFrame() : 0;
+}
+#endif
 
 // Extern globals for input devices (set by GameClient)
 extern Mouse *TheMouse;
@@ -224,9 +460,52 @@ void SDL3GameEngine::update(void)
 void SDL3GameEngine::execute(void)
 {
 	fprintf(stderr, "INFO: SDL3GameEngine::execute() - entering main loop\n");
+#if defined(__EMSCRIPTEN__)
+	if (TheGlobalData && TheGlobalData->m_headless) {
+		GameEngine::execute();
+		fprintf(stderr, "INFO: SDL3GameEngine::execute() - exited headless main loop\n");
+		return;
+	}
+	TheFramePacer->reset();
+	emscripten_set_main_loop_arg(browserFrame, this, 0, true);
+	emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 16);
+#else
 	GameEngine::execute();
 	fprintf(stderr, "INFO: SDL3GameEngine::execute() - exited main loop\n");
+#endif
 }
+
+#if defined(__EMSCRIPTEN__)
+static void* s_gxPumpEngine = nullptr;
+static Bool s_gxInFrame = FALSE;
+
+extern "C" EMSCRIPTEN_KEEPALIVE void GeneralsXPump(void)
+{
+	if (s_gxPumpEngine != nullptr)
+		SDL3GameEngine::browserFrame(s_gxPumpEngine);
+}
+
+void SDL3GameEngine::browserFrame(void* enginePointer)
+{
+	if (s_gxInFrame)
+		return;
+	s_gxInFrame = TRUE;
+	s_gxPumpEngine = enginePointer;
+	SDL3GameEngine* engine = static_cast<SDL3GameEngine*>(enginePointer);
+	if (engine->getQuitting())
+	{
+		s_gxInFrame = FALSE;
+		emscripten_cancel_main_loop();
+		return;
+	}
+
+	const Bool canDraw = WebGPUDeviceCanSubmitFrame();
+	TheGameClient->setDrawingEnabled(canDraw);
+	engine->executeFrame();
+	TheGameClient->setDrawingEnabled(TRUE);
+	s_gxInFrame = FALSE;
+}
+#endif
 
 /**
  * From GameEngine: serviceWindowsOS() - native OS service
@@ -560,14 +839,6 @@ ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
 	return NEW W3DParticleSystemManager;
 }
 
-WebBrowser *SDL3GameEngine::createWebBrowser(void)
-{
-	// WebBrowser uses Windows COM (CComObject<W3DWebBrowser>)
-	// Not available on Linux - return nullptr
-	fprintf(stderr, "WARNING: WebBrowser not available on Linux platform\n");
-	return nullptr;
-}
-
 /**
  * Factory method: AudioManager
  * Select audio backend based on compile flags
@@ -577,6 +848,10 @@ AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
 	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
+	if (TheGlobalData && !TheGlobalData->m_audioOn) {
+		fprintf(stderr, "INFO: Creating NullAudio audio backend\n");
+		return new NullAudioManager();
+	}
 
 #ifdef SAGE_USE_MINIAUDIO
 	fprintf(stderr, "INFO: Creating MiniAudio audio backend\n");
@@ -586,8 +861,7 @@ AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 	return new OpenALAudioManager();
 #else
 	fprintf(stderr, "INFO: Audio backend not available (SAGE_USE_OPENAL/SAGE_USE_MINIAUDIO not defined)\n");
-	fprintf(stderr, "WARNING: Falls back to parent implementation or silent mode\n");
-	return GameEngine::createAudioManager();  // Call parent (may return stub)
+	return new NullAudioManager();
 #endif
 }
 

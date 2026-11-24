@@ -48,6 +48,7 @@
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/Display.h"
 #include "GameClient/MessageBox.h"
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
@@ -57,9 +58,7 @@
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 #include "GameNetwork/GameSpy/LobbyUtils.h"
-#include "GameNetwork/GameSpy/PersistentStorageThread.h"
-#include "GameNetwork/GameSpy/PeerThread.h"
-#include "GameNetwork/RankPointValue.h"
+#endif
 
 #if defined(SAGE_USE_NGMP)
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
@@ -70,6 +69,7 @@
 #include "WWDownload/Registry.h"
 
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 // window ids ------------------------------------------------------------------------------
 static NameKeyType parentID = NAMEKEY_INVALID;
@@ -273,6 +273,7 @@ void SetLookAtPlayer( Int id, AsciiString nick)
 	lookAtPlayerID = id;
 	lookAtPlayerName = nick.str();
 }
+#endif
 
 //	BATTLE_HONOR_LADDER_CHAMP		= 0x0000001,
 //	BATTLE_HONOR_STREAK					= 0x0000002,
@@ -478,7 +479,7 @@ void ResetBattleHonorInsertion()
 }
 void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int itemData, Int& row, Int& column, UnicodeString text = UnicodeString::TheEmptyString, Int extra = 0)
 {
-	Int width = MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getWidth() / static_cast<float>(DEFAULT_DISPLAY_WIDTH));
+	Int width = MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getUILayoutWidth() / static_cast<float>(DEFAULT_DISPLAY_WIDTH));
 	Int height = MAX_BATTLE_HONOR_IMAGE_HEIGHT * (TheDisplay->getHeight() / static_cast<float>(DEFAULT_DISPLAY_HEIGHT));
 
 	static Int enabledColor = 0xFFFFFFFF;
@@ -515,6 +516,7 @@ void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int i
 	}
 }
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 static void populateBattleHonors(const PSPlayerStats& stats, Int battleHonors, Int gamesInRow, Int lastGen, Int challenge, GameWindow *list)
 {
 	if( !list )
@@ -1636,3 +1638,4 @@ static void messageBoxYes()
 	TheGameSpyInfo->setLocalProfileID(0);
 #endif
 }
+#endif // SAGE_USE_GAMESPY || SAGE_USE_NGMP

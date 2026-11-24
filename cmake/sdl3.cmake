@@ -11,7 +11,7 @@ if(SAGE_USE_SDL3)
     set(SDL3_FOUND FALSE)
     set(SDL3_image_FOUND FALSE)
     
-    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(NOT EMSCRIPTEN AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
         find_package(SDL3 3.4.0 QUIET)
         find_package(SDL3_image 3.4.0 QUIET)
     endif()
@@ -37,8 +37,13 @@ if(SAGE_USE_SDL3)
         )
         
         # Configure SDL3 build options
-        set(SDL_SHARED ON CACHE BOOL "Build SDL3 as shared library" FORCE)
-        set(SDL_STATIC OFF CACHE BOOL "Don't build static library" FORCE)
+        if(EMSCRIPTEN)
+            set(SDL_SHARED OFF CACHE BOOL "Disable shared SDL3" FORCE)
+            set(SDL_STATIC ON CACHE BOOL "Build static SDL3" FORCE)
+        else()
+            set(SDL_SHARED ON CACHE BOOL "Build SDL3 as shared library" FORCE)
+            set(SDL_STATIC OFF CACHE BOOL "Don't build static library" FORCE)
+        endif()
         set(SDL_AUDIO ON CACHE BOOL "Enable audio subsystem" FORCE)
         set(SDL_TIMERS ON CACHE BOOL "Enable timers" FORCE)
         set(SDL_EVENTS ON CACHE BOOL "Enable events" FORCE)
@@ -47,8 +52,13 @@ if(SAGE_USE_SDL3)
         set(SDL_VIDEO ON CACHE BOOL "Enable video subsystem" FORCE)
         
         # Platform support
-        set(SDL_WAYLAND ON CACHE BOOL "Enable Wayland support (Linux)" FORCE)
-        set(SDL_X11 ON CACHE BOOL "Enable X11 support (Linux)" FORCE)
+        if(EMSCRIPTEN)
+            set(SDL_WAYLAND OFF CACHE BOOL "Disable Wayland" FORCE)
+            set(SDL_X11 OFF CACHE BOOL "Disable X11" FORCE)
+        else()
+            set(SDL_WAYLAND ON CACHE BOOL "Enable Wayland support (Linux)" FORCE)
+            set(SDL_X11 ON CACHE BOOL "Enable X11 support (Linux)" FORCE)
+        endif()
         set(SDL_CAMERA OFF CACHE BOOL "Disable camera (unused)" FORCE)
         set(SDL_QSPI OFF CACHE BOOL "Disable QSPI (unused)" FORCE)
         
@@ -58,7 +68,9 @@ if(SAGE_USE_SDL3)
         # Before SDL3_image build: force PNG discovery to platform-specific libpng
         # Linux: System libpng16.so is dynamic shared library
         # macOS: Use Homebrew PNG or system framework
-        if(NOT APPLE)
+        if(EMSCRIPTEN)
+            # Browser cursor decoding uses SDL_image's built-in formats.
+        elseif(NOT APPLE)
             # Find system shared libpng, bypassing vcpkg's static .a.
             # SDL3_image requires a shared .so but vcpkg only provides static libpng16.a.
             # NO_CMAKE_PATH + NO_CMAKE_FIND_ROOT_PATH skips all vcpkg-injected search paths,
@@ -113,14 +125,24 @@ if(SAGE_USE_SDL3)
         
         # Configure SDL3_image build options
         # Note: PNG will use system libpng-dev (installed in Docker, no vcpkg conflicts)
-        set(SDL3IMAGE_INSTALL ON CACHE BOOL "Install SDL3_image" FORCE)
-        set(SDL3IMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
-        set(SDL3IMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
-        set(SDL3IMAGE_PNG ON CACHE BOOL "Enable PNG support (ANI cursor loading)" FORCE)
-        set(SDL3IMAGE_TIF ON CACHE BOOL "Enable TIF support" FORCE)
-        set(SDL3IMAGE_WEBP ON CACHE BOOL "Enable WebP support" FORCE)
-        set(SDL3IMAGE_AVIF OFF CACHE BOOL "Disable AVIF (optional)" FORCE)
-        set(SDL3IMAGE_XCUR ON CACHE BOOL "Enable X cursor support" FORCE)
+        set(SDLIMAGE_INSTALL OFF CACHE BOOL "Install SDL3_image" FORCE)
+        if(EMSCRIPTEN)
+            set(SDLIMAGE_DEPS_SHARED OFF CACHE BOOL "Use static image dependencies" FORCE)
+            set(SDLIMAGE_JPG OFF CACHE BOOL "Disable JPG" FORCE)
+            set(SDLIMAGE_PNG OFF CACHE BOOL "Disable PNG" FORCE)
+            set(SDLIMAGE_TIF OFF CACHE BOOL "Disable TIFF" FORCE)
+            set(SDLIMAGE_WEBP OFF CACHE BOOL "Disable WebP" FORCE)
+            set(SDLIMAGE_AVIF OFF CACHE BOOL "Disable AVIF" FORCE)
+            set(SDLIMAGE_XCUR OFF CACHE BOOL "Disable X cursor" FORCE)
+        else()
+            set(SDLIMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)
+            set(SDLIMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
+            set(SDLIMAGE_PNG ON CACHE BOOL "Enable PNG support (ANI cursor loading)" FORCE)
+            set(SDLIMAGE_TIF ON CACHE BOOL "Enable TIF support" FORCE)
+            set(SDLIMAGE_WEBP ON CACHE BOOL "Enable WebP support" FORCE)
+            set(SDLIMAGE_AVIF OFF CACHE BOOL "Disable AVIF (optional)" FORCE)
+            set(SDLIMAGE_XCUR ON CACHE BOOL "Enable X cursor support" FORCE)
+        endif()
         
         FetchContent_MakeAvailable(SDL3_image)
         

@@ -18,6 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -81,9 +82,16 @@ jobs:
       checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
     secrets: inherit
 
+  build-wasm:
+    needs: [create-tag]
+    uses: ./.github/workflows/build-wasm.yml
+    with:
+      checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
+    secrets: inherit
+
   prepare-release:
     runs-on: ubuntu-latest
-    needs: [create-tag, build-linux-flatpak, build-macos, build-windows]
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows, build-wasm]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -378,6 +386,7 @@ jobs:
             echo "* **macOS (Apple Silicon)**: Download \`macOS-GeneralsXZH.zip\` (Zero Hour) or \`macOS-GeneralsX.zip\` (Generals)."
             echo "* **Linux**: Download \`Linux-GeneralsXZH.flatpak\` (Zero Hour) or \`Linux-GeneralsX.flatpak\` (Generals)."
             echo "* **Windows**: Download \`Windows-GeneralsXZH.zip\` (Zero Hour) or \`Windows-GeneralsX.zip\` (Generals)."
+            echo "* **Browser (WebAssembly + WebGPU)**: No download needed — play **Zero Hour** single-player directly in your browser at [play.generalsx.org](https://play.generalsx.org/)."
             echo ""
             echo "👉 Follow the [Installation & Setup Guide](https://github.com/fbraz3/GeneralsX/wiki/How-to-Install-GeneralsX) on our Wiki to set up your original game data files."
             echo ""
@@ -415,11 +424,7 @@ jobs:
             fi
             echo "## 📱 Ecosystem & Community Ports"
             echo ""
-            echo "If you enjoy GeneralsX, check out these community ports powered by the engine:"
-            echo ""
-            echo "* [Generals-Mac-iOS-iPad](https://github.com/ammaarreshi/Generals-Mac-iOS-iPad) - iOS port by [@ammaarreshi](https://github.com/ammaarreshi)"
-            echo "* [Generals-Android](https://github.com/fadi-labib/Generals-Android) - Android port by [@fadi-labib](https://github.com/fadi-labib)"
-            echo "* [wasm-generals](https://github.com/origami-ltd/wasm-generals) - Browser port by [@ebellumat](https://github.com/ebellumat), playable at [generals.wasm.com.br](https://generals.wasm.com.br)"
+            echo "If you enjoy GeneralsX, check out the community ports and forks highlighted in our [Ecosystem & Community Ports discussion](https://github.com/fbraz3/GeneralsX/discussions/436)."
             echo ""
             echo "---"
             echo ""
@@ -491,6 +496,18 @@ jobs:
             echo "Release created and assets attached." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+  deploy-pages:
+    if: inputs.release_mode == 'New Release'
+    needs: [create-tag, prepare-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch GitHub Pages deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-tag.outputs.release_version }}
+        run: |
+          gh workflow run deploy-pages.yml --repo "${{ github.repository }}" -f tag="$VERSION"
+
   # GeneralsX @build Meeseeks 14/09/2026 Roll back the pushed tag when anything downstream of create-tag fails or is cancelled,
   # including prepare-release, preventing orphaned tags from advancing SemVer on subsequent pipeline runs.
   cleanup-tag-on-failure:
@@ -505,10 +522,12 @@ jobs:
         needs.build-macos.result == 'cancelled' ||
         needs.build-windows.result == 'failure' ||
         needs.build-windows.result == 'cancelled' ||
+        needs.build-wasm.result == 'failure' ||
+        needs.build-wasm.result == 'cancelled' ||
         needs.prepare-release.result == 'failure' ||
         needs.prepare-release.result == 'cancelled'
       )
-    needs: [create-tag, build-linux-flatpak, build-macos, build-windows, prepare-release]
+    needs: [create-tag, build-linux-flatpak, build-macos, build-windows, build-wasm, prepare-release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

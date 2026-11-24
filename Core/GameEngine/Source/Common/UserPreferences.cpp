@@ -49,7 +49,10 @@
 #include "Common/MultiplayerSettings.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/ChallengeGenerals.h"
+#include "GameNetwork/GameInfo.h"
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif
 
 #if defined(SAGE_USE_NGMP) && __has_include("GameNetwork/GeneralsOnline/OnlineServices_Manager.h")
 #include "GameNetwork/GeneralsOnline/OnlineServices_Manager.h"
@@ -284,8 +287,10 @@ QuickMatchPreferences::QuickMatchPreferences()
 #if defined(HAVE_NGMP_PREFS)
 	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
 	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
-#else
+#elif defined(SAGE_USE_GAMESPY)
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#else
+	Int localProfile = 0;
 #endif
 	userPrefFilename.format("GeneralsOnline/QMPref%d.ini", localProfile);
 	load(userPrefFilename);
@@ -474,8 +479,10 @@ CustomMatchPreferences::CustomMatchPreferences()
 #if defined(HAVE_NGMP_PREFS)
 	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
 	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
-#else
+#elif defined(SAGE_USE_GAMESPY)
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#else
+	Int localProfile = 0;
 #endif
 	userPrefFilename.format("GeneralsOnline/CustomPref%d.ini", localProfile);
 	load(userPrefFilename);
@@ -832,8 +839,10 @@ GameSpyMiscPreferences::GameSpyMiscPreferences()
 #if defined(HAVE_NGMP_PREFS)
 	NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
 	Int localProfile = pAuthInterface != nullptr ? (Int)pAuthInterface->GetUserID() : 0;
-#else
+#elif defined(SAGE_USE_GAMESPY)
 	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#else
+	Int localProfile = 0;
 #endif
 	userPrefFilename.format("GeneralsOnline/GSMiscPref%d.ini", localProfile);
 	load(userPrefFilename);
@@ -880,8 +889,11 @@ Int GameSpyMiscPreferences::getMaxMessagesPerUpdate()
 IgnorePreferences::IgnorePreferences()
 {
 	AsciiString userPrefFilename;
-//	if(!TheGameSpyInfo)
-	Int localProfile = TheGameSpyInfo->getLocalProfileID();
+#if defined(SAGE_USE_GAMESPY)
+	Int localProfile = TheGameSpyInfo ? TheGameSpyInfo->getLocalProfileID() : 0;
+#else
+	Int localProfile = 0;
+#endif
 	userPrefFilename.format("GeneralsOnline/IgnorePref%d.ini", localProfile);
 	load(userPrefFilename);
 }

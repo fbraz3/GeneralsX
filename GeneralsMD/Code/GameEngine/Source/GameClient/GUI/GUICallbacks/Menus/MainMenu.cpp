@@ -30,7 +30,9 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#if defined(SAGE_USE_GAMESPY)
 #include "gamespy/ghttp/ghttp.h"
+#endif
 
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
@@ -62,16 +64,22 @@
 #include "GameClient/GameClient.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpyOverlay.h"
+#endif
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/ChallengeGenerals.h"
 
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
+#endif
 
 #include "GameNetwork/DownloadManager.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
+#endif
 
 #include "GameClient/InGameUI.h"
 
@@ -475,7 +483,8 @@ static void initLabelVersion()
 			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
 			instData.m_textLabelString = "GeneralsXCreditLabel";
 
-			const Int width = TheDisplay->getWidth() - 16;
+			// GeneralsX @feature ClaudeCode 22/11/2026 Relative to the main menu parent, which spans the UI layout rect.
+			const Int width = TheDisplay->getUILayoutWidth() - 16;
 			const Int height = 28;
 			const Int x = 8;
 			const Int y = TheDisplay->getHeight() - height - 8;
@@ -503,6 +512,68 @@ static void initLabelVersion()
 			}
 		}
 	}
+}
+
+// GeneralsX @bugfix fbraz3 20/11/2026 Dynamically inject ButtonGeneralsX instead of overriding MainMenu.wnd in generalsx.big
+static GameWindow *createGeneralsXMainMenuButton( GameWindow *buttonCredits, GameWindow *buttonExit, NameKeyType generalsxID )
+{
+	if (!buttonCredits || !buttonExit || !TheWindowManager)
+		return nullptr;
+
+	GameWindow *earthMap = buttonCredits->winGetParent();
+	if (!earthMap)
+		return nullptr;
+
+	ICoord2D credPos, credSize, exitPos;
+	buttonCredits->winGetPosition( &credPos.x, &credPos.y );
+	buttonCredits->winGetSize( &credSize.x, &credSize.y );
+	buttonExit->winGetPosition( &exitPos.x, &exitPos.y );
+
+	Int deltaY = exitPos.y - credPos.y;
+	if (deltaY <= 0)
+		deltaY = credSize.y + 4;
+
+	if (GameWindow *mapBorder = earthMap->winGetParent())
+	{
+		ICoord2D mapSize;
+		mapBorder->winGetSize( &mapSize.x, &mapSize.y );
+		mapBorder->winSetSize( mapSize.x, mapSize.y + deltaY );
+	}
+
+	ICoord2D earthSize;
+	earthMap->winGetSize( &earthSize.x, &earthSize.y );
+	earthMap->winSetSize( earthSize.x, earthSize.y + deltaY );
+
+	buttonCredits->winSetPosition( credPos.x, credPos.y + deltaY );
+	buttonExit->winSetPosition( exitPos.x, exitPos.y + deltaY );
+
+	WinInstanceData instData;
+	instData.init();
+	if (WinInstanceData *credInst = buttonCredits->winGetInstanceData())
+	{
+		instData = *credInst;
+		instData.m_text = nullptr;
+		instData.m_tooltip = nullptr;
+		instData.m_videoBuffer = nullptr;
+	}
+	instData.m_id = generalsxID;
+	instData.m_decoratedNameString = "MainMenu.wnd:ButtonGeneralsX";
+	instData.m_textLabelString = "GUI:GeneralsXOptions";
+	instData.m_tooltipString.clear();
+
+	GameWindow *btnGX = TheWindowManager->gogoGadgetPushButton(
+		earthMap,
+		buttonCredits->winGetStatus(),
+		credPos.x, credPos.y,
+		credSize.x, credSize.y,
+		&instData,
+		nullptr,
+		FALSE );
+
+	if (btnGX && buttonCredits->winGetFont())
+		btnGX->winSetFont( buttonCredits->winGetFont() );
+
+	return btnGX;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -574,9 +645,17 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	// GeneralsX @feature fbraz3 18/09/2026 Enable Steam Custom Mission button
 	buttonCustomMission = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCustomMissionID );
 	buttonOnline = TheWindowManager->winGetWindowFromId( parentMainMenu, onlineID );
+#if !defined(SAGE_USE_GAMESPY) && !defined(SAGE_USE_NGMP)
+	if (buttonOnline)
+		buttonOnline->winEnable(FALSE);
+#endif
 	buttonNetwork = TheWindowManager->winGetWindowFromId( parentMainMenu, networkID );
 	buttonOptions = TheWindowManager->winGetWindowFromId( parentMainMenu, optionsID );
 	buttonExit = TheWindowManager->winGetWindowFromId( parentMainMenu, exitID );
+#if defined(__EMSCRIPTEN__)
+	if (buttonExit)
+		buttonExit->winHide(TRUE);
+#endif
 	buttonMOTD = TheWindowManager->winGetWindowFromId( parentMainMenu, motdID );
 	buttonWorldBuilder = TheWindowManager->winGetWindowFromId( parentMainMenu, worldBuilderID );
 	buttonReplay = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonReplayID );
@@ -584,6 +663,10 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonLoad = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonLoadID );
 	buttonCredits = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonCreditsID );
 	GameWindow *btnGX = TheWindowManager->winGetWindowFromId( parentMainMenu, generalsxID );
+	if (!btnGX)
+	{
+		btnGX = createGeneralsXMainMenuButton( buttonCredits, buttonExit, generalsxID );
+	}
 	if (btnGX)
 	{
 		UnicodeString ustr = TheGameText->fetch("GUI:GeneralsXOptions");
@@ -692,6 +775,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	UpdateChecker::start();
 #endif
 
+#if defined(SAGE_USE_GAMESPY)
 	if (TheGameSpyPeerMessageQueue && !TheGameSpyPeerMessageQueue->isConnected())
 	{
 		DEBUG_LOG(("Tearing down GameSpy from MainMenuInit()"));
@@ -699,6 +783,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 		TearDownGameSpy();
 #endif
 	}
+#endif
 	if (TheMapCache)
 		TheMapCache->updateCache();
 
@@ -776,7 +861,9 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 #endif
 #endif
 
+#if defined(SAGE_USE_GAMESPY)
 	CancelPatchCheckCallback();
+#endif
 
 	// if we are shutting down for an immediate pop, skip the animations
 	Bool popImmediate = *(Bool *)userData;
@@ -805,7 +892,11 @@ void MainMenuShutdown( WindowLayout *layout, void *userData )
 //		localAnimateWindowManager->reverseAnimateWindow();
 }
 
+#if !defined(SAGE_USE_GAMESPY) && !defined(SAGE_USE_NGMP)
+Bool DontShowMainMenu = FALSE;
+#else
 extern Bool DontShowMainMenu;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 //Allows the user to confirm the change, goes back to the previous mode
@@ -963,7 +1054,8 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			const Int btnW = 260;
 			const Int btnH = 26;
 			const Int margin = 8;
-			const Int x = TheDisplay->getWidth()  - btnW - margin;
+			// GeneralsX @feature ClaudeCode 22/11/2026 Relative to the main menu parent, which spans the UI layout rect.
+			const Int x = TheDisplay->getUILayoutWidth()  - btnW - margin;
 			const Int y = TheDisplay->getHeight() - btnH - margin;
 
 			WinInstanceData instData;
@@ -1126,14 +1218,20 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 //			initialGadgetDelay--;
 //	}
 
+#if defined(SAGE_USE_GAMESPY) || defined(SAGE_USE_NGMP)
 	if (raiseMessageBoxes)
 	{
 		RaiseGSMessageBox();
 		raiseMessageBoxes = FALSE;
 	}
+#endif
 
+#if defined(SAGE_USE_GAMESPY)
 	HTTPThinkWrapper();
 	GameSpyUpdateOverlays();
+#elif defined(SAGE_USE_NGMP)
+	GameSpyUpdateOverlays();
+#endif
 //	if(localAnimateWindowManager)
 //		localAnimateWindowManager->update();
 //	if(localAnimateWindowManager && pendingDropDown != DROPDOWN_NONE && localAnimateWindowManager->isFinished())
@@ -1254,19 +1352,23 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 		//---------------------------------------------------------------------------------------------
 		case GWM_CREATE:
 		{
+#if defined(SAGE_USE_GAMESPY)
 			ghttpStartup();
+#endif
 			break;
 		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
+#if defined(SAGE_USE_GAMESPY)
 			ghttpCleanup();
 			DEBUG_LOG(("Tearing down GameSpy from MainMenuSystem(GWM_DESTROY)"));
 #ifndef SAGE_USE_NGMP
 			TearDownGameSpy();
 #endif
 			StopAsyncDNSCheck(); // kill off the async DNS check thread in case it is still running
+#endif
 			break;
 
 		}
@@ -1732,7 +1834,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if (!NGMP_OnlineServicesManager::getInstance().isLoggedIn()) {
 					NGMP_OnlineServicesManager::getInstance().beginLogin();
 				}
-#else
+#elif defined(SAGE_USE_GAMESPY)
 				StartPatchCheck();
 #endif
 //				localAnimateWindowManager->reverseAnimateWindow();
@@ -1791,7 +1893,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #ifdef SAGE_UPDATE_CHECK
 				// GeneralsX @feature BenderAI 21/04/2026 Open GitHub releases page instead of legacy GameSpy patch download
 				SDL_OpenURL("https://github.com/fbraz3/GeneralsX/releases");
-#else
+#elif defined(SAGE_USE_GAMESPY)
 				StartDownloadingPatches();
 #endif
 			}

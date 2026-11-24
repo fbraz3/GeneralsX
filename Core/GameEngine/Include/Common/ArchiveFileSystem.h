@@ -163,6 +163,7 @@ public:
 	Bool					isModArchive(ArchiveFile *archive, const Char *filename) const;
 
 	ArchivedDirectoryInfo* friend_getArchivedDirectoryInfo(const Char* directory);
+	ArchiveFile*			friend_getArchiveFile(const AsciiString& filename) const { return getArchiveFile(filename); }
 
 protected:
 	struct ArchivedDirectoryInfoResult

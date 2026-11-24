@@ -29,7 +29,8 @@
 #endif
 
 #ifdef _WIN32
-#include <winsock.h>
+// GeneralsX @build fbraz3 22/11/2026 Use winsock2.h instead of winsock.h to prevent redefinition conflicts with NetworkMesh.h on Windows
+#include <winsock2.h>
 #include <io.h>
 //#define close _close
 //#define read  _read
@@ -120,4 +121,8 @@ class UDP
 
 #ifdef DEBUG_LOGGING
 AsciiString GetWSAErrorString( Int error );
+#endif
+
+#if defined(__EMSCRIPTEN__)
+UnsignedInt GetWebLanVirtualIP();
 #endif

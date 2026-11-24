@@ -55,6 +55,10 @@ public:
 	void setScreenEdgeScrollMode(ScreenEdgeScrollMode mode);
 
 	void resetModes(); //Used when disabling input, so when we reenable it we aren't stuck in a mode.
+	// GeneralsX @feature fbraz3 20/11/2026 Command+Left-Click-Drag map panning on macOS
+	Bool canStartCommandDragScroll() const;
+	Bool canStartCommandDragScrollForBatch(Bool ignoreSelecting = FALSE) const;
+	Bool isCommandDragScrollActive() const;
 
 private:
 	enum
@@ -66,7 +70,8 @@ private:
 		SCROLL_NONE = 0,
 		SCROLL_RMB,
 		SCROLL_KEY,
-		SCROLL_SCREENEDGE
+		SCROLL_SCREENEDGE,
+		SCROLL_COMMAND_LMB
 	};
 	ICoord2D m_anchor;
 	ICoord2D m_originalAnchor;

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>GeneralsX — Command &amp; Conquer: Generals Zero Hour (WebGPU)</title>
+    <meta name="description" content="Play Command &amp; Conquer: Generals Zero Hour in your browser with GeneralsX. Compiled to WebAssembly with WebGPU rendering and LAN multiplayer — streaming directly from your own installed copy.">
+    <link rel="canonical" href="https://play.generalsx.org/">
+    <meta name="theme-color" content="#0b0e12">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="GeneralsX">
+    <meta property="og:title" content="GeneralsX — Command &amp; Conquer: Generals Zero Hour (WebGPU)">
+    <meta property="og:description" content="Cross-platform C&amp;C Generals Zero Hour engine compiled to WebAssembly + WebGPU, with LAN multiplayer. Bring your own installed copy — nothing is downloaded or redistributed.">
+    <meta property="og:url" content="https://play.generalsx.org/">
+    <meta property="og:image" content="https://play.generalsx.org/generalsx-zh-icon.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="GeneralsX — Command &amp; Conquer: Generals Zero Hour (WebGPU)">
+    <meta name="twitter:description" content="GeneralsX engine in your browser via WebAssembly + WebGPU, streaming from your own copy.">
+    <link rel="icon" type="image/png" href="./generalsx-zh-icon.png">
+    <script src="./coi-serviceworker.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "GeneralsX — Command & Conquer: Generals Zero Hour",
+      "url": "https://play.generalsx.org/",
+      "description": "Cross-platform Command & Conquer: Generals Zero Hour engine (GeneralsX) compiled to WebAssembly with WebGPU rendering and LAN multiplayer. Players stream assets from their own installed copy; no game data is distributed.",
+      "playMode": ["SinglePlayer", "MultiPlayer"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Web browser (WebGPU: Chrome, Edge)",
+      "gamePlatform": "Web browser",
+      "genre": "Real-time strategy",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "codeRepository": "https://github.com/fbraz3/GeneralsX",
+      "license": "https://www.gnu.org/licenses/gpl-3.0.html"
+    }
+    </script>
+</head>
+<body class="bg-hud-bg text-hud-fg antialiased selection:bg-hud-accent/30 selection:text-hud-fg">
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -545,8 +545,6 @@ set(GAMEENGINE_SRC
 #    Include/GameNetwork/Transport.h
 #    Include/GameNetwork/udp.h
 #    Include/GameNetwork/User.h
-#    Include/GameNetwork/WOLBrowser/FEBDispatch.h
-#    Include/GameNetwork/WOLBrowser/WebBrowser.h
 #    Include/Precompiled/PreRTS.h
 #    Source/Common/Audio/AudioEventRTS.cpp
 #    Source/Common/Audio/AudioRequest.cpp
@@ -596,7 +594,6 @@ set(GAMEENGINE_SRC
 #    Source/Common/INI/INIVideo.cpp
 #    Source/Common/INI/INIWater.cpp
 #    Source/Common/INI/INIWeapon.cpp
-#    Source/Common/INI/INIWebpageURL.cpp
 #    Source/Common/Language.cpp
 #    Source/Common/MessageStream.cpp
 #    Source/Common/MiniLog.cpp
@@ -1139,7 +1136,6 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/Transport.cpp
 #    Source/GameNetwork/udp.cpp
 #    Source/GameNetwork/User.cpp
-#    Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp
 )
 
@@ -1158,6 +1154,15 @@ if(SAGE_USE_NGMP)
         Source/GameNetwork/GeneralsOnline/NetworkMesh.cpp
         Source/GameNetwork/GeneralsOnline/NextGenTransport.cpp
     )
+endif()
+
+if(NOT SAGE_USE_GAMESPY AND NOT SAGE_USE_NGMP)
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/WOL")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "Source/GameNetwork/GameSpy")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/NetworkDirectConnect.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupHostGame.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupJoinGame.cpp$")
+    list(FILTER GAMEENGINE_SRC EXCLUDE REGEX "/Menus/PopupLadderSelect.cpp$")
 endif()
 
 add_library(z_gameengine STATIC)

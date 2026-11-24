@@ -106,7 +106,6 @@ static void drawFramerateBar();
 #include "WW3D2/render2dsentence.h"
 #include "WW3D2/sortingrenderer.h"
 #include "WW3D2/textureloader.h"
-#include "WW3D2/dx8webbrowser.h"
 #include "WW3D2/mesh.h"
 #include "WW3D2/hlod.h"
 #include "WW3D2/meshmatdesc.h"
@@ -514,8 +513,6 @@ W3DDisplay::~W3DDisplay()
 	if (!TheGlobalData->m_headless)
 		WW3D::Shutdown();
 	WWMath::Shutdown();
-	if (!TheGlobalData->m_headless)
-		DX8WebBrowser::Shutdown();
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = nullptr;
 
@@ -614,6 +611,13 @@ static void SDL3_ApplyWindowModeForRenderConfig(Bool windowed, Int renderWidth, 
 {
 	extern SDL_Window* TheSDL3Window;
 	if (!TheSDL3Window) return;
+
+#if defined(__EMSCRIPTEN__)
+	if (!SDL_SetWindowSize(TheSDL3Window, renderWidth, renderHeight)) {
+		fprintf(stderr, "WARNING: SDL_SetWindowSize(%d,%d) failed: %s\n", renderWidth, renderHeight, SDL_GetError());
+	}
+	return;
+#endif
 
 	if (!windowed) {
 		if (!SDL_SetWindowFullscreen(TheSDL3Window, false)) {
@@ -1198,8 +1202,6 @@ void W3DDisplay::init()
 			m_nativeDebugDisplay->setFontHeight( 13 );
 			m_nativeDebugDisplay->setFontWidth( 9 );
 		}
-
-		DX8WebBrowser::Initialize();
 	}
 
 	// we're now online
@@ -2366,6 +2368,19 @@ AGAIN:
 				if (TheW3DPostProcess)
 				{
 					TheW3DPostProcess->endSceneAndApply();
+				}
+
+				// GeneralsX @feature ClaudeCode 22/11/2026 Menus are laid out in the centred UI layout rect on displays wider
+				// than 16:9. Cover the shell map on both sides of that rect so the menu sits between black bars.
+				if (TheGameLogic && TheGameLogic->isInShellGame())
+				{
+					const Int uiOriginX = getUILayoutOriginX();
+					if (uiOriginX > 0)
+					{
+						const UnsignedInt barColor = 0xFF000000;
+						drawFillRect( 0, 0, uiOriginX, m_height, barColor );
+						drawFillRect( uiOriginX + getUILayoutWidth(), 0, m_width - uiOriginX - getUILayoutWidth(), m_height, barColor );
+					}
 				}
 
 				// draw the user interface

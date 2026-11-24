@@ -63,10 +63,33 @@
 #include "GameLogic/FPUControl.h"
 
 #include "Common/file.h"
+#ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegFile.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+}
+#endif
+
+#if defined(__EMSCRIPTEN__)
+extern "C" int GeneralsXFileResident(const char *name);
+#endif
+
+// A sound whose bytes are still crossing the network must be skipped, not decoded: the archive
+// read would hand the decoder zero-filled buffers and that silent decode gets cached forever.
+// Skipping leaves no cache entry, the residency probe kicks the download, and the next trigger
+// of the same sound plays for real.
+static File *gxOpenAudioFile(const char *name)
+{
+#if defined(__EMSCRIPTEN__)
+	if (!GeneralsXFileResident(name))
+	{
+		fprintf(stderr, "AUDIO_SKIP %s\n", name);
+		return NULL;
+	}
+#endif
+	File *file = TheFileSystem->openFile(name);
+	return file;
 }
 
 #ifdef _INTERNAL
@@ -223,6 +246,10 @@ void MiniAudioManager::update()
 	ScopedFPUGuard fpuGuard;
 
 	AudioManager::update();
+#if defined(__EMSCRIPTEN__)
+	// GeneralsX @bugfix Codex 06/08/2026 No job threads in the browser: drain decode jobs on the main thread.
+	while (ma_resource_manager_process_next_job(&m_resourceManager) == MA_SUCCESS) {}
+#endif
 	setDeviceListenerPosition();
 	processRequestList();
 	processPlayingList();
@@ -384,9 +411,15 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	{
 	case AT_Music:
 		groupToUse = &m_musicGroup;
+#ifndef RTS_HAS_FFMPEG
+		flags |= MA_SOUND_FLAG_STREAM;
+#endif
 		break;
 	case AT_Streaming:
 		groupToUse = &m_speechGroup;
+#ifndef RTS_HAS_FFMPEG
+		flags |= MA_SOUND_FLAG_STREAM;
+#endif
 		break;
 	case AT_SoundEffect:
 		if (event->isPositionalAudio()) {
@@ -399,9 +432,10 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 		break;
 	}
 
+#ifdef RTS_HAS_FFMPEG
 	// Use FFmpeg to decode the file into PCM, then feed to miniaudio.
 	// This avoids miniaudio's built-in decoders which hang on MP3 via VFS.
-	File *file = TheFileSystem->openFile(fileToPlay.str());
+	File *file = gxOpenAudioFile(fileToPlay.str());
 	if (!file) {
 		DEBUG_LOG(("MiniAudio: Failed to open file: %s\n", fileToPlay.str()));
 		releasePlayingAudio(audio);
@@ -503,6 +537,19 @@ void MiniAudioManager::playAudioEvent(AudioRequest *req)
 	// Assign to PlayingAudio before any early returns below
 	audio->m_sound = sound;
 	audio->m_audioBuffer = audioBuffer;
+#else
+	ma_sound *sound = (ma_sound *)malloc(sizeof(ma_sound));
+	ma_result result = ma_sound_init_from_file(&m_engine, fileToPlay.str(), flags, groupToUse, NULL, sound);
+	if (result != MA_SUCCESS) {
+		DEBUG_LOG(("MiniAudio: Failed to decode audio: %d for '%s'\n", result, fileToPlay.str()));
+		free(sound);
+		releasePlayingAudio(audio);
+		return;
+	}
+
+	audio->m_sound = sound;
+	audio->m_audioBuffer = NULL;
+#endif
 
 	switch (info->m_soundType)
 	{
@@ -866,6 +913,10 @@ void MiniAudioManager::openDevice(void)
 
 	resourceManagerConfig = ma_resource_manager_config_init();
 	resourceManagerConfig.pVFS = (ma_vfs *)&vfs;
+#if defined(__EMSCRIPTEN__)
+	resourceManagerConfig.jobThreadCount = 0;
+	resourceManagerConfig.flags |= MA_RESOURCE_MANAGER_FLAG_NO_THREADING | MA_RESOURCE_MANAGER_FLAG_NON_BLOCKING;
+#endif
 	result = ma_resource_manager_init(&resourceManagerConfig, &m_resourceManager);
 	if (result != MA_SUCCESS) {
 		DEBUG_LOG(("MiniAudio: Failed to initialize resource manager: %d\n", result));
@@ -1633,7 +1684,7 @@ struct VFSFileHandle { File *file; };
 static ma_result vfsFileOpen(ma_vfs *pVFS, const char *filename, ma_uint32 mode, ma_vfs_file *pFile)
 {
 	VFSFileHandle *handle = new VFSFileHandle;
-	handle->file = TheFileSystem->openFile(filename);
+	handle->file = gxOpenAudioFile(filename);
 	if (!handle->file) {
 		delete handle;
 		return MA_ERROR;

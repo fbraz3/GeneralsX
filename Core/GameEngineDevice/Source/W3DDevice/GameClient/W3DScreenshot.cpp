@@ -97,10 +97,11 @@ static void screenshotThreadFunc(ScreenshotThreadData* data)
 		// Convert A8R8G8B8/X8R8G8B8 to R8G8B8
 		for (unsigned int y = 0; y < height; ++y)
 		{
-			const unsigned int* srcLine = reinterpret_cast<const unsigned int*>(data->pixelData + y * data->pitch);
+			const unsigned char* srcLine = data->pixelData + y * data->pitch;
 			for (unsigned int x = 0; x < width; ++x)
 			{
-				const unsigned int argb = srcLine[x];
+				unsigned int argb;
+				memcpy(&argb, srcLine + x * sizeof(argb), sizeof(argb));
 				const unsigned int index = 3 * (x + y * width);
 				image[index + 0] = (unsigned char)(argb >> 16); // r
 				image[index + 1] = (unsigned char)(argb >> 8);  // g
@@ -113,10 +114,11 @@ static void screenshotThreadFunc(ScreenshotThreadData* data)
 		// Convert R5G6B5 to R8G8B8
 		for (unsigned int y = 0; y < height; ++y)
 		{
-			const unsigned short* srcLine = reinterpret_cast<const unsigned short*>(data->pixelData + y * data->pitch);
+			const unsigned char* srcLine = data->pixelData + y * data->pitch;
 			for (unsigned int x = 0; x < width; ++x)
 			{
-				const unsigned short rgb = srcLine[x];
+				unsigned short rgb;
+				memcpy(&rgb, srcLine + x * sizeof(rgb), sizeof(rgb));
 				const unsigned int index = 3 * (x + y * width);
 				image[index + 0] = (unsigned char)((rgb & 0xF800) >> 8); // r
 				image[index + 1] = (unsigned char)((rgb & 0x07E0) >> 3); // g

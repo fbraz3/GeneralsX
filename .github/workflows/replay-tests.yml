@@ -13,7 +13,7 @@ on:
       platform:
         required: true
         type: string
-        description: "Target platform: linux, linux-flatpak or macos"
+        description: "Target platform: linux, linux-flatpak, macos or wasm"
       game-artifact:
         required: true
         type: string
@@ -76,6 +76,18 @@ jobs:
       - name: Install system dependencies (macOS)
         if: inputs.platform == 'macos'
         run: brew install p7zip coreutils
+
+      - name: Install system dependencies (WASM)
+        if: inputs.platform == 'wasm'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq p7zip-full unzip
+
+      - name: Setup Node.js (WASM)
+        if: inputs.platform == 'wasm'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
 
       # -----------------------------------------------------------------------
       # 3. Extract game bundle from artifact
@@ -178,6 +190,25 @@ jobs:
           echo "Installing Flatpak bundle: $FLATPAK_FILE"
           flatpak --user install -y "$FLATPAK_FILE"
           flatpak --user info com.fbraz3.GeneralsXZH
+
+      - name: Extract game bundle (WASM)
+        if: inputs.platform == 'wasm'
+        run: |
+          mkdir -p /tmp/game-bundle
+          ZIP_FILE=$(find /tmp/game-artifact -name "*.zip" | head -1)
+          if [ -z "$ZIP_FILE" ] || [ ! -f "$ZIP_FILE" ]; then
+            echo "ERROR: WASM bundle not found in downloaded artifact"
+            find /tmp/game-artifact -maxdepth 5 -type f -print || true
+            exit 1
+          fi
+          echo "Extracting: $ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d /tmp/game-bundle
+          if [ -f /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip ]; then
+            unzip -qo /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip -d /tmp/game-bundle
+            rm -f /tmp/game-bundle/wasm-webgpu-GeneralsXZH.zip
+          fi
+          echo "GAME_DIR=/tmp/game-bundle" >> $GITHUB_ENV
+          ls -la /tmp/game-bundle/
 
       # -----------------------------------------------------------------------
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
@@ -301,7 +332,7 @@ jobs:
           fi
 
       - name: Set up user data directories (Linux)
-        if: inputs.platform == 'linux' || inputs.platform == 'linux-flatpak'
+        if: inputs.platform == 'linux' || inputs.platform == 'linux-flatpak' || inputs.platform == 'wasm'
         run: |
           USER_DATA="$HOME/.local/share/GeneralsX/GeneralsZH"
           MAPS_DIR="$USER_DATA/Maps"
@@ -551,6 +582,58 @@ jobs:
 
           if [ $FAIL -gt 0 ]; then
             echo "::error::$FAIL replay(s) failed on macos"
+            exit 1
+          fi
+          if [ $((PASS + FAIL)) -eq 0 ]; then
+            echo "::warning::No replay files were found to test"
+          fi
+
+      - name: Run headless replay tests (WASM)
+        if: inputs.platform == 'wasm'
+        run: |
+          PASS=0
+          FAIL=0
+
+          echo "### Replay Test Results (wasm)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Replay | Result | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for rep in "$USER_DATA/Replays"/*.rep; do
+            [ -f "$rep" ] || continue
+            NAME=$(basename "$rep")
+            echo "=== $NAME ==="
+
+            set +e
+            OUTPUT=$(timeout 180 node "$GAME_DIR/run-wasm-replay.mjs" "$rep" \
+              --runtime "$GAME_DIR/GeneralsXZH.js" \
+              --zh-dir /tmp/cached-assets \
+              --user-data "$USER_DATA" 2>&1)
+            CODE=$?
+            set -e
+
+            echo "$OUTPUT"
+
+            if [ $CODE -eq 0 ]; then
+              PASS=$((PASS + 1))
+              echo "PASS"
+              echo "| \`$NAME\` | PASS | exit 0 |" >> $GITHUB_STEP_SUMMARY
+            else
+              FAIL=$((FAIL + 1))
+              DETAIL=$(echo "$OUTPUT" | grep -iE "Error|CRC|MISMATCH|Exiting|FATAL|returned with code|Cannot open replay|FATAL" | tail -3 | tr '\n' ' ' | tr '|' '/')
+              [ -n "$DETAIL" ] || DETAIL="no filtered diagnostics"
+              echo "FAIL (exit $CODE)"
+              echo "| \`$NAME\` | FAIL | exit $CODE: $DETAIL |" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            echo ""
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results: $PASS passed, $FAIL failed**" >> $GITHUB_STEP_SUMMARY
+
+          if [ $FAIL -gt 0 ]; then
+            echo "::error::$FAIL replay(s) failed on wasm"
             exit 1
           fi
           if [ $((PASS + FAIL)) -eq 0 ]; then

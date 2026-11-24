@@ -106,9 +106,10 @@
 #include "GameClient/GUICallbacks.h"
 
 #include "GameNetwork/NetworkInterface.h"
-#include "GameNetwork/WOLBrowser/WebBrowser.h"
 #include "GameNetwork/LANAPI.h"
+#if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/GameResultsThread.h"
+#endif
 
 #include "Common/version.h"
 
@@ -173,10 +174,6 @@ void initSubsystem(
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
-// TheSuperHackers @build fighter19 11/02/2026 COM module (Windows-only)
-#ifdef _WIN32
-extern CComModule _Module;
-#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -261,11 +258,6 @@ GameEngine::GameEngine()
 	m_logicTimeAccumulator = 0.0f;
 	m_quitting = FALSE;
 	m_isActive = FALSE;
-
-// TheSuperHackers @build fighter19 11/02/2026 COM initialization (Windows-only)
-#ifdef _WIN32
-	_Module.Init(nullptr, ApplicationHInstance, nullptr);
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -280,7 +272,9 @@ GameEngine::~GameEngine()
 //	delete TheShell;
 //	TheShell = nullptr;
 
+#if defined(SAGE_USE_GAMESPY)
 	TheGameResultsQueue->endThreads();
+#endif
 
 #ifdef SAGE_USE_NGMP
 	NGMP_OnlineServicesManager::getInstance().shutdown();
@@ -316,11 +310,6 @@ GameEngine::~GameEngine()
 	TheGameLODManager = nullptr;
 
 	Drawable::killStaticImages();
-
-// TheSuperHackers @build fighter19 11/02/2026 COM termination (Windows-only)
-#ifdef _WIN32
-	_Module.Term();
-#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -765,12 +754,13 @@ void GameEngine::init()
 
 
 		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), nullptr);
-		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), nullptr);
 		initSubsystem(TheGameStateMap,"TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, nullptr );
 		initSubsystem(TheGameState,"TheGameState", MSGNEW("GameEngineSubsystem") GameState, nullptr );
 
+#if defined(SAGE_USE_GAMESPY)
 		// Create the interface for sending game results
 		initSubsystem(TheGameResultsQueue,"TheGameResultsQueue", GameResultsInterface::createNewGameResultsInterface(), nullptr);
+#endif
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -1075,98 +1065,101 @@ extern HWND ApplicationHWnd;
 /** -----------------------------------------------------------------------------------------------
  * The "main loop" of the game engine. It will not return until the game exits.
  */
-void GameEngine::execute()
+void GameEngine::executeFrame()
 {
 #if defined(RTS_DEBUG)
-	DWORD startTime = timeGetTime() / 1000;
+	static const DWORD startTime = timeGetTime() / 1000;
 #endif
 
-	// pretty basic for now
-	while( !m_quitting )
+	//if (TheGlobalData->m_vTune)
+	{
+#ifdef PERF_TIMERS
+		PerfGather::resetAll();
+#endif
+	}
+
 	{
 
-		//if (TheGlobalData->m_vTune)
-		{
-#ifdef PERF_TIMERS
-			PerfGather::resetAll();
-#endif
-		}
-
-		{
-
 #if defined(RTS_DEBUG)
+		{
+			// enter only if in benchmark mode
+			if (TheGlobalData->m_benchmarkTimer > 0)
 			{
-				// enter only if in benchmark mode
-				if (TheGlobalData->m_benchmarkTimer > 0)
+				DWORD currentTime = timeGetTime() / 1000;
+				if (TheGlobalData->m_benchmarkTimer < currentTime - startTime)
 				{
-					DWORD currentTime = timeGetTime() / 1000;
-					if (TheGlobalData->m_benchmarkTimer < currentTime - startTime)
+					if (TheGameLogic->isInGame())
 					{
-						if (TheGameLogic->isInGame())
+						if (TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
 						{
-							if (TheRecorder->getMode() == RECORDERMODETYPE_RECORD)
-							{
-								TheRecorder->stopRecording();
-							}
-							TheGameLogic->clearGameData();
+							TheRecorder->stopRecording();
 						}
-						TheGameEngine->setQuitting(TRUE);
+						TheGameLogic->clearGameData();
 					}
+					TheGameEngine->setQuitting(TRUE);
 				}
 			}
+		}
 #endif
 
+		{
+			try
 			{
+				// compute a frame
+				update();
+			}
+			catch (INIException e)
+			{
+				// Release CRASH doesn't return, so don't worry about executing additional code.
+				if (e.mFailureMessage)
+					RELEASE_CRASH((e.mFailureMessage));
+				else
+					RELEASE_CRASH(("Uncaught Exception in GameEngine::update"));
+			}
+			catch (...)
+			{
+				// try to save info off
 				try
 				{
-					// compute a frame
-					update();
-				}
-				catch (INIException e)
-				{
-					// Release CRASH doesn't return, so don't worry about executing additional code.
-					if (e.mFailureMessage)
-						RELEASE_CRASH((e.mFailureMessage));
-					else
-						RELEASE_CRASH(("Uncaught Exception in GameEngine::update"));
+					if (TheRecorder && TheRecorder->getMode() == RECORDERMODETYPE_RECORD && TheRecorder->isMultiplayer())
+						TheRecorder->cleanUpReplayFile();
 				}
 				catch (...)
 				{
-					// try to save info off
-					try
-					{
-						if (TheRecorder && TheRecorder->getMode() == RECORDERMODETYPE_RECORD && TheRecorder->isMultiplayer())
-							TheRecorder->cleanUpReplayFile();
-					}
-					catch (...)
-					{
-					}
-					RELEASE_CRASH(("Uncaught Exception in GameEngine::update"));
 				}
+				RELEASE_CRASH(("Uncaught Exception in GameEngine::update"));
 			}
-
-			// TheFramePacer->update() sleeps here to hold the render FPS cap (RenderFpsPreset /
-			// GlobalData::m_framesPerSecondLimit). Because input is serviced once per iteration of
-			// this loop (SDL poll + GameClient::UPDATE message processing, above), this pacing wait
-			// also throttles the input sampling rate. A low FPS cap therefore makes the mouse feel
-			// laggy (hard to click moving units) even though the fixed 30 Hz simulation is unchanged.
-			// See RenderFpsPreset::s_fpsValues in FrameRateLimit.cpp for the full explanation.
-			TheFramePacer->update();
-
-			// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
-			// GameClient::update() dispatches TheDisplay->DRAW() each frame.
-			// Do NOT add an extra draw() call here - it would double-present per frame.
 		}
+
+		// TheFramePacer->update() sleeps here to hold the render FPS cap (RenderFpsPreset /
+		// GlobalData::m_framesPerSecondLimit). Because input is serviced once per iteration of
+		// this loop (SDL poll + GameClient::UPDATE message processing, above), this pacing wait
+		// also throttles the input sampling rate. A low FPS cap therefore makes the mouse feel
+		// laggy (hard to click moving units) even though the fixed 30 Hz simulation is unchanged.
+		// See RenderFpsPreset::s_fpsValues in FrameRateLimit.cpp for the full explanation.
+		TheFramePacer->update();
+
+		// NOTE: TheDisplay->draw() is called via TheGameClient->UPDATE() above.
+		// GameClient::update() dispatches TheDisplay->DRAW() each frame.
+		// Do NOT add an extra draw() call here - it would double-present per frame.
+	}
 
 #ifdef PERF_TIMERS
-		if (!m_quitting && TheGameLogic->isInGame() && !TheGameLogic->isInShellGame() && !TheGameLogic->isGamePaused())
-		{
-			PerfGather::dumpAll(TheGameLogic->getFrame());
-			PerfGather::displayGraph(TheGameLogic->getFrame());
-			PerfGather::resetAll();
-		}
+	if (!m_quitting && TheGameLogic->isInGame() && !TheGameLogic->isInShellGame() && !TheGameLogic->isGamePaused())
+	{
+		PerfGather::dumpAll(TheGameLogic->getFrame());
+		PerfGather::displayGraph(TheGameLogic->getFrame());
+		PerfGather::resetAll();
+	}
 #endif
+}
 
+void GameEngine::execute()
+{
+	// pretty basic for now
+	while( !m_quitting )
+	{
+		executeFrame();
 	}
 }
 

@@ -106,6 +106,50 @@ static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much t
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
 
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen: views wider than this aspect ratio keep the
+// vertical field of view of the reference aspect ratio and widen the horizontal field of view instead.
+constexpr const Real HorPlusReferenceAspectRatio = 16.0f / 9.0f;
+constexpr const Real DefaultHorizontalFOVDegrees = 50.0f; ///< Default W3D horizontal fov for a full-screen view.
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ layout for a display of the given aspect ratio.
+// Up to the limit of TheGlobalData->m_ultrawideMaxHorizontalFOV the extra width is covered purely by
+// a wider horizontal fov. Past that limit the fov stops growing and the remaining aspect ratio is
+// covered by raising the camera, which keeps the vertical ground coverage of the reference aspect.
+// This is render-only math (CRT, not WWMath) and never feeds the simulation.
+//-------------------------------------------------------------------------------------------------
+struct HorPlusLayout
+{
+	Real widening;          ///< Factor applied to the view plane half-width of the base horizontal fov.
+	Real heightAspectRatio; ///< Aspect ratio the default camera height limits are derived from.
+	Real heightScale;       ///< Additional camera height factor for the width the fov limit left uncovered.
+};
+
+static HorPlusLayout calcHorPlusLayout(Real aspectRatio, Real baseHorizontalFOV)
+{
+	HorPlusLayout layout;
+	layout.widening = 1.0f;
+	layout.heightAspectRatio = aspectRatio;
+	layout.heightScale = 1.0f;
+
+	if (!TheGlobalData->m_ultrawideHorPlus || aspectRatio <= HorPlusReferenceAspectRatio)
+		return layout;
+
+	const Real tanHalfBase = tan(baseHorizontalFOV * 0.5f);
+	if (tanHalfBase <= 0.0f)
+		return layout;
+
+	const Real tanHalfMax = tan(DEG_TO_RADF(TheGlobalData->m_ultrawideMaxHorizontalFOV) * 0.5f);
+	const Real maxWidening = std::max(1.0f, tanHalfMax / tanHalfBase);
+	const Real fullWidening = aspectRatio / HorPlusReferenceAspectRatio;
+
+	layout.widening = std::min(fullWidening, maxWidening);
+	layout.heightAspectRatio = HorPlusReferenceAspectRatio;
+	layout.heightScale = fullWidening / layout.widening;
+
+	return layout;
+}
+
 //-------------------------------------------------------------------------------------------------
 // Normalizes angle to +- PI.
 //-------------------------------------------------------------------------------------------------
@@ -174,6 +218,8 @@ W3DView::W3DView()
 	m_FXPitch = 1.0f;
 	m_freezeTimeForCameraMovement = false;
 	m_lastScreenToTerrainValid = false;
+	m_footprintTerrainDrawSize.x = 0;
+	m_footprintTerrainDrawSize.y = 0;
 
 	//Enhancements from CNC3 WST 4/15/2003. JSC Integrated 5/20/03.
 	m_scriptedState = 0;
@@ -208,13 +254,27 @@ void W3DView::setHeight(Int height)
 	View::setHeight(height);
 
 	Vector2 vMin,vMax;
-	m_3DCamera->Set_Aspect_Ratio((Real)getWidth()/(Real)height);
+	updateViewPlane(getDefaultHorizontalFOV());
  	m_3DCamera->Get_Viewport(vMin,vMax);
  	vMax.Y=(Real)(m_originY+height)/(Real)TheDisplay->getHeight();
  	m_3DCamera->Set_Viewport(vMin,vMax);
 
 	// TheSuperHackers @bugfix Now recalculates the camera constraints because
 	// showing or hiding the control bar will change the viewable area.
+	m_cameraAreaConstraintsValid = false;
+	m_recalcCamera = true;
+	m_lastScreenToTerrainValid = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 See View::setFramingHeight.
+//-------------------------------------------------------------------------------------------------
+void W3DView::setFramingHeight(Int height)
+{
+	View::setFramingHeight(height);
+
+	updateViewPlane(getDefaultHorizontalFOV());
+
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
 	m_lastScreenToTerrainValid = false;
@@ -229,18 +289,61 @@ void W3DView::setWidth(Int width)
 	View::setWidth(width);
 
 	Vector2 vMin,vMax;
-	m_3DCamera->Set_Aspect_Ratio((Real)width/(Real)getHeight());
  	m_3DCamera->Get_Viewport(vMin,vMax);
  	vMax.X=(Real)(m_originX+width)/(Real)TheDisplay->getWidth();
  	m_3DCamera->Set_Viewport(vMin,vMax);
 
 	//we want to maintain the same scale, so we'll need to adjust the fov.
 	//default W3D fov for full-screen is 50 degrees.
-	m_3DCamera->Set_View_Plane((Real)width/(Real)TheDisplay->getWidth()*DEG_TO_RADF(50.0f),-1);
+	updateViewPlane(getDefaultHorizontalFOV());
 
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
 	m_lastScreenToTerrainValid = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Returns the horizontal field of view this view uses by default. It scales with the share of the
+	display width the view covers, so that a narrower view keeps the same scale. */
+//-------------------------------------------------------------------------------------------------
+Real W3DView::getDefaultHorizontalFOV() const
+{
+	return (Real)m_width / (Real)TheDisplay->getWidth() * DEG_TO_RADF(DefaultHorizontalFOVDegrees);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Rebuilds the 3D camera view plane from a base horizontal field of view and the view size.
+	Picking, frustum culling, the radar view box and the camera area constraints all read the
+	camera view plane, so this is the single place that decides the projection. */
+// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen. Up to the reference aspect ratio the
+// base horizontal fov is used as is. Wider views keep the vertical fov of the reference aspect
+// ratio and extend the view sideways instead of narrowing it vertically, up to the configured
+// horizontal fov limit. With Hor+ switched off this reproduces the previous fixed horizontal fov.
+//-------------------------------------------------------------------------------------------------
+void W3DView::updateViewPlane(Real baseHorizontalFOV)
+{
+	const Int width = getWidth();
+	const Int height = getHeight();
+
+	if (width <= 0 || height <= 0)
+		return;
+
+	// The widening follows the aspect ratio of the whole display, not of this view. The tactical view
+	// is shorter than the display while the control bar is shown, and that must only crop the picture
+	// vertically, as it always did, instead of changing the horizontal fov.
+	const Real displayAspectRatio = (Real)TheDisplay->getWidth() / (Real)TheDisplay->getHeight();
+	const Int framingHeight = getFramingHeight();
+	const Real viewAspectRatio = (Real)width / (Real)framingHeight;
+	const Real halfWidth = tan(baseHorizontalFOV * 0.5f) * calcHorPlusLayout(displayAspectRatio, baseHorizontalFOV).widening;
+	const Real halfHeight = halfWidth / viewAspectRatio;
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 The camera frames the scene for the framing height. Rows of the view below
+	// that keep the same scale and extend the view plane downwards (an off-centre projection), so the
+	// world shows beside and behind the centred control bar without shifting what the camera centres on.
+	// Picking, culling and the radar view box read this view plane, so they cover the extra rows as well.
+	const Real bottom = halfHeight - 2.0f * halfHeight * ((Real)height / (Real)framingHeight);
+
+	m_3DCamera->Set_View_Plane(Vector2(-halfWidth, bottom), Vector2(halfWidth, halfHeight));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -577,7 +680,10 @@ Real W3DView::calcCameraAreaOffset(Real maxEdgeZ)
 
 	// Pick at the center
 	screen.x = 0.5f * getWidth() + m_originX;
-	screen.y = 0.5f * getHeight() + m_originY;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Measure within the framed part of the view so rows drawn below it
+	// (behind the control bar) do not tighten the constraints.
+	const Int framingHeight = getFramingHeight();
+	screen.y = 0.5f * framingHeight + m_originY;
 	getPickRay(&screen, &rayStart, &rayEnd);
 
 	// Looking at the horizon would yield infinite numbers.
@@ -588,7 +694,7 @@ Real W3DView::calcCameraAreaOffset(Real maxEdgeZ)
 	center.y = Vector3::Find_Y_At_Z(maxEdgeZ, rayStart, rayEnd);
 
 	const Bool isLookingDown = rayStart.Z >= rayEnd.Z;
-	const Real height = isLookingDown ? getHeight() : 0.0f;
+	const Real height = isLookingDown ? framingHeight : 0.0f;
 	screen.y = height + m_originY;
 	getPickRay(&screen, &rayStart, &rayEnd);
 
@@ -836,7 +942,7 @@ void W3DView::setCameraTransform(const Matrix3D &transform)
 	m_lastScreenToTerrainValid = false;
 
 #if defined(RTS_DEBUG)
-	m_3DCamera->Set_View_Plane( m_FOV, -1 );
+	updateViewPlane( m_FOV );
 #endif
 
 	m_3DCamera->Set_Transform(transform);
@@ -945,6 +1051,9 @@ void W3DView::reset()
 	setGuardBandBias( &gb );
 
 	m_recalcCameraConstraintsAfterScrolling = false;
+
+	m_footprintTerrainDrawSize.x = 0;
+	m_footprintTerrainDrawSize.y = 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2246,6 +2355,17 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 	Real currentAspectRatio = (Real)TheTacticalView->getWidth() / (Real)TheTacticalView->getHeight();
 	Real aspectRatioScale = 0.0f;
 
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ widescreen: beyond the reference aspect ratio the
+	// extra width is covered by the wider horizontal fov (see updateViewPlane), so the camera height
+	// stays at the value of the reference aspect ratio. Only the width that the horizontal fov limit
+	// leaves uncovered still raises the camera.
+	const Real displayAspectRatio = (Real)TheDisplay->getWidth() / (Real)TheDisplay->getHeight();
+	const HorPlusLayout horPlus = calcHorPlusLayout(displayAspectRatio, DEG_TO_RADF(DefaultHorizontalFOVDegrees));
+	if (horPlus.widening > 1.0f || horPlus.heightScale > 1.0f)
+	{
+		currentAspectRatio = horPlus.heightAspectRatio;
+	}
+
 	if (currentAspectRatio > baseAspectRatio)
 	{
 		aspectRatioScale = fabs(( 1 + ( currentAspectRatio - baseAspectRatio) ));
@@ -2254,6 +2374,8 @@ void W3DView::setCameraHeightAboveGroundLimitsToDefault(Real heightScale)
 	{
 		aspectRatioScale = fabs(( 1 - ( baseAspectRatio - currentAspectRatio) ));
 	}
+
+	aspectRatioScale *= horPlus.heightScale;
 
 	m_maxHeightAboveGround = TheGlobalData->m_maxCameraHeight * aspectRatioScale * heightScale;
 	m_minHeightAboveGround = TheGlobalData->m_minCameraHeight * aspectRatioScale;
@@ -3837,6 +3959,81 @@ bool W3DView::getDesiredTerrainDrawSize(ICoord2D &dimensions) const
 	return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix ClaudeCode 22/11/2026 The normal terrain draw size is a fixed square that was
+// tuned for a 4:3 view at the default camera height. Wide views and high cameras see more ground
+// than that, which left untextured black areas with floating objects near the screen edges.
+// This projects the four view corners onto the lowest terrain height and returns the draw size,
+// in whole vertex buffer tiles, that covers the resulting footprint. Returns false when the view
+// reaches the horizon or the camera pitch is low, where the regular draw sizes apply.
+//-------------------------------------------------------------------------------------------------
+bool W3DView::getViewFootprintTerrainDrawSize(ICoord2D &dimensions) const
+{
+	if (TheTerrainRenderObject == nullptr)
+		return false;
+
+	const Real cameraPitch = asin(fabs(m_3DCamera->Get_Forward_Dir().Z));
+	if (cameraPitch <= ViewDefaultLowPitchRadians)
+		return false;
+
+	// Rays flatter than this are treated as reaching the horizon.
+	constexpr const Real minDownwardDirZ = -0.05f;
+	// Extra cells around the footprint for terrain that rises into view from just outside of it.
+	constexpr const Int marginCells = VERTEX_BUFFER_TILE_LENGTH;
+
+	static const Vector2 viewCorners[] =
+	{
+		Vector2(-1.0f, -1.0f), Vector2(1.0f, -1.0f), Vector2(1.0f, 1.0f), Vector2(-1.0f, 1.0f)
+	};
+
+	const Vector3 cameraPos = m_3DCamera->Get_Position();
+	const Real groundZ = TheTerrainRenderObject->getMinHeight();
+
+	Real minX = 0.0f;
+	Real maxX = 0.0f;
+	Real minY = 0.0f;
+	Real maxY = 0.0f;
+
+	for (Int i = 0; i < ARRAY_SIZE(viewCorners); ++i)
+	{
+		Vector3 direction;
+		m_3DCamera->Un_Project(direction, viewCorners[i]);
+		direction -= cameraPos;
+		direction.Normalize();
+
+		if (direction.Z > minDownwardDirZ)
+			return false;
+
+		const Real distance = (groundZ - cameraPos.Z) / direction.Z;
+		if (distance <= 0.0f)
+			return false;
+
+		const Real x = cameraPos.X + direction.X * distance;
+		const Real y = cameraPos.Y + direction.Y * distance;
+
+		if (i == 0)
+		{
+			minX = maxX = x;
+			minY = maxY = y;
+		}
+		else
+		{
+			minX = std::min(minX, x);
+			maxX = std::max(maxX, x);
+			minY = std::min(minY, y);
+			maxY = std::max(maxY, y);
+		}
+	}
+
+	const Int cellsX = (Int)ceil((maxX - minX) / MAP_XY_FACTOR) + 2 * marginCells;
+	const Int cellsY = (Int)ceil((maxY - minY) / MAP_XY_FACTOR) + 2 * marginCells;
+
+	// Draw sizes are one vertex larger than a whole number of vertex buffer tiles.
+	dimensions.x = 1 + ((cellsX + VERTEX_BUFFER_TILE_LENGTH - 1) / VERTEX_BUFFER_TILE_LENGTH) * VERTEX_BUFFER_TILE_LENGTH;
+	dimensions.y = 1 + ((cellsY + VERTEX_BUFFER_TILE_LENGTH - 1) / VERTEX_BUFFER_TILE_LENGTH) * VERTEX_BUFFER_TILE_LENGTH;
+	return true;
+}
+
 void W3DView::updateTerrain()
 {
 	DEBUG_ASSERTCRASH(TheTerrainRenderObject != nullptr, ("TheTerrainRenderObject is null"));
@@ -3857,6 +4054,18 @@ void W3DView::updateTerrain()
 			drawSize.x = static_cast<Int>(drawSize.x * terrainScale);
 			drawSize.y = static_cast<Int>(drawSize.y * terrainScale);
 		}
+
+		// GeneralsX @bugfix ClaudeCode 22/11/2026 Enlarge the draw size to cover the visible ground on
+		// wide views and high cameras. setTerrainDrawSize() bounds it by the map extent.
+		ICoord2D footprintSize;
+		if (getViewFootprintTerrainDrawSize(footprintSize))
+		{
+			m_footprintTerrainDrawSize.x = std::max(m_footprintTerrainDrawSize.x, footprintSize.x);
+			m_footprintTerrainDrawSize.y = std::max(m_footprintTerrainDrawSize.y, footprintSize.y);
+		}
+		drawSize.x = std::max(drawSize.x, m_footprintTerrainDrawSize.x);
+		drawSize.y = std::max(drawSize.y, m_footprintTerrainDrawSize.y);
+
 		TheTerrainRenderObject->setTerrainDrawSize(drawSize.x, drawSize.y);
 	}
 

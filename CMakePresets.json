@@ -304,6 +304,37 @@
                 "SAGE_USE_MINIAUDIO": "ON"
             },
             "description": "Linux build with MiniAudio audio backend."
+        },
+        {
+            "name": "webgpu",
+            "displayName": "Chrome WebAssembly + WebGPU",
+            "inherits": "default-vcpkg",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXECUTABLE_SUFFIX": ".html",
+                "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake",
+                "RTS_BUILD_CORE_TOOLS": "OFF",
+                "RTS_BUILD_GENERALS": "OFF",
+                "RTS_BUILD_ZEROHOUR": "ON",
+                "RTS_BUILD_ZEROHOUR_TOOLS": "OFF",
+                "RTS_BUILD_OPTION_FFMPEG": "OFF",
+                "RTS_CRASHDUMP_ENABLE": "OFF",
+                "SAGE_USE_DX8": "OFF",
+                "SAGE_USE_GLM": "ON",
+                "SAGE_USE_GAMESPY": "OFF",
+                "SAGE_USE_NGMP": "OFF",
+                "SAGE_USE_MINIAUDIO": "ON",
+                "SAGE_USE_OPENAL": "OFF",
+                "SAGE_USE_SDL3": "ON",
+                "SAGE_USE_WEBGPU": "ON",
+                "SAGE_UPDATE_CHECK": "OFF",
+                "RTS_BUILD_OPTION_SAGE_PATCH": "OFF"
+            },
+            "description": "Build Zero Hour for Chrome with WebAssembly and WebGPU."
         }
     ],
     "buildPresets": [
@@ -421,6 +452,12 @@
             "configurePreset": "linux64-miniaudio",
             "displayName": "Build Linux 64-bit DXVK/SDL3/MiniAudio Release",
             "description": "Build Linux 64-bit with DXVK graphics, SDL3 windowing, and MiniAudio audio"
+        },
+        {
+            "name": "webgpu",
+            "configurePreset": "webgpu",
+            "displayName": "Build Chrome WebAssembly + WebGPU",
+            "description": "Build GeneralsXZH for Chrome with WebAssembly and WebGPU"
         }
     ],
     "testPresets": [

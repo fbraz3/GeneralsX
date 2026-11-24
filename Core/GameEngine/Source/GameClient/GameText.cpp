@@ -1552,13 +1552,49 @@ UnicodeString GameTextManager::fetch( const Char *label, Bool *exists )
 			return s_postProc;
 		}
 
+		// GeneralsX @feature fbraz3 20/11/2026 Label for Command+Left-Click-Drag map panning option
+		if ( stricmp(label, "GUI:CommandDragScroll") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_cmdDragScroll(L"Command + Left-Click Drag to Pan Map (macOS)");
+			return s_cmdDragScroll;
+		}
+
+		// GeneralsX @feature ClaudeCode 22/11/2026 Labels for the ultrawide options in the GeneralsX menu
+		if ( stricmp(label, "GUI:UltrawideHorPlus") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideHorPlus(L"Ultrawide Hor+ Camera");
+			return s_ultrawideHorPlus;
+		}
+
+		if ( stricmp(label, "GUI:UltrawideMaxFOV") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideMaxFOV(L"HOR+ MAX HORIZONTAL FOV");
+			return s_ultrawideMaxFOV;
+		}
+
+		if ( stricmp(label, "GUI:UltrawideUI") == 0 )
+		{
+			if ( exists )
+				*exists = TRUE;
+			static UnicodeString s_ultrawideUI(L"Centered 16:9 Menus and HUD on Ultrawide (Requires Restart)");
+			return s_ultrawideUI;
+		}
+
 		// string not found
 		if( exists )
 			*exists = FALSE;
 
 		// See if we already have the missing string
+		AsciiString missingLabel;
+		missingLabel.format("MISSING: '%s'", label);
 		UnicodeString missingString;
-		missingString.format(L"MISSING: '%hs'", label);
+		missingString.translate(missingLabel);
 
 		NoString *noString = m_noStringList;
 

@@ -30,12 +30,10 @@
  *                                                                                             *
  *                    $Revision:: 6                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "bchannel.h"
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 #include "logdlg.h"
 #include "exportlog.h"
 

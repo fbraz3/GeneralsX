@@ -110,6 +110,8 @@ public:
 	Bool isShift();
 	Bool isCtrl();
 	Bool isAlt();
+	// GeneralsX @feature fbraz3 20/11/2026 Expose macOS Command modifier without leaking platform headers
+	virtual Bool isCommand() const { return FALSE; }
 	Int getModifierFlags() { return m_modifiers; }
 
 	// access methods for key data

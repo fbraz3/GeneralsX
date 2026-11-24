@@ -4,6 +4,7 @@
 !.gitignore
 !.gitattributes
 !.github
+!.agents
 !.devin
 !.gitmodules
 !.coderabbit.yaml
@@ -94,3 +95,8 @@ logs_*.zip
 /cmake/ngmp_env.cmake
 references/GameClient/
 references/GameServer/
+
+# WebAssembly / Vite shell build outputs
+web/node_modules/
+web/dist/
+web/public/GeneralsXZH.*

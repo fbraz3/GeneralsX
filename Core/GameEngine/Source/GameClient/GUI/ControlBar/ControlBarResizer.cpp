@@ -180,7 +180,8 @@ void ControlBarResizer::sizeWindowsAlt()
 {
 	ResizerWindowList::iterator it = m_resizerWindowsList.begin();
 	GameWindow *win = nullptr;
-	Real x = (Real)TheDisplay->getWidth() / DEFAULT_DISPLAY_WIDTH;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Alternate positions are laid out in the centred UI layout rect.
+	Real x = (Real)TheDisplay->getUILayoutWidth() / DEFAULT_DISPLAY_WIDTH;
 	Real y = (Real)TheDisplay->getHeight() / DEFAULT_DISPLAY_HEIGHT;
 	while (it != m_resizerWindowsList.end())
 	{
@@ -198,7 +199,9 @@ void ControlBarResizer::sizeWindowsAlt()
 			continue;
 		}
 
-		win->winSetPosition(rWin->m_altPos.x * x, rWin->m_altPos.y * y);
+		// Positions are relative to the parent; only a top level window needs the UI layout origin.
+		const Int originX = win->winGetParent() ? 0 : TheDisplay->getUILayoutOriginX();
+		win->winSetPosition(rWin->m_altPos.x * x + originX, rWin->m_altPos.y * y);
 		if(rWin->m_altSize.x >0 || rWin->m_altSize.y > 0)
 			win->winSetSize(rWin->m_altSize.x *x, rWin->m_altSize.y *y);
 		DEBUG_LOG(("sizeWindowsAlt:%s pos X:%d pos Y: %d size X:%d sizeY: %d",rWin->m_name.str(), rWin->m_altPos.x*x, rWin->m_altPos.y*y,rWin->m_altSize.x*x, rWin->m_altSize.y *y));

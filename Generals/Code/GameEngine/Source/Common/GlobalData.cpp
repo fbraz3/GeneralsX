@@ -1107,6 +1107,13 @@ GlobalData::GlobalData()
 	m_useAlternateMouse = FALSE;
 	// GeneralsX @bugfix Meeseeks 18/06/2026 Default to TRUE to allow right-click drag scrolling under alternate controls by default
 	m_useRightMouseScrollWithAlternateMouse = TRUE;
+	// GeneralsX @feature fbraz3 20/11/2026 Enable Command+Left-Click-Drag map panning on macOS by default
+	m_useCommandDragScroll = TRUE;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ camera projection, opt-in (GeneralsX menu or Options.ini), horizontal fov capped at 70 degrees
+	m_ultrawideHorPlus = FALSE;
+	m_ultrawideMaxHorizontalFOV = 70.0f;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Centred 16:9 UI layout on wider displays, opt-in (GeneralsX menu or Options.ini)
+	m_ultrawideUI = FALSE;
 	m_clientRetaliationModeEnabled = TRUE; //On by default.
 	m_doubleClickAttackMove = FALSE;
 
@@ -1261,6 +1268,14 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	OptionPreferences optionPref;
 	TheWritableGlobalData->m_useAlternateMouse = optionPref.getAlternateMouseModeEnabled();
 	TheWritableGlobalData->m_useRightMouseScrollWithAlternateMouse = optionPref.getRightMouseScrollWithAlternateMouseEnabled();
+	TheWritableGlobalData->m_useCommandDragScroll = optionPref.getCommandDragScrollEnabled();
+	TheWritableGlobalData->m_ultrawideHorPlus = optionPref.getUltrawideHorPlusEnabled();
+	TheWritableGlobalData->m_ultrawideMaxHorizontalFOV = optionPref.getUltrawideMaxHorizontalFOV();
+	// GeneralsX @bugfix ClaudeCode 22/11/2026 The UI layout rect must not change while layouts exist. A map.ini with a
+	// GameData block re-runs this parse as an override load; keep the value the running layouts were built with
+	// (the override copy inherits it) so a choice saved in the GeneralsX menu only applies after a restart.
+	if (ini->getLoadType() != INI_LOAD_CREATE_OVERRIDES)
+		TheWritableGlobalData->m_ultrawideUI = optionPref.getUltrawideUIEnabled();
 	TheWritableGlobalData->m_clientRetaliationModeEnabled = optionPref.getRetaliationModeEnabled();
 	TheWritableGlobalData->m_doubleClickAttackMove = optionPref.getDoubleClickAttackMoveEnabled();
 	TheWritableGlobalData->m_jpegQuality = optionPref.getJpegQuality();
