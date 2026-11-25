@@ -73,6 +73,7 @@ class StreamingArchiveFile : public RAMFile
 	protected:
 
 		File					*m_file;											///< The archive file that I came from
+		Bool                    m_ownsFile = false;
 		Int						m_startingPos;								///< My starting position in the archive
 		Int						m_size;												///< My length
 		Int						m_curPos;											///< My current position.
@@ -80,6 +81,8 @@ class StreamingArchiveFile : public RAMFile
 	public:
 
 		StreamingArchiveFile();
+		// GeneralsX @feature Codex 25/11/2026 Open an archive entry with a file handle owned by this reader.
+		Bool openIndependent(const Char *archivePath, const AsciiString &filename, Int offset, Int size);
 		//virtual				~StreamingArchiveFile();
 
 

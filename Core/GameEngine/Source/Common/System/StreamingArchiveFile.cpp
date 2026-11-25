@@ -60,6 +60,7 @@
 #include "Common/AsciiString.h"
 #include "Common/FileSystem.h"
 #include "Common/StreamingArchiveFile.h"
+#include "Common/LocalFileSystem.h"
 #include "Common/PerfTimer.h"
 
 
@@ -198,6 +199,22 @@ Bool StreamingArchiveFile::openFromArchive(File *archiveFile, const AsciiString&
 	return TRUE;
 }
 
+// GeneralsX @feature Codex 25/11/2026 Reopen the archive so the entry has its own seek position.
+Bool StreamingArchiveFile::openIndependent(const Char *archivePath, const AsciiString &filename, Int offset, Int size)
+{
+	if (!TheLocalFileSystem) return false;
+	File *archive = TheLocalFileSystem->openFile(archivePath, File::READ | File::BINARY);
+	if (!archive) return false;
+	if (!openFromArchive(archive, filename, offset, size)) {
+		archive->close();
+		m_file = nullptr;
+		File::close();
+		return false;
+	}
+	m_ownsFile = true;
+	return true;
+}
+
 //=================================================================
 // StreamingArchiveFile::close
 //=================================================================
@@ -209,6 +226,12 @@ Bool StreamingArchiveFile::openFromArchive(File *archiveFile, const AsciiString&
 
 void StreamingArchiveFile::close()
 {
+	// GeneralsX @feature Codex 25/11/2026 Close the private handle and leave shared archive handles with their owner.
+	if (m_ownsFile) {
+		m_file->close();
+		m_file = nullptr;
+		m_ownsFile = false;
+	}
 	File::close();
 }
 

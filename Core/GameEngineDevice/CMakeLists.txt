@@ -293,6 +293,13 @@ if(SAGE_USE_MINIAUDIO)
 
     target_link_libraries(corei_gameenginedevice_public INTERFACE miniaudio_lib)
 
+    if(RTS_BUILD_OPTION_FFMPEG AND NOT EMSCRIPTEN)
+        target_sources(corei_gameenginedevice_private INTERFACE
+            Include/MiniAudioDevice/MiniAudioMusicStream.h
+            Source/MiniAudioDevice/MiniAudioMusicStream.cpp
+        )
+    endif()
+
     target_sources(corei_gameenginedevice_private INTERFACE
         Include/MiniAudioDevice/MiniAudioManager.h
         Include/MiniAudioDevice/MiniAudioStream.h
