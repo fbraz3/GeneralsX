@@ -39,6 +39,7 @@ Perform a full upstream sync from the `thesuperhackers` remote into `GeneralsX` 
 7. **Sanity Audits**:
    - Verify no unresolved merge markers remain (`<<<<<<<`, `=======`, `>>>>>>>`).
    - **Duplicate File Audit**: Verify files moved upstream to `Core/` were not left duplicated in `Generals/` or `GeneralsMD/`. Remove obsolete duplicates via `git rm`.
+   - **`GeneralsX` Regression Audit**: Before committing, inspect every deleted `GeneralsX` annotation and platform guard against the pre-sync base (`git diff HEAD -- Core/ Generals/ GeneralsMD/ cmake/ CMakeLists.txt | grep -E "^(diff --git|-.*GeneralsX @|-.*__APPLE__|-.*__linux__|-.*_WIN32|-.*SAGE_USE_)"`) and verify that every removal is intentional (e.g. an upstream-deleted obsolete subsystem or an upstream fix that supersedes ours) rather than an accidental conflict overwrite (such as `MapUtil.cpp`).
    - Remove any generated runtime/build artifacts (e.g., local shader/DXVK caches) from the working tree.
 8. **Validate Builds & Smoke**:
    - Validate configure and build for one platform completely before moving to the next (do not run parallel platform validations).
@@ -75,6 +76,7 @@ Never use blanket conflict strategies (`--ours` / `--theirs`) across large areas
 - Preserve **SDL3** (windowing/input), **DXVK** (graphics), **MiniAudio** (primary audio; OpenAL is deprecated), and **FFmpeg** (video).
 - Enforce strict platform isolation: no Win32, Cocoa, or X11 calls in game logic (`GameEngine/`).
 - Treat INI parser changes as high risk on macOS (check Apple deployment target compatibility for numeric parsing).
+- **POSIX Path & Map Cache Preservation**: Do not let upstream Windows-only `\\` path assumptions overwrite `GeneralsX` POSIX path handling (e.g., in `MapUtil.cpp`). When upstream introduces a portable helper (like `MapCache::getCachePath()`), adopt it while preserving `GeneralsX` POSIX `findMap()` key normalization, separator-aware `map.str` paths, custom map folder scanning, and custom-map listbox growth.
 - **Windows transitive header removals**: When upstream removes broad Windows/ATL headers (e.g., `atlbase.h` from `PreRTS.h`), Windows-only NGMP/networking headers (such as `NetworkMesh.h` including `<ws2ipdef.h>`) can lose transitive `<winsock2.h>` includes, or collide with `<winsock.h>` pulled by `udp.h`/GameSpy. Ensure `<winsock2.h>` is included in `PreRTS.h` before `<windows.h>` (and before `<ws2ipdef.h>`/`<ws2tcpip.h>`).
 - **Emscripten/POSIX macro collisions**: New upstream constants (e.g., `TextureAtlas::PAGE_SIZE`) may collide with C/POSIX macros in Emscripten/musl `<limits.h>` (`PAGE_SIZE`, etc.). Guard with `#ifdef <MACRO> / #undef <MACRO> / #endif` after system includes when needed, and verify `webgpu` and Windows `generalsxzh` CI targets.
 
