@@ -432,6 +432,10 @@ Bool NetPacket::isFrameRepeat(NetCommandRef *msg) {
 	}
 	NetFrameCommandMsg *framemsg = (NetFrameCommandMsg *)(msg->getCommand());
 	NetFrameCommandMsg *lastmsg = (NetFrameCommandMsg *)(m_lastCommand->getCommand());
+	// GeneralsX @bugfix Codex 25/11/2026 A repeated frame inherits the preceding frame's player on the receiving peer.
+	if (framemsg->getPlayerID() != lastmsg->getPlayerID()) {
+		return FALSE;
+	}
 	if (framemsg->getCommandCount() != 0) {
 		return FALSE;
 	}

@@ -40,7 +40,7 @@
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/NetPacket.h"
 
-#define CONNECTION_LATENCY_HISTORY_LENGTH 200
+#include <array>
 
 class Connection : public MemoryPoolObject
 {
@@ -82,6 +82,10 @@ public:
 
 protected:
 	void doRetryMetrics();
+	UnsignedInt sendDueCommands(time_t curtime);
+	NetCommandRef *removeAcknowledgedCommand(UnsignedShort id, UnsignedByte origin, UnsignedInt now);
+	Bool shouldSend(const NetCommandRef *ref, UnsignedInt now) const;
+	void acknowledgeFrame(const NetCommandRef *ref, UnsignedInt now);
 
 	Bool m_isQuitting;
 	UnsignedInt m_quitTime;
@@ -91,8 +95,9 @@ protected:
 
 	NetCommandList *m_netCommandList;
 	time_t m_retryTime;						///< The time between sending retry packets for this connection.  Time is in milliseconds.
-	Real m_averageLatency;			///< The average time between sending a command and receiving an ACK.
-	Real m_latencies[CONNECTION_LATENCY_HISTORY_LENGTH];	///< List of the last 100 latencies.
+	// Each connection is one delivery hop. The packet router forwards frames from multiple originators.
+	std::array<std::array<UnsignedInt, 3>, MAX_SLOTS> m_latestFrameAcks{};
+	Real m_frameAckMs = 0;
 
 	time_t m_frameGrouping;				///< The minimum time between packet sends.
 	time_t m_lastTimeSent;				///< The time of the last packet send.
