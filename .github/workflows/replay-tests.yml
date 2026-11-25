@@ -242,13 +242,35 @@ jobs:
         env:
           PLATFORM: ${{ inputs.platform }}
           MACOS_RUNNER: ${{ inputs.macos-runner }}
+          TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
-            echo "✅ Reusing verified /tmp/cached-assets on local-mac"
-            exit 0
-          fi
           # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
-          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          resolve_remote_rev() {
+            local remote_url="$1"
+            local rev=""
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              rev="$(git ls-remote --heads "$remote_url" "refs/heads/$TARGET_BRANCH" 2>/dev/null | awk 'NR==1 {print $1}')"
+            fi
+            if [ -z "$rev" ]; then
+              rev="$(git ls-remote --heads "$remote_url" "refs/heads/main" 2>/dev/null | awk 'NR==1 {print $1}')"
+            fi
+            printf '%s' "$rev"
+          }
+
+          RESOLVED_REV=""
+          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
+            RESOLVED_REV="$(resolve_remote_rev https://gitlab.com/fbraz3/generalsx-test-files.git)"
+            if [ -z "$RESOLVED_REV" ]; then
+              RESOLVED_REV="$(resolve_remote_rev https://github.com/generalsx-project/generalsx-test-files.git)"
+            fi
+            CACHED_REV="$(cat /tmp/cached-assets/.complete 2>/dev/null || true)"
+            if [ -n "$RESOLVED_REV" ] && [ "$CACHED_REV" = "$RESOLVED_REV" ]; then
+              echo "✅ Reusing verified /tmp/cached-assets ($RESOLVED_REV) on local-mac"
+              echo "ASSETS_CACHE_HIT=true" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          fi
+
           clone_success=true
           git clone https://gitlab.com/fbraz3/generalsx-test-files.git ci-assets-repo || clone_success=false
           if [ "$clone_success" = true ]; then
@@ -287,20 +309,17 @@ jobs:
             git lfs pull
           fi
 
+          ACTUAL_REV="$(git -C "$GITHUB_WORKSPACE/ci-assets-repo" rev-parse HEAD)"
+          echo "RESOLVED_ASSETS_REV=$ACTUAL_REV" >> "$GITHUB_ENV"
+
 
       - name: Extract game assets to cache (only on cache miss)
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        env:
-          PLATFORM: ${{ inputs.platform }}
-          MACOS_RUNNER: ${{ inputs.macos-runner }}
+        if: steps.cache-assets.outputs.cache-hit != 'true' && env.ASSETS_CACHE_HIT != 'true'
         run: |
-          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
-            exit 0
-          fi
           rm -rf /tmp/cached-assets-staging /tmp/cached-assets
           mkdir -p /tmp/cached-assets-staging
           7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets-staging" -y
-          touch /tmp/cached-assets-staging/.complete
+          printf '%s\n' "${RESOLVED_ASSETS_REV:-unknown}" > /tmp/cached-assets-staging/.complete
           mv /tmp/cached-assets-staging /tmp/cached-assets
 
       - name: Install game assets (Linux)
