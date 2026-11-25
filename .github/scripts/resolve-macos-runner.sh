@@ -35,7 +35,7 @@ except Exception:
 ' 2>/dev/null || true)"
     fi
 
-    PARSED="$(printf '%s' "$PARSED" | tr -d '[:space:]')"
+    PARSED="$(printf '%s' "$PARSED" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     if [ "$PARSED" = "local" ]; then
       SELECTED="local"
     fi

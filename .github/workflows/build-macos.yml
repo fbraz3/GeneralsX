@@ -184,7 +184,7 @@ jobs:
       - name: Install Vulkan SDK
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
-          if [ -f "$HOME/VulkanSDK/1.4.341.1/macOS/lib/libMoltenVK.dylib" ]; then
+          if [ -f "$HOME/VulkanSDK/1.4.341.1/macOS/lib/libMoltenVK.dylib" ] && [ -f "$HOME/VulkanSDK/1.4.341.1/macOS/lib/libvulkan.dylib" ] && [ -f "$HOME/VulkanSDK/1.4.341.1/macOS/include/vulkan/vulkan.h" ]; then
             echo "✅ Complete Vulkan SDK already present at $HOME/VulkanSDK/1.4.341.1/macOS, skipping install."
             exit 0
           fi

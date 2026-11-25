@@ -239,9 +239,12 @@ jobs:
 
       - name: Clone game assets repo (GitLab with GitHub fallback)
         if: steps.cache-assets.outputs.cache-hit != 'true'
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          MACOS_RUNNER: ${{ inputs.macos-runner }}
         run: |
-          if [ "${{ inputs.platform }}" = "macos" ] && [ "${{ inputs.macos-runner }}" = "local" ] && [ -d /tmp/cached-assets ] && [ -n "$(ls -A /tmp/cached-assets 2>/dev/null)" ]; then
-            echo "✅ Reusing existing /tmp/cached-assets on local-mac"
+          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
+            echo "✅ Reusing verified /tmp/cached-assets on local-mac"
             exit 0
           fi
           # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
@@ -287,12 +290,18 @@ jobs:
 
       - name: Extract game assets to cache (only on cache miss)
         if: steps.cache-assets.outputs.cache-hit != 'true'
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          MACOS_RUNNER: ${{ inputs.macos-runner }}
         run: |
-          if [ "${{ inputs.platform }}" = "macos" ] && [ "${{ inputs.macos-runner }}" = "local" ] && [ -d /tmp/cached-assets ] && [ -n "$(ls -A /tmp/cached-assets 2>/dev/null)" ]; then
+          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
             exit 0
           fi
-          mkdir -p /tmp/cached-assets
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets" -y
+          rm -rf /tmp/cached-assets-staging /tmp/cached-assets
+          mkdir -p /tmp/cached-assets-staging
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets-staging" -y
+          touch /tmp/cached-assets-staging/.complete
+          mv /tmp/cached-assets-staging /tmp/cached-assets
 
       - name: Install game assets (Linux)
         if: inputs.platform == 'linux'
@@ -398,6 +407,7 @@ jobs:
           USER_DATA="$HOME/Library/Application Support/GeneralsX/GeneralsZH"
           MAPS_DIR="$USER_DATA/Maps"
           REPLAYS_DIR="$USER_DATA/Replays"
+          rm -rf "$MAPS_DIR" "$REPLAYS_DIR"
           mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
 
           # Install custom maps (includes MapCache.ini)
