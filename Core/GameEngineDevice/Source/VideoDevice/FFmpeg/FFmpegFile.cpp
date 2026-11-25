@@ -176,6 +176,7 @@ int FFmpegFile::readPacket(void *opaque, uint8_t *buf, int buf_size)
 	return read;
 }
 
+// GeneralsX @bugfix Codex 25/11/2026 Keep FFmpeg seeks within the music file, including entries in BIG archives.
 int64_t FFmpegFile::seekPacket(void *opaque, int64_t offset, int whence)
 {
 	File *file = static_cast<File *>(opaque);
@@ -190,6 +191,7 @@ int64_t FFmpegFile::seekPacket(void *opaque, int64_t offset, int whence)
 	return file->seek(base + static_cast<Int>(offset), File::START);
 }
 
+// GeneralsX @bugfix Codex 25/11/2026 Restart the selected audio stream at its first timestamp for the next loop.
 Bool FFmpegFile::rewind()
 {
 	if (m_loopingAudioIndex < 0) {
@@ -248,10 +250,10 @@ Bool FFmpegFile::decodePacket(Bool *endOfInput)
 		*endOfInput = false;
 	}
 	if (result < 0) {
+		// GeneralsX @bugfix Codex 25/11/2026 Drain delayed audio frames at EOF so the loop includes the end of the track.
 		if (result == AVERROR_EOF && endOfInput) {
 			*endOfInput = true;
 			if (m_loopingAudioIndex >= 0) {
-				// Some audio codecs retain the last frames until they receive a flush packet.
 				FFmpegStream &stream = m_streams[m_loopingAudioIndex];
 				*endOfInput = decodeFrames(stream, nullptr);
 			}

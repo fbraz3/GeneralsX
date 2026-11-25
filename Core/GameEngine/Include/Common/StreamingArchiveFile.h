@@ -81,6 +81,7 @@ class StreamingArchiveFile : public RAMFile
 	public:
 
 		StreamingArchiveFile();
+		// GeneralsX @feature Codex 25/11/2026 Open an archive entry with a file handle owned by this reader.
 		Bool openIndependent(const Char *archivePath, const AsciiString &filename, Int offset, Int size);
 		//virtual				~StreamingArchiveFile();
 

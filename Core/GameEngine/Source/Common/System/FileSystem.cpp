@@ -208,6 +208,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 {
 	USE_PERF_TIMER(FileSystem)
 	File *file = nullptr;
+	// GeneralsX @feature Codex 25/11/2026 Reject write modes before looking up a loose file or archive entry.
 	if (!File::isValidIndependentStreamAccess(access)) return nullptr;
 
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
@@ -270,6 +271,7 @@ File*		FileSystem::openFile( const Char *filename, Int access, size_t bufferSize
 	{
 		// Non-mod (ordinary) archives fallback if mod overrides were active, or all archives if not.
 		ArchiveFileSystem::ArchiveFilter filter = hasModOverride ? ArchiveFileSystem::ARCHIVE_FILTER_NON_MOD_ONLY : ArchiveFileSystem::ARCHIVE_FILTER_ALL;
+		// GeneralsX @feature Codex 25/11/2026 Preserve the private cursor request when falling back to an archive.
 		file = TheArchiveFileSystem->openFile( filename, access & File::INDEPENDENT_STREAM, remainingInstance, filter );
 	}
 

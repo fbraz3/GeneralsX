@@ -113,8 +113,10 @@ class File : public MemoryPoolObject
 			// NOTE: accesses file with full buffering if neither LINEBUF and FULLBUF are set
 			LINEBUF   = 0x00000200,				///< Access file with line buffering
 			FULLBUF   = 0x00000400,				///< Access file with full buffering
+			// GeneralsX @feature Codex 25/11/2026 Allow background readers to seek without moving another reader's cursor.
 			INDEPENDENT_STREAM = 0x00000800,	///< Read-only stream with a private cursor, including inside an archive.
 		};
+		// GeneralsX @feature Codex 25/11/2026 Restrict independent readers to modes that cannot modify the file.
 		static Bool isValidIndependentStreamAccess(Int access) {
 			return !(access & INDEPENDENT_STREAM) || !(access & (WRITE | APPEND | CREATE | TRUNCATE | ONLYNEW));
 		}

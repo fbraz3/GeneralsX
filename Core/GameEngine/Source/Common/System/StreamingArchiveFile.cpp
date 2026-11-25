@@ -199,6 +199,7 @@ Bool StreamingArchiveFile::openFromArchive(File *archiveFile, const AsciiString&
 	return TRUE;
 }
 
+// GeneralsX @feature Codex 25/11/2026 Reopen the archive so the entry has its own seek position.
 Bool StreamingArchiveFile::openIndependent(const Char *archivePath, const AsciiString &filename, Int offset, Int size)
 {
 	if (!TheLocalFileSystem) return false;
@@ -225,6 +226,7 @@ Bool StreamingArchiveFile::openIndependent(const Char *archivePath, const AsciiS
 
 void StreamingArchiveFile::close()
 {
+	// GeneralsX @feature Codex 25/11/2026 Close the private handle and leave shared archive handles with their owner.
 	if (m_ownsFile) {
 		m_file->close();
 		m_file = nullptr;

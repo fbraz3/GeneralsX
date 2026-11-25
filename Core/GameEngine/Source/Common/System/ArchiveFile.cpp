@@ -244,6 +244,7 @@ File* ArchiveFile::openFile( const Char *filename, Int access )
 		return nullptr;
 	}
 
+	// GeneralsX @feature Codex 25/11/2026 Give the reader a private archive handle or a copy of the entry in memory.
 	if (access & File::INDEPENDENT_STREAM) {
 		if (!File::isValidIndependentStreamAccess(access)) return nullptr;
 		auto *stream = newInstance(StreamingArchiveFile);

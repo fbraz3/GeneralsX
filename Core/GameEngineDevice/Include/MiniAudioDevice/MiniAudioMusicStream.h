@@ -9,7 +9,7 @@
 #include <mutex>
 #include <thread>
 
-// One decoder writes this ring. The miniaudio mixer reads it without waiting for the decoder.
+// GeneralsX @bugfix Codex 25/11/2026 Decode music on a worker to prevent track changes from stalling the game thread.
 class MiniAudioMusicStream
 {
 public:
