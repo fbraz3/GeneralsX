@@ -29,6 +29,13 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include <cstdint>
+#include <set>
+
+#include "PlatformPaths.h"
+#include "Lib/PathUtil.h"
+
+static std::set<std::string> s_failedMapLookups;
 
 #include "Common/crc.h"
 #include "Common/FileSystem.h"
@@ -454,6 +461,14 @@ void MapCache::updateCache()
 		m_doLoadStandardMapCacheINI = TRUE;
 	}
 
+	s_failedMapLookups.clear();
+	// GeneralsX @feature fbraz3 03/09/2026 Check extra platform user map directories (e.g. Documents on macOS/Linux)
+	for (const auto& extraDir : Platform::GetExtraUserMapDirectories(false))
+	{
+		AsciiString docMaps(extraDir.c_str());
+		loadMapsFromDisk(docMaps, FALSE);
+	}
+
 	// Load standard maps from map cache last.
 	// This overwrites matching user maps to prevent munkees getting rowdy :)
 	if (m_doLoadStandardMapCacheINI)
@@ -578,8 +593,21 @@ Bool MapCache::loadMapsFromDisk( const AsciiString &mapDir, Bool isOfficial, Boo
 	return mapListChanged;
 }
 
+static AsciiString buildMapStringFilePath(const AsciiString &fname)
+{
+	const char *stringFileSeparator = getLastPathSeparator(fname.str());
+	if (stringFileSeparator != nullptr)
+	{
+		AsciiString stringFileName;
+		stringFileName.set(fname.str(), static_cast<Int>(stringFileSeparator - fname.str()));
+		stringFileName.concat(*stringFileSeparator == '/' ? "/map.str" : "\\map.str");
+		return stringFileName;
+	}
+	return AsciiString("map.str");
+}
+
 Bool MapCache::addMap(
-	const AsciiString &mapDir,
+	const AsciiString &/*mapDir*/,
 	const AsciiString &fname,
 	const AsciiString &lowerFname,
 	FileInfo &fileInfo,
@@ -610,6 +638,8 @@ Bool MapCache::addMap(
 			else
 			{
 				// official maps with name tags
+				// GeneralsX @bugfix fbraz3 23/11/2026 Load map-local map.str before fetching cached name tag, then reset
+				TheGameText->initMapStringFile(buildMapStringFilePath(fname));
 				(*this)[lowerFname].m_displayName = TheGameText->fetch(md.m_nameLookupTag);
 				if (md.m_numPlayers >= 2)
 				{
@@ -617,6 +647,7 @@ Bool MapCache::addMap(
 					extension.format(L" (%d)", md.m_numPlayers);
 					(*this)[lowerFname].m_displayName.concat(extension);
 				}
+				TheGameText->reset();
 			}
 
 			it->second.m_doesExist = TRUE;
@@ -669,11 +700,8 @@ Bool MapCache::addMap(
 	}
 	else
 	{
-		AsciiString stringFileName;
-		stringFileName.format("%s\\%s", mapDir.str(), fname.str());
-		stringFileName.truncateBy(4);
-		stringFileName.concat("\\map.str");
-		TheGameText->initMapStringFile(stringFileName);
+		// GeneralsX @bugfix fbraz3 23/11/2026 Build map.str from the map's parent directory while preserving separator style
+		TheGameText->initMapStringFile(buildMapStringFilePath(fname));
 		md.m_displayName = TheGameText->fetch(nameLookupTag);
 		if (md.m_numPlayers >= 2)
 		{
@@ -778,6 +806,7 @@ struct MapListBoxData
 	AsciiString mapToSelect;
 	Int selectionIndex;
 	Bool isMultiplayer;
+	std::vector<AsciiString> extraMapDirs;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -787,7 +816,20 @@ static Bool addMapToMapListbox(
 	const AsciiString& mapName,
 	const MapMetaData& mapMetaData)
 {
-	const Bool mapOk = mapName.startsWithNoCase(mapDir.str()) && lbData.isMultiplayer == mapMetaData.m_isMultiplayer && !mapMetaData.m_displayName.isEmpty();
+	// GeneralsX @bugfix fbraz3 23/11/2026 Include extra platform user map directories (e.g. Documents/Maps) in custom-map filtering
+	Bool matchesDir = mapName.startsWithNoCase(mapDir.str());
+	if (!matchesDir)
+	{
+		for (const auto& extraDir : lbData.extraMapDirs)
+		{
+			if (mapName.startsWithNoCase(extraDir.str()))
+			{
+				matchesDir = TRUE;
+				break;
+			}
+		}
+	}
+	const Bool mapOk = matchesDir && lbData.isMultiplayer == mapMetaData.m_isMultiplayer && !mapMetaData.m_displayName.isEmpty();
 
 	if (mapOk)
 	{
@@ -847,13 +889,23 @@ static Bool addMapToMapListbox(
 
 		if (lbData.numColumns > 1)
 		{
-			GadgetListBoxSetItemData( lbData.listbox, (void *)imageItemData, index, 1 );
+			GadgetListBoxSetItemData( lbData.listbox, reinterpret_cast<void*>(std::uintptr_t(imageItemData)), index, 1 );
 		}
 
-		// TheSuperHackers @performance Now stops processing when the list is full.
-		if (index == lbData.numLength - 1)
+		// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Grow the listbox instead of truncating the custom map list when it fills up.
+		// >= instead of == guards against future refactors that add entries in batches or non-sequential order.
+		if (index >= lbData.numLength - 1)
 		{
-			return false;
+			const Int newLength = lbData.numLength * 2;
+			GadgetListBoxSetListLength( lbData.listbox, newLength );
+
+			// GeneralsX @bugfix UnicodeApocalypse 10/09/2026 Bail out if the resize failed (e.g. allocation failure) instead of assuming growth succeeded.
+			if (GadgetListBoxGetListLength( lbData.listbox ) != newLength)
+			{
+				return false;
+			}
+
+			lbData.numLength = newLength;
 		}
 	}
 
@@ -945,6 +997,13 @@ Int populateMapListboxNoReset( GameWindow *listbox, Bool useSystemMaps, Bool isM
 	{
 		mapDir = TheGlobalData->getPath_UserData();
 		mapDir.concat(TheMapCache->getMapDir());
+		for (const auto& dir : Platform::GetExtraUserMapDirectories(false))
+		{
+			AsciiString extraDir(dir.c_str());
+			FileSystem::ensureTrailingPathSeparatorInPath(extraDir);
+			extraDir.toLower();
+			lbData.extraMapDirs.push_back(extraDir);
+		}
 	}
 	mapDir.toLower();
 
@@ -1083,11 +1142,134 @@ Bool isOfficialMap( AsciiString mapName )
 
 const MapMetaData *MapCache::findMap(AsciiString mapName)
 {
-	mapName.toLower();
-	MapCache::iterator it = find(mapName);
-	if (it == end())
+	// GeneralsX @bugfix fbraz3 22/11/2026 Normalize map cache keys and fallback to POSIX custom map folders (restored after 1.0.8 upstream merge)
+	if (mapName.isEmpty())
 		return nullptr;
-	return &(it->second);
+
+	auto normalizePath = [](const std::string& input) -> std::string {
+		std::string s = input;
+		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+		for (char &c : s) {
+			if (c == '\\') c = '/';
+		}
+		while (s.length() > 1 && s.back() == '/') s.pop_back();
+		return s;
+	};
+
+	auto extractBaseLeaf = [](const std::string& normalized) -> std::string {
+		size_t lastSlash = normalized.find_last_of('/');
+		std::string base = (lastSlash != std::string::npos) ? normalized.substr(lastSlash + 1) : normalized;
+		if (base.length() > 4 && base.substr(base.length() - 4) == ".map") {
+			base = base.substr(0, base.length() - 4);
+		}
+		return base;
+	};
+
+	std::string normQuery = normalizePath(mapName.str());
+	std::string baseQuery = extractBaseLeaf(normQuery);
+
+	// Direct lookup with exact key or normalized keys
+	MapCache::iterator it = find(mapName);
+	if (it != end()) return &(it->second);
+
+	it = find(AsciiString(normQuery.c_str()));
+	if (it != end()) return &(it->second);
+
+	std::string normBackslash = normQuery;
+	for (char &c : normBackslash) { if (c == '/') c = '\\'; }
+	it = find(AsciiString(normBackslash.c_str()));
+	if (it != end()) return &(it->second);
+
+	// Comprehensive iterate fallback matching
+	const bool isUnqualifiedQuery = (normQuery.find('/') == std::string::npos);
+	const MapRootType queryRoot = getMapRootType(normQuery);
+	auto hasCompatibleRoot = [&](const std::string& candidateNorm) -> bool {
+		const MapRootType candidateRoot = getMapRootType(candidateNorm);
+		return !((queryRoot == MapRootType::STOCK && candidateRoot == MapRootType::USER) ||
+		         (queryRoot == MapRootType::USER && candidateRoot == MapRootType::STOCK));
+	};
+	auto endsWithPathComponent = [](const std::string& full, const std::string& suffix) -> bool {
+		if (suffix.empty() || full.length() < suffix.length())
+			return false;
+		const size_t offset = full.length() - suffix.length();
+		if (full.compare(offset, suffix.length(), suffix) != 0)
+			return false;
+		return offset == 0 || full[offset - 1] == '/';
+	};
+
+	for (it = begin(); it != end(); ++it)
+	{
+		AsciiString asciiDisplay;
+		asciiDisplay.translate(it->second.m_displayName);
+		std::string normDisplay = normalizePath(asciiDisplay.str());
+		if (normDisplay == normQuery || (isUnqualifiedQuery && !baseQuery.empty() && normDisplay == baseQuery))
+			return &(it->second);
+
+		std::string normKey = normalizePath(it->first.str());
+		std::string baseKey = extractBaseLeaf(normKey);
+		if (hasCompatibleRoot(normKey) && (
+			normKey == normQuery ||
+			endsWithPathComponent(normKey, normQuery) ||
+			endsWithPathComponent(normQuery, normKey)))
+		{
+			return &(it->second);
+		}
+
+		std::string normFn = normalizePath(it->second.m_fileName.str());
+		std::string baseFn = extractBaseLeaf(normFn);
+		if (!normFn.empty() && hasCompatibleRoot(normFn) && (
+			normFn == normQuery ||
+			endsWithPathComponent(normFn, normQuery) ||
+			endsWithPathComponent(normQuery, normFn)))
+		{
+			return &(it->second);
+		}
+
+		if (isUnqualifiedQuery && !baseQuery.empty() && (baseKey == baseQuery || baseFn == baseQuery))
+		{
+			return &(it->second);
+		}
+	}
+
+	// Fallback 2: Check platform extra custom map folders if not in cache
+	if (!baseQuery.empty() && s_failedMapLookups.find(normQuery) == s_failedMapLookups.end())
+	{
+		std::string matchedDir;
+		const std::string foundPath = Platform::FindCustomMapByStem(
+			baseQuery,
+			matchedDir,
+			[&](const std::string& candidatePath) -> bool {
+				const std::string normCandidate = normalizePath(candidatePath);
+				if (!hasCompatibleRoot(normCandidate))
+					return false;
+				if (isUnqualifiedQuery)
+					return true;
+				return normCandidate == normQuery ||
+					endsWithPathComponent(normCandidate, normQuery) ||
+					endsWithPathComponent(normQuery, normCandidate);
+			});
+		if (!foundPath.empty())
+		{
+			FileInfo fileInfo;
+			AsciiString fullPath(foundPath.c_str());
+			AsciiString fullPathLower = fullPath;
+			fullPathLower.toLower();
+			if (TheFileSystem->getFileInfo(fullPath, &fileInfo))
+			{
+				AsciiString mapDir(matchedDir.c_str());
+				addMap(mapDir, fullPath, fullPathLower, fileInfo, FALSE);
+				MapCache::iterator foundIt = find(fullPathLower);
+				if (foundIt != end()) return &(foundIt->second);
+				for (MapCache::iterator fit = begin(); fit != end(); ++fit) {
+					if (fit->second.m_fileName == fullPath) return &(fit->second);
+				}
+			}
+		}
+
+		s_failedMapLookups.insert(normQuery);
+	}
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1139,11 +1321,13 @@ Image *getMapPreviewImage( AsciiString mapName )
 	name = tgaName;
 	tgaName.concat(".tga");
 
-	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(name);
+	// GeneralsX @bugfix fbraz3 24/11/2026 Key preview images by normalized physical path so maps with identical names in different roots do not collide
+	AsciiString physicalKey = name;
+	physicalKey.toLower();
 	tempName.set(AsciiString::TheEmptyString);
-	for(Int i = 0; i < portableName.getLength(); ++i)
+	for(Int i = 0; i < physicalKey.getLength(); ++i)
 	{
-		char c = portableName.getCharAt(i);
+		char c = physicalKey.getCharAt(i);
 		if (isPathSeparator(c) || c == ':')
 			tempName.concat('_');
 		else
