@@ -138,6 +138,10 @@ Categorize each finding:
    gh api repos/:owner/:repo/pulls/"$PR_NUMBER"/comments/<COMMENT_ID>/replies \
      -f body="<Concise technical rationale why this suggestion is not applicable to this codebase architecture>"
    ```
+3. For **outside-diff-range comments** (which GitHub does not allow replying to inline because they sit outside the PR diff hunks and have no inline review thread), post a PR comment tagging `@coderabbitai`, citing the review ID, target file/line, commit SHA (or rebuttal), and concise technical rationale:
+   ```bash
+   gh pr comment "$PR_NUMBER" --body "@coderabbitai Addressed outside-diff finding from review <REVIEW_ID> (<path>:<line>) in <short_sha> (posted here because GitHub does not support inline replies outside diff hunks). <Concise technical description>"
+   ```
 
 ---
 

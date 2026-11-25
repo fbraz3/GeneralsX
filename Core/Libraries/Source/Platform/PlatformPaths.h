@@ -22,10 +22,15 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 #if defined(_WIN32)
 #include <io.h>
@@ -367,5 +372,77 @@ inline bool FindLocalFontFileW(const wchar_t *const *candidates, int candidateCo
 	return false;
 }
 #endif
+
+// GeneralsX @refactor fbraz3 23/11/2026 Isolate POSIX custom-map directory discovery and non-throwing traversal in Platform layer
+inline std::vector<std::string> GetExtraUserMapDirectories(bool includeUserDataFallback)
+{
+	std::vector<std::string> dirs;
+#if !defined(_WIN32)
+	const char *homeDir = getenv("HOME");
+	if (!homeDir || homeDir[0] == '\0') {
+		return dirs;
+	}
+
+	std::vector<std::string> candidates;
+	if (includeUserDataFallback) {
+		candidates.push_back(std::string(homeDir) + "/Library/Application Support/GeneralsX/GeneralsZH/Maps");
+	}
+	candidates.push_back(std::string(homeDir) + "/Documents/Command and Conquer Generals Zero Hour Data/Maps");
+	candidates.push_back(std::string(homeDir) + "/Documents/Command & Conquer Generals Zero Hour Data/Maps");
+
+	for (const auto &dir : candidates) {
+		std::error_code ec;
+		if (std::filesystem::exists(dir, ec) && std::filesystem::is_directory(dir, ec)) {
+			dirs.push_back(dir);
+		}
+	}
+#else
+	(void)includeUserDataFallback;
+#endif
+	return dirs;
+}
+
+// GeneralsX @bugfix fbraz3 23/11/2026 Use non-throwing recursive_directory_iterator::increment(error_code&) for custom map fallback
+template <typename Predicate>
+inline std::string FindCustomMapByStem(const std::string &baseQueryLower, std::string &outMapDir, Predicate &&acceptCandidate)
+{
+	outMapDir.clear();
+#if !defined(_WIN32)
+	if (baseQueryLower.empty()) {
+		return std::string();
+	}
+
+	const std::vector<std::string> searchDirs = GetExtraUserMapDirectories(true);
+	for (const auto &sdir : searchDirs) {
+		std::error_code traversalEc;
+		std::filesystem::recursive_directory_iterator dirIt(
+			sdir,
+			std::filesystem::directory_options::skip_permission_denied,
+			traversalEc);
+		const std::filesystem::recursive_directory_iterator dirEnd;
+
+		for (; !traversalEc && dirIt != dirEnd; dirIt.increment(traversalEc)) {
+			std::error_code ec;
+			const auto &entry = *dirIt;
+			if (entry.is_regular_file(ec) && entry.path().extension() == ".map") {
+				std::string candidateStem = entry.path().stem().string();
+				std::transform(candidateStem.begin(), candidateStem.end(), candidateStem.begin(),
+					[](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+				if (candidateStem == baseQueryLower) {
+					const std::string candidatePath = entry.path().string();
+					if (acceptCandidate(candidatePath)) {
+						outMapDir = sdir;
+						return candidatePath;
+					}
+				}
+			}
+		}
+	}
+#else
+	(void)baseQueryLower;
+	(void)acceptCandidate;
+#endif
+	return std::string();
+}
 
 } // namespace Platform
