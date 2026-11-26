@@ -10,12 +10,14 @@ if(WIN32)
     target_link_libraries(g_generals PRIVATE
         deps_bink
         comctl32
-        dinput8
         dxguid
         imm32
         vfw32
         winmm
     )
+    if(NOT SAGE_USE_SDL3)
+        target_link_libraries(g_generals PRIVATE dinput8)
+    endif()
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         target_link_libraries(g_generals PRIVATE d3d8)
     endif()

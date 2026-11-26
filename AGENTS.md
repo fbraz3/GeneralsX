@@ -261,7 +261,7 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 ```
 
 ## Build Presets Reference
-- **win64** – MSVC x64, RelWithDebInfo, MiniAudio + FFmpeg + NGMP + DXVK/d3d8to9 (PRIMARY WINDOWS; **win64-debug** for Debug)
+- **win64** – MSVC x64, RelWithDebInfo, SDL3 + MiniAudio + FFmpeg + NGMP + DXVK/d3d8to9 (PRIMARY WINDOWS; **win64-debug** for Debug)
 - **linux64-deploy** – GCC/Clang x86_64, Release (PRIMARY LINUX)
 - **linux64-testing** – Debug variant
 - **macos-vulkan** – macOS ARM64, RelWithDebInfo (PRIMARY MACOS)

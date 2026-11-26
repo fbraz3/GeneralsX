@@ -24,6 +24,15 @@ if (-not (Get-Command ninja.exe -ErrorAction SilentlyContinue)) {
         $env:PATH = "$($ninjaMatch.DirectoryName);$env:PATH"
     }
 }
+if (-not (Get-Command sccache.exe -ErrorAction SilentlyContinue) -and -not (Get-Command ccache.exe -ErrorAction SilentlyContinue)) {
+    $cacheMatch = Get-ChildItem (Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages\Mozilla.sccache*") -Filter "sccache.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $cacheMatch) {
+        $cacheMatch = Get-ChildItem (Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages\Ccache.Ccache*") -Filter "ccache.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    }
+    if ($cacheMatch) {
+        $env:PATH = "$($cacheMatch.DirectoryName);$env:PATH"
+    }
+}
 
 $preferredVcpkgRoot = if ($env:VCPKG_ROOT) { $env:VCPKG_ROOT } elseif (Test-Path "C:\vcpkg\vcpkg.exe") { "C:\vcpkg" } else { "" }
 

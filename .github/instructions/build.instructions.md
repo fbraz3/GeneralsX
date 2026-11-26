@@ -5,7 +5,7 @@ applyTo: 'cmake/**,CMakeLists.txt,CMakePresets.json'
 ## Build Presets
 
 ### Cross-Platform Active Targets
-- **`win64`** — MSVC x64 (`RelWithDebInfo`), MiniAudio + FFmpeg + NGMP + DXVK 2.6 x64 / static `d3d8to9` fallback — **PRIMARY WINDOWS**
+- **`win64`** — MSVC x64 (`RelWithDebInfo`), SDL3 + MiniAudio + FFmpeg + NGMP + DXVK 2.6 x64 / static `d3d8to9` fallback — **PRIMARY WINDOWS**
 - **`win64-debug`** — MSVC x64 (`Debug`) variant
 - **`linux64-deploy`** — GCC/Clang x86_64, Release — **PRIMARY LINUX**
 - **`linux64-testing`** — Linux debug variant

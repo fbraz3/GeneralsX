@@ -143,6 +143,17 @@ jobs:
             Copy-Item $_.FullName ci-artifacts/
           }
 
+          foreach ($sdlDll in @("SDL3.dll", "SDL3_image.dll")) {
+            $found = Get-ChildItem -Path "build/win64" -Filter $sdlDll -Recurse -ErrorAction SilentlyContinue |
+              Sort-Object { if ($_.FullName -match "RelWithDebInfo") { 0 } else { 1 } } |
+              Select-Object -First 1
+            if ($found) {
+              Write-Host "Collecting SDL3 DLL: $($found.FullName)"
+              Copy-Item $found.FullName artifacts/
+              Copy-Item $found.FullName ci-artifacts/
+            }
+          }
+
           if (Test-Path "assets/fonts") {
             if (-not (Test-Path "assets/fonts/LICENSE.liberation") -or -not (Test-Path "assets/fonts/LICENSE.fontawesome")) {
               throw "Missing required font license files in assets/fonts"
@@ -193,6 +204,9 @@ jobs:
               throw "DXVK $($pair.Name) SHA256 mismatch: expected $($pair.Hash), got $actual"
             }
             Copy-Item $dllPath (Join-Path "artifacts" $pair.Name)
+          }
+          if (Test-Path "resources/dxvk/dxvk.conf") {
+            Copy-Item "resources/dxvk/dxvk.conf" "artifacts/dxvk.conf"
           }
 
           @"

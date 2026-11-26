@@ -77,8 +77,8 @@
 IMEManagerInterface *TheIMEManager = nullptr;
 
 // GeneralsX @build BenderAI 12/02/2026 Windows-specific IME (Input Method Editor) for CJK text input
-// Linux handles IME via system-level services (ibus, fcitx) through SDL text input APIs
-#ifdef _WIN32
+// SDL3 builds handle text input via SDL_StartTextInput + SDL_EVENT_TEXT_INPUT
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 
 extern HWND ApplicationHWnd;  ///< our application window handle
 extern Int	IMECandidateWindowLineSpacing;

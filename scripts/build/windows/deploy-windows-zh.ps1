@@ -64,6 +64,31 @@ foreach ($binDir in @(
     }
 }
 
+# Stage SDL3.dll and SDL3_image.dll when SAGE_USE_SDL3=ON
+$cacheFile = Join-Path $BuildDir "CMakeCache.txt"
+$sdlEnabled = (Test-Path $cacheFile) -and ($null -ne (Select-String -Path $cacheFile -Pattern "^SAGE_USE_SDL3:BOOL=ON$"))
+if ($sdlEnabled) {
+    foreach ($sdlDll in @("SDL3.dll", "SDL3_image.dll")) {
+        $candidates = @(
+            (Join-Path $BuildDir "_deps\sdl3-build\$Config\$sdlDll"),
+            (Join-Path $BuildDir "_deps\sdl3_image-build\$Config\$sdlDll"),
+            (Join-Path $BuildDir "$Folder\$Config\$sdlDll"),
+            (Join-Path $BuildDir "$Config\$sdlDll")
+        )
+        $srcDll = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if (-not $srcDll) {
+            $found = Get-ChildItem -Path $BuildDir -Filter $sdlDll -Recurse -ErrorAction SilentlyContinue |
+                Sort-Object { if ($_.FullName -match [regex]::Escape("\$Config\")) { 0 } else { 1 } } |
+                Select-Object -First 1
+            if ($found) { $srcDll = $found.FullName }
+        }
+        if (-not $srcDll) {
+            throw "SAGE_USE_SDL3 is ON but $sdlDll was not found under $BuildDir"
+        }
+        Copy-Item -Force $srcDll (Join-Path $Destination $sdlDll)
+    }
+}
+
 if (-not $SkipDxvk) {
     $PinsPath = Join-Path $PSScriptRoot "dxvk\dxvk-win64.pins"
     $Pins = @{}
@@ -100,6 +125,11 @@ if (-not $SkipDxvk) {
             throw "SHA256 mismatch for $($pair.Name): expected $($pair.Hash), got $actual"
         }
         Copy-Item -Force $src (Join-Path $Destination $pair.Name)
+    }
+
+    $DxvkConf = Join-Path $RepoRoot "resources\dxvk\dxvk.conf"
+    if (Test-Path $DxvkConf) {
+        Copy-Item -Force $DxvkConf (Join-Path $Destination "dxvk.conf")
     }
 }
 

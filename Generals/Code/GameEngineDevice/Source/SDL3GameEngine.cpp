@@ -26,9 +26,11 @@
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz 26/11/2026 Enable SDL3 windowing and input on Windows builds
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 
 #include "SDL3GameEngine.h"
+#include "NullAudioDevice/NullAudioManager.h"
 #include "Common/GameAudio.h"
 // GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
 #ifdef SAGE_USE_MINIAUDIO
@@ -54,7 +56,9 @@
 #include "Common/BIGFileSystem.h"
 #include "Common/GlobalData.h"
 #include <SDL3/SDL.h>
+#ifndef _WIN32
 #include <SDL3/SDL_vulkan.h>
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -568,8 +572,11 @@ ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
  */
 AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
-	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
+	if (dummy || (TheGlobalData && !TheGlobalData->m_audioOn)) {
+		fprintf(stderr, "INFO: Using NullAudioManager audio backend\n");
+		return NEW NullAudioManager;
+	}
 
 #ifdef SAGE_USE_MINIAUDIO
 	fprintf(stderr, "INFO: Creating MiniAudio audio backend\n");
@@ -578,8 +585,8 @@ AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 	fprintf(stderr, "INFO: Using OpenAL audio backend\n");
 	return NEW OpenALAudioManager;
 #else
-	fprintf(stderr, "INFO: No audio backend available - using AudioManagerDummy\n");
-	return NEW AudioManagerDummy;
+	fprintf(stderr, "INFO: No audio backend available - using NullAudioManager\n");
+	return NEW NullAudioManager;
 #endif
 }
 

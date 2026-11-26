@@ -58,8 +58,13 @@
 #include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
+#ifdef SAGE_USE_SDL3
+#include <SDL3/SDL.h>
+#include "SDL3GameEngine.h"
+#else
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
+#endif
 #include "Win32Device/Common/GXD3DBackend.h"
 #include "Win32Device/Common/GXVulkanCheck.h"
 #include "Common/OptionPreferences.h"
@@ -80,7 +85,11 @@
 // GLOBALS ////////////////////////////////////////////////////////////////////
 HINSTANCE ApplicationHInstance = nullptr;  ///< our application instance
 HWND ApplicationHWnd = nullptr;  ///< our application window handle
+#ifdef SAGE_USE_SDL3
+SDL_Window* TheSDL3Window = nullptr;  ///< SDL3 window when SAGE_USE_SDL3 is active
+#else
 Win32Mouse *TheWin32Mouse = nullptr;  ///< for the WndProc() only
+#endif
 DWORD TheMessageTime = 0;	///< For getting the time that a message was posted from Windows.
 
 const Char *g_strFile = "data\\Generals.str";
@@ -295,6 +304,70 @@ static const char *messageToString(unsigned int message)
 }
 #endif
 
+#ifdef SAGE_USE_SDL3
+// GeneralsX @feature fbraz 26/11/2026 Create SDL3 window on Windows and extract native HWND for DXVK/d3d8to9
+static Bool initializeSDL3Window( HINSTANCE hInstance, const char *title )
+{
+	if ( !SDL_InitSubSystem( SDL_INIT_VIDEO ) )
+	{
+		fprintf( stderr, "FATAL: SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError() );
+		return false;
+	}
+
+	TheSDL3Window = SDL_CreateWindow( title, 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN );
+	if ( !TheSDL3Window )
+	{
+		fprintf( stderr, "FATAL: SDL_CreateWindow failed: %s\n", SDL_GetError() );
+		SDL_Quit();
+		return false;
+	}
+
+	const SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
+	if ( primaryDisplay != 0 )
+	{
+		const int centered = SDL_WINDOWPOS_CENTERED_DISPLAY( primaryDisplay );
+		if ( !SDL_SetWindowPosition( TheSDL3Window, centered, centered ) )
+		{
+			fprintf( stderr, "WARNING: SDL_SetWindowPosition(primary display) failed: %s\n", SDL_GetError() );
+		}
+	}
+
+	ApplicationHWnd = static_cast<HWND>( SDL_GetPointerProperty(
+		SDL_GetWindowProperties( TheSDL3Window ),
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+		nullptr ) );
+	if ( !ApplicationHWnd )
+	{
+		fprintf( stderr, "FATAL: Failed to extract Win32 HWND from SDL3 window\n" );
+		SDL_DestroyWindow( TheSDL3Window );
+		TheSDL3Window = nullptr;
+		SDL_Quit();
+		return false;
+	}
+
+	HICON appIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_ApplicationIcon ) );
+	if ( appIcon )
+	{
+		SendMessage( ApplicationHWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>( appIcon ) );
+		SendMessage( ApplicationHWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>( appIcon ) );
+	}
+
+	fprintf( stderr, "INFO: SDL3 window initialized cleanly (SDL_Window=%p, HWND=%p)\n",
+		static_cast<void *>( TheSDL3Window ), static_cast<void *>( ApplicationHWnd ) );
+	return true;
+}
+
+static void shutdownSDL3Window()
+{
+	if ( TheSDL3Window )
+	{
+		SDL_DestroyWindow( TheSDL3Window );
+		TheSDL3Window = nullptr;
+	}
+	ApplicationHWnd = nullptr;
+	SDL_Quit();
+}
+#else
 // WndProc ====================================================================
 /** Window Procedure */
 //=============================================================================
@@ -774,6 +847,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	return true;  // success
 
 }
+#endif // !SAGE_USE_SDL3
 
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4;
@@ -1027,10 +1101,17 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 		// register windows class and create application window
+#ifdef SAGE_USE_SDL3
+		if(!TheGlobalData->m_headless && initializeSDL3Window(hInstance, "Command and Conquer Generals Zero Hour") == false)
+		{
+			return exitcode;
+		}
+#else
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 		{
 			return exitcode;
 		}
+#endif
 
 		// save our application instance for future use
 		ApplicationHInstance = hInstance;
@@ -1064,6 +1145,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 
 			DEBUG_LOG(("Generals is already running...Bail!"));
+#ifdef SAGE_USE_SDL3
+			shutdownSDL3Window();
+#endif
 			delete TheVersion;
 			TheVersion = nullptr;
 			shutdownMemoryManager();
@@ -1075,6 +1159,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		if (!TheGlobalData->m_headless && !gxPickD3D())
 		{
+#ifdef SAGE_USE_SDL3
+			shutdownSDL3Window();
+#endif
 			delete TheVersion;
 			TheVersion = nullptr;
 			shutdownMemoryManager();
@@ -1083,6 +1170,10 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// run the game main loop
 		exitcode = GameMain();
+
+#ifdef SAGE_USE_SDL3
+		shutdownSDL3Window();
+#endif
 
 		delete TheVersion;
 		TheVersion = nullptr;
@@ -1120,6 +1211,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //=============================================================================
 GameEngine *CreateGameEngine()
 {
+#ifdef SAGE_USE_SDL3
+	return NEW SDL3GameEngine();
+#else
 	Win32GameEngine *engine;
 
 	engine = NEW Win32GameEngine;
@@ -1128,5 +1222,5 @@ GameEngine *CreateGameEngine()
 	engine->setIsActive(isWinMainActive);
 
 	return engine;
-
+#endif
 }

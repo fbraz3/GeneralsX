@@ -26,7 +26,8 @@
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz 26/11/2026 Enable SDL3 windowing and input on Windows builds
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 
 #include "SDL3GameEngine.h"
 #include "NullAudioDevice/NullAudioManager.h"
@@ -66,7 +67,9 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include <SDL3/SDL.h>
+#ifndef _WIN32
 #include <SDL3/SDL_vulkan.h>
+#endif
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #include "WebGPUDevice/WebGPUD3D8.h"
@@ -846,9 +849,8 @@ ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
  */
 AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
-	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
-	if (TheGlobalData && !TheGlobalData->m_audioOn) {
+	if (dummy || (TheGlobalData && !TheGlobalData->m_audioOn)) {
 		fprintf(stderr, "INFO: Creating NullAudio audio backend\n");
 		return new NullAudioManager();
 	}
