@@ -142,18 +142,18 @@ add_subdirectory(resources)
 
 add_subdirectory(Core)
 
-# GeneralsX @bugfix GitHubCopilot 14/04/2026 CompatLib must be configured on UNIX even when
-# only Generals (not ZH) is built. It sets up d3d8lib INTERFACE includes for DXVK headers
-# (windows_base.h) that core_wwcommon depends on transitively. When ZH is built,
+# GeneralsX @bugfix GitHubCopilot 14/04/2026 CompatLib must be configured on UNIX (and Win64) even when
+# only Generals (not ZH) is built. On UNIX it sets up d3d8lib INTERFACE includes for DXVK headers;
+# on Win64 it builds static d3dx8 and strips x86 libs from d3d8lib. When ZH is built,
 # GeneralsMD/Code/CMakeLists.txt already includes CompatLib via add_subdirectory.
-if(UNIX AND NOT RTS_BUILD_ZEROHOUR)
+if((UNIX OR (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)) AND NOT RTS_BUILD_ZEROHOUR)
     add_subdirectory(GeneralsMD/Code/CompatLib)
 endif()
 
 # SagePatch (casual QoL extras: screenshot, cursor lock, brightness, etc.)
 # Must be added before the game targets so sage_patch target exists when we
 # declare the dependency below.
-if(RTS_BUILD_OPTION_SAGE_PATCH)
+if(RTS_BUILD_OPTION_SAGE_PATCH AND SAGE_USE_SDL3)
     add_subdirectory(Patches/SagePatch)
 endif()
 

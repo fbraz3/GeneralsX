@@ -9,9 +9,9 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals Zero Hour for 
 - `Core/GameEngineDevice/Source/`
 
 ## Platform Focus
-- **Active**: Linux (`linux64-deploy`), macOS (`macos-vulkan`), WebAssembly + WebGPU (`webgpu`, `GeneralsXZH` / `z_generals`)
-- **Future/Exploratory**: Windows (MinGW path, issue #29)
-- **Legacy**: VC6 + DirectX 8 + Miles (reference only)
+- **Active**: Windows 64-bit (`win64`), Linux (`linux64-deploy`), macOS (`macos-vulkan`), WebAssembly + WebGPU (`webgpu`, `GeneralsXZH` / `z_generals`)
+- **Future/Exploratory**: Windows MinGW (`mingw-w64-i686`, issue #29)
+- **Legacy**: VC6 + DirectX 8 + Miles (replaced by `win64`, reference only)
 
 ## Architecture
 | Layer   | Technology          | Replaces                     |
@@ -261,12 +261,13 @@ printf "%s" "$body" | rg '\\n' && echo "HAS_LITERAL_BACKSLASH_N=YES" || echo "HA
 ```
 
 ## Build Presets Reference
+- **win64** – MSVC x64, RelWithDebInfo, MiniAudio + FFmpeg + NGMP + DXVK/d3d8to9 (PRIMARY WINDOWS; **win64-debug** for Debug)
 - **linux64-deploy** – GCC/Clang x86_64, Release (PRIMARY LINUX)
 - **linux64-testing** – Debug variant
 - **macos-vulkan** – macOS ARM64, RelWithDebInfo (PRIMARY MACOS)
 - **mingw-w64-i686** – MinGW cross-compile (exploratory)
-- **vc6** – Visual Studio 6, 32-bit (legacy)
-- **win32** – MSVC 2022, experimental
+- **vc6** – Visual Studio 6, 32-bit (legacy, replaced by `win64`)
+- **win32** – MSVC 2022 32-bit (superseded by `win64`)
 
 ## Directories
 - `GeneralsMD/`: Zero Hour.

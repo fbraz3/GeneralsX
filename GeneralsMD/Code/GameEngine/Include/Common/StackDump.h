@@ -35,7 +35,8 @@ void StackDump(void (*callback)(const char*));
 
 // Writes a stackdump (provide a callback : gets called per line)
 // If callback is nullptr then will write using OuputDebugString
-void StackDumpFromContext(DWORD eip,DWORD esp,DWORD ebp, void (*callback)(const char*));
+// GeneralsX @bugfix Copilot 25/11/2026 Pointer-width register args so StackDumpFromContext works on both Win32 and Win64.
+void StackDumpFromContext(DWORD_PTR eip, DWORD_PTR esp, DWORD_PTR ebp, void (*callback)(const char*));
 
 // Gets count* addresses from the current stack
 void FillStackAddresses(void**addresses, unsigned int count, unsigned int skip = 0);

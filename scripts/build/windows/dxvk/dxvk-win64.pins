@@ -1,0 +1,32 @@
+# GeneralsX: THE WINDOWS DXVK PAIR, PINNED: every input of build-dxvk-win64.ps1 and the
+# sha256 of what it must produce. Read by build-dxvk-win64.ps1 and dxvk-pair.ps1 (setup-run-win64.ps1,
+# package-windows-share.ps1, gx-ab-build.sh). key = value, '#' starts a comment. Values hold no '#' and no paths.
+#
+# Change ANY input (a patch, the toolchain, the upstream commit) -> bump gx_tag, rebuild twice, and record the new
+# patched_head and output hashes here in the same commit. A builder whose output differs from these hashes FAILS:
+# that is the reproducibility gate, not a nuisance.
+
+# The pair a player gets: upstream DXVK v2.6 + patches\*.patch (sorted by name), built by build-dxvk-win64.ps1.
+gx_tag            = v2.6-gx2
+dxvk_url          = https://github.com/doitsujin/dxvk
+dxvk_tag          = v2.6
+dxvk_commit       = ad253b8a7e20b7cf16fce7d1c505928a434eac29
+# HEAD after `git am --committer-date-is-author-date` of the patches with committer GeneralsX <dxvk-build@generalsx.invalid>
+patched_head      = 0ec0aa9e9b073ae816bda9109cdcbe0565b77b47
+gx_d3d8_sha256    = 981ce81ac6956968b535c9f9608a166d675c6bfda63b4cc8c7905bfb54e1c4bd
+gx_d3d9_sha256    = d7c3566060170daaba5cfadec2e846d95f41329dbed5e4e651e9a4ebdf7a0274
+
+# Toolchain. WinLibs (GCC 16.1.0, MinGW-w64 14.0.0 UCRT, binutils 2.46, ninja 1.13.2): sha256 from the GitHub release
+# asset and the winget manifest BrechtSanders.WinLibs.POSIX.UCRT 16.1.0-14.0.0-r1, which agree.
+winlibs_url       = https://github.com/brechtsanders/winlibs_mingw/releases/download/16.1.0posix-14.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-16.1.0-mingw-w64ucrt-14.0.0-r1.zip
+winlibs_sha256    = 325771f545e89f62c0e1fafdbf0066cc49e3321aeca7b704c8d065e97a72f2fb
+gcc_version       = 16.1.0
+meson_version     = 1.12.1
+meson_sha256      = 930bc7542cbd9f57009e182fd014eba48cf1a0180a7b9006d2d32d8f168d8b02
+glslang_url       = https://github.com/KhronosGroup/glslang/releases/download/16.6.0/glslang-16.6.0-windows-x86_64-release.zip
+glslang_sha256    = 82bf434e69b9bb4829de7e2b4bc2c5e7a7861e53d66cf75e5cc70f5f694a8d9b
+
+# The way back: the official DXVK 2.6 release pair (dxvk-2.6.tar.gz, x64\), what 0.9.52 and earlier shipped.
+official_url      = https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
+official_d3d8_sha256 = 020153533941265d351336335bf2b4d5e92d924533e3fc74a1acf93998e4a2e2
+official_d3d9_sha256 = 8f09e7666f7b27962da058891efd6eb19ab1cae458eb381bbdbc89f6c711e006

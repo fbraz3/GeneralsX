@@ -11,14 +11,24 @@ if(WIN32)
         deps_bink
         comctl32
         core_debug
-        d3d8
         dinput8
         dxguid
         imm32
-        deps_miles
         vfw32
         winmm
     )
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        target_link_libraries(z_generals PRIVATE d3d8)
+    endif()
+    if(NOT SAGE_USE_MINIAUDIO AND NOT SAGE_USE_OPENAL)
+        target_link_libraries(z_generals PRIVATE deps_miles)
+    endif()
+endif()
+
+# GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 fallback for Windows x64 when Vulkan 1.3 is absent
+if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+    target_link_libraries(z_generals PRIVATE gx_d3d8to9)
+    target_compile_definitions(z_generals PRIVATE GX_COMPAT_D3D9=1)
 endif()
 
 # Cross-platform core libraries
@@ -141,7 +151,11 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 
 if(MSVC)
-    target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+    target_link_options(z_generals PRIVATE
+        "/NODEFAULTLIB:libci.lib"
+        "$<$<CONFIG:RelWithDebInfo>:/OPT:REF>"
+        "$<$<CONFIG:RelWithDebInfo>:/OPT:NOICF>"
+    )
 endif()
 
 target_include_directories(z_generals PRIVATE
@@ -172,6 +186,7 @@ if(MSVC)
     target_sources(z_generals PRIVATE
         RTS.RC
     )
+    set_source_files_properties(RTS.RC PROPERTIES OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/app.manifest;${CMAKE_CURRENT_SOURCE_DIR}/Generals.ico")
 endif()
 
 # Strip debug symbols to separate file for MinGW Release builds

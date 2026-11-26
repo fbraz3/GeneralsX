@@ -1,0 +1,215 @@
+diff --git a/source/d3d8to9.hpp b/source/d3d8to9.hpp
+index 985704fea8..445bfa1150 100644
+--- a/source/d3d8to9.hpp
++++ b/source/d3d8to9.hpp
+@@ -14,6 +14,9 @@
+ #include <unordered_set>
+ #include "d3d8.hpp"
+ #include "interface_query.hpp"
++#include "gx_handle_table.hpp"
++
++struct VertexShaderInfo;	// GeneralsX: d3d8to9_device.cpp defines it; the handle table only holds pointers
+ 
+ class Direct3D8 : public IDirect3D8
+ {
+@@ -188,6 +191,11 @@ private:
+ 
+ 	// Store shader handles and state block tokens so they can be destroyed later to mirror D3D8 behavior
+ 	std::unordered_set<DWORD> PixelShaderHandles, VertexShaderHandles, StateBlockTokens;
++
++	// GeneralsX: D3D8 handles/tokens as slots in a table, not truncated pointers (patch 0002, gx_handle_table.hpp).
++	GxHandleTable<IDirect3DPixelShader9> PixelShaderTable;
++	GxHandleTable<VertexShaderInfo> VertexShaderTable;	// handle = 0x80000000 | slot: the top bit tells it from an FVF
++	GxHandleTable<IDirect3DStateBlock9> StateBlockTable;
+ 	unsigned int VertexShaderAndDeclarationCount = 0;
+ };
+ 
+diff --git a/source/d3d8to9_device.cpp b/source/d3d8to9_device.cpp
+index 7428beab7e..e02a6f0a31 100644
+--- a/source/d3d8to9_device.cpp
++++ b/source/d3d8to9_device.cpp
+@@ -812,10 +812,12 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::EndStateBlock(DWORD *pToken)
+ 	if (!IsRecordingState)
+ 		return D3DERR_INVALIDCALL;
+ 
+-	HRESULT hr = ProxyInterface->EndStateBlock(reinterpret_cast<IDirect3DStateBlock9**>(pToken));
++	IDirect3DStateBlock9 *StateBlock = nullptr;
++	HRESULT hr = ProxyInterface->EndStateBlock(&StateBlock);
+ 
+ 	if (SUCCEEDED(hr))
+ 	{
++		*pToken = StateBlockTable.Add(StateBlock);
+ 		StateBlockTokens.insert(*pToken);
+ 		IsRecordingState = false;
+ 	}
+@@ -833,7 +835,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::ApplyStateBlock(DWORD Token)
+ 	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+ 		return D3D_OK;
+ 
+-	return reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Apply();
++	return StateBlockTable.Get(Token)->Apply();
+ }
+ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CaptureStateBlock(DWORD Token)
+ {
+@@ -846,7 +848,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CaptureStateBlock(DWORD Token)
+ 	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+ 		return D3D_OK;
+ 
+-	return reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Capture();
++	return StateBlockTable.Get(Token)->Capture();
+ }
+ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
+ {
+@@ -859,7 +861,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteStateBlock(DWORD Token)
+ 	if (StateBlockTokens.find(Token) == StateBlockTokens.end())
+ 		return D3D_OK;
+ 
+-	reinterpret_cast<IDirect3DStateBlock9 *>(Token)->Release();
++	StateBlockTable.Get(Token)->Release();
++	StateBlockTable.Remove(Token);
+ 
+ 	StateBlockTokens.erase(Token);
+ 
+@@ -877,10 +880,14 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateStateBlock(D3DSTATEBLOCKTYPE Ty
+ 	if (IsRecordingState)
+ 		return D3DERR_INVALIDCALL;
+ 
+-	HRESULT hr = ProxyInterface->CreateStateBlock(Type, reinterpret_cast<IDirect3DStateBlock9 **>(pToken));
++	IDirect3DStateBlock9 *StateBlock = nullptr;
++	HRESULT hr = ProxyInterface->CreateStateBlock(Type, &StateBlock);
+ 
+ 	if (SUCCEEDED(hr))
++	{
++		*pToken = StateBlockTable.Add(StateBlock);
+ 		StateBlockTokens.insert(*pToken);
++	}
+ 
+ 	return hr;
+ }
+@@ -1595,11 +1602,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
+ 
+ 		if (SUCCEEDED(hr))
+ 		{
+-			// Since 'Shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
+-			assert((reinterpret_cast<DWORD>(ShaderInfo) & 1) == 0);
+-			const DWORD ShaderMagic = reinterpret_cast<DWORD>(ShaderInfo) >> 1;
+-
+-			*pHandle = ShaderMagic | 0x80000000;
++			*pHandle = VertexShaderTable.Add(ShaderInfo) | 0x80000000;
+ 
+ 			VertexShaderHandles.insert(*pHandle);
+ 			VertexShaderAndDeclarationCount++;
+@@ -1647,8 +1650,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetVertexShader(DWORD Handle)
+ 	}
+ 	else
+ 	{
+-		const DWORD handleMagic = Handle << 1;
+-		VertexShaderInfo *const ShaderInfo = reinterpret_cast<VertexShaderInfo *>(handleMagic);
++		VertexShaderInfo *const ShaderInfo = VertexShaderTable.Get(Handle & 0x7FFFFFFF);
++		if (ShaderInfo == nullptr)
++			return D3DERR_INVALIDCALL;
+ 
+ 		hr = ProxyInterface->SetVertexShader(ShaderInfo->Shader);
+ 		ProxyInterface->SetVertexDeclaration(ShaderInfo->Declaration);
+@@ -1689,8 +1693,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeleteVertexShader(DWORD Handle)
+ 		CurrentVertexShaderHandle = 0;
+ 	}
+ 
+-	const DWORD HandleMagic = Handle << 1;
+-	VertexShaderInfo *const ShaderInfo = reinterpret_cast<VertexShaderInfo *>(HandleMagic);
++	VertexShaderInfo *const ShaderInfo = VertexShaderTable.Get(Handle & 0x7FFFFFFF);
++	VertexShaderTable.Remove(Handle & 0x7FFFFFFF);
+ 
+ 	if (ShaderInfo->Shader != nullptr) 
+ 	{
+@@ -1737,8 +1741,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetVertexShaderFunction(DWORD Handle,
+ 	if ((Handle & 0x80000000) == 0)
+ 		return D3DERR_INVALIDCALL;
+ 
+-	const DWORD HandleMagic = Handle << 1;
+-	IDirect3DVertexShader9 *VertexShaderInterface = reinterpret_cast<VertexShaderInfo *>(HandleMagic)->Shader;
++	VertexShaderInfo *const ShaderInfo = VertexShaderTable.Get(Handle & 0x7FFFFFFF);
++	IDirect3DVertexShader9 *VertexShaderInterface = ShaderInfo != nullptr ? ShaderInfo->Shader : nullptr;
+ 
+ 	if (VertexShaderInterface == nullptr)
+ 		return D3DERR_INVALIDCALL;
+@@ -2274,7 +2278,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
+ 		return hr;
+ 	}
+ 
+-	hr = ProxyInterface->CreatePixelShader(static_cast<const DWORD *>(Assembly->GetBufferPointer()), reinterpret_cast<IDirect3DPixelShader9 **>(pHandle));
++	IDirect3DPixelShader9 *Shader = nullptr;
++	hr = ProxyInterface->CreatePixelShader(static_cast<const DWORD *>(Assembly->GetBufferPointer()), &Shader);
+ 
+ 	Assembly->Release();
+ 
+@@ -2286,6 +2291,7 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
+ 	}
+ 	else
+ 	{
++		*pHandle = PixelShaderTable.Add(Shader);
+ 		PixelShaderHandles.insert(*pHandle);
+ 	}
+ 
+@@ -2293,7 +2299,11 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreatePixelShader(const DWORD *pFunct
+ }
+ HRESULT STDMETHODCALLTYPE Direct3DDevice8::SetPixelShader(DWORD Handle)
+ {
+-	const HRESULT hr = ProxyInterface->SetPixelShader(reinterpret_cast<IDirect3DPixelShader9 *>(Handle));
++	IDirect3DPixelShader9 *const Shader = PixelShaderTable.Get(Handle);
++	if (Handle != 0 && Shader == nullptr)
++		return D3DERR_INVALIDCALL;
++
++	const HRESULT hr = ProxyInterface->SetPixelShader(Shader);
+ 	if (FAILED(hr))
+ 		return hr;
+ 
+@@ -2321,7 +2331,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::DeletePixelShader(DWORD Handle)
+ 	if (CurrentPixelShaderHandle == Handle)
+ 		SetPixelShader(0);
+ 
+-	reinterpret_cast<IDirect3DPixelShader9 *>(Handle)->Release();
++	PixelShaderTable.Get(Handle)->Release();
++	PixelShaderTable.Remove(Handle);
+ 
+ 	return D3D_OK;
+ }
+@@ -2342,7 +2353,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::GetPixelShaderFunction(DWORD Handle,
+ 	if (Handle == 0)
+ 		return D3DERR_INVALIDCALL;
+ 
+-	IDirect3DPixelShader9 *const PixelShaderInterface = reinterpret_cast<IDirect3DPixelShader9 *>(Handle);
++	IDirect3DPixelShader9 *const PixelShaderInterface = PixelShaderTable.Get(Handle);
++	if (PixelShaderInterface == nullptr)
++		return D3DERR_INVALIDCALL;
+ 
+ #ifndef D3D8TO9NOLOG
+ 	LOG << "> Returning translated shader byte code." << std::endl;
+diff --git a/source/gx_handle_table.hpp b/source/gx_handle_table.hpp
+new file mode 100644
+index 0000000000..11719fcb2e
+--- /dev/null
++++ b/source/gx_handle_table.hpp
+@@ -0,0 +1,22 @@
++// GeneralsX: x64 handles for d3d8to9 (patch 0002). A D3D8 shader handle or state-block token is a 32-bit DWORD; upstream
++// stored the D3D9 interface pointer in it, which only works in a 32-bit process. Here a handle is a slot index + 1, so
++// 0 is never a valid handle and a freed slot is reused. No Windows headers: scripts/test/d3d8to9-handle-test.cpp.
++#pragma once
++
++#include <cstdint>
++#include <vector>
++
++template <typename T> struct GxHandleTable
++{
++	std::vector<T *> Slots;
++
++	std::uint32_t Add(T *p)
++	{
++		for (size_t i = 0; i < Slots.size(); ++i)
++			if (Slots[i] == nullptr) { Slots[i] = p; return static_cast<std::uint32_t>(i + 1); }
++		Slots.push_back(p);
++		return static_cast<std::uint32_t>(Slots.size());
++	}
++	T *Get(std::uint32_t h) const { return h != 0 && h <= Slots.size() ? Slots[h - 1] : nullptr; }
++	void Remove(std::uint32_t h) { if (Get(h) != nullptr) Slots[h - 1] = nullptr; }
++};

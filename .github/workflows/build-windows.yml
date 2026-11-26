@@ -16,7 +16,7 @@ on:
 
 jobs:
   build-windows:
-    name: ${{ matrix.game.id }} x86
+    name: ${{ matrix.game.id }} x64
     runs-on: windows-2022
     timeout-minutes: 45
     strategy:
@@ -31,8 +31,8 @@ jobs:
             pdb: GeneralsXZH.pdb
             build_zh: "ON"
             build_generals: "OFF"
-            artifact_name: windows-x86-GeneralsXZH.zip
-            ci_artifact_name: windows-x86-GeneralsXZH-replay-test-only.zip
+            artifact_name: windows-x64-GeneralsXZH.zip
+            ci_artifact_name: windows-x64-GeneralsXZH-replay-test-only.zip
           - id: generalsx
             name: Generals Base
             target: g_generals
@@ -41,8 +41,8 @@ jobs:
             pdb: GeneralsX.pdb
             build_zh: "OFF"
             build_generals: "ON"
-            artifact_name: windows-x86-GeneralsX.zip
-            ci_artifact_name: windows-x86-GeneralsX-ci-only.zip
+            artifact_name: windows-x64-GeneralsX.zip
+            ci_artifact_name: windows-x64-GeneralsX-ci-only.zip
 
     steps:
       - name: Checkout
@@ -52,10 +52,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Configure MSVC x86
+      - name: Configure MSVC x64
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: x86
+          arch: x64
 
       - name: Resolve MSVC ABI cache key
         id: toolchain_id
@@ -81,9 +81,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-v5-${{ runner.os }}-x86-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml') }}
+          key: vcpkg-bincache-v6-${{ runner.os }}-x64-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml') }}
           restore-keys: |
-            vcpkg-bincache-v5-${{ runner.os }}-x86-${{ steps.toolchain_id.outputs.msvc_abi }}-
+            vcpkg-bincache-v6-${{ runner.os }}-x64-${{ steps.toolchain_id.outputs.msvc_abi }}-
 
       - name: Configure vcpkg cache directory
         shell: pwsh
@@ -106,7 +106,7 @@ jobs:
           NGMP_MOTD_URL: ${{ secrets.NGMP_MOTD_URL }}
         run: |
           if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT }
-          cmake --preset win32-vcpkg `
+          cmake --preset win64 `
             -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
             -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" `
             -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
@@ -122,22 +122,22 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v5-{0}-x86-{1}-{2}', runner.os, steps.toolchain_id.outputs.msvc_abi, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v6-{0}-x64-{1}-{2}', runner.os, steps.toolchain_id.outputs.msvc_abi, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml')) }}
 
       - name: Build
         shell: pwsh
-        run: cmake --build --preset win32-vcpkg --target ${{ matrix.game.target }}
+        run: cmake --build build/win64 --config RelWithDebInfo --target ${{ matrix.game.target }}
 
       - name: Collect runtime
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts | Out-Null
           New-Item -ItemType Directory -Force ci-artifacts | Out-Null
-          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} artifacts/
-          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.pdb }} artifacts/
-          Copy-Item build/win32-vcpkg/${{ matrix.game.folder }}/Release/${{ matrix.game.exe }} ci-artifacts/
+          Copy-Item build/win64/${{ matrix.game.folder }}/RelWithDebInfo/${{ matrix.game.exe }} artifacts/
+          Copy-Item build/win64/${{ matrix.game.folder }}/RelWithDebInfo/${{ matrix.game.pdb }} artifacts/
+          Copy-Item build/win64/${{ matrix.game.folder }}/RelWithDebInfo/${{ matrix.game.exe }} ci-artifacts/
 
-          Get-ChildItem -Path @("vcpkg_installed/x86-windows/bin/*.dll", "build/win32-vcpkg/vcpkg_installed/x86-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
+          Get-ChildItem -Path @("vcpkg_installed/x64-windows/bin/*.dll", "build/win64/vcpkg_installed/x64-windows/bin/*.dll") -ErrorAction SilentlyContinue | ForEach-Object {
             Write-Host "Collecting vcpkg DLL: $($_.FullName)"
             Copy-Item $_.FullName artifacts/
             Copy-Item $_.FullName ci-artifacts/
@@ -153,14 +153,14 @@ jobs:
             Copy-Item assets/fonts/* ci-artifacts/fonts/
           }
 
-          if (Test-Path "build/win32-vcpkg/generalsx.big") {
-            Copy-Item "build/win32-vcpkg/generalsx.big" artifacts/generalsx.big
-            Copy-Item "build/win32-vcpkg/generalsx.big" ci-artifacts/generalsx.big
+          if (Test-Path "build/win64/generalsx.big") {
+            Copy-Item "build/win64/generalsx.big" artifacts/generalsx.big
+            Copy-Item "build/win64/generalsx.big" ci-artifacts/generalsx.big
           }
 
           # Collect Desktop Release CRT DLLs (msvcp140.dll, vcruntime140.dll, etc.)
           $vcReleaseDir = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC" -Directory -Recurse |
-            Where-Object { $_.FullName -match "\\x86\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |
+            Where-Object { $_.FullName -match "\\x64\\" -and $_.FullName -match "Microsoft\.VC143\.CRT$" -and $_.FullName -notmatch "onecore" } |
             Select-Object -First 1
 
           if ($vcReleaseDir) {
@@ -171,18 +171,34 @@ jobs:
             }
           }
 
-          foreach ($name in @("binkw32.dll", "mss32.dll")) {
-            $stub = Get-ChildItem build/win32-vcpkg -Filter $name -Recurse |
-              Select-Object -First 1
-            if ($stub) {
-              Copy-Item $stub.FullName ci-artifacts/
+          # Fetch and verify official DXVK 2.6 x64 d3d8.dll + d3d9.dll for release bundle
+          $pins = @{}
+          Get-Content "scripts/build/windows/dxvk/dxvk-win64.pins" | ForEach-Object {
+            $line = ($_ -replace '#.*$', '').Trim()
+            if ($line -match '^([^=\s]+)\s*=\s*(.+)$') { $pins[$matches[1].Trim()] = $matches[2].Trim() }
+          }
+          $dxvkArchive = Join-Path $env:RUNNER_TEMP "dxvk-2.6.tar.gz"
+          $dxvkExtract = Join-Path $env:RUNNER_TEMP "dxvk-2.6-extract"
+          Invoke-WebRequest -Uri $pins["official_url"] -OutFile $dxvkArchive -UseBasicParsing
+          New-Item -ItemType Directory -Force -Path $dxvkExtract | Out-Null
+          tar -xzf $dxvkArchive -C $dxvkExtract
+          if ($LASTEXITCODE -ne 0) { throw "Failed to extract DXVK 2.6 tarball" }
+          foreach ($pair in @(
+            @{ Name = "d3d8.dll"; Hash = $pins["official_d3d8_sha256"].ToLowerInvariant() },
+            @{ Name = "d3d9.dll"; Hash = $pins["official_d3d9_sha256"].ToLowerInvariant() }
+          )) {
+            $dllPath = Join-Path $dxvkExtract ("dxvk-2.6\x64\" + $pair.Name)
+            $actual = (Get-FileHash -Path $dllPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actual -ne $pair.Hash) {
+              throw "DXVK $($pair.Name) SHA256 mismatch: expected $($pair.Hash), got $actual"
             }
+            Copy-Item $dllPath (Join-Path "artifacts" $pair.Name)
           }
 
           @"
           Copy these files into an existing licensed ${{ matrix.game.name }} installation.
-          Keep the installation's original binkw32.dll and mss32.dll; video and audio
-          are loaded dynamically if present.
+          GeneralsX Windows 64-bit uses MiniAudio and FFmpeg out of the box, bundles DXVK 2.6 x64
+          (d3d8.dll/d3d9.dll), and falls back automatically to embedded d3d8to9 on systems without Vulkan 1.3.
           "@ | Set-Content artifacts/INSTALL.txt
           Compress-Archive -Path artifacts/* -DestinationPath "${{ matrix.game.artifact_name }}"
           Compress-Archive -Path ci-artifacts/* -DestinationPath "${{ matrix.game.ci_artifact_name }}"

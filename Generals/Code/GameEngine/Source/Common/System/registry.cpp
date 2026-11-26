@@ -298,7 +298,14 @@ Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiS
 	unsigned long type;
 	int returnValue;
 
-	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) == ERROR_SUCCESS)
+	// GeneralsX @bugfix Copilot 25/11/2026 Retail installers wrote 32-bit HKLM keys under WOW6432Node; fall back on 64-bit Windows.
+	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) != ERROR_SUCCESS)
+	{
+#ifdef _WIN64
+		returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ | KEY_WOW64_32KEY, &handle );
+#endif
+	}
+	if (returnValue == ERROR_SUCCESS)
 	{
 		returnValue = RegQueryValueEx(handle, key.str(), nullptr, &type, (unsigned char *) &buffer, &size);
 		RegCloseKey( handle );
@@ -321,7 +328,13 @@ Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, Un
 	unsigned long type;
 	int returnValue;
 
-	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) == ERROR_SUCCESS)
+	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) != ERROR_SUCCESS)
+	{
+#ifdef _WIN64
+		returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ | KEY_WOW64_32KEY, &handle );
+#endif
+	}
+	if (returnValue == ERROR_SUCCESS)
 	{
 		returnValue = RegQueryValueEx(handle, key.str(), nullptr, &type, (unsigned char *) &buffer, &size);
 		RegCloseKey( handle );

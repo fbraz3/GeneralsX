@@ -1,0 +1,33 @@
+diff --git a/source/gx_shader_tokens.cpp b/source/gx_shader_tokens.cpp
+index 2b4c0f23c9..72b5874fab 100644
+--- a/source/gx_shader_tokens.cpp
++++ b/source/gx_shader_tokens.cpp
+@@ -72,11 +72,25 @@ bool gx_ps8to9(const std::uint32_t *function, std::vector<std::uint32_t> &out, s
+ 	if (function[0] < 0xFFFF0100 || function[0] > 0xFFFF0104)
+ 		return fail(why, "not a ps_1_x program");
+ 	out.push_back(function[0] == 0xFFFF0100 ? 0xFFFF0101 : function[0]);
+-	for (std::size_t i = 1; i < maxTokens; ++i)
++	// END counts only where an instruction could start: a comment's payload and a def's four literals are data and may
++	// hold any bit pattern, 0x0000FFFF included
++	for (std::size_t i = 1; i < maxTokens;)
+ 	{
+-		out.push_back(function[i]);
+-		if (function[i] == VS_END_TOKEN)
++		const std::uint32_t token = function[i++];
++		out.push_back(token);
++		if (token == VS_END_TOKEN)
+ 			return true;
++		if ((token & PARAM_BIT) != 0)
++			continue;
++		std::size_t data = 0;
++		if ((token & OPCODE_MASK) == OP_COMMENT)
++			data = (token >> 16) & 0x7FFF;
++		else if ((token & OPCODE_MASK) == OP_DEF)
++			data = 5;	// dest + 4 raw floats
++		if (i + data > maxTokens)
++			break;
++		out.insert(out.end(), function + i, function + i + data);
++		i += data;
+ 	}
+ 	out.clear();
+ 	return fail(why, "no end token");

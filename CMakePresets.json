@@ -158,6 +158,50 @@
             }
         },
         {
+            "name": "win64",
+            "inherits": "default-vcpkg",
+            "hidden": false,
+            "displayName": "Windows 64bit (x64, MiniAudio + FFmpeg + DX8) RelWithDebInfo",
+            "description": "Windows 64-bit native build using MSVC x64, MiniAudio, FFmpeg, NGMP, and min-dx8-sdk headers (with DXVK x64 drop-in + static d3d8to9 fallback).",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "RTS_FLAGS": "/W3",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "VCPKG_HOST_TRIPLET": "x64-windows",
+                "SAGE_USE_DX8": "ON",
+                "SAGE_USE_GLM": "ON",
+                "SAGE_USE_MINIAUDIO": "ON",
+                "SAGE_USE_OPENAL": "OFF",
+                "SAGE_USE_SDL3": "OFF",
+                "SAGE_USE_NGMP": "ON",
+                "RTS_BUILD_OPTION_FFMPEG": "ON",
+                "RTS_BUILD_OPTION_SAGE_PATCH": "OFF",
+                "RTS_BUILD_CORE_TOOLS": "OFF",
+                "RTS_BUILD_ZEROHOUR_TOOLS": "OFF",
+                "RTS_BUILD_GENERALS_TOOLS": "OFF",
+                "RTS_BUILD_ZEROHOUR": "ON",
+                "RTS_BUILD_GENERALS": "ON"
+            },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio"
+                }
+            }
+        },
+        {
+            "name": "win64-debug",
+            "inherits": "win64",
+            "hidden": false,
+            "displayName": "Windows 64bit (x64, MiniAudio + FFmpeg + DX8) Debug",
+            "description": "Windows 64-bit native debug build.",
+            "cacheVariables": {
+                "RTS_BUILD_OPTION_DEBUG": "ON"
+            }
+        },
+        {
             "name": "unix",
             "inherits": "default-vcpkg",
             "hidden": false,
@@ -411,6 +455,20 @@
             "configuration": "Debug"
         },
         {
+            "name": "win64",
+            "configurePreset": "win64",
+            "displayName": "Build Windows 64bit RelWithDebInfo",
+            "description": "Build Windows 64bit RelWithDebInfo",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "win64-debug",
+            "configurePreset": "win64-debug",
+            "displayName": "Build Windows 64bit Debug",
+            "description": "Build Windows 64bit Debug",
+            "configuration": "Debug"
+        },
+        {
             "name": "unix",
             "configurePreset": "unix",
             "displayName": "Build Unix 32bit VCPKG Release",
@@ -519,6 +577,22 @@
             "configurePreset": "win32-vcpkg-debug",
             "displayName": "Test Windows 32bit VCPKG Debug",
             "description": "Test Windows 32bit VCPKG Debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "win64",
+            "inherits": "default",
+            "configurePreset": "win64",
+            "displayName": "Test Windows 64bit RelWithDebInfo",
+            "description": "Test Windows 64bit RelWithDebInfo",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "win64-debug",
+            "inherits": "default",
+            "configurePreset": "win64-debug",
+            "displayName": "Test Windows 64bit Debug",
+            "description": "Test Windows 64bit Debug",
             "configuration": "Debug"
         }
     ],
@@ -663,6 +737,32 @@
                 {
                     "type": "build",
                     "name": "win32-vcpkg-debug"
+                }
+            ]
+        },
+        {
+            "name": "win64",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "win64"
+                },
+                {
+                    "type": "build",
+                    "name": "win64"
+                }
+            ]
+        },
+        {
+            "name": "win64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "win64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "win64-debug"
                 }
             ]
         },

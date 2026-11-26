@@ -60,6 +60,13 @@
 #include "GameClient/IMEManager.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
+#include "Win32Device/Common/GXD3DBackend.h"
+#include "Win32Device/Common/GXVulkanCheck.h"
+#include "Common/OptionPreferences.h"
+#include "WW3D2/dx8wrapper.h"
+#ifdef GX_COMPAT_D3D9
+#include "gx_d3d8to9.h"
+#endif
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -790,6 +797,158 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+// GeneralsX @feature Copilot 25/11/2026 Select DXVK vs static d3d8to9 compatibility backend on Windows x64 based on Vulkan 1.3 availability.
+static void *gxVkOpen(const char *name) { return reinterpret_cast<void *>(LoadLibraryA(name)); }
+static void *gxVkSymbol(void *library, const char *name)
+{
+	return reinterpret_cast<void *>(GetProcAddress(static_cast<HMODULE>(library), name));
+}
+static void gxVkClose(void *library) { FreeLibrary(static_cast<HMODULE>(library)); }
+
+static bool gxUsesDxvkPair()
+{
+	wchar_t path[MAX_PATH];
+	const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
+	if (n == 0 || n >= MAX_PATH)
+		return false;
+	wchar_t *slash = wcsrchr(path, L'\\');
+	if (slash == nullptr)
+		return false;
+	const size_t room = MAX_PATH - static_cast<size_t>(slash + 1 - path);
+	auto beside = [&](const wchar_t *leaf) {
+		if (wcscpy_s(slash + 1, room, leaf) != 0)
+			return false;
+		const DWORD a = GetFileAttributesW(path);
+		return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY) == 0;
+	};
+	return gxvk::usesDxvkPair(beside(L"d3d8.dll"), beside(L"d3d9.dll"));
+}
+
+#ifdef GX_COMPAT_D3D9
+static IDirect3D8 *WINAPI gxCompatCreate8(UINT sdk)
+{
+	char why[256] = "";
+	IDirect3D8 *const d = static_cast<IDirect3D8 *>(gx_d3d8to9_Direct3DCreate8(sdk, why, sizeof(why)));
+	fprintf(stderr, "[GXGFX] d3d9=%ls%s%s\n", gx_d3d8to9_LoadedD3D9Path(), d != nullptr ? "" : " FAILED: ", d != nullptr ? "" : why);
+	fflush(stderr);
+	return d;
+}
+static const bool kGxCompatBuilt = true;
+#else
+static const bool kGxCompatBuilt = false;
+#endif
+
+static char s_gxGraphicsPath[1024] = "";
+static int s_gxFailures = 0;
+
+static GxD3DState gxReadGraphicsState()
+{
+	char text[512] = "";
+	if (FILE *f = fopen(s_gxGraphicsPath, "r"))
+	{
+		text[fread(text, 1, sizeof(text) - 1, f)] = '\0';
+		fclose(f);
+	}
+	return gxD3DParseState(text);
+}
+
+static bool gxWriteGraphicsState(int backend, int reason, GxD3DState st)
+{
+	char text[256];
+	const int n = gxD3DFormatFile(text, sizeof(text), backend, reason, st);
+	if (n <= 0 || n >= static_cast<int>(sizeof(text)) || s_gxGraphicsPath[0] == '\0')
+		return false;
+	FILE *f = fopen(s_gxGraphicsPath, "w");
+	if (f == nullptr)
+		return false;
+	const bool written = fputs(text, f) >= 0;
+	return fclose(f) == 0 && written;
+}
+
+static void gxDeviceStage(int stage)
+{
+	static bool s_ready = false;
+	if (s_ready)
+		return;
+	const GxD3DState st = { stage == 0 ? static_cast<int>(GXD3D_PENDING_DEVICE) : static_cast<int>(GXD3D_PENDING_NONE), 0, stage == 0 ? s_gxFailures : 0 };
+	gxWriteGraphicsState(GXD3D_DXVK, GXD3D_R_VULKAN_OK, st);
+	if (stage == 1)
+	{
+		s_ready = true;
+		fprintf(stderr, "[GXGFX] dxvk device ready: crash marker cleared\n");
+		fflush(stderr);
+	}
+}
+
+static Bool gxPickD3D()
+{
+	const char *env = getenv("GX_D3D_BACKEND");
+	const OptionPreferences prefs;
+	const AsciiString key = prefs.getAsciiString("GXGraphicsBackend", AsciiString::TheEmptyString);
+	const char *keyText = key.isEmpty() ? nullptr : key.str();
+	const bool pair = gxUsesDxvkPair();
+	char leaf[64];
+	gxD3DStateFileName(leaf, sizeof(leaf), rts::ClientInstance::getInstanceId());
+	snprintf(s_gxGraphicsPath, sizeof(s_gxGraphicsPath), "%s%s", TheGlobalData->getPath_UserData().str(), leaf);
+
+	GxD3DState next;
+	bool fallback = gxD3DFallback(env, keyText, kGxCompatBuilt, pair, gxReadGraphicsState(), &next);
+	if (fallback && !gxWriteGraphicsState(GXD3D_COMPAT, GXD3D_R_DXVK_FAILED, next))
+	{
+		fallback = false;
+		next.pending = GXD3D_PENDING_NONE;
+		next.compatLeft = 0;
+		next.failures = 0;
+		fprintf(stderr, "[GXGFX] %s cannot be written: its crash marker is ignored this start\n", s_gxGraphicsPath);
+	}
+
+	int verdict = -1;
+	gxvk::Probe probe;
+	if (fallback)
+		fprintf(stderr, "[GXVULKAN] skipped: the last DXVK start never got a device (gxgraphics.txt crash marker)\n");
+	else if (gxD3DNeedsProbe(env, keyText, kGxCompatBuilt, pair))
+	{
+		gxWriteGraphicsState(GXD3D_DXVK, GXD3D_R_VULKAN_OK, GxD3DState{ GXD3D_PENDING_PROBE, next.compatLeft, next.failures });
+		const gxvk::Loader loader = { gxVkOpen, gxVkSymbol, gxVkClose };
+		probe = gxvk::probe(loader);
+		verdict = gxvk::judge(probe);
+		char line[512];
+		gxvk::logLine(static_cast<gxvk::Verdict>(verdict), probe, line, sizeof(line));
+		fprintf(stderr, "%s\n", line);
+	}
+	else
+		fprintf(stderr, "[GXVULKAN] skipped: %s\n", pair ? "compatibility graphics forced" : "no DXVK pair (d3d8.dll + d3d9.dll) beside the game");
+
+	GxD3DDecision d = gxD3DDecide(env, keyText, kGxCompatBuilt, pair, verdict);
+	if (fallback)
+	{
+		d.backend = GXD3D_COMPAT;
+		d.reason = GXD3D_R_DXVK_FAILED;
+	}
+	fprintf(stderr, "[GXGFX] backend=%s reason=%s%s%s\n", gxD3DBackendWord(d.backend), gxD3DReasonWord(d.reason),
+		d.badKey ? " ignored GXGraphicsBackend=" : "", d.badKey ? keyText : "");
+	fflush(stderr);
+
+	if (d.backend == GXD3D_REFUSED)
+	{
+		char text[1024];
+		gxvk::playerMessage(static_cast<gxvk::Verdict>(verdict), probe, text, sizeof(text));
+		::MessageBoxA(nullptr, text, "GeneralsX Zero Hour", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
+		return FALSE;
+	}
+#ifdef GX_COMPAT_D3D9
+	if (d.backend == GXD3D_COMPAT)
+		DX8Wrapper::Set_Direct3DCreate8_Override(gxCompatCreate8, gxD3DReasonWord(d.reason));
+#endif
+	if (d.backend == GXD3D_DXVK && kGxCompatBuilt)
+		DX8Wrapper::Device_Stage_Hook = gxDeviceStage;
+
+	next.pending = GXD3D_PENDING_NONE;
+	s_gxFailures = next.failures;
+	gxWriteGraphicsState(d.backend, d.reason, next);
+	return TRUE;
+}
+
 // WinMain ====================================================================
 /** Application entry point */
 //=============================================================================
@@ -913,6 +1072,14 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		DEBUG_LOG(("Create Generals Mutex okay."));
 
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
+
+		if (!TheGlobalData->m_headless && !gxPickD3D())
+		{
+			delete TheVersion;
+			TheVersion = nullptr;
+			shutdownMemoryManager();
+			return exitcode;
+		}
 
 		// run the game main loop
 		exitcode = GameMain();

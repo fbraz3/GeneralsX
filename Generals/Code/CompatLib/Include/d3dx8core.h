@@ -133,6 +133,15 @@ D3DXCreateVolumeTexture(
 	D3DPOOL Pool,
 	LPDIRECT3DVOLUMETEXTURE8 *ppVolumeTexture);
 
+// GeneralsX @bugfix Copilot 25/11/2026 Define ID3DXBuffer / D3DXBUFFER for C++ callers (e.g. D3DXAssembleShader error buffer Release())
+#ifdef __cplusplus
+struct D3DXBUFFER : public IUnknown
+{
+	STDMETHOD_(LPVOID, GetBufferPointer)(THIS) PURE;
+	STDMETHOD_(DWORD,  GetBufferSize)(THIS) PURE;
+};
+#endif
+
 typedef struct D3DXBUFFER *LPD3DXBUFFER;
 
 HRESULT WINAPI

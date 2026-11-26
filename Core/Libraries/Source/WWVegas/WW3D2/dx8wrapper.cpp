@@ -446,6 +446,9 @@ bool								DX8Wrapper::FogEnable									= false;
 D3DCOLOR							DX8Wrapper::FogColor										= 0;
 
 IDirect3D8 *					DX8Wrapper::D3DInterface								= nullptr;
+DX8Wrapper::Direct3DCreate8Fn	DX8Wrapper::Create8Override							= nullptr;
+const char *						DX8Wrapper::Create8OverrideReason					= nullptr;
+DX8Wrapper::DeviceStageHook		DX8Wrapper::Device_Stage_Hook						= nullptr;
 IDirect3DDevice8 *			DX8Wrapper::D3DDevice									= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentRenderTarget						= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentDepthBuffer						= nullptr;
@@ -693,9 +696,12 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			setenv("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False", 0);
 		}
 #endif
+		if (Device_Stage_Hook != nullptr)
+			Device_Stage_Hook(0);
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef _WIN32
-		D3D8Lib = LoadLibrary("D3D8.DLL");
+		// GeneralsX @feature Copilot 25/11/2026 Compatibility graphics (d3d8to9 override) skips loading D3D8.DLL.
+		D3D8Lib = Is_Compat_D3D9() ? nullptr : LoadLibrary("D3D8.DLL");
 #elif defined(__APPLE__)
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.dylib (macOS)...\n");
 		D3D8Lib = LoadLibrary("libdxvk_d3d8.dylib");
@@ -714,13 +720,13 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		}
 #endif
 
-		if (D3D8Lib == nullptr) {
+		if (D3D8Lib == nullptr && !Is_Compat_D3D9()) {
 			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to load D3D8 library\n");
 			return false;	// Return false at this point if init failed
 		}
 
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Getting Direct3DCreate8 function pointer...\n");
-		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
+		Direct3DCreate8Ptr = Is_Compat_D3D9() ? Create8Override : (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
 		if (Direct3DCreate8Ptr == nullptr) {
 			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to get Direct3DCreate8 function\n");
 			Shutdown();
@@ -925,37 +931,32 @@ bool DX8Wrapper::Create_Device()
 	WWASSERT(D3DDevice==nullptr);	// for now, once you've created a device, you're stuck with it!
 
 	D3DCAPS8 caps;
-	if
+	HRESULT hr = D3DInterface->GetDeviceCaps
 	(
-		FAILED
-		(
-			D3DInterface->GetDeviceCaps
-			(
-				CurRenderDevice,
-				WW3D_DEVTYPE,
-				&caps
-			)
-		)
-	)
+		CurRenderDevice,
+		WW3D_DEVTYPE,
+		&caps
+	);
+	if (FAILED(hr))
 	{
+		// GeneralsX @feature fbraz 25/11/2026 Surface device-creation diagnostics in release builds
+		fprintf(stderr, "[GXGFX] Create_Device: GetDeviceCaps failed hr=0x%08lx (dev=%d)\n", (unsigned long)hr, CurRenderDevice);
+		fflush(stderr);
 		return false;
 	}
 
 	::ZeroMemory(&CurrentAdapterIdentifier, sizeof(D3DADAPTER_IDENTIFIER8));
 
-	if
+	hr = D3DInterface->GetAdapterIdentifier
 	(
-		FAILED
-		(
-			D3DInterface->GetAdapterIdentifier
-			(
-				CurRenderDevice,
-				D3DENUM_NO_WHQL_LEVEL,
-				&CurrentAdapterIdentifier
-			)
-			)
-	)
+		CurRenderDevice,
+		D3DENUM_NO_WHQL_LEVEL,
+		&CurrentAdapterIdentifier
+	);
+	if (FAILED(hr))
 	{
+		fprintf(stderr, "[GXGFX] Create_Device: GetAdapterIdentifier failed hr=0x%08lx (dev=%d)\n", (unsigned long)hr, CurRenderDevice);
+		fflush(stderr);
 		return false;
 	}
 
@@ -986,7 +987,7 @@ bool DX8Wrapper::Create_Device()
 	// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
 	DbgHelpGuard dbgHelpGuard;
 
-	HRESULT hr=D3DInterface->CreateDevice
+	hr = D3DInterface->CreateDevice
 	(
 		CurRenderDevice,
 		WW3D_DEVTYPE,
@@ -998,6 +999,14 @@ bool DX8Wrapper::Create_Device()
 
 	if (FAILED(hr))
 	{
+		fprintf(stderr, "[GXGFX] Create_Device: CreateDevice failed hr=0x%08lx dev=%d %ux%u win=%d bbFmt=%d dsFmt=%d msaa=%d swap=%d behav=0x%lx hwnd=%p\n",
+			(unsigned long)hr, CurRenderDevice,
+			(unsigned)_PresentParameters.BackBufferWidth, (unsigned)_PresentParameters.BackBufferHeight,
+			(int)_PresentParameters.Windowed, (int)_PresentParameters.BackBufferFormat,
+			(int)_PresentParameters.AutoDepthStencilFormat, (int)_PresentParameters.MultiSampleType,
+			(int)_PresentParameters.SwapEffect, (unsigned long)Vertex_Processing_Behavior, (void*)_Hwnd);
+		fflush(stderr);
+
 		// The device selection may fail because the device lied that it supports 32 bit zbuffer with 16 bit
 		// display. This happens at least on Voodoo2.
 
@@ -1021,6 +1030,13 @@ bool DX8Wrapper::Create_Device()
 
 			if (FAILED(hr))
 			{
+				fprintf(stderr, "[GXGFX] Create_Device: CreateDevice 16-bit fallback failed hr=0x%08lx dev=%d %ux%u win=%d bbFmt=%d dsFmt=%d msaa=%d swap=%d behav=0x%lx hwnd=%p\n",
+					(unsigned long)hr, CurRenderDevice,
+					(unsigned)_PresentParameters.BackBufferWidth, (unsigned)_PresentParameters.BackBufferHeight,
+					(int)_PresentParameters.Windowed, (int)_PresentParameters.BackBufferFormat,
+					(int)_PresentParameters.AutoDepthStencilFormat, (int)_PresentParameters.MultiSampleType,
+					(int)_PresentParameters.SwapEffect, (unsigned long)Vertex_Processing_Behavior, (void*)_Hwnd);
+				fflush(stderr);
 				return false;
 			}
         }
@@ -1036,6 +1052,8 @@ bool DX8Wrapper::Create_Device()
 	** Initialize all subsystems
 	*/
 	Do_Onetime_Device_Dependent_Inits();
+	if (Device_Stage_Hook != nullptr)
+		Device_Stage_Hook(1);
 	return true;
 }
 
@@ -1468,6 +1486,9 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	_PresentParameters.Flags=0;											// We're not going to lock the backbuffer
 
 	_PresentParameters.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+	// GeneralsX @feature fbraz 25/11/2026 Compatibility graphics presents immediately without vsync throttling
+	if (Is_Compat_D3D9())
+		_PresentParameters.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	_PresentParameters.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 
 	/*
@@ -1496,6 +1517,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		case D3DFMT_P8: BitDepth=8; break;
 		default:
 			// Unknown backbuffer format probably means the device can't do windowed
+			fprintf(stderr, "[GXGFX] Set_Render_Device: unsupported windowed desktop format=%d (dev=%d)\n", (int)_PresentParameters.BackBufferFormat, CurRenderDevice);
+			fflush(stderr);
 			return false;
 		}
 
@@ -1547,6 +1570,9 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	/*
 	** Check the devices support for the requested MSAA mode then setup the multi sample type
 	*/
+	// GeneralsX @feature fbraz 25/11/2026 Compatibility graphics (d3d8to9) renders without MSAA
+	if (Is_Compat_D3D9())
+		MultiSampleAntiAliasing = D3DMULTISAMPLE_NONE;
 	if (MultiSampleAntiAliasing > D3DMULTISAMPLE_NONE) {
 		const D3DMULTISAMPLE_TYPE requestedMode = MultiSampleAntiAliasing;
 		MultiSampleAntiAliasing = Normalize_MSAA_Mode(MultiSampleAntiAliasing);

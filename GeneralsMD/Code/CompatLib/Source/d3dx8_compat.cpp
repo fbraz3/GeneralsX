@@ -2,13 +2,7 @@
 // Do NOT redefine it here -- that causes -Wmacro-redefined with Clang.
 
 #include "d3dx8core.h"
-
-// GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang (GLM version mismatch).
-// On macOS, exclude GLI and use stub implementations for the surface scaling path.
-#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
-#include <gli/gli.hpp>
-#include <gli/generate_mipmaps.hpp>
-#endif
+#include "d3dx8_boxfilter.h"
 
 HRESULT WINAPID3DXGetErrorStringA(HRESULT hr, LPSTR pBuffer, UINT BufferLen)
 {
@@ -106,275 +100,35 @@ D3DXLoadSurfaceFromSurface(
 		return D3D_OK;
 	}
 
-#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
-	// GeneralsX @bugfix Antigravity 26/06/2026 Linux: GLI lacks support for A4R4G4B4/R5G6B5 formats.
-	// We use manual box filter downsampling for these formats to fix black infantry rendering.
-	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
+	// GeneralsX @refactor Copilot 25/11/2026 Use pure C++ 2:1 box filter (d3dx8_boxfilter.h) uniformly across Win64/Linux/macOS/WebGPU, dropping GLI dependency.
+	d3dx8box::Layout layout = d3dx8box::LAYOUT_UNSUPPORTED;
+	switch (descSrc.Format)
 	{
-		if (descSrc.Format == D3DFMT_A4R4G4B4)
-		{
-			// Box filter for A4R4G4B4: average 2x2 blocks
-			const uint16_t *src = (const uint16_t *)srcRect.pBits;
-			uint16_t *dst = (uint16_t *)destRect.pBits;
-			uint32_t srcPitch16 = srcRect.Pitch / 2;
-			uint32_t dstPitch16 = destRect.Pitch / 2;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint16_t p00 = src[sy * srcPitch16 + sx];
-					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
-					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
-					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
-
-					// Extract and average each channel (A4 R4 G4 B4)
-					uint32_t a = (((p00 >> 12) & 0x0F) + ((p10 >> 12) & 0x0F) +
-					              ((p01 >> 12) & 0x0F) + ((p11 >> 12) & 0x0F) + 2) >> 2;
-					uint32_t r = (((p00 >> 8) & 0x0F) + ((p10 >> 8) & 0x0F) +
-					              ((p01 >> 8) & 0x0F) + ((p11 >> 8) & 0x0F) + 2) >> 2;
-					uint32_t g = (((p00 >> 4) & 0x0F) + ((p10 >> 4) & 0x0F) +
-					              ((p01 >> 4) & 0x0F) + ((p11 >> 4) & 0x0F) + 2) >> 2;
-					uint32_t b = ((p00 & 0x0F) + (p10 & 0x0F) +
-					              (p01 & 0x0F) + (p11 & 0x0F) + 2) >> 2;
-
-					dst[y * dstPitch16 + x] = (uint16_t)((a << 12) | (r << 8) | (g << 4) | b);
-				}
-			}
-			pDestSurface->UnlockRect();
-			pSrcSurface->UnlockRect();
-			return D3D_OK;
-		}
-		else if (descSrc.Format == D3DFMT_R5G6B5)
-		{
-			// Box filter for R5G6B5: average 2x2 blocks
-			const uint16_t *src = (const uint16_t *)srcRect.pBits;
-			uint16_t *dst = (uint16_t *)destRect.pBits;
-			uint32_t srcPitch16 = srcRect.Pitch / 2;
-			uint32_t dstPitch16 = destRect.Pitch / 2;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint16_t p00 = src[sy * srcPitch16 + sx];
-					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
-					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
-					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
-
-					// Extract and average each channel (R5 G6 B5)
-					uint32_t r = (((p00 >> 11) & 0x1F) + ((p11 >> 11) & 0x1F) +
-					              ((p01 >> 11) & 0x1F) + ((p10 >> 11) & 0x1F) + 2) >> 2;
-					uint32_t g = (((p00 >> 5) & 0x3F) + ((p11 >> 5) & 0x3F) +
-					              ((p01 >> 5) & 0x3F) + ((p10 >> 5) & 0x3F) + 2) >> 2;
-					uint32_t b = ((p00 & 0x1F) + (p11 & 0x1F) +
-					              (p01 & 0x1F) + (p10 & 0x1F) + 2) >> 2;
-
-					dst[y * dstPitch16 + x] = (uint16_t)((r << 11) | (g << 5) | b);
-				}
-			}
-			pDestSurface->UnlockRect();
-			pSrcSurface->UnlockRect();
-			return D3D_OK;
-		}
-	}
-	// Pick a compatible format
-	gli::format imageFormat = gli::format::FORMAT_RGBA8_UNORM_PACK8;
-
-	assert(descSrc.Format == D3DFMT_A8R8G8B8 || descSrc.Format == D3DFMT_A1R5G5B5 || descSrc.Format == D3DFMT_X8R8G8B8);
-	if (descSrc.Format == D3DFMT_A8R8G8B8 || descSrc.Format == D3DFMT_X8R8G8B8)
-	{
-		imageFormat = gli::format::FORMAT_RGBA8_UNORM_PACK8;	
-	}
-	else if (descSrc.Format == D3DFMT_A1R5G5B5)
-	{
-		imageFormat = gli::format::FORMAT_A1RGB5_UNORM_PACK16;
-	}
-	else
-	{
-		return D3DERR_INVALIDCALL;
+		case D3DFMT_A8R8G8B8:
+		case D3DFMT_X8R8G8B8:
+			layout = d3dx8box::LAYOUT_8888;
+			break;
+		case D3DFMT_A1R5G5B5:
+		case D3DFMT_X1R5G5B5:
+			layout = d3dx8box::LAYOUT_1555;
+			break;
+		case D3DFMT_R5G6B5:
+			layout = d3dx8box::LAYOUT_565;
+			break;
+		case D3DFMT_A4R4G4B4:
+		case D3DFMT_X4R4G4B4:
+			layout = d3dx8box::LAYOUT_4444;
+			break;
+		default:
+			break;
 	}
 
-	// Create two levels of mips, 0 and 1
-	gli::texture2d texSrc(imageFormat, gli::extent2d(descSrc.Width, descSrc.Height), 2);
-
-	// Copy the data to level 0
-	memcpy(texSrc.data(), srcRect.pBits, texSrc.size());
-	// Generate mip 1 from level 0
-	gli::texture2d mipMap = gli::generate_mipmaps(texSrc, gli::filter::FILTER_LINEAR);
-
-	if (mipMap.size(1) != destRect.Pitch * descDest.Height)
-	{
-		// The generated dimension would not be the same as the destination
-		// This does not happen in the game, yet let's not allow it
-		pDestSurface->UnlockRect();
-		pSrcSurface->UnlockRect();
-		return D3DERR_INVALIDCALL;
-	}
-
-	// Copy mip level 1 to the destination
-	memcpy(destRect.pBits, mipMap.data(0,0,1), destRect.Pitch * descDest.Height);
+	const bool reduced = d3dx8box::reduceLevel(layout, srcRect.pBits, srcRect.Pitch, descSrc.Width, descSrc.Height,
+		destRect.pBits, destRect.Pitch, descDest.Width, descDest.Height);
 
 	pDestSurface->UnlockRect();
 	pSrcSurface->UnlockRect();
-
-	return D3D_OK;
-#else
-	// GeneralsX @bugfix BenderAI 07/03/2026 macOS: GLI not available due to Apple Clang ambiguity.
-	// Implement manual box filter downsampling for mipmap generation.
-	// This is critical for terrain textures - without mipmaps, terrain renders black.
-	if (descDest.Width == descSrc.Width / 2 && descDest.Height == descSrc.Height / 2)
-	{
-		if (descSrc.Format == D3DFMT_A1R5G5B5)
-		{
-			// Box filter for A1R5G5B5: average 2x2 blocks
-			const uint16_t *src = (const uint16_t *)srcRect.pBits;
-			uint16_t *dst = (uint16_t *)destRect.pBits;
-			uint32_t srcPitch16 = srcRect.Pitch / 2;
-			uint32_t dstPitch16 = destRect.Pitch / 2;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint16_t p00 = src[sy * srcPitch16 + sx];
-					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
-					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
-					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
-
-					// Extract and average each channel (A1 R5 G5 B5)
-					uint32_t r = (((p00 >> 10) & 0x1F) + ((p10 >> 10) & 0x1F) +
-					              ((p01 >> 10) & 0x1F) + ((p11 >> 10) & 0x1F) + 2) >> 2;
-					uint32_t g = (((p00 >> 5) & 0x1F) + ((p10 >> 5) & 0x1F) +
-					              ((p01 >> 5) & 0x1F) + ((p11 >> 5) & 0x1F) + 2) >> 2;
-					uint32_t b = ((p00 & 0x1F) + (p10 & 0x1F) +
-					              (p01 & 0x1F) + (p11 & 0x1F) + 2) >> 2;
-					// Alpha: majority vote (set if 2+ pixels have alpha set)
-					uint32_t a = ((p00 >> 15) + (p10 >> 15) + (p01 >> 15) + (p11 >> 15)) >= 2 ? 1 : 0;
-
-					dst[y * dstPitch16 + x] = (uint16_t)((a << 15) | (r << 10) | (g << 5) | b);
-				}
-			}
-		}
-		else if (descSrc.Format == D3DFMT_A8R8G8B8 || descSrc.Format == D3DFMT_X8R8G8B8)
-		{
-			// Box filter for A8R8G8B8/X8R8G8B8: average 2x2 blocks
-			const uint32_t *src = (const uint32_t *)srcRect.pBits;
-			uint32_t *dst = (uint32_t *)destRect.pBits;
-			uint32_t srcPitch32 = srcRect.Pitch / 4;
-			uint32_t dstPitch32 = destRect.Pitch / 4;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint32_t p00 = src[sy * srcPitch32 + sx];
-					uint32_t p10 = src[sy * srcPitch32 + sx + 1];
-					uint32_t p01 = src[(sy + 1) * srcPitch32 + sx];
-					uint32_t p11 = src[(sy + 1) * srcPitch32 + sx + 1];
-
-					uint32_t a = (((p00 >> 24) & 0xFF) + ((p10 >> 24) & 0xFF) +
-					              ((p01 >> 24) & 0xFF) + ((p11 >> 24) & 0xFF) + 2) >> 2;
-					uint32_t r = (((p00 >> 16) & 0xFF) + ((p10 >> 16) & 0xFF) +
-					              ((p01 >> 16) & 0xFF) + ((p11 >> 16) & 0xFF) + 2) >> 2;
-					uint32_t g = (((p00 >> 8) & 0xFF) + ((p10 >> 8) & 0xFF) +
-					              ((p01 >> 8) & 0xFF) + ((p11 >> 8) & 0xFF) + 2) >> 2;
-					uint32_t b = ((p00 & 0xFF) + (p10 & 0xFF) +
-					              (p01 & 0xFF) + (p11 & 0xFF) + 2) >> 2;
-
-					dst[y * dstPitch32 + x] = (a << 24) | (r << 16) | (g << 8) | b;
-				}
-			}
-		}
-		else if (descSrc.Format == D3DFMT_A4R4G4B4)
-		{
-			// Box filter for A4R4G4B4: average 2x2 blocks
-			const uint16_t *src = (const uint16_t *)srcRect.pBits;
-			uint16_t *dst = (uint16_t *)destRect.pBits;
-			uint32_t srcPitch16 = srcRect.Pitch / 2;
-			uint32_t dstPitch16 = destRect.Pitch / 2;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint16_t p00 = src[sy * srcPitch16 + sx];
-					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
-					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
-					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
-
-					// Extract and average each channel (A4 R4 G4 B4)
-					uint32_t a = (((p00 >> 12) & 0x0F) + ((p10 >> 12) & 0x0F) +
-					              ((p01 >> 12) & 0x0F) + ((p11 >> 12) & 0x0F) + 2) >> 2;
-					uint32_t r = (((p00 >> 8) & 0x0F) + ((p10 >> 8) & 0x0F) +
-					              ((p01 >> 8) & 0x0F) + ((p11 >> 8) & 0x0F) + 2) >> 2;
-					uint32_t g = (((p00 >> 4) & 0x0F) + ((p10 >> 4) & 0x0F) +
-					              ((p01 >> 4) & 0x0F) + ((p11 >> 4) & 0x0F) + 2) >> 2;
-					uint32_t b = ((p00 & 0x0F) + (p10 & 0x0F) +
-					              (p01 & 0x0F) + (p11 & 0x0F) + 2) >> 2;
-
-					dst[y * dstPitch16 + x] = (uint16_t)((a << 12) | (r << 8) | (g << 4) | b);
-				}
-			}
-		}
-		else if (descSrc.Format == D3DFMT_R5G6B5)
-		{
-			// Box filter for R5G6B5: average 2x2 blocks
-			const uint16_t *src = (const uint16_t *)srcRect.pBits;
-			uint16_t *dst = (uint16_t *)destRect.pBits;
-			uint32_t srcPitch16 = srcRect.Pitch / 2;
-			uint32_t dstPitch16 = destRect.Pitch / 2;
-
-			for (uint32_t y = 0; y < descDest.Height; y++)
-			{
-				for (uint32_t x = 0; x < descDest.Width; x++)
-				{
-					uint32_t sx = x * 2;
-					uint32_t sy = y * 2;
-					uint16_t p00 = src[sy * srcPitch16 + sx];
-					uint16_t p10 = src[sy * srcPitch16 + sx + 1];
-					uint16_t p01 = src[(sy + 1) * srcPitch16 + sx];
-					uint16_t p11 = src[(sy + 1) * srcPitch16 + sx + 1];
-
-					// Extract and average each channel (R5 G6 B5)
-					uint32_t r = (((p00 >> 11) & 0x1F) + ((p11 >> 11) & 0x1F) +
-					              ((p01 >> 11) & 0x1F) + ((p10 >> 11) & 0x1F) + 2) >> 2;
-					uint32_t g = (((p00 >> 5) & 0x3F) + ((p11 >> 5) & 0x3F) +
-					              ((p01 >> 5) & 0x3F) + ((p10 >> 5) & 0x3F) + 2) >> 2;
-					uint32_t b = ((p00 & 0x1F) + (p11 & 0x1F) +
-					              (p01 & 0x1F) + (p10 & 0x1F) + 2) >> 2;
-
-					dst[y * dstPitch16 + x] = (uint16_t)((r << 11) | (g << 5) | b);
-				}
-			}
-		}
-		else
-		{
-			pDestSurface->UnlockRect();
-			pSrcSurface->UnlockRect();
-			return D3DERR_INVALIDCALL;
-		}
-
-		pDestSurface->UnlockRect();
-		pSrcSurface->UnlockRect();
-		return D3D_OK;
-	}
-
-	// Non-power-of-two scaling not supported
-	pDestSurface->UnlockRect();
-	pSrcSurface->UnlockRect();
-	return D3DERR_INVALIDCALL;
-#endif
+	return reduced ? D3D_OK : D3DERR_INVALIDCALL;
 }
 
 HRESULT WINAPI
@@ -430,13 +184,13 @@ D3DXFilterTexture(
 			while (tex->GetSurfaceLevel(Level, &mipsurf) == D3D_OK)
 			{
 				hr = D3DXLoadSurfaceFromSurface(mipsurf, NULL, NULL, topsurf, NULL, NULL, Filter, 0);
+
 				topsurf->Release();
+				topsurf = mipsurf;
 				if (FAILED(hr))
 				{
-					mipsurf->Release();
-					return hr;
+					break;
 				}
-				topsurf = mipsurf;
 
 				Level++;
 			}

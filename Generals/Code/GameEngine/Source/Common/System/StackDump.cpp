@@ -32,12 +32,14 @@
 #include "Common/Debug.h"
 
 #include "DbgHelpLoader.h"
+// GeneralsX @bugfix Copilot 25/11/2026 Architecture-neutral CONTEXT accessors and RtlCaptureContext for Win64
+#include "Utility/cpu_context_compat.h"
 
 //*****************************************************************************
 //	Prototypes
 //*****************************************************************************
 BOOL InitSymbolInfo();
-void MakeStackTrace(DWORD myeip,DWORD myesp,DWORD myebp, int skipFrames, void (*callback)(const char*));
+void MakeStackTrace(GXCtxReg myeip, GXCtxReg myesp, GXCtxReg myebp, int skipFrames, void (*callback)(const char*));
 void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* linenumber, unsigned int* address);
 void WriteStackLine(void*address, void (*callback)(const char*));
 
@@ -67,34 +69,8 @@ void StackDump(void (*callback)(const char*))
 	if (!InitSymbolInfo())
 		return;
 
-	DWORD myeip,myesp,myebp;
-
-#if defined(_MSC_VER)
-__asm
-{
-MYEIP1:
- mov eax, MYEIP1
- mov dword ptr [myeip] , eax
- mov eax, esp
- mov dword ptr [myesp] , eax
- mov eax, ebp
- mov dword ptr [myebp] , eax
-}
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
-	// GCC/Clang inline assembly for x86-32
-	__asm__ __volatile__(
-		"call 1f\n\t"
-		"1: pop %0\n\t"
-		"mov %%esp, %1\n\t"
-		"mov %%ebp, %2"
-		: "=r"(myeip), "=r"(myesp), "=r"(myebp)
-		:
-		: "memory"
-	);
-#else
-	#error "Unsupported compiler or architecture for register capture"
-#endif
-
+	GXCtxReg myeip, myesp, myebp;
+	GXCaptureContextRegisters(&gsContext, &myeip, &myesp, &myebp);
 
 	MakeStackTrace(myeip,myesp,myebp, 2, callback);
 }
@@ -102,7 +78,7 @@ MYEIP1:
 
 //*****************************************************************************
 //*****************************************************************************
-void StackDumpFromContext(DWORD eip,DWORD esp,DWORD ebp, void (*callback)(const char*))
+void StackDumpFromContext(DWORD_PTR eip, DWORD_PTR esp, DWORD_PTR ebp, void (*callback)(const char*))
 {
 	if (callback == nullptr)
 	{
@@ -112,7 +88,7 @@ void StackDumpFromContext(DWORD eip,DWORD esp,DWORD ebp, void (*callback)(const 
 	if (!InitSymbolInfo())
 		return;
 
-	MakeStackTrace(eip,esp,ebp, 0,  callback);
+	MakeStackTrace((GXCtxReg)eip, (GXCtxReg)esp, (GXCtxReg)ebp, 0, callback);
 }
 
 
@@ -170,7 +146,7 @@ BOOL InitSymbolInfo()
 
 //*****************************************************************************
 //*****************************************************************************
-void MakeStackTrace(DWORD myeip,DWORD myesp,DWORD myebp, int skipFrames, void (*callback)(const char*))
+void MakeStackTrace(GXCtxReg myeip, GXCtxReg myesp, GXCtxReg myebp, int skipFrames, void (*callback)(const char*))
 {
 STACKFRAME      stack_frame;
 BOOL            b_ret = TRUE;
@@ -180,6 +156,9 @@ HANDLE process = GetCurrentProcess();
 
 memset(&gsContext, 0, sizeof(CONTEXT));
 gsContext.ContextFlags = CONTEXT_FULL;
+GX_CTX_PC(&gsContext) = (DWORD_PTR)myeip;
+GX_CTX_SP(&gsContext) = (DWORD_PTR)myesp;
+GX_CTX_FP(&gsContext) = (DWORD_PTR)myebp;
 
 memset(&stack_frame, 0, sizeof(STACKFRAME));
 stack_frame.AddrPC.Mode = AddrModeFlat;
@@ -208,11 +187,11 @@ stack_frame.AddrFrame.Offset = myebp;
 			unsigned int skip = skipFrames;
 			while (b_ret&&skip)
 			{
-					b_ret = DbgHelp::StackWalk(      IMAGE_FILE_MACHINE_I386,
+					b_ret = DbgHelp::StackWalk(      GX_IMAGE_FILE_MACHINE_NATIVE,
 											process,
 											thread,
 											&stack_frame,
-											nullptr, //&gsContext,
+											GX_STACKWALK_CONTEXT(&gsContext),
 											nullptr,
 											DbgHelp::SymFunctionTableAccess,
 											DbgHelp::SymGetModuleBase,
@@ -224,11 +203,11 @@ stack_frame.AddrFrame.Offset = myebp;
 			while(b_ret&&skip)
 			{
 
-					b_ret = DbgHelp::StackWalk(      IMAGE_FILE_MACHINE_I386,
+					b_ret = DbgHelp::StackWalk(      GX_IMAGE_FILE_MACHINE_NATIVE,
 											process,
 											thread,
 											&stack_frame,
-											nullptr, //&gsContext,
+											GX_STACKWALK_CONTEXT(&gsContext),
 											nullptr,
 											DbgHelp::SymFunctionTableAccess,
 											DbgHelp::SymGetModuleBase,
@@ -267,7 +246,7 @@ void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* l
 		*address = 0xFFFFFFFF;
 	}
 
-	ULONG displacement = 0;
+	DWORD_PTR symDisplacement = 0;
 
     HANDLE process = ::GetCurrentProcess();
 
@@ -278,7 +257,7 @@ void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* l
     psymbol->SizeOfStruct = sizeof(symbol_buffer);
     psymbol->MaxNameLength = 512;
 
-	if (DbgHelp::SymGetSymFromAddr(process, (DWORD) pointer, &displacement, psymbol))
+	if (DbgHelp::SymGetSymFromAddr(process, (DWORD_PTR) pointer, &symDisplacement, psymbol))
 	{
 		if (name)
 		{
@@ -291,8 +270,9 @@ void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* l
 		IMAGEHLP_LINE line;
 		memset(&line,0,sizeof(line));
 		line.SizeOfStruct = sizeof(line);
+		DWORD lineDisplacement = 0;
 
-		if (DbgHelp::SymGetLineFromAddr(process, (DWORD) pointer, &displacement, &line))
+		if (DbgHelp::SymGetLineFromAddr(process, (DWORD_PTR) pointer, &lineDisplacement, &line))
 		{
 			if (filename)
 			{
@@ -325,37 +305,8 @@ void FillStackAddresses(void**addresses, unsigned int count, unsigned int skip)
 	HANDLE thread = GetCurrentThread();
 	HANDLE process = GetCurrentProcess();
 
-    memset(&gsContext, 0, sizeof(CONTEXT));
-    gsContext.ContextFlags = CONTEXT_FULL;
-
-	DWORD myeip,myesp,myebp;
-#if defined(_MSC_VER)
-__asm
-{
-MYEIP2:
- mov eax, MYEIP2
- mov dword ptr [myeip] , eax
- mov eax, esp
- mov dword ptr [myesp] , eax
- mov eax, ebp
- mov dword ptr [myebp] , eax
- xor eax,eax
-}
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
-	// GCC/Clang inline assembly for x86-32
-	__asm__ __volatile__(
-		"call 1f\n\t"
-		"1: pop %0\n\t"
-		"mov %%esp, %1\n\t"
-		"mov %%ebp, %2\n\t"
-		"xor %%eax, %%eax"
-		: "=r"(myeip), "=r"(myesp), "=r"(myebp)
-		:
-		: "eax", "memory"
-	);
-#else
-	#error "Unsupported compiler or architecture for register capture"
-#endif
+	GXCtxReg myeip, myesp, myebp;
+	GXCaptureContextRegisters(&gsContext, &myeip, &myesp, &myebp);
 memset(&stack_frame, 0, sizeof(STACKFRAME));
 stack_frame.AddrPC.Mode = AddrModeFlat;
 stack_frame.AddrPC.Offset = myeip;
@@ -383,11 +334,11 @@ stack_frame.AddrFrame.Offset = myebp;
 		// Skip some?
 		while (stillgoing&&skip)
 		{
-			stillgoing = DbgHelp::StackWalk(IMAGE_FILE_MACHINE_I386,
+			stillgoing = DbgHelp::StackWalk(GX_IMAGE_FILE_MACHINE_NATIVE,
 								process,
 								thread,
 								&stack_frame,
-								nullptr,	//&gsContext,
+								GX_STACKWALK_CONTEXT(&gsContext),
 								nullptr,
 								DbgHelp::SymFunctionTableAccess,
 								DbgHelp::SymGetModuleBase,
@@ -397,11 +348,11 @@ stack_frame.AddrFrame.Offset = myebp;
 
 		while(stillgoing&&count)
 		{
-			stillgoing = DbgHelp::StackWalk(IMAGE_FILE_MACHINE_I386,
+			stillgoing = DbgHelp::StackWalk(GX_IMAGE_FILE_MACHINE_NATIVE,
 								process,
 								thread,
 								&stack_frame,
-								nullptr, //&gsContext,
+								GX_STACKWALK_CONTEXT(&gsContext),
 								nullptr,
 								DbgHelp::SymFunctionTableAccess,
 								DbgHelp::SymGetModuleBase,
@@ -543,7 +494,7 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 	** The following are set for access violation only
 	*/
 	int access_read_write=-1;
-	unsigned long access_address = 0;
+	ULONG_PTR access_address = 0;
 	AsciiString msg;
 
 // DOUBLE_DEBUG does a DEBUG_LOG, and concats to g_LastErrorDump.  jba.
@@ -552,7 +503,7 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 	if ( e_info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION )
 	{
 		DOUBLE_DEBUG (("Exception is access violation"));
-		access_read_write = e_info->ExceptionRecord->ExceptionInformation[0];  // 0=read, 1=write
+		access_read_write = (int)e_info->ExceptionRecord->ExceptionInformation[0];  // 0=read, 1=write
 		access_address = e_info->ExceptionRecord->ExceptionInformation[1];
 	}
 	else
@@ -560,7 +511,7 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 		DOUBLE_DEBUG (("Exception code is %x", e_info->ExceptionRecord->ExceptionCode));
 	}
 	Int *winMainAddr = (Int *)WinMain;
-	DOUBLE_DEBUG(("WinMain at %x", winMainAddr));
+	DOUBLE_DEBUG(("WinMain at %p", static_cast<void*>(winMainAddr)));
 	/*
 	** Match the exception type with the error string and print it out
 	*/
@@ -580,16 +531,16 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 	{
 		if ( access_read_write )
 		{
-			DOUBLE_DEBUG( ("Access address:%08X was written to.", access_address));
+			DOUBLE_DEBUG( ("Access address:%p was written to.", reinterpret_cast<void*>(access_address)));
 		}
 		else
 		{
-			DOUBLE_DEBUG( ("Access address:%08X was read from.", access_address));
+			DOUBLE_DEBUG( ("Access address:%p was read from.", reinterpret_cast<void*>(access_address)));
 		}
 	}
 
 	DOUBLE_DEBUG (("\nStack Dump:"));
-	StackDumpFromContext(context->Eip, context->Esp, context->Ebp, nullptr);
+	StackDumpFromContext(GX_CTX_PC(context), GX_CTX_SP(context), GX_CTX_FP(context), nullptr);
 
 	DOUBLE_DEBUG (("\nDetails:"));
 
@@ -598,20 +549,29 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 	/*
 	** Dump the registers.
 	*/
+#if defined(_M_X64) || defined(_M_AMD64)
+	DOUBLE_DEBUG ( ( "Rip:%016llX\tRsp:%016llX\tRbp:%016llX", (unsigned long long)context->Rip, (unsigned long long)context->Rsp, (unsigned long long)context->Rbp));
+	DOUBLE_DEBUG ( ( "Rax:%016llX\tRbx:%016llX\tRcx:%016llX", (unsigned long long)context->Rax, (unsigned long long)context->Rbx, (unsigned long long)context->Rcx));
+	DOUBLE_DEBUG ( ( "Rdx:%016llX\tRsi:%016llX\tRdi:%016llX", (unsigned long long)context->Rdx, (unsigned long long)context->Rsi, (unsigned long long)context->Rdi));
+	DOUBLE_DEBUG ( ( "R8 :%016llX\tR9 :%016llX\tR10:%016llX", (unsigned long long)context->R8, (unsigned long long)context->R9, (unsigned long long)context->R10));
+	DOUBLE_DEBUG ( ( "R11:%016llX\tR12:%016llX\tR13:%016llX", (unsigned long long)context->R11, (unsigned long long)context->R12, (unsigned long long)context->R13));
+	DOUBLE_DEBUG ( ( "R14:%016llX\tR15:%016llX", (unsigned long long)context->R14, (unsigned long long)context->R15));
+#else
 	DOUBLE_DEBUG ( ( "Eip:%08X\tEsp:%08X\tEbp:%08X", context->Eip, context->Esp, context->Ebp));
 	DOUBLE_DEBUG ( ( "Eax:%08X\tEbx:%08X\tEcx:%08X", context->Eax, context->Ebx, context->Ecx));
 	DOUBLE_DEBUG ( ( "Edx:%08X\tEsi:%08X\tEdi:%08X", context->Edx, context->Esi, context->Edi));
+#endif
 	DOUBLE_DEBUG ( ( "EFlags:%08X ", context->EFlags));
 	DOUBLE_DEBUG ( ( "CS:%04x  SS:%04x  DS:%04x  ES:%04x  FS:%04x  GS:%04x", context->SegCs, context->SegSs, context->SegDs, context->SegEs, context->SegFs, context->SegGs));
 
 	/*
-	** Dump the bytes at EIP. This will make it easier to match the crash address with later versions of the game.
+	** Dump the bytes at instruction pointer. This will make it easier to match the crash address with later versions of the game.
 	*/
 	char scrap[512];
-	DOUBLE_DEBUG ( ("EIP bytes dump..."));
-	wsprintf (scrap, "\nBytes at CS:EIP (%08X)  : ", context->Eip);
+	DOUBLE_DEBUG ( ("IP bytes dump..."));
+	sprintf (scrap, "\nBytes at CS:IP (%p)  : ", reinterpret_cast<void*>(static_cast<DWORD_PTR>(GX_CTX_PC(context))));
 
-	unsigned char *eip_ptr = (unsigned char *) (context->Eip);
+	unsigned char *eip_ptr = (unsigned char *) (DWORD_PTR)GX_CTX_PC(context);
 	char bytestr[32];
 
 	for (int c = 0 ; c < 32 ; c++)

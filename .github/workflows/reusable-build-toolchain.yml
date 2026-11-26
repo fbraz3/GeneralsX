@@ -120,21 +120,27 @@ jobs:
           "INCLUDE=$MSVCDir\ATL\INCLUDE;$MSVCDir\INCLUDE;$MSVCDir\MFC\INCLUDE;$env:INCLUDE" >> $env:GITHUB_ENV
           "LIB=$MSVCDir\LIB;$MSVCDir\MFC\LIB;$env:LIB" >> $env:GITHUB_ENV
 
-      - name: Set Up VC2022 Environment
+      - name: Set Up VC2022 x86 Environment
         if: startsWith(inputs.preset, 'win32')
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
         with:
           arch: x86
 
+      - name: Set Up VC2022 x64 Environment
+        if: startsWith(inputs.preset, 'win64')
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: x64
+
       - name: Setup vcpkg
-        if: contains(inputs.preset, 'vcpkg')
+        if: contains(inputs.preset, 'vcpkg') || startsWith(inputs.preset, 'win64')
         uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11.6
         with:
           runVcpkgInstall: false
           doNotCache: true
 
       - name: Configure NuGet Source for vcpkg Binary Cache
-        if: contains(inputs.preset, 'vcpkg')
+        if: contains(inputs.preset, 'vcpkg') || startsWith(inputs.preset, 'win64')
         shell: pwsh
         run: |
           $nuget = & "$env:VCPKG_ROOT\vcpkg.exe" fetch nuget | Select-Object -Last 1
@@ -187,8 +193,8 @@ jobs:
           $buildDir = "build\${{ inputs.preset }}"
           $artifactsDir = New-Item -ItemType Directory -Force -Path "$buildDir\${{ inputs.game }}\artifacts" -Verbose
 
-          if ("${{ inputs.preset }}" -like "win32*") {
-            $configToUse = if ("${{ inputs.preset }}" -match "debug") { "Debug" } else { "Release" }
+          if ("${{ inputs.preset }}" -like "win32*" -or "${{ inputs.preset }}" -like "win64*") {
+            $configToUse = if ("${{ inputs.preset }}" -match "debug") { "Debug" } elseif ("${{ inputs.preset }}" -like "win64*") { "RelWithDebInfo" } else { "Release" }
             $files = Get-ChildItem -Path "$buildDir\Core\$configToUse","$buildDir\${{ inputs.game }}\$configToUse" -File |
               Where-Object { $_.Extension -in @(".exe", ".dll", ".pdb") } -Verbose
           } else {

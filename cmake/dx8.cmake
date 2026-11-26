@@ -18,6 +18,11 @@
 
 set(DXVK_VERSION "v2.6")
 
+# GeneralsX @build Copilot 25/11/2026 Default SAGE_USE_DX8=ON on Windows so Windows never falls through to Linux DXVK tarball
+if(WIN32 AND NOT DEFINED SAGE_USE_DX8)
+  set(SAGE_USE_DX8 ON CACHE BOOL "Use the native DirectX 8 SDK headers/libs (Windows only)")
+endif()
+
 if(SAGE_USE_DX8)
   # Windows: Fetch min-dx8-sdk for native DirectX 8
   FetchContent_Declare(
@@ -26,7 +31,24 @@ if(SAGE_USE_DX8)
     GIT_TAG        7bddff8c01f5fb931c3cb73d4aa8e66d303d97bc
   )
   FetchContent_MakeAvailable(dx8)
-  message(STATUS "Using DirectX 8 SDK (Windows native)")
+  if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 4 AND EXISTS "${dx8_SOURCE_DIR}/d3dx8.lib")
+    target_link_libraries(d3d8lib INTERFACE "${dx8_SOURCE_DIR}/d3dx8.lib")
+  endif()
+  # Strip min-dx8-sdk's x86 import libs from Win64 links (LNK1112); Windows SDK supplies x64 dinput8/dxguid,
+  # CompatLib supplies static d3dx8, and d3d8 is loaded at runtime by dx8wrapper.cpp.
+  if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+    get_target_property(_dx8_link_dirs d3d8lib INTERFACE_LINK_DIRECTORIES)
+    if(_dx8_link_dirs)
+      list(REMOVE_ITEM _dx8_link_dirs "${dx8_SOURCE_DIR}" "${dx8_SOURCE_DIR}/lib")
+      set_target_properties(d3d8lib PROPERTIES INTERFACE_LINK_DIRECTORIES "${_dx8_link_dirs}")
+    endif()
+    get_target_property(_dx8_link_libs d3d8lib INTERFACE_LINK_LIBRARIES)
+    if(_dx8_link_libs)
+      list(REMOVE_ITEM _dx8_link_libs "d3d8")
+      set_target_properties(d3d8lib PROPERTIES INTERFACE_LINK_LIBRARIES "${_dx8_link_libs}")
+    endif()
+  endif()
+  message(STATUS "Using DirectX 8 SDK (Windows native): ${dx8_SOURCE_DIR}")
 
 elseif(SAGE_USE_WEBGPU)
   # GeneralsX @feature Reuse only Direct3D 8 API headers for the WebGPU backend.
@@ -201,6 +223,9 @@ elseif(APPLE AND SAGE_USE_MOLTENVK)
   set(dxvk_SOURCE_DIR "${DXVK_SOURCE_DIR}" CACHE PATH "DXVK source directory (macOS)")
   message(STATUS "DXVK source directory: ${DXVK_SOURCE_DIR}")
   message(STATUS "DXVK d3d8 library:     ${DXVK_D3D8_LIB}")
+
+elseif(WIN32)
+  message(FATAL_ERROR "SAGE_USE_DX8=OFF is not supported on Windows. Set SAGE_USE_DX8=ON so headers come from min-dx8-sdk.")
 
 else()
   # Linux: Fetch pre-built DXVK native binary for DirectX→Vulkan translation

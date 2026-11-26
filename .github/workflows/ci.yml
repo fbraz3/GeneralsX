@@ -163,7 +163,7 @@ jobs:
     if: needs.build-windows.result == 'success'
     uses: ./.github/workflows/replay-tests-windows.yml
     with:
-      game-artifact: windows-x86-GeneralsXZH-replay-test-only.zip
+      game-artifact: windows-x64-GeneralsXZH-replay-test-only.zip
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
@@ -192,7 +192,7 @@ jobs:
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Linux Flatpak | ${{ needs.build-linux-flatpak.result == 'success' && '✅ Success' || needs.build-linux-flatpak.result == 'skipped' && '⏭️ Skipped' || needs.build-linux-flatpak.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| macOS (arm64) | ${{ needs.build-macos.result == 'success' && '✅ Success' || needs.build-macos.result == 'skipped' && '⏭️ Skipped' || needs.build-macos.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows (x86) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows (x64) | ${{ needs.build-windows.result == 'success' && '✅ Success' || needs.build-windows.result == 'skipped' && '⏭️ Skipped' || needs.build-windows.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| WebAssembly (WebGPU) | ${{ needs.build-wasm.result == 'success' && '✅ Success' || needs.build-wasm.result == 'skipped' && '⏭️ Skipped' || needs.build-wasm.result == 'cancelled' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Replay Tests | Status |" >> $GITHUB_STEP_SUMMARY
