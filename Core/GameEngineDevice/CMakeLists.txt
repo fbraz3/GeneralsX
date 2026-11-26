@@ -184,6 +184,9 @@ if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
         Include/VideoDevice/Bink/BinkVideoPlayer.h
+        Include/Win32Device/Common/GXD3DBackend.h
+        Include/Win32Device/Common/GXD3DWin32.h
+        Include/Win32Device/Common/GXVulkanCheck.h
         Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h

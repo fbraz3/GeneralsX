@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #ifndef IG_DEBUG_STACKTRACE
 #define IG_DEBUG_STACKTRACE	1
 #endif // Unsure about this one -ML 3/25/03
@@ -35,8 +37,8 @@ void StackDump(void (*callback)(const char*));
 
 // Writes a stackdump (provide a callback : gets called per line)
 // If callback is nullptr then will write using OuputDebugString
-// GeneralsX @bugfix Copilot 25/11/2026 Pointer-width register args so StackDumpFromContext works on both Win32 and Win64.
-void StackDumpFromContext(DWORD_PTR eip, DWORD_PTR esp, DWORD_PTR ebp, void (*callback)(const char*));
+// GeneralsX @bugfix fbraz3 26/11/2026 Use portable uintptr_t for cross-platform declaration compatibility.
+void StackDumpFromContext(uintptr_t eip, uintptr_t esp, uintptr_t ebp, void (*callback)(const char*));
 
 // Gets count* addresses from the current stack
 void FillStackAddresses(void**addresses, unsigned int count, unsigned int skip = 0);

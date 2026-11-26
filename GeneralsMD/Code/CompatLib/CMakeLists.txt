@@ -31,12 +31,12 @@ if(NOT GX_COMPATLIB_INCLUDE_DIR)
     if(WIN32)
         set(GX_COMPATLIB_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/compatlib-d3dx8-only")
         file(MAKE_DIRECTORY "${GX_COMPATLIB_INCLUDE_DIR}")
-        file(COPY
-            "${CMAKE_CURRENT_SOURCE_DIR}/Include/d3dx8.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/Include/d3dx8core.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/Include/d3dx8math.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/Include/d3dx8tex.h"
-            DESTINATION "${GX_COMPATLIB_INCLUDE_DIR}")
+        foreach(_d3dx_hdr IN ITEMS d3dx8.h d3dx8core.h d3dx8math.h d3dx8tex.h)
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/Include/${_d3dx_hdr}"
+                "${GX_COMPATLIB_INCLUDE_DIR}/${_d3dx_hdr}"
+                COPYONLY)
+        endforeach()
     else()
         set(GX_COMPATLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Include")
     endif()

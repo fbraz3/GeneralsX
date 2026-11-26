@@ -55,6 +55,7 @@
 #include "StdDevice/Common/StdLocalFileSystem.h"
 #include "Common/BIGFileSystem.h"
 #include "Common/GlobalData.h"
+#include "Common/MessageStream.h"
 #include <SDL3/SDL.h>
 #ifndef _WIN32
 #include <SDL3/SDL_vulkan.h>
@@ -273,11 +274,13 @@ void SDL3GameEngine::pollSDL3Events(void)
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
-				m_quitting = true;
-				break;
-
 			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-				m_quitting = true;
+				// GeneralsX @bugfix fbraz3 26/11/2026 Route window close through instant-quit message when MessageStream is ready.
+				if (TheMessageStream && TheMessageStream->isReadyForMessages()) {
+					TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+				} else {
+					m_quitting = true;
+				}
 				break;
 
 			case SDL_EVENT_WINDOW_FOCUS_GAINED:

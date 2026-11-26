@@ -66,6 +66,7 @@
 #include "Win32Device/Common/Win32GameEngine.h"
 #endif
 #include "Win32Device/Common/GXD3DBackend.h"
+#include "Win32Device/Common/GXD3DWin32.h"
 #include "Win32Device/Common/GXVulkanCheck.h"
 #include "Common/OptionPreferences.h"
 #include "WW3D2/dx8wrapper.h"
@@ -345,12 +346,7 @@ static Bool initializeSDL3Window( HINSTANCE hInstance, const char *title )
 		return false;
 	}
 
-	HICON appIcon = LoadIcon( hInstance, MAKEINTRESOURCE( IDI_ApplicationIcon ) );
-	if ( appIcon )
-	{
-		SendMessage( ApplicationHWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>( appIcon ) );
-		SendMessage( ApplicationHWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>( appIcon ) );
-	}
+	gxwin32::attachWindowIcon( ApplicationHWnd, hInstance, IDI_ApplicationIcon );
 
 	fprintf( stderr, "INFO: SDL3 window initialized cleanly (SDL_Window=%p, HWND=%p)\n",
 		static_cast<void *>( TheSDL3Window ), static_cast<void *>( ApplicationHWnd ) );
@@ -872,32 +868,6 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 }
 
 // GeneralsX @feature Copilot 25/11/2026 Select DXVK vs static d3d8to9 compatibility backend on Windows x64 based on Vulkan 1.3 availability.
-static void *gxVkOpen(const char *name) { return reinterpret_cast<void *>(LoadLibraryA(name)); }
-static void *gxVkSymbol(void *library, const char *name)
-{
-	return reinterpret_cast<void *>(GetProcAddress(static_cast<HMODULE>(library), name));
-}
-static void gxVkClose(void *library) { FreeLibrary(static_cast<HMODULE>(library)); }
-
-static bool gxUsesDxvkPair()
-{
-	wchar_t path[MAX_PATH];
-	const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
-	if (n == 0 || n >= MAX_PATH)
-		return false;
-	wchar_t *slash = wcsrchr(path, L'\\');
-	if (slash == nullptr)
-		return false;
-	const size_t room = MAX_PATH - static_cast<size_t>(slash + 1 - path);
-	auto beside = [&](const wchar_t *leaf) {
-		if (wcscpy_s(slash + 1, room, leaf) != 0)
-			return false;
-		const DWORD a = GetFileAttributesW(path);
-		return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY) == 0;
-	};
-	return gxvk::usesDxvkPair(beside(L"d3d8.dll"), beside(L"d3d9.dll"));
-}
-
 #ifdef GX_COMPAT_D3D9
 static IDirect3D8 *WINAPI gxCompatCreate8(UINT sdk)
 {
@@ -915,37 +885,13 @@ static const bool kGxCompatBuilt = false;
 static char s_gxGraphicsPath[1024] = "";
 static int s_gxFailures = 0;
 
-static GxD3DState gxReadGraphicsState()
-{
-	char text[512] = "";
-	if (FILE *f = fopen(s_gxGraphicsPath, "r"))
-	{
-		text[fread(text, 1, sizeof(text) - 1, f)] = '\0';
-		fclose(f);
-	}
-	return gxD3DParseState(text);
-}
-
-static bool gxWriteGraphicsState(int backend, int reason, GxD3DState st)
-{
-	char text[256];
-	const int n = gxD3DFormatFile(text, sizeof(text), backend, reason, st);
-	if (n <= 0 || n >= static_cast<int>(sizeof(text)) || s_gxGraphicsPath[0] == '\0')
-		return false;
-	FILE *f = fopen(s_gxGraphicsPath, "w");
-	if (f == nullptr)
-		return false;
-	const bool written = fputs(text, f) >= 0;
-	return fclose(f) == 0 && written;
-}
-
 static void gxDeviceStage(int stage)
 {
 	static bool s_ready = false;
 	if (s_ready)
 		return;
 	const GxD3DState st = { stage == 0 ? static_cast<int>(GXD3D_PENDING_DEVICE) : static_cast<int>(GXD3D_PENDING_NONE), 0, stage == 0 ? s_gxFailures : 0 };
-	gxWriteGraphicsState(GXD3D_DXVK, GXD3D_R_VULKAN_OK, st);
+	gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_DXVK, GXD3D_R_VULKAN_OK, st);
 	if (stage == 1)
 	{
 		s_ready = true;
@@ -960,20 +906,17 @@ static Bool gxPickD3D()
 	const OptionPreferences prefs;
 	const AsciiString key = prefs.getAsciiString("GXGraphicsBackend", AsciiString::TheEmptyString);
 	const char *keyText = key.isEmpty() ? nullptr : key.str();
-	const bool pair = gxUsesDxvkPair();
+	const bool pair = gxwin32::usesDxvkPair();
 	char leaf[64];
 	gxD3DStateFileName(leaf, sizeof(leaf), rts::ClientInstance::getInstanceId());
 	snprintf(s_gxGraphicsPath, sizeof(s_gxGraphicsPath), "%s%s", TheGlobalData->getPath_UserData().str(), leaf);
 
 	GxD3DState next;
-	bool fallback = gxD3DFallback(env, keyText, kGxCompatBuilt, pair, gxReadGraphicsState(), &next);
-	if (fallback && !gxWriteGraphicsState(GXD3D_COMPAT, GXD3D_R_DXVK_FAILED, next))
+	const bool fallback = gxD3DFallback(env, keyText, kGxCompatBuilt, pair, gxwin32::readGraphicsState(s_gxGraphicsPath), &next);
+	// GeneralsX @bugfix fbraz3 26/11/2026 Preserve compatibility fallback for this launch even if persisting the state file fails.
+	if (fallback && !gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_COMPAT, GXD3D_R_DXVK_FAILED, next))
 	{
-		fallback = false;
-		next.pending = GXD3D_PENDING_NONE;
-		next.compatLeft = 0;
-		next.failures = 0;
-		fprintf(stderr, "[GXGFX] %s cannot be written: its crash marker is ignored this start\n", s_gxGraphicsPath);
+		fprintf(stderr, "[GXGFX] %s cannot be written: keeping compatibility graphics active for this start\n", s_gxGraphicsPath);
 	}
 
 	int verdict = -1;
@@ -982,8 +925,8 @@ static Bool gxPickD3D()
 		fprintf(stderr, "[GXVULKAN] skipped: the last DXVK start never got a device (gxgraphics.txt crash marker)\n");
 	else if (gxD3DNeedsProbe(env, keyText, kGxCompatBuilt, pair))
 	{
-		gxWriteGraphicsState(GXD3D_DXVK, GXD3D_R_VULKAN_OK, GxD3DState{ GXD3D_PENDING_PROBE, next.compatLeft, next.failures });
-		const gxvk::Loader loader = { gxVkOpen, gxVkSymbol, gxVkClose };
+		gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_DXVK, GXD3D_R_VULKAN_OK, GxD3DState{ GXD3D_PENDING_PROBE, next.compatLeft, next.failures });
+		const gxvk::Loader loader = gxwin32::makeVulkanLoader();
 		probe = gxvk::probe(loader);
 		verdict = gxvk::judge(probe);
 		char line[512];
@@ -1019,7 +962,7 @@ static Bool gxPickD3D()
 
 	next.pending = GXD3D_PENDING_NONE;
 	s_gxFailures = next.failures;
-	gxWriteGraphicsState(d.backend, d.reason, next);
+	gxwin32::writeGraphicsState(s_gxGraphicsPath, d.backend, d.reason, next);
 	return TRUE;
 }
 

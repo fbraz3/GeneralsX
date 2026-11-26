@@ -70,13 +70,26 @@ D3DXLoadSurfaceFromSurface(
 	DWORD Filter,
 	D3DCOLOR ColorKey)
 {
+	if (pSrcSurface == NULL || pDestSurface == NULL)
+	{
+		return D3DERR_INVALIDCALL;
+	}
+
 	D3DSURFACE_DESC descSrc;
 	D3DSURFACE_DESC descDest;
 
 	//DEBUG_ASSERTCRASH(pDestPalette == NULL);
 
-	pSrcSurface->GetDesc(&descSrc);
-	pDestSurface->GetDesc(&descDest);
+	HRESULT hr = pSrcSurface->GetDesc(&descSrc);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+	hr = pDestSurface->GetDesc(&descDest);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 
 	if (descSrc.Format != descDest.Format)
 	{
@@ -84,11 +97,21 @@ D3DXLoadSurfaceFromSurface(
 		return D3DERR_INVALIDCALL;
 	}
 
+	// GeneralsX @bugfix fbraz3 26/11/2026 Check LockRect results and unlock source surface if dest lock fails.
 	D3DLOCKED_RECT srcRect;
-	pSrcSurface->LockRect(&srcRect, NULL, 0);
+	hr = pSrcSurface->LockRect(&srcRect, NULL, 0);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 
 	D3DLOCKED_RECT destRect;
-	pDestSurface->LockRect(&destRect, NULL, 0);
+	hr = pDestSurface->LockRect(&destRect, NULL, 0);
+	if (FAILED(hr))
+	{
+		pSrcSurface->UnlockRect();
+		return hr;
+	}
 
 	// Fast path: No scaling needs to be done if the dimensions are the same
 	if (descDest.Width == descSrc.Width && descDest.Height == descSrc.Height)

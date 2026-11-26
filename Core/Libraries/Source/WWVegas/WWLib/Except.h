@@ -37,6 +37,7 @@
 #if defined(_WIN32)
 
 #include "win.h"
+#include <cstdint>
 /*
 ** Forward Declarations
 */
@@ -44,7 +45,8 @@ typedef struct _EXCEPTION_POINTERS EXCEPTION_POINTERS;
 typedef struct _CONTEXT CONTEXT;
 
 int Exception_Handler(int exception_code, EXCEPTION_POINTERS *e_info);
-int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *context = nullptr);
+// GeneralsX @bugfix fbraz3 26/11/2026 Widen return_addresses to uintptr_t so 64-bit addresses are not truncated.
+int Stack_Walk(uintptr_t *return_addresses, int num_addresses, CONTEXT *context = nullptr);
 bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement);
 void Load_Image_Helper();
 void Register_Thread_ID(unsigned long thread_id, char *thread_name, bool main = false);

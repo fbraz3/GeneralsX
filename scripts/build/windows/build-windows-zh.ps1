@@ -8,6 +8,7 @@ param(
     [ValidateSet("RelWithDebInfo", "Debug", "Release")]
     [string]$Config = $(if ($Preset -eq "win64-debug") { "Debug" } else { "RelWithDebInfo" }),
     [string]$Target = "z_generals",
+    [string]$VcpkgBuildtreesRoot = $(if ($env:GX_VCPKG_BUILDTREES_ROOT) { $env:GX_VCPKG_BUILDTREES_ROOT } else { "C:/vcpkg_bld" }),
     [switch]$Reconfigure
 )
 
@@ -36,8 +37,20 @@ if (-not (Get-Command sccache.exe -ErrorAction SilentlyContinue) -and -not (Get-
 
 $preferredVcpkgRoot = if ($env:VCPKG_ROOT) { $env:VCPKG_ROOT } elseif (Test-Path "C:\vcpkg\vcpkg.exe") { "C:\vcpkg" } else { "" }
 
+function Test-MsvcX64Toolchain {
+    $clCmd = Get-Command cl.exe -ErrorAction SilentlyContinue
+    if (-not $clCmd) {
+        return $false
+    }
+    if ($clCmd.Source -match '(?i)\\Host(x64|x86)\\x64\\cl\.exe$') {
+        return $true
+    }
+    $banner = (& cl.exe 2>&1 | Out-String)
+    return ($banner -match '\bx64\b')
+}
+
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
+if (-not (Test-MsvcX64Toolchain)) {
     if (-not (Test-Path $vswhere)) {
         throw "Visual Studio 2022 / Build Tools not found (missing $vswhere)."
     }
@@ -59,8 +72,8 @@ if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
             [Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
         }
     }
-    if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
-        throw "Failed to initialize MSVC x64 environment (cl.exe not on PATH)."
+    if (-not (Test-MsvcX64Toolchain)) {
+        throw "Failed to initialize MSVC x64 toolchain (x64 cl.exe not on PATH)."
     }
 }
 
@@ -79,7 +92,7 @@ if (-not $env:VSLANG) {
 $cmakeConfigureArgs = @()
 if (-not $env:GITHUB_ACTIONS -and $RepoRoot.Length -gt 55) {
     # Windows MAX_PATH (260 chars) breaks deep vcpkg buildtrees under worktree paths.
-    $cmakeConfigureArgs += "-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=C:/vcpkg_bld"
+    $cmakeConfigureArgs += "-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$VcpkgBuildtreesRoot"
 }
 
 Push-Location $RepoRoot

@@ -12,12 +12,12 @@ target_include_directories(gi_main INTERFACE "Main")
 if(WIN32)
     set(_compatlib_win_inc "${CMAKE_CURRENT_BINARY_DIR}/compatlib-d3dx8-only")
     file(MAKE_DIRECTORY "${_compatlib_win_inc}")
-    file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/d3dx8.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/d3dx8core.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/d3dx8math.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/d3dx8tex.h"
-        DESTINATION "${_compatlib_win_inc}")
+    foreach(_d3dx_hdr IN ITEMS d3dx8.h d3dx8core.h d3dx8math.h d3dx8tex.h)
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/${_d3dx_hdr}"
+            "${_compatlib_win_inc}/${_d3dx_hdr}"
+            COPYONLY)
+    endforeach()
     target_include_directories(gi_always INTERFACE "${_compatlib_win_inc}")
 elseif(UNIX)
     target_include_directories(gi_always INTERFACE "CompatLib/Include")

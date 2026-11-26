@@ -324,30 +324,14 @@ Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& 
 
 #else // Windows implementation
 
+#include "PlatformWin32Registry.h"
+
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
-	HKEY handle;
-	unsigned char buffer[256];
-	unsigned long size = 256;
-	unsigned long type;
-	int returnValue;
-
-	// GeneralsX @bugfix Copilot 25/11/2026 Retail installers wrote 32-bit HKLM keys under WOW6432Node; fall back on 64-bit Windows.
-	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) != ERROR_SUCCESS)
+	char buffer[256];
+	if (Platform::ReadWin32RegistryString(root, path.str(), key.str(), buffer, sizeof(buffer)))
 	{
-#ifdef _WIN64
-		returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ | KEY_WOW64_32KEY, &handle );
-#endif
-	}
-	if (returnValue == ERROR_SUCCESS)
-	{
-		returnValue = RegQueryValueEx(handle, key.str(), nullptr, &type, (unsigned char *) &buffer, &size);
-		RegCloseKey( handle );
-	}
-
-	if (returnValue == ERROR_SUCCESS)
-	{
-		val = (char *)buffer;
+		val = buffer;
 		return TRUE;
 	}
 
@@ -356,27 +340,10 @@ Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiS
 
 Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val)
 {
-	HKEY handle;
-	unsigned char buffer[4];
-	unsigned long size = 4;
-	unsigned long type;
-	int returnValue;
-
-	if ((returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ, &handle )) != ERROR_SUCCESS)
+	uint32_t raw = 0;
+	if (Platform::ReadWin32RegistryUInt32(root, path.str(), key.str(), raw))
 	{
-#ifdef _WIN64
-		returnValue = RegOpenKeyEx( root, path.str(), 0, KEY_READ | KEY_WOW64_32KEY, &handle );
-#endif
-	}
-	if (returnValue == ERROR_SUCCESS)
-	{
-		returnValue = RegQueryValueEx(handle, key.str(), nullptr, &type, (unsigned char *) &buffer, &size);
-		RegCloseKey( handle );
-	}
-
-	if (returnValue == ERROR_SUCCESS)
-	{
-		val = *(UnsignedInt *)buffer;
+		val = static_cast<UnsignedInt>(raw);
 		return TRUE;
 	}
 

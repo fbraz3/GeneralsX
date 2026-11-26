@@ -141,7 +141,7 @@ static char const *const ImagehelpFunctionNames[] =
 	"SymUnloadModule",
 	"StackWalk",
 	"SymFunctionTableAccess",
-	"SymGetModuleBaseType",
+	"SymGetModuleBase",
 	nullptr
 };
 
@@ -432,12 +432,13 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	DebugString("Stack walk...\n");
 	Add_Txt("\r\n  Stack walk...\r\n");
 
-	unsigned long return_addresses[256];
+	// GeneralsX @bugfix fbraz3 26/11/2026 Widen stack walk addresses to uintptr_t for 64-bit return pointers.
+	uintptr_t return_addresses[256];
 	int num_addresses = Stack_Walk(return_addresses, 256, context);
 
 	if (num_addresses) {
 		for (int s=0 ; s<num_addresses ; s++) {
-			unsigned long temp_addr = return_addresses[s];
+			uintptr_t temp_addr = return_addresses[s];
 			displacement = 0;
 
 			for (int space = 0 ; space <= s ; space++) {
@@ -448,16 +449,16 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 				symptr->SizeOfStruct = sizeof(symbol);
 				symptr->MaxNameLength = 128;
 				symptr->Size = 0;
-				symptr->Address = temp_addr;
+				symptr->Address = (DWORD_PTR)temp_addr;
 
-				if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), temp_addr, &displacement, symptr)) {
+				if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), (DWORD_PTR)temp_addr, &displacement, symptr)) {
 					char symbuf[256];
 					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %p\r\n", symptr->Name, (void *)displacement);
 					Add_Txt(symbuf);
 				}
 			} else {
 				char symbuf[256];
-				sprintf(symbuf, "%08x\r\n", temp_addr);
+				snprintf(symbuf, ARRAY_SIZE(symbuf), "%0*llx\r\n", (int)(sizeof(uintptr_t) * 2), (unsigned long long)temp_addr);
 				Add_Txt(symbuf);
 			}
 		}
@@ -915,7 +916,18 @@ void Load_Image_Helper()
 			do {
 				function_name = ImagehelpFunctionNames[count];
 				if (function_name) {
+#ifdef _WIN64
+					// GeneralsX @bugfix fbraz3 26/11/2026 Prefer ...64 dbghelp exports on _WIN64 to match 64-bit typedefs.
+					char name64[64];
+					snprintf(name64, sizeof(name64), "%s64", function_name);
+					FARPROC proc = GetProcAddress(ImageHelp, name64);
+					if (proc == nullptr) {
+						proc = GetProcAddress(ImageHelp, function_name);
+					}
+					*fptr = (uintptr_t) proc;
+#else
 					*fptr = (uintptr_t) GetProcAddress(ImageHelp, function_name);
+#endif
 					fptr++;
 					count++;
 				}
@@ -1019,7 +1031,7 @@ bool Lookup_Symbol(void *code_ptr, char *symbol, int &displacement)
 
 
 // A null context means the current context is used.
-int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *context)
+int Stack_Walk(uintptr_t *return_addresses, int num_addresses, CONTEXT *context)
 {
 	static HINSTANCE _imagehelp = (HINSTANCE) -1;
 
@@ -1034,7 +1046,7 @@ int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *cont
 	/*
 	** If there is no debug support .dll available then we can't walk the stack.
 	*/
-	if (ImageHelp == nullptr) {
+	if (ImageHelp == nullptr || _StackWalk == nullptr) {
 		return(0);
 	}
 
@@ -1079,7 +1091,7 @@ int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *cont
 			if (i==0 && context == nullptr) {
 				continue;
 			}
-			unsigned long return_address = stack_frame.AddrReturn.Offset;
+			uintptr_t return_address = static_cast<uintptr_t>(stack_frame.AddrReturn.Offset);
 			return_addresses[pointer_index++] = return_address;
 		} else {
 			break;
