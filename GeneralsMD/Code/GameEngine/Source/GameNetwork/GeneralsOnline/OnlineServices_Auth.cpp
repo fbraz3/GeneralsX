@@ -83,6 +83,15 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         m_gamecode = "ILOVECODE";
         fprintf(stderr, "[NGMP] Development mode detected: using bypass gamecode ILOVECODE\n");
         fflush(stderr);
+
+        // GeneralsX @bugfix fbraz3 26/11/2026 Show cancelable dialog in local dev mode so Online click never stalls the main menu silently
+        std::string devMsg = "Connecting to local Generals Online server (" + NGMP::GetServerRESTEndpoint() + ")...";
+        ClearGSMessageBoxes();
+        GSMessageBoxCancel(UnicodeString(L"Generals Online Login (Dev)"),
+                           NGMP::UTF8ToUnicode(devMsg),
+                           []() {
+                               NGMP_OnlineServicesManager::getInstance().cancelBrowserLogin();
+                           });
     } else {
         std::string serverCode = RequestLoginCodeFromServer();
         if (serverCode.empty()) {
@@ -164,7 +173,9 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
             curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
             curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
+            curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
             CURLcode res = curl_easy_perform(curl);
             long httpCode = 0;
