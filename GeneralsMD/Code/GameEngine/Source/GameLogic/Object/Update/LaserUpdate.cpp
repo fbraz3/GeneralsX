@@ -357,6 +357,8 @@ void LaserUpdate::initLaser( const Object *parent, const Object *target, const C
 			if( data->m_particleSystemName.isNotEmpty() )
 			{
 				const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( data->m_particleSystemName );
+				// GeneralsX @bugfix fbraz3 26/11/2026 Restore null-check on createParticleSystem for headless mode
+				// Upstream reference: stm (stephanmeesters), PR #2724 (https://github.com/TheSuperHackers/GeneralsGameCode/pull/2724)
 				system = TheParticleSystemManager->createParticleSystem( tmp );
 				if( system )
 				{
@@ -368,6 +370,8 @@ void LaserUpdate::initLaser( const Object *parent, const Object *target, const C
 			if( data->m_targetParticleSystemName.isNotEmpty() )
 			{
 				const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( data->m_targetParticleSystemName );
+				// GeneralsX @bugfix fbraz3 26/11/2026 Restore null-check on createParticleSystem for headless mode
+				// Upstream reference: stm (stephanmeesters), PR #2724 (https://github.com/TheSuperHackers/GeneralsGameCode/pull/2724)
 				system = TheParticleSystemManager->createParticleSystem( tmp );
 				if( system )
 				{
