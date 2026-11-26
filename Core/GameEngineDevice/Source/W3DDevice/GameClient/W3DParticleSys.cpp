@@ -92,6 +92,25 @@ W3DParticleSystemManager::~W3DParticleSystemManager()
 	REF_PTR_RELEASE(m_angleBuffer);
 }
 
+// GeneralsX @bugfix fbraz 26/11/2026 Release cached particle textures during reset before W3DDisplay/DX8Wrapper shuts down.
+void W3DParticleSystemManager::reset()
+{
+	ParticleSystemManager::reset();
+	m_batchTexture.Clear();
+	if (m_pointGroup)
+	{
+		m_pointGroup->Set_Texture(nullptr);
+	}
+	if (m_streakLine)
+	{
+		m_streakLine->Set_Texture(nullptr);
+	}
+	if (m_terrainParticles)
+	{
+		m_terrainParticles->setTexture(nullptr);
+	}
+}
+
 /**
  * Hack because DoParticles is called from Flush(), which is called
  * multiple times per frame.  We only want to render once.

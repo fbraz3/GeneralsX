@@ -369,7 +369,7 @@ static void Resolve_Present_BackBuffer_Size(int gameW, int gameH, bool isWindowe
 	outW = (UINT)gameW;
 	outH = (UINT)gameH;
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
 	if (!isWindowed) {
 		int windowW = gameW;
 		int windowH = gameH;
@@ -687,7 +687,13 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			return false;
 		}
 #else
-#ifndef _WIN32
+#ifdef _WIN32
+		// GeneralsX @bugfix fbraz 26/11/2026 Set default DXVK configuration on Windows before loading DXVK 2.6 D3D8.DLL
+		// so SDL3 fullscreen swapchain resets do not fail on D3DPOOL_DEFAULT losable resource checks.
+		if (!Is_Compat_D3D9() && ::GetEnvironmentVariableA("DXVK_CONFIG", nullptr, 0) == 0) {
+			::SetEnvironmentVariableA("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False");
+		}
+#else
 		// GeneralsX @bugfix fbraz3 12/10/2026 Set default DXVK configuration fallback for D3D8 device resets
 		// In D3D8, swapchain resets (such as fullscreen transitions and window resizing)
 		// do not require exhaustive destruction of all D3DPOOL_DEFAULT subresources.
@@ -1065,11 +1071,18 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		// Release all non-MANAGED stuff
 		WW3D::_Invalidate_Textures();
 
-		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
+		// GeneralsX @bugfix fbraz 26/11/2026 Unbind active D3D8 texture stages, vertex streams, and index buffer before Reset().
+		for (int a = 0; a < MAX_TEXTURE_STAGES; ++a)
 		{
-			Set_Vertex_Buffer (nullptr,i);
+			DX8CALL(SetTexture(a, nullptr));
 		}
-		Set_Index_Buffer (nullptr, 0);
+		for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			DX8CALL(SetStreamSource(i, nullptr, 0));
+			Set_Vertex_Buffer(nullptr, i);
+		}
+		DX8CALL(SetIndices(nullptr, 0));
+		Set_Index_Buffer(nullptr, 0);
 		// GeneralsX @bugfix fbraz3 12/10/2026 Ensure default render targets are restored and custom RTs unbound before reset
 		Set_Render_Target(static_cast<IDirect3DSurface8*>(nullptr));
 
@@ -1372,7 +1385,7 @@ void DX8Wrapper::Resize_And_Position_Window()
 		// Resize the window to fit this resolution
 		if (!IsWindowed)
 		{
-			#ifdef _WIN32
+			#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 			::SetWindowPos(_Hwnd, HWND_TOPMOST, 0, 0, width, height, 0);
 
 			DEBUG_LOG(("Window resized to w:%d h:%d", width, height));
@@ -1473,9 +1486,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
 	_PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;//IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
 	_PresentParameters.hDeviceWindow = _Hwnd;
-	#ifndef _WIN32
-	// GeneralsX @bugfix xorza 14/04/2026 Force DXVK to use windowed presentation mode on Linux.
-	// DXVK's SDL3 WSI calls SDL_SetWindowPosition during fullscreen entry which Wayland rejects.
+	#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
+	// GeneralsX @bugfix xorza 14/04/2026 Force DXVK to use windowed presentation mode on SDL3 platforms.
 	// SDL3 native fullscreen is applied separately after device creation (see W3DDisplay::init).
 	_PresentParameters.Windowed = TRUE;
 	#else

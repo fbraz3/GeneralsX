@@ -75,7 +75,7 @@ public:
 protected:
 
 	T	*		FreeListHead;
-	uint32 *	BlockListHead;
+	void **	BlockListHead;
 	int		FreeObjectCount;
 	int		TotalObjectCount;
 	FastCriticalSectionClass ObjectPoolCS;
@@ -166,11 +166,12 @@ ObjectPoolClass<T,BLOCK_SIZE>::~ObjectPoolClass()
 	// assert that the user gave back all of the memory he was using
 	WWASSERT(FreeObjectCount == TotalObjectCount);
 
+	// GeneralsX @bugfix fbraz 26/11/2026 Use void** block header for 64-bit pointer width and CRT malloc/free so static pools survive shutdownMemoryManager().
 	// delete all of the blocks we allocated
 	int block_count = 0;
 	while (BlockListHead != nullptr) {
-		uint32 * next_block = *(uint32 **)BlockListHead;
-		::operator delete(BlockListHead);
+		void ** next_block = static_cast<void **>(*BlockListHead);
+		::free(BlockListHead);
 		BlockListHead = next_block;
 		block_count++;
 	}
@@ -208,13 +209,13 @@ T * ObjectPoolClass<T,BLOCK_SIZE>::Allocate_Object_Memory()
 	if ( FreeListHead == nullptr ) {
 
 		// No free objects, allocate another block
-		uint32 * tmp_block_head = BlockListHead;
-		BlockListHead = (uint32*)::operator new( sizeof(T) * BLOCK_SIZE + sizeof(uint32 *));
+		void ** tmp_block_head = BlockListHead;
+		BlockListHead = static_cast<void **>(::malloc( sizeof(T) * BLOCK_SIZE + sizeof(void *) ));
 		// Link this block into the block list
-		*(void **)BlockListHead = tmp_block_head;
+		*BlockListHead = tmp_block_head;
 
 		// Link the objects in the block into the free object list
-		FreeListHead = (T*)(BlockListHead + 1);
+		FreeListHead = reinterpret_cast<T *>(BlockListHead + 1);
 		for ( int i = 0; i < BLOCK_SIZE; i++ ) {
 			*(T**)(&(FreeListHead[i])) = &(FreeListHead[i+1]);	// link up the elements
 		}

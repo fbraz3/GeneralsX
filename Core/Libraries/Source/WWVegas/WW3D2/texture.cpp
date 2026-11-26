@@ -127,7 +127,11 @@ TextureBaseClass::~TextureBaseClass()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
@@ -209,7 +213,11 @@ void TextureBaseClass::Invalidate()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
@@ -244,7 +252,11 @@ void TextureBaseClass::Invalidate()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
