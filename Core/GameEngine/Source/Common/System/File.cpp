@@ -141,7 +141,8 @@ Bool File::open( const Char *filename, Int access, size_t bufferSize )
 
 	setName( filename );
 
-	if( (access & ( STREAMING | WRITE )) == ( STREAMING | WRITE ))
+	// GeneralsX @feature Codex 25/11/2026 Enforce read-only access when opening an independent stream directly.
+	if( !isValidIndependentStreamAccess(access) || (access & ( STREAMING | WRITE )) == ( STREAMING | WRITE ))
 	{
 		// illegal access
 		return FALSE;

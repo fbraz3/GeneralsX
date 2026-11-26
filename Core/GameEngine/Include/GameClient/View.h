@@ -133,6 +133,12 @@ public:
 	virtual Int getWidth() { return m_width; }
 	virtual void setHeight( Int height ) { m_height = height; }
 	virtual Int getHeight() { return m_height; }
+
+	// GeneralsX @feature ClaudeCode 22/11/2026 Height the camera frames the scene for. Normally the view height. When the
+	// view is drawn taller than that (the world is visible beside and behind the centred control bar on
+	// ultrawide displays), the extra rows extend the picture downwards without moving what the camera centres on.
+	virtual void setFramingHeight( Int height ) { m_framingHeight = height; }
+	Int getFramingHeight() const { return m_framingHeight > 0 ? m_framingHeight : m_height; }
 	virtual void setOrigin( Int x, Int y) { m_originX=x; m_originY=y;}				///< Sets location of top-left view corner on display
 	virtual void getOrigin( Int *x, Int *y) { *x=m_originX; *y=m_originY;}			///< Return location of top-left view corner on display
 
@@ -326,6 +332,7 @@ protected:
 
 	Coord3D m_pos;																							///< Pivot of the camera, in world coordinates
 	Int m_width, m_height;																			///< Dimensions of the view
+	Int m_framingHeight;																				///< Height the camera frames the scene for, 0 if it is the view height
 	Int m_originX, m_originY;																		///< Location of top/left view corner
 
 	Real m_angle;																								///< Angle at which view has been rotated about the Z axis. Expected normalized

@@ -5,9 +5,12 @@ set(COREI_GOOGLETEST_SRC
     GameEngine/Common/FileSystemTest.cpp
     GameEngine/Common/FileSystemTestFixture.h
     GameEngine/Common/INITest.cpp
+    GameEngine/Common/XferUnicodeStringTest.cpp
     GameEngine/GameClient/DisplayStringDummyTest.cpp
+    GameEngine/GameNetwork/ConnectionTest.cpp
     GameEngineDevice/StdDevice/Common/StdLocalFileSystemTest.cpp
     Libraries/Compression/CompressionManagerTest.cpp
+    Libraries/WWVegas/WW3D2/TextureAtlasTest.cpp
     Libraries/WWVegas/WW3D2/hlod_test.cpp
     Libraries/WWVegas/WW3D2/soundrobj_test.cpp
     Libraries/WWVegas/WWMath/WWMathCalls.h
@@ -20,6 +23,9 @@ set(COREI_GOOGLETEST_SRC
 add_library(corei_googletest INTERFACE)
 
 target_sources(corei_googletest INTERFACE ${COREI_GOOGLETEST_SRC})
+if(SAGE_USE_MINIAUDIO AND RTS_BUILD_OPTION_FFMPEG AND NOT EMSCRIPTEN)
+    target_sources(corei_googletest INTERFACE GameEngineDevice/MiniAudioMusicStreamTest.cpp)
+endif()
 
 target_link_libraries(corei_googletest INTERFACE
     comctl32

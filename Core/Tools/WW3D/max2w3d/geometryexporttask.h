@@ -32,16 +32,14 @@
  *                                                                                             *
  *                    $Revision:: 6                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
 #include <string.h>
-#include <max.h>
-#include "w3d_file.h"
-#include "Vector.h"
+#include "max_sdk.h"
+#include "WW3D2/w3d_file.h"
+#include "WWLib/Vector.h"
 
 
 class GeometryExportContextClass;

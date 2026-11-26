@@ -30,20 +30,18 @@
  *                                                                                             *
  *                    $Revision:: 4                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include "always.h"
+#include "WWLib/always.h"
 
-#include <max.h>
+#include "max_sdk.h"
 #include <stdio.h>
 
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 #include "PROGRESS.h"
-#include "chunkio.h"
+#include "WWLib/chunkio.h"
 #include "meshcon.h"
 
 

@@ -354,9 +354,8 @@ AggregateDefClass::Load_Assets (const char *passet_name)
 		// GeneralsX @build BenderAI 10/02/2026 - Remove :: for macros
 		GetCurrentDirectory (sizeof (path), path);
 
-		// Ensure the path is directory delimited
-		if (!isPathSeparator(path[::lstrlen(path)-1])) {
-			::lstrcat (path, "\\");
+		if (!ensureTrailingSeparatorInPath (path, ARRAY_SIZE (path)).ok) {
+			return false;
 		}
 
 		// Assume the filename is simply the "asset name" + the w3d extension

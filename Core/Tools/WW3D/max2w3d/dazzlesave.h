@@ -32,15 +32,13 @@
  *                                                                                             *
  *                    $Revision:: 1                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include <max.h>
-#include "w3d_file.h"
-#include "chunkio.h"
+#include "max_sdk.h"
+#include "WW3D2/w3d_file.h"
+#include "WWLib/chunkio.h"
 #include "PROGRESS.h"
 
 

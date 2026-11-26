@@ -29,6 +29,8 @@
 #include "Common/GameAudio.h"
 #include <miniaudio.h>
 
+class MiniAudioMusicStream;
+
 enum { MAXPROVIDERS = 64 };
 
 enum PlayingAudioType
@@ -43,6 +45,7 @@ struct PlayingAudio
 {
 	ma_sound* m_sound;
 	ma_audio_buffer* m_audioBuffer;
+	MiniAudioMusicStream *m_musicStream = nullptr;
 	PlayingAudioType m_type;
 	RefCountPtr<DynamicAudioEventRTS> m_audioEventRTS;
 	Bool m_requestStop;
@@ -224,6 +227,9 @@ protected:
 	// This stuff should be cleaned up during the next update cycle. This includes updating counts
 	// in the sound engine
 	std::list<PlayingAudio *> m_stoppedAudio;
+#if defined(RTS_HAS_FFMPEG) && !defined(__EMSCRIPTEN__)
+	std::list<MiniAudioMusicStream *> m_retiringMusic;
+#endif
 
 	void *m_binkHandle;
 

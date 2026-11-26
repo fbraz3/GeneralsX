@@ -3716,7 +3716,8 @@ void InGameUI::postDraw()
 		Color dropColor;
 		UnsignedByte r, g, b, a;
 
-		x = m_messagePosition.x;
+		// GeneralsX @feature ClaudeCode 22/11/2026 Game messages start at the left edge of the UI layout rect instead of the far screen corner.
+		x = m_messagePosition.x + TheDisplay->getUILayoutOriginX();
 		y = m_messagePosition.y;
 		for( i = MAX_UI_MESSAGES - 1; i >= 0; i-- )
 		{
@@ -3773,10 +3774,12 @@ void InGameUI::postDraw()
 	if (TheGameLogic->getFrame() > 0 && !m_superweaponHiddenByScript)
 	{
 //	Int superweaponCount = 0;
-		Int startX = (Int)(m_superweaponPosition.x * TheDisplay->getWidth());
+		// GeneralsX @feature ClaudeCode 22/11/2026 Superweapon timers are placed within the UI layout rect.
+		Int startX = TheDisplay->getUILayoutOriginX() + (Int)(m_superweaponPosition.x * TheDisplay->getUILayoutWidth());
 		Int startY = (Int)(m_superweaponPosition.y * TheDisplay->getHeight());
 
-		Int bottomMargin = (Int)( (Real)TheTacticalView->getHeight() * 0.82f );
+		// GeneralsX @feature ClaudeCode 22/11/2026 Stay above the control bar even when the view is drawn at full height behind it.
+		Int bottomMargin = (Int)( (Real)TheTacticalView->getFramingHeight() * 0.82f );
 
 
 
@@ -3927,7 +3930,8 @@ void InGameUI::postDraw()
 	{
 //		Int namedTimerCount = 0;
 		Bool reverseXDir = (m_namedTimerPosition.x >= 0.5f);
-		Int startX = (Int)(m_namedTimerPosition.x * TheDisplay->getWidth());
+		// GeneralsX @feature ClaudeCode 22/11/2026 Named timers are placed within the UI layout rect.
+		Int startX = TheDisplay->getUILayoutOriginX() + (Int)(m_namedTimerPosition.x * TheDisplay->getUILayoutWidth());
 		Int startY = (Int)(m_namedTimerPosition.y * TheDisplay->getHeight());
 		Color bgColor = GameMakeColor( 0, 0, 0, 255 );
 		for (NamedTimerMapIt mapIt = m_namedTimers.begin(); mapIt != m_namedTimers.end(); ++mapIt)
@@ -4332,7 +4336,8 @@ void InGameUI::militarySubtitle( const AsciiString& label, Int duration )
 
 	// calculate where this screen position should be since the position being passed in is based off 8x6
 	Coord2D multiplier;
-	multiplier.x = TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
+	// GeneralsX @feature ClaudeCode 22/11/2026 Military subtitles are placed within the UI layout rect.
+	multiplier.x = (Real)TheDisplay->getUILayoutWidth() / (Real)DEFAULT_DISPLAY_WIDTH;
 	multiplier.y = TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT;
 
 	// lets bring out the data structure!
@@ -4342,7 +4347,7 @@ void InGameUI::militarySubtitle( const AsciiString& label, Int duration )
 	m_militarySubtitle->blockDrawn = TRUE;
 	m_militarySubtitle->blockBeginFrame = currLogicFrame;
 	m_militarySubtitle->lifetime = messageTimeout;
-	m_militarySubtitle->blockPos.x =  m_militarySubtitle->position.x = m_militaryCaptionPosition.x * multiplier.x;
+	m_militarySubtitle->blockPos.x =  m_militarySubtitle->position.x = m_militaryCaptionPosition.x * multiplier.x + TheDisplay->getUILayoutOriginX();
 	m_militarySubtitle->blockPos.y =  m_militarySubtitle->position.y = m_militaryCaptionPosition.y * multiplier.y;
 	m_militarySubtitle->incrementOnFrame = currLogicFrame + (Int)(((Real)LOGICFRAMES_PER_SECOND * m_militaryCaptionDelayMS)/1000.0f);
 	m_militarySubtitle->index = 0;
@@ -5416,7 +5421,8 @@ void InGameUI::popupMessage( const AsciiString& identifier, Int x, Int y, Int wi
 	if( y < 0 )
 		y = 0;
 
-	m_popupMessageData->x = TheDisplay->getWidth() * (INT_TO_REAL(x) / 100);
+	// GeneralsX @feature ClaudeCode 22/11/2026 Popup messages are placed within the UI layout rect.
+	m_popupMessageData->x = TheDisplay->getUILayoutOriginX() + TheDisplay->getUILayoutWidth() * (INT_TO_REAL(x) / 100);
 	m_popupMessageData->y = TheDisplay->getHeight() * (INT_TO_REAL(y) / 100);
 	// cap the lower limit of the width
 	if(width < 50)

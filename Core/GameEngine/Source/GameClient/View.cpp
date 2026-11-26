@@ -61,6 +61,7 @@ View::View()
 	m_pos.zero();
 	m_width = 0;
 	m_height = 0;
+	m_framingHeight = 0;
 	m_angle = 0.0f;
 	m_pitch = 0.0f;
 	m_cameraLock = INVALID_ID;
@@ -87,6 +88,7 @@ void View::init()
 {
 	m_width = DEFAULT_VIEW_WIDTH;
 	m_height = DEFAULT_VIEW_HEIGHT;
+	m_framingHeight = 0;
 	m_originX = DEFAULT_VIEW_ORIGIN_X;
 	m_originY = DEFAULT_VIEW_ORIGIN_Y;
 	m_pos.zero();

@@ -569,8 +569,6 @@ set(GAMEENGINE_SRC
     Include/GameNetwork/Transport.h
     Include/GameNetwork/udp.h
     Include/GameNetwork/User.h
-    Include/GameNetwork/WOLBrowser/FEBDispatch.h
-    Include/GameNetwork/WOLBrowser/WebBrowser.h
     Include/Precompiled/PreRTS.h
     Source/Common/AddonCompat.cpp
     Source/Common/Audio/AudioEventRTS.cpp
@@ -625,7 +623,6 @@ set(GAMEENGINE_SRC
     Source/Common/INI/INIVideo.cpp
     Source/Common/INI/INIWater.cpp
     Source/Common/INI/INIWeapon.cpp
-    Source/Common/INI/INIWebpageURL.cpp
     Source/Common/Language.cpp
     Source/Common/MessageStream.cpp
     Source/Common/MiniLog.cpp
@@ -1177,7 +1174,6 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/LobbyTooltips.cpp
     Source/GameNetwork/udp.cpp
     Source/GameNetwork/User.cpp
-    Source/GameNetwork/WOLBrowser/WebBrowser.cpp
     Source/Precompiled/PreRTS.cpp
 )
 
@@ -1218,7 +1214,6 @@ target_include_directories(corei_gameengine_public INTERFACE
 
 target_link_libraries(corei_gameengine_public INTERFACE
     core_compression
-    core_browserdispatch
     core_minidumper
     #core_wwvegas
     corei_platform
@@ -1227,12 +1222,6 @@ target_link_libraries(corei_gameengine_public INTERFACE
     $<$<BOOL:${SAGE_USE_GAMESPY}>:gamespy::gamespy>
     stlport
 )
-
-# ReactOS ATL for MinGW-w64 only (MSVC uses native ATL)
-if(MINGW)
-    target_link_libraries(corei_gameengine_public INTERFACE reactos_atl)
-endif()
-
 # GeneralsX @feature BenderAI 21/04/2026 UpdateChecker shared implementation (SAGE_UPDATE_CHECK builds only)
 # Compiled into both g_gameengine and z_gameengine via INTERFACE source propagation.
 # SDL3::SDL3 is added as a public dependency so that MainMenu.cpp (which calls SDL_OpenURL)

@@ -37,6 +37,7 @@
 #include "GameClient/GameText.h"
 #include "GameClient/KeyDefs.h"
 #include "GameClient/Shell.h"
+#include "GameClient/View.h"
 #include "GameClient/WindowLayout.h"
 
 static NameKeyType parentGeneralsXMenuID = NAMEKEY_INVALID;
@@ -49,6 +50,10 @@ static NameKeyType checkAdvancedLightingID = NAMEKEY_INVALID;
 static NameKeyType checkEnablePostProcessingID = NAMEKEY_INVALID;
 // GeneralsX @feature fbraz3 20/11/2026 macOS Command+Left-Click-Drag map panning toggle
 static NameKeyType checkCommandDragScrollID = NAMEKEY_INVALID;
+// GeneralsX @feature ClaudeCode 22/11/2026 Ultrawide Hor+ camera and centred 16:9 UI options
+static NameKeyType checkUltrawideHorPlusID = NAMEKEY_INVALID;
+static NameKeyType sliderUltrawideMaxFOVID = NAMEKEY_INVALID;
+static NameKeyType checkUltrawideUIID = NAMEKEY_INVALID;
 
 static NameKeyType buttonDefaultsID = NAMEKEY_INVALID;
 static NameKeyType buttonAcceptID = NAMEKEY_INVALID;
@@ -60,6 +65,9 @@ static GameWindow *checkAdvancedShadows = nullptr;
 static GameWindow *checkAdvancedLighting = nullptr;
 static GameWindow *checkEnablePostProcessing = nullptr;
 static GameWindow *checkCommandDragScroll = nullptr;
+static GameWindow *checkUltrawideHorPlus = nullptr;
+static GameWindow *sliderUltrawideMaxFOV = nullptr;
+static GameWindow *checkUltrawideUI = nullptr;
 
 static GameWindow *buttonDefaults = nullptr;
 static GameWindow *buttonAccept = nullptr;
@@ -98,6 +106,22 @@ static void setCheckBoxTextSafe(const char *nameKeyStr, const char *labelKey)
 		UnicodeString ustr = TheGameText->fetch(labelKey);
 		GadgetCheckBoxSetText(w, ustr);
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature ClaudeCode 22/11/2026 Show the selected fov limit in degrees next to its label.
+static void updateUltrawideMaxFOVLabel()
+{
+	if (!sliderUltrawideMaxFOV)
+		return;
+
+	GameWindow *label = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:LabelUltrawideMaxFOV"));
+	if (!label)
+		return;
+
+	UnicodeString text;
+	text.format(L"%ls: %d", TheGameText->fetch("GUI:UltrawideMaxFOV").str(), GadgetSliderGetPosition(sliderUltrawideMaxFOV));
+	GadgetStaticTextSetText(label, text);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -156,6 +180,41 @@ static void saveOptions()
 	}
 #endif
 
+	// GeneralsX @feature ClaudeCode 22/11/2026 Hor+ and its fov limit apply right away: rebuild the view plane
+	// and the camera height limits, the same refresh the options menu does after a resolution change.
+	Bool horPlusChanged = FALSE;
+
+	if (checkUltrawideHorPlus)
+	{
+		Bool val = GadgetCheckBoxIsChecked(checkUltrawideHorPlus);
+		horPlusChanged = horPlusChanged || (val != TheGlobalData->m_ultrawideHorPlus);
+		TheWritableGlobalData->m_ultrawideHorPlus = val;
+		pref->setUltrawideHorPlusEnabled(val);
+	}
+
+	if (sliderUltrawideMaxFOV)
+	{
+		Int val = GadgetSliderGetPosition(sliderUltrawideMaxFOV);
+		if (val >= 50 && val <= 170)
+		{
+			horPlusChanged = horPlusChanged || ((Real)val != TheGlobalData->m_ultrawideMaxHorizontalFOV);
+			TheWritableGlobalData->m_ultrawideMaxHorizontalFOV = (Real)val;
+			pref->setUltrawideMaxHorizontalFOV((Real)val);
+		}
+	}
+
+	if (horPlusChanged && TheTacticalView)
+	{
+		TheTacticalView->setWidth(TheTacticalView->getWidth());
+		TheTacticalView->setCameraHeightAboveGroundLimitsToDefault();
+		TheTacticalView->setZoomToMax();
+	}
+
+	// The UI layout rect is only read when window layouts are created, so this one is stored for the next
+	// start; TheGlobalData keeps the value the running layouts were built with.
+	if (checkUltrawideUI)
+		pref->setUltrawideUIEnabled(GadgetCheckBoxIsChecked(checkUltrawideUI));
+
 	pref->write();
 }
 
@@ -181,6 +240,16 @@ static void setDefaults()
 	if (checkCommandDragScroll)
 		GadgetCheckBoxSetChecked(checkCommandDragScroll, TRUE);
 #endif
+
+	if (checkUltrawideHorPlus)
+		GadgetCheckBoxSetChecked(checkUltrawideHorPlus, FALSE);
+
+	if (sliderUltrawideMaxFOV)
+		GadgetSliderSetPosition(sliderUltrawideMaxFOV, 70);
+	updateUltrawideMaxFOVLabel();
+
+	if (checkUltrawideUI)
+		GadgetCheckBoxSetChecked(checkUltrawideUI, FALSE);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -195,6 +264,9 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	checkAdvancedLightingID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckAdvancedLighting");
 	checkEnablePostProcessingID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckEnablePostProcessing");
 	checkCommandDragScrollID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckCommandDragScroll");
+	checkUltrawideHorPlusID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckUltrawideHorPlus");
+	sliderUltrawideMaxFOVID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:SliderUltrawideMaxFOV");
+	checkUltrawideUIID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:CheckUltrawideUI");
 
 	buttonDefaultsID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:ButtonDefaults");
 	buttonAcceptID = TheNameKeyGenerator->nameToKey("GeneralsXMenu.wnd:ButtonAccept");
@@ -206,6 +278,9 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 	checkAdvancedLighting = TheWindowManager->winGetWindowFromId(nullptr, checkAdvancedLightingID);
 	checkEnablePostProcessing = TheWindowManager->winGetWindowFromId(nullptr, checkEnablePostProcessingID);
 	checkCommandDragScroll = TheWindowManager->winGetWindowFromId(nullptr, checkCommandDragScrollID);
+	checkUltrawideHorPlus = TheWindowManager->winGetWindowFromId(nullptr, checkUltrawideHorPlusID);
+	sliderUltrawideMaxFOV = TheWindowManager->winGetWindowFromId(nullptr, sliderUltrawideMaxFOVID);
+	checkUltrawideUI = TheWindowManager->winGetWindowFromId(nullptr, checkUltrawideUIID);
 
 	buttonDefaults = TheWindowManager->winGetWindowFromId(nullptr, buttonDefaultsID);
 	buttonAccept = TheWindowManager->winGetWindowFromId(nullptr, buttonAcceptID);
@@ -263,17 +338,38 @@ void GeneralsXMenuInit(WindowLayout *layout, void *userData)
 #endif
 	}
 
+	if (checkUltrawideHorPlus)
+		GadgetCheckBoxSetChecked(checkUltrawideHorPlus, TheGlobalData->m_ultrawideHorPlus);
+
+	if (sliderUltrawideMaxFOV)
+	{
+		Real rawFOV = TheGlobalData->m_ultrawideMaxHorizontalFOV;
+		if (!isFinite(rawFOV) || rawFOV < 50.0f)
+			rawFOV = 50.0f;
+		else if (rawFOV > 170.0f)
+			rawFOV = 170.0f;
+
+		GadgetSliderSetPosition(sliderUltrawideMaxFOV, (Int)(rawFOV + 0.5f));
+	}
+
+	// Shows the stored choice, which can differ from the running layout until the next start.
+	if (checkUltrawideUI)
+		GadgetCheckBoxSetChecked(checkUltrawideUI, pref->getUltrawideUIEnabled());
+
 	// Localized texts
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelTitle", "GUI:GeneralsXTitle");
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelCameraTitle", "GUI:SagePatchOptions");
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelDrawDistance", "GUI:DrawDistance");
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelMaxCameraHeight", "GUI:MaxCameraHeight");
+	updateUltrawideMaxFOVLabel();
 	setStaticTextSafe("GeneralsXMenu.wnd:LabelGraphicsTitle", "GUI:EnhancedGraphics");
 
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckAdvancedShadows", "GUI:AdvancedShadows");
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckAdvancedLighting", "GUI:AdvancedLighting");
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckEnablePostProcessing", "GUI:EnablePostProcessing");
 	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckCommandDragScroll", "GUI:CommandDragScroll");
+	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckUltrawideHorPlus", "GUI:UltrawideHorPlus");
+	setCheckBoxTextSafe("GeneralsXMenu.wnd:CheckUltrawideUI", "GUI:UltrawideUI");
 
 	setButtonTextSafe("GeneralsXMenu.wnd:ButtonDefaults", "GUI:Defaults");
 	setButtonTextSafe("GeneralsXMenu.wnd:ButtonAccept", "GUI:Accept");
@@ -302,6 +398,9 @@ void GeneralsXMenuShutdown(WindowLayout *layout, void *userData)
 	checkAdvancedLighting = nullptr;
 	checkEnablePostProcessing = nullptr;
 	checkCommandDragScroll = nullptr;
+	checkUltrawideHorPlus = nullptr;
+	sliderUltrawideMaxFOV = nullptr;
+	checkUltrawideUI = nullptr;
 
 	buttonDefaults = nullptr;
 	buttonAccept = nullptr;
@@ -333,6 +432,17 @@ WindowMsgHandledType GeneralsXMenuSystem(GameWindow *window, UnsignedInt msg,
 			if (mData1 == TRUE)
 				*(Bool *)mData2 = TRUE;
 			return MSG_HANDLED;
+
+		case GSM_SLIDER_TRACK:
+		{
+			GameWindow *control = (GameWindow *)mData1;
+			if (control && control == sliderUltrawideMaxFOV)
+			{
+				updateUltrawideMaxFOVLabel();
+				return MSG_HANDLED;
+			}
+			break;
+		}
 
 		case GBM_SELECTED:
 		{

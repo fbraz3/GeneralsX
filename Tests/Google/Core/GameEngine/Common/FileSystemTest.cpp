@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "Common/ArchiveFile.h"
 #include "Common/ArchiveFileSystem.h"
 #include "Common/FileSystem.h"
 #include "Common/STLTypedefs.h"
@@ -234,6 +235,30 @@ TEST(PathUtil, MapPathMatching)
 
 	// Nested map directory suffix collisions must NOT match
 	EXPECT_FALSE(isMapPathMatching("Maps/Arena/Arena.map", "Maps/B/Maps/Arena/Arena.map"));
+}
+
+TEST_F(FileSystemTest, IndependentStreamOwnsItsArchiveHandle)
+{
+	writeLooseFile("music.big", "prefixsampletail");
+	for (int mode : {File::WRITE, File::APPEND, File::CREATE, File::TRUNCATE, File::ONLYNEW}) {
+		EXPECT_EQ(TheFileSystem->openFile("music.big", File::INDEPENDENT_STREAM | mode), nullptr);
+	}
+	File *track = nullptr;
+	{
+		ArchiveFile archive("music.big", AsciiString::TheEmptyString);
+		File *backing = TheLocalFileSystem->openFile("music.big", File::READ | File::BINARY);
+		ASSERT_NE(backing, nullptr);
+		archive.attachFile(backing);
+		ArchivedFileInfo entry;
+		entry.m_filename = "track";
+		entry.m_offset = 6;
+		entry.m_size = 6;
+		archive.addFile(AsciiString::TheEmptyString, &entry);
+		track = archive.openFile("track", File::INDEPENDENT_STREAM);
+		ASSERT_NE(track, nullptr);
+		EXPECT_TRUE(track->getAccess() & File::STREAMING);
+	}
+	EXPECT_EQ(readFile(track), "sample");
 }
 
 TEST(ArchiveFileSystem, StockLooseFileIdentification)

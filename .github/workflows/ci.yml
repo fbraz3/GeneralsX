@@ -26,9 +26,17 @@ jobs:
       zh-should-build: ${{ steps.filter.outputs.zh-should-build }}
       base-should-build: ${{ steps.filter.outputs.base-should-build }}
       wasm-should-build: ${{ steps.filter.outputs.wasm-should-build }}
+      macos-runner: ${{ steps.macos-runner.outputs.runner }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+
+      - name: Resolve macOS Runner
+        id: macos-runner
+        env:
+          CI_RUNNER_CONFIG_URL: ${{ secrets.CI_RUNNER_CONFIG_URL || vars.CI_RUNNER_CONFIG_URL }}
+          IS_EXTERNAL_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: ./.github/scripts/resolve-macos-runner.sh
 
       - name: Filter Changed Paths
         uses: dorny/paths-filter@v4
@@ -109,6 +117,7 @@ jobs:
     uses: ./.github/workflows/build-macos.yml
     with:
       preset: macos-vulkan
+      runner: ${{ needs.detect-changes.outputs.macos-runner }}
     secrets: inherit
 
   build-windows:
@@ -138,12 +147,13 @@ jobs:
 
   replay-test-macos:
     name: Replay Tests (macos)
-    needs: [build-macos]
+    needs: [detect-changes, build-macos]
     if: needs.build-macos.result == 'success'
     uses: ./.github/workflows/replay-tests.yml
     with:
       platform: macos
       game-artifact: macos-arm64-GeneralsXZH.zip
+      macos-runner: ${{ needs.detect-changes.outputs.macos-runner }}
     secrets:
       ASSETS_KEY: ${{ secrets.ASSETS_KEY }}
 
