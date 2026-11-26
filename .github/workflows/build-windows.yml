@@ -81,19 +81,34 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: vcpkg-bincache-v6-${{ runner.os }}-x64-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml') }}
+          key: vcpkg-bincache-v6-${{ runner.os }}-x64-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**') }}
           restore-keys: |
             vcpkg-bincache-v6-${{ runner.os }}-x64-${{ steps.toolchain_id.outputs.msvc_abi }}-
 
-      - name: Configure vcpkg cache directory
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Restore sccache
+        id: sccache_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/sccache-cache
+          key: sccache-win64-${{ matrix.game.id }}-${{ steps.toolchain_id.outputs.msvc_abi }}-${{ github.sha }}
+          restore-keys: |
+            sccache-win64-${{ matrix.game.id }}-${{ steps.toolchain_id.outputs.msvc_abi }}-
+
+      - name: Configure vcpkg and sccache directories
         shell: pwsh
         run: |
           $cacheDir = "${{ github.workspace }}/vcpkg-bincache"
-          New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
+          $sccacheDir = "${{ github.workspace }}/sccache-cache"
+          New-Item -ItemType Directory -Force -Path $cacheDir, $sccacheDir | Out-Null
           "VCPKG_DEFAULT_BINARY_CACHE=$cacheDir" >> $env:GITHUB_ENV
           "VCPKG_BINARY_SOURCES=clear;files,$cacheDir,readwrite" >> $env:GITHUB_ENV
           "VCPKG_OVERLAY_TRIPLETS=${{ github.workspace }}/cmake/triplets" >> $env:GITHUB_ENV
           "VCPKG_OVERLAY_PORTS=${{ github.workspace }}/cmake/ports" >> $env:GITHUB_ENV
+          "SCCACHE_DIR=$sccacheDir" >> $env:GITHUB_ENV
+          "SCCACHE_CACHE_SIZE=2G" >> $env:GITHUB_ENV
 
       - name: Configure
         shell: pwsh
@@ -109,6 +124,7 @@ jobs:
           cmake --preset win64 `
             -DVCPKG_OVERLAY_PORTS="${{ github.workspace }}/cmake/ports" `
             -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/cmake/triplets" `
+            -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded `
             -DRTS_BUILD_GENERALS=${{ matrix.game.build_generals }} `
             -DRTS_BUILD_ZEROHOUR=${{ matrix.game.build_zh }} `
             -DRTS_BUILD_CORE_TOOLS=OFF `
@@ -122,11 +138,20 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
-          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v6-{0}-x64-{1}-{2}', runner.os, steps.toolchain_id.outputs.msvc_abi, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**', '.github/workflows/build-windows.yml')) }}
+          key: ${{ steps.vcpkg_cache.outputs.cache-primary-key || format('vcpkg-bincache-v6-{0}-x64-{1}-{2}', runner.os, steps.toolchain_id.outputs.msvc_abi, hashFiles('vcpkg.json', 'vcpkg-lock.json', 'cmake/ports/**', 'cmake/triplets/**')) }}
 
       - name: Build
         shell: pwsh
-        run: cmake --build build/win64 --config RelWithDebInfo --target ${{ matrix.game.target }}
+        run: |
+          cmake --build build/win64 --config RelWithDebInfo --target ${{ matrix.game.target }}
+          sccache --show-stats
+
+      - name: Save sccache
+        if: ${{ steps.sccache_cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/sccache-cache
+          key: ${{ steps.sccache_cache.outputs.cache-primary-key || format('sccache-win64-{0}-{1}-{2}', matrix.game.id, steps.toolchain_id.outputs.msvc_abi, github.sha) }}
 
       - name: Collect runtime
         shell: pwsh
