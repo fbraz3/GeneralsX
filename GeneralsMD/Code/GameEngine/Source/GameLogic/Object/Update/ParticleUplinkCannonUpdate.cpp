@@ -946,15 +946,11 @@ void ParticleUplinkCannonUpdate::createConnectorFlare( IntensityTypes intensity 
 	if( str.isNotEmpty() )
 	{
 		const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( str );
-		ParticleSystem *system;
-		if( tmp )
+		ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
+		if( system )
 		{
-			system = TheParticleSystemManager->createParticleSystem( tmp );
-			if( system )
-			{
-				m_connectorSystemID = system->getSystemID();
-				system->setPosition( &m_connectorNodePosition );
-			}
+			m_connectorSystemID = system->getSystemID();
+			system->setPosition( &m_connectorNodePosition );
 		}
 	}
 }
@@ -982,14 +978,11 @@ void ParticleUplinkCannonUpdate::createLaserBaseFlare( IntensityTypes intensity 
 	if( str.isNotEmpty() )
 	{
 		const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( str );
-		if( tmp )
+		ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
+		if( system )
 		{
-			ParticleSystem *system = TheParticleSystemManager->createParticleSystem( tmp );
-			if( system )
-			{
-				m_laserBaseSystemID = system->getSystemID();
-				system->setPosition( &m_laserOriginPosition );
-			}
+			m_laserBaseSystemID = system->getSystemID();
+			system->setPosition( &m_laserOriginPosition );
 		}
 	}
 }

@@ -258,13 +258,12 @@ void LaserUpdate::initLaser( const Object *parent, const Coord3D *startPos, cons
 		if( data->m_particleSystemName.isNotEmpty() )
 		{
 			const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( data->m_particleSystemName );
-			if( tmp )
+			// GeneralsX @bugfix fbraz3 26/11/2026 Restore null-check on createParticleSystem for headless mode
+			// Upstream reference: stm (stephanmeesters), PR #2724 (https://github.com/TheSuperHackers/GeneralsGameCode/pull/2724)
+			system = TheParticleSystemManager->createParticleSystem( tmp );
+			if( system )
 			{
-				system = TheParticleSystemManager->createParticleSystem( tmp );
-				if( system )
-				{
-					m_particleSystemID = system->getSystemID();
-				}
+				m_particleSystemID = system->getSystemID();
 			}
 		}
 
@@ -272,13 +271,12 @@ void LaserUpdate::initLaser( const Object *parent, const Coord3D *startPos, cons
 		if( data->m_targetParticleSystemName.isNotEmpty() )
 		{
 			const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate( data->m_targetParticleSystemName );
-			if( tmp )
+			// GeneralsX @bugfix fbraz3 26/11/2026 Restore null-check on createParticleSystem for headless mode
+			// Upstream reference: stm (stephanmeesters), PR #2724 (https://github.com/TheSuperHackers/GeneralsGameCode/pull/2724)
+			system = TheParticleSystemManager->createParticleSystem( tmp );
+			if( system )
 			{
-				system = TheParticleSystemManager->createParticleSystem( tmp );
-				if( system )
-				{
-					m_targetParticleSystemID = system->getSystemID();
-				}
+				m_targetParticleSystemID = system->getSystemID();
 			}
 		}
 	}
