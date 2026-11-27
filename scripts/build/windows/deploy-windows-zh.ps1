@@ -52,9 +52,10 @@ if (Test-Path $FontsSrc) {
     Copy-Item -Force (Join-Path $FontsSrc "*") $FontsDst
 }
 
+$vcpkgBinSubdir = if ($Config -eq "Debug") { "x64-windows\debug\bin" } else { "x64-windows\bin" }
 foreach ($binDir in @(
-    (Join-Path $BuildDir "vcpkg_installed\x64-windows\bin"),
-    (Join-Path $RepoRoot "vcpkg_installed\x64-windows\bin")
+    (Join-Path $BuildDir "vcpkg_installed\$vcpkgBinSubdir"),
+    (Join-Path $RepoRoot "vcpkg_installed\$vcpkgBinSubdir")
 )) {
     if (Test-Path $binDir) {
         Get-ChildItem -Path $binDir -Filter "*.dll" | ForEach-Object {

@@ -200,14 +200,14 @@ AsciiString g_LastErrorDump;
 //*****************************************************************************
 void WriteStackLine(void*address, void (*callback)(const char*))
 {
-	static char line[MAX_PATH];
+	static char line[MAX_PATH + 512 + 64];
 	static char function_name[512];
 	static char filename[MAX_PATH];
 	unsigned int linenumber;
 	unsigned int addr;
 
 	GetFunctionDetails(address, function_name, filename, &linenumber, &addr);
-    sprintf(line, "  %s(%d) : %s 0x%08p", filename, linenumber, function_name, address);
+	snprintf(line, sizeof(line), "  %s(%d) : %s 0x%p", filename, linenumber, function_name, address);
 		if (g_LastErrorDump.isNotEmpty()) {
 			g_LastErrorDump.concat(line);
 			g_LastErrorDump.concat("\n");

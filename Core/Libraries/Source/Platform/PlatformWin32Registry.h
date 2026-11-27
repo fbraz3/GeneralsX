@@ -32,7 +32,7 @@
 
 namespace Platform {
 
-inline bool QueryWin32RegistryValue(HKEY root, const char *path, const char *key, DWORD samDesired, unsigned char *buffer, DWORD &inOutSize)
+inline bool QueryWin32RegistryValue(HKEY root, const char *path, const char *key, DWORD samDesired, unsigned char *buffer, DWORD &inOutSize, DWORD &outType)
 {
 	if (!path || !key || !buffer || inOutSize == 0)
 	{
@@ -55,6 +55,7 @@ inline bool QueryWin32RegistryValue(HKEY root, const char *path, const char *key
 	}
 
 	inOutSize = size;
+	outType = type;
 	return true;
 }
 
@@ -66,9 +67,14 @@ inline bool ReadWin32RegistryString(HKEY root, const char *path, const char *key
 	}
 
 	auto tryRead = [&](DWORD samDesired) -> bool {
-		// GeneralsX @bugfix fbraz3 27/11/2026 Advertise full buffer capacity; accept exact-fit only when NUL-terminated.
+		// GeneralsX @bugfix fbraz3 27/11/2026 Advertise full buffer capacity; verify string type and accept exact-fit only when NUL-terminated.
 		DWORD size = static_cast<DWORD>(outBufSize);
-		if (!QueryWin32RegistryValue(root, path, key, samDesired, reinterpret_cast<unsigned char *>(outBuf), size))
+		DWORD type = 0;
+		if (!QueryWin32RegistryValue(root, path, key, samDesired, reinterpret_cast<unsigned char *>(outBuf), size, type))
+		{
+			return false;
+		}
+		if (type != REG_SZ && type != REG_EXPAND_SZ)
 		{
 			return false;
 		}
@@ -102,7 +108,12 @@ inline bool ReadWin32RegistryUInt32(HKEY root, const char *path, const char *key
 	auto tryRead = [&](DWORD samDesired) -> bool {
 		uint32_t raw = 0;
 		DWORD size = sizeof(raw);
-		if (!QueryWin32RegistryValue(root, path, key, samDesired, reinterpret_cast<unsigned char *>(&raw), size))
+		DWORD type = 0;
+		if (!QueryWin32RegistryValue(root, path, key, samDesired, reinterpret_cast<unsigned char *>(&raw), size, type))
+		{
+			return false;
+		}
+		if (type != REG_DWORD || size != sizeof(raw))
 		{
 			return false;
 		}

@@ -1064,6 +1064,11 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		for (int a = 0; a < MAX_TEXTURE_STAGES; ++a)
 		{
 			DX8CALL(SetTexture(a, nullptr));
+			if (Textures[a])
+			{
+				Textures[a]->Release();
+				Textures[a] = nullptr;
+			}
 		}
 		for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
 		{

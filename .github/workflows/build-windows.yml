@@ -144,6 +144,9 @@ jobs:
         shell: pwsh
         run: |
           cmake --build build/win64 --config RelWithDebInfo --target ${{ matrix.game.target }}
+          if ($LASTEXITCODE -ne 0) {
+            throw "CMake build failed ($LASTEXITCODE)"
+          }
           sccache --show-stats
 
       - name: Save sccache

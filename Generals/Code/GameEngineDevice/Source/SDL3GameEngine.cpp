@@ -287,6 +287,9 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_GAINED:
 				m_IsActive = true;
+				if (TheAudio) {
+					TheAudio->unmuteAudio(AudioManager::MuteAudioReason_WindowFocus);
+				}
 				if (TheMouse) {
 					TheMouse->regainFocus();
 					TheMouse->refreshCursorCapture();
@@ -295,6 +298,9 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
 				m_IsActive = false;
+				if (TheAudio) {
+					TheAudio->muteAudio(AudioManager::MuteAudioReason_WindowFocus);
+				}
 				if (m_IsTextInputActive) {
 					SDL_StopTextInput(m_SDLWindow);
 					m_IsTextInputActive = false;

@@ -169,11 +169,15 @@ static void Resolve_Image_Helper_Functions(HINSTANCE imagehelp)
 	if (imagehelp == nullptr) {
 		return;
 	}
-	uintptr_t *fptr = (uintptr_t *) &_SymCleanup;
-	for (int count = 0; ImagehelpFunctionNames[count] != nullptr; count++) {
-		*fptr = (uintptr_t) GetProcAddress(imagehelp, ImagehelpFunctionNames[count]);
-		fptr++;
-	}
+	_SymCleanup = (SymCleanupType) GetProcAddress(imagehelp, ImagehelpFunctionNames[0]);
+	_SymGetSymFromAddr = (SymGetSymFromAddrType) GetProcAddress(imagehelp, ImagehelpFunctionNames[1]);
+	_SymInitialize = (SymInitializeType) GetProcAddress(imagehelp, ImagehelpFunctionNames[2]);
+	_SymLoadModule = (SymLoadModuleType) GetProcAddress(imagehelp, ImagehelpFunctionNames[3]);
+	_SymSetOptions = (SymSetOptionsType) GetProcAddress(imagehelp, ImagehelpFunctionNames[4]);
+	_SymUnloadModule = (SymUnloadModuleType) GetProcAddress(imagehelp, ImagehelpFunctionNames[5]);
+	_StackWalk = (StackWalkType) GetProcAddress(imagehelp, ImagehelpFunctionNames[6]);
+	_SymFunctionTableAccess = (SymFunctionTableAccessType) GetProcAddress(imagehelp, ImagehelpFunctionNames[7]);
+	_SymGetModuleBase = (SymGetModuleBaseType) GetProcAddress(imagehelp, ImagehelpFunctionNames[8]);
 }
 
 
@@ -340,7 +344,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		_SymSetOptions(SYMOPT_DEFERRED_LOADS);
 	}
 
-	int symload = 0;
+	DWORD_PTR symload = 0;
 	int symbols_available = false;
 
 	if (_SymInitialize != nullptr && _SymInitialize (GetCurrentProcess(), nullptr, false))	{
@@ -466,7 +470,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 			}
 
 			if (symbols_available) {
-				symptr->SizeOfStruct = sizeof(symbol);
+				symptr->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
 				symptr->MaxNameLength = 128;
 				symptr->Size = 0;
 				symptr->Address = (DWORD_PTR)temp_addr;
@@ -474,6 +478,10 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 				if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), (DWORD_PTR)temp_addr, &displacement, symptr)) {
 					char symbuf[256];
 					snprintf(symbuf, ARRAY_SIZE(symbuf), "%s + %p\r\n", symptr->Name, (void *)displacement);
+					Add_Txt(symbuf);
+				} else {
+					char symbuf[256];
+					snprintf(symbuf, ARRAY_SIZE(symbuf), "%0*llx\r\n", (int)(sizeof(uintptr_t) * 2), (unsigned long long)temp_addr);
 					Add_Txt(symbuf);
 				}
 			} else {
@@ -669,7 +677,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 					static_cast<void*>(stackptr), static_cast<int>(sizeof(uintptr_t) * 2), value);
 
 				if (symbols_available) {
-					symptr->SizeOfStruct = sizeof(symbol);
+					symptr->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
 					symptr->MaxNameLength = 128;
 					symptr->Size = 0;
 					symptr->Address = value;
@@ -941,7 +949,7 @@ void Load_Image_Helper()
 			_SymSetOptions(SYMOPT_DEFERRED_LOADS);
 		}
 
-		int symload = 0;
+		DWORD_PTR symload = 0;
 
 		if (_SymInitialize != nullptr && _SymInitialize(GetCurrentProcess(), nullptr, FALSE)) {
 
@@ -1081,7 +1089,7 @@ int Stack_Walk(uintptr_t *return_addresses, int num_addresses, CONTEXT *context)
 	/*
 	** Walk the stack by the requested number of return address iterations.
 	*/
-	for (int i = 0; i < num_addresses + 1; i++) {
+	for (int i = 0; i < num_addresses + 1 && pointer_index < num_addresses; i++) {
 		if (_StackWalk(GX_IMAGE_FILE_MACHINE_NATIVE, GetCurrentProcess(), GetCurrentThread(), &stack_frame, GX_STACKWALK_CONTEXT(&walk_context), nullptr, _SymFunctionTableAccess, _SymGetModuleBase, nullptr)) {
 
 			/*

@@ -187,7 +187,7 @@ inline void GetWin32SymbolDetails(
 	std::memset(symbol_buffer, 0, sizeof(symbol_buffer));
 
 	PIMAGEHLP_SYMBOL psymbol = reinterpret_cast<PIMAGEHLP_SYMBOL>(symbol_buffer);
-	psymbol->SizeOfStruct = sizeof(symbol_buffer);
+	psymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
 	psymbol->MaxNameLength = 512;
 
 	if (DbgHelp::SymGetSymFromAddr(process, reinterpret_cast<DWORD_PTR>(pointer), &symDisplacement, psymbol))
