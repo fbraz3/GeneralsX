@@ -844,9 +844,11 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//	WWDebug_Install_Message_Handler(WWDebug_Message_Callback);
 	//	WWDebug_Install_Assert_Handler(WWAssert_Callback);
 
+#ifndef SAGE_USE_SDL3
  		// [SKB: Jun 24 2003 @ 1:50pm] :
 		// Force to be loaded from a file, not a resource so same exe can be used in germany and retail.
  		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp",	IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+#endif // !SAGE_USE_SDL3
 
 #ifdef RTS_ENABLE_CRASHDUMP
 		// Initialize minidump facilities - requires TheGlobalData so performed after parseCommandLineForStartup
@@ -910,6 +912,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		if (!TheGlobalData->m_headless)
 		{
+#ifdef SAGE_USE_SDL3
+			gx::SDL3SplashScreen::show("Command and Conquer Generals");
+#endif
 			gxwin32::installD3D8To9Backend();
 		}
 

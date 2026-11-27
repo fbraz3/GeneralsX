@@ -852,6 +852,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//	WWDebug_Install_Assert_Handler(WWAssert_Callback);
 
 
+#ifndef SAGE_USE_SDL3
 // Force "splash image" to be loaded from a file, not a resource so same exe can be used in different localizations.
 #if defined(RTS_DEBUG) || defined RTS_PROFILE_LEGACY
 
@@ -874,6 +875,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// in release, the file only ever lives in the root dir
 		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp", IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
 #endif
+#endif // !SAGE_USE_SDL3
 
 #ifdef RTS_ENABLE_CRASHDUMP
 		// Initialize minidump facilities - requires TheGlobalData so performed after parseCommandLineForStartup
@@ -939,6 +941,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		if (!TheGlobalData->m_headless)
 		{
+#ifdef SAGE_USE_SDL3
+			gx::SDL3SplashScreen::show("Command and Conquer Generals Zero Hour");
+#endif
 			gxwin32::installD3D8To9Backend();
 		}
 

@@ -1104,10 +1104,18 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		if (hr != D3DERR_DEVICELOST )
 		{	DX8CALL_HRES(Reset(&_PresentParameters),hr)
 			if (hr != D3D_OK)
+			{
+				fprintf(stderr, "[GXGFX] Reset_Device: Reset failed hr=0x%08X\n", (unsigned)hr);
+				fflush(stderr);
 				return false;	//reset failed.
+			}
 		}
 		else
+		{
+			fprintf(stderr, "[GXGFX] Reset_Device: TestCooperativeLevel=D3DERR_DEVICELOST\n");
+			fflush(stderr);
 			return false;	//device is lost and can't be reset.
+		}
 
 		if (reload_assets)
 		{
@@ -3120,8 +3128,15 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_ZTexture
 	}
 
 	DX8_ErrorCode(ret);
+	if (FAILED(ret))
+	{
+		return nullptr;
+	}
 
-	texture->AddRef(); // don't release this texture
+	// GeneralsX @bugfix fbraz 27/11/2026 Remove spurious AddRef() on newly created D3DPOOL_DEFAULT ZTexture.
+	// CreateTexture already returns RefCount == 1; bumping to 2 prevented Release_Textures() from freeing
+	// the underlying D3D9 depth-stencil resource during Reset_Device(), causing IDirect3DDevice9::Reset()
+	// to fail with D3DERR_INVALIDCALL and leaving the device lost.
 
 	// Just return the texture, no reduction
 	// allowed for render targets.
@@ -3773,7 +3788,7 @@ void DX8Wrapper::Create_Render_Target
 	{
 		if (can_create_depth)
 		{
-			*depth_buffer=NEW_REF
+			ZTextureClass* ztex=NEW_REF
 			(
 				ZTextureClass,
 				(
@@ -3784,6 +3799,12 @@ void DX8Wrapper::Create_Render_Target
 					TextureClass::POOL_DEFAULT
 				)
 			);
+			if (ztex->Peek_D3D_Base_Texture() == nullptr)
+			{
+				WWDEBUG_SAY(("DX8Wrapper - Depth stencil target creation failed!"));
+				REF_PTR_RELEASE(ztex);
+			}
+			*depth_buffer = ztex;
 		}
 		else
 		{
