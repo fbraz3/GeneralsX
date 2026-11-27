@@ -41,6 +41,7 @@ XferLoad::XferLoad()
 
 	m_xferMode = XFER_LOAD;
 	m_fileFP = nullptr;
+	m_unicodeEncoding = UNICODE_ENCODING_UNKNOWN;
 
 }
 
@@ -78,6 +79,7 @@ void XferLoad::open( AsciiString identifier )
 
 	// call base class
 	Xfer::open( identifier );
+	m_unicodeEncoding = UNICODE_ENCODING_UNKNOWN;
 
 	// open the file
 	m_fileFP = fopen( identifier.str(), "rb" );
@@ -112,6 +114,7 @@ void XferLoad::close()
 
 	// erase the filename
 	m_identifier.clear();
+	m_unicodeEncoding = UNICODE_ENCODING_UNKNOWN;
 
 }
 
@@ -215,6 +218,50 @@ void XferLoad::xferAsciiString( AsciiString *asciiStringData )
 }
 
 // ------------------------------------------------------------------------------------------------
+/** Append a Unicode code point to a native WideChar buffer */
+// ------------------------------------------------------------------------------------------------
+static void appendCodePoint( WideChar *buffer, Int &charCount, UnsignedInt codePoint )
+{
+	if( sizeof( WideChar ) <= 2 && codePoint > 0xFFFF )
+	{
+		if( codePoint > 0x10FFFF )
+		{
+			buffer[ charCount++ ] = (WideChar)0xFFFD;
+		}
+		else
+		{
+			const UnsignedInt offset = codePoint - 0x10000;
+			buffer[ charCount++ ] = (WideChar)(0xD800 + (offset >> 10));
+			buffer[ charCount++ ] = (WideChar)(0xDC00 + (offset & 0x3FF));
+		}
+		return;
+	}
+
+	buffer[ charCount++ ] = (WideChar)codePoint;
+}
+
+// ------------------------------------------------------------------------------------------------
+/** Decode a buffer of 2-byte UTF-16 code units into a native WideChar buffer */
+// ------------------------------------------------------------------------------------------------
+static void decodeUtf16Buffer( const UnsignedShort *fileBuffer, Int len, WideChar *buffer, Int &charCount )
+{
+	for( Int i = 0; i < len; ++i )
+	{
+		UnsignedInt codePoint = fileBuffer[ i ];
+
+		if( sizeof( WideChar ) > 2 &&
+				codePoint >= 0xD800 && codePoint <= 0xDBFF && i + 1 < len &&
+				fileBuffer[ i + 1 ] >= 0xDC00 && fileBuffer[ i + 1 ] <= 0xDFFF )
+		{
+			codePoint = 0x10000 + ((codePoint - 0xD800) << 10) + (fileBuffer[ i + 1 ] - 0xDC00);
+			++i;
+		}
+
+		buffer[ charCount++ ] = (WideChar)codePoint;
+	}
+}
+
+// ------------------------------------------------------------------------------------------------
 /** Read string from file and store in unicode string */
 // ------------------------------------------------------------------------------------------------
 void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
@@ -229,33 +276,97 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 	static WideChar buffer[ MAX_XFER_LOAD_STRING_BUFFER ];
 
 	// GeneralsX @bugfix alviss7 22/11/2026 Reads unicode strings as 2 byte UTF-16 code units
-	// instead of the native WideChar. wchar_t is 2 bytes on Windows but 4 bytes on Linux and macOS,
-	// so reading sizeof( WideChar ) consumed twice the bytes the string occupies, which truncated
-	// the text to every second character and desynchronized every following read in the file.
-	// Where WideChar holds whole code points, a surrogate pair in the file is one character, so the
-	// length header counts code units and the string ends up shorter than the header says.
+	// instead of the native WideChar.
+	// GeneralsX @bugfix fbraz3 26/11/2026 Auto-detect and decode legacy 4-byte UTF-32LE
+	// strings written by pre-1.0.9 Linux/macOS builds so existing savegames remain readable.
 	Int charCount = 0;
 	if( len > 0 )
 	{
 
-		UnsignedShort fileBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
-		xferUser( fileBuffer, sizeof( UnsignedShort ) * len );
-		for( Int i = 0; i < len; ++i )
+		if( m_unicodeEncoding == UNICODE_ENCODING_UTF32 )
 		{
 
-			UnsignedInt codePoint = fileBuffer[ i ];
+			UnsignedInt legacyBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+			xferUser( legacyBuffer, sizeof( UnsignedInt ) * len );
+			for( Int i = 0; i < len; ++i )
+				appendCodePoint( buffer, charCount, legacyBuffer[ i ] );
 
-			if( sizeof( WideChar ) > 2 &&
-					codePoint >= 0xD800 && codePoint <= 0xDBFF && i + 1 < len &&
-					fileBuffer[ i + 1 ] >= 0xDC00 && fileBuffer[ i + 1 ] <= 0xDFFF )
+		}
+		else if( m_unicodeEncoding == UNICODE_ENCODING_UTF16 )
+		{
+
+			UnsignedShort fileBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+			xferUser( fileBuffer, sizeof( UnsignedShort ) * len );
+			decodeUtf16Buffer( fileBuffer, len, buffer, charCount );
+
+		}
+		else
+		{
+
+			UnsignedShort fileBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+			xferUser( fileBuffer, sizeof( UnsignedShort ) * len );
+
+			Bool isLegacyUtf32 = FALSE;
+			if( len >= 2 )
 			{
 
-				codePoint = 0x10000 + ((codePoint - 0xD800) << 10) + (fileBuffer[ i + 1 ] - 0xDC00);
-				++i;
+				// Valid UTF-16 strings never contain 0x0000; in 4-byte UTF-32LE, the high 16 bits
+				// of BMP characters are 0x0000. Restricting detection to 0x0000 avoids misclassifying
+				// UTF-16 control characters (e.g. \b, \t, \n) followed by binary fields.
+				isLegacyUtf32 = (fileBuffer[ 1 ] == 0x0000) || (len >= 4 && fileBuffer[ 3 ] == 0x0000);
+				if( !isLegacyUtf32 )
+					m_unicodeEncoding = UNICODE_ENCODING_UTF16;
+
+			}
+			else
+			{
+
+				const long probePos = ftell( m_fileFP );
+				UnsignedShort nextWord = 0;
+				if( fread( &nextWord, sizeof( UnsignedShort ), 1, m_fileFP ) == 1 && nextWord == 0x0000 )
+				{
+
+					isLegacyUtf32 = TRUE;
+					m_unicodeEncoding = UNICODE_ENCODING_UTF32;
+					appendCodePoint( buffer, charCount, (UnsignedInt)fileBuffer[ 0 ] );
+
+				}
+				else
+				{
+
+					clearerr( m_fileFP );
+					if( probePos >= 0 )
+						fseek( m_fileFP, probePos, SEEK_SET );
+					m_unicodeEncoding = UNICODE_ENCODING_UTF16;
+
+				}
 
 			}
 
-			buffer[ charCount++ ] = (WideChar)codePoint;
+			if( isLegacyUtf32 && len >= 2 )
+			{
+
+				m_unicodeEncoding = UNICODE_ENCODING_UTF32;
+				UnsignedShort tailBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+				xferUser( tailBuffer, sizeof( UnsignedShort ) * len );
+				for( Int i = 0; i < len; ++i )
+				{
+
+					const Int loIndex = 2 * i;
+					const Int hiIndex = loIndex + 1;
+					const UnsignedShort lo = (loIndex < len) ? fileBuffer[ loIndex ] : tailBuffer[ loIndex - len ];
+					const UnsignedShort hi = (hiIndex < len) ? fileBuffer[ hiIndex ] : tailBuffer[ hiIndex - len ];
+					appendCodePoint( buffer, charCount, (UnsignedInt)lo | ((UnsignedInt)hi << 16) );
+
+				}
+
+			}
+			else if( !isLegacyUtf32 )
+			{
+
+				decodeUtf16Buffer( fileBuffer, len, buffer, charCount );
+
+			}
 
 		}
 

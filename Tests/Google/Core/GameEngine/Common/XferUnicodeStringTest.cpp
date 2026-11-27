@@ -255,3 +255,109 @@ TEST_F(XferUnicodeStringTest, WritesTheLargestStringThatStillFits)
 	EXPECT_EQ(bytes[0], 255u);
 	EXPECT_STREQ(readString().str(), text.str());
 }
+
+// Pre-1.0.9 POSIX builds wrote WideChar (4-byte UTF-32LE) directly to disk. Existing savegames
+// must remain readable and leave the stream aligned on the following fields.
+TEST_F(XferUnicodeStringTest, ReadsLegacyUtf32SaveAndPreservesStreamPosition)
+{
+	// "Début" in 4-byte UTF-32LE followed by AsciiString "MD_USA05.map"
+	std::vector<UnsignedByte> bytes = {
+		5u,
+		'D', 0x00, 0x00, 0x00,
+		0xE9, 0x00, 0x00, 0x00,
+		'b', 0x00, 0x00, 0x00,
+		'u', 0x00, 0x00, 0x00,
+		't', 0x00, 0x00, 0x00,
+		12u,
+		'M', 'D', '_', 'U', 'S', 'A', '0', '5', '.', 'm', 'a', 'p'
+	};
+	writeBytes(bytes);
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	AsciiString mapLabel;
+	xfer.xferAsciiString(&mapLabel);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"Début");
+	EXPECT_STREQ(mapLabel.str(), "MD_USA05.map");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsSingleCharLegacyUtf32AndSubsequentStrings)
+{
+	// First string: 1-char UTF-32LE "A", second string: 2-char UTF-32LE "OK", then AsciiString "end"
+	std::vector<UnsignedByte> bytes = {
+		1u,
+		'A', 0x00, 0x00, 0x00,
+		2u,
+		'O', 0x00, 0x00, 0x00,
+		'K', 0x00, 0x00, 0x00,
+		3u,
+		'e', 'n', 'd'
+	};
+	writeBytes(bytes);
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString first;
+	xfer.xferUnicodeString(&first);
+	UnicodeString second;
+	xfer.xferUnicodeString(&second);
+	AsciiString tail;
+	xfer.xferAsciiString(&tail);
+	xfer.close();
+
+	EXPECT_STREQ(first.str(), L"A");
+	EXPECT_STREQ(second.str(), L"OK");
+	EXPECT_STREQ(tail.str(), "end");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsSingleCharUtf16AtEof)
+{
+	writeBytes({ 1u, 'Z', 0x00 });
+
+	EXPECT_STREQ(readString().str(), L"Z");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsSingleCharUtf16FollowedByEmptyAsciiStringAtEof)
+{
+	// Probe reads the trailing 0x00 byte of the empty AsciiString and hits EOF; position must be restored.
+	writeBytes({ 1u, 'Z', 0x00, 0x00 });
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	AsciiString emptyTail;
+	xfer.xferAsciiString(&emptyTail);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"Z");
+	EXPECT_STREQ(emptyTail.str(), "");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsUtf16ControlCharacterWithoutMisclassifyingAsUtf32)
+{
+	writeBytes({ 2u, 'A', 0x00, '\b', 0x00 });
+
+	EXPECT_STREQ(readString().str(), L"A\b");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsUtf16ControlCharacterFollowedByInt)
+{
+	// UTF-16 "A\b" followed by Int(66) must not be misclassified as UTF-32LE.
+	writeBytes({ 2u, 'A', 0x00, '\b', 0x00, 0x42, 0x00, 0x00, 0x00 });
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	Int value = 0;
+	xfer.xferInt(&value);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"A\b");
+	EXPECT_EQ(value, 66);
+}

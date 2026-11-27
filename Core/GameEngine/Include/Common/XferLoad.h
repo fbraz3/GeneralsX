@@ -61,6 +61,16 @@ protected:
 
 	virtual void xferImplementation( void *data, Int dataSize ) override;		///< the xfer implementation
 
+	// GeneralsX @bugfix fbraz3 26/11/2026 Track detected unicode string encoding per file
+	// so pre-1.0.9 POSIX 4-byte wchar_t saves remain readable alongside 2-byte UTF-16 saves.
+	enum UnicodeEncoding
+	{
+		UNICODE_ENCODING_UNKNOWN,
+		UNICODE_ENCODING_UTF16,
+		UNICODE_ENCODING_UTF32
+	};
+
 	FILE * m_fileFP;																					///< pointer to file
+	UnicodeEncoding m_unicodeEncoding;												///< detected on-disk unicode width
 
 };
