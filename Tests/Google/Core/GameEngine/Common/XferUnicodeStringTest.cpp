@@ -360,3 +360,10 @@ TEST_F(XferUnicodeStringTest, ReadsSupplementaryLegacyUtf32FollowedByAsciiChar)
 	EXPECT_STREQ(text.str(), L"\U0001F600A");
 	EXPECT_STREQ(tail.str(), "ok");
 }
+
+TEST_F(XferUnicodeStringTest, ReadsUtf16ControlCharacterWithoutMisclassifyingAsUtf32)
+{
+	writeBytes({ 2u, 'A', 0x00, '\b', 0x00 });
+
+	EXPECT_STREQ(readString().str(), L"A\b");
+}
