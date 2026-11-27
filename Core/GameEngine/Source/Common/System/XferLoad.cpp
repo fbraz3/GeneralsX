@@ -307,57 +307,13 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 			xferUser( fileBuffer, sizeof( UnsignedShort ) * len );
 
 			Bool isLegacyUtf32 = FALSE;
-			UnsignedShort tailBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
-			Bool hasTailBuffer = FALSE;
 			if( len >= 2 )
 			{
 
 				// Valid UTF-16 strings never contain 0x0000; in 4-byte UTF-32LE, the high 16 bits
-				// of BMP characters are 0x0000.
-				const UnsignedShort w1 = fileBuffer[ 1 ];
-				if( w1 == 0x0000 || (len >= 4 && fileBuffer[ 3 ] == 0x0000) )
-				{
-
-					isLegacyUtf32 = TRUE;
-
-				}
-				else if( w1 >= 0x0001 && w1 <= 0x0010 )
-				{
-
-					// Could be a supplementary UTF-32 character (U+10000..U+10FFFF) or a UTF-16
-					// control character (e.g. \b, \t, \n). Probe the remaining 2*len bytes and
-					// only accept UTF-32LE if all bytes exist and every high word is <= 0x0010.
-					const long probePos = ftell( m_fileFP );
-					if( fread( tailBuffer, sizeof( UnsignedShort ), len, m_fileFP ) == (size_t)len )
-					{
-
-						Bool validUtf32HighWords = TRUE;
-						for( Int i = 0; i < len && validUtf32HighWords; ++i )
-						{
-							const Int hiIndex = 2 * i + 1;
-							const UnsignedShort hi = (hiIndex < len) ? fileBuffer[ hiIndex ] : tailBuffer[ hiIndex - len ];
-							if( hi > 0x0010 )
-								validUtf32HighWords = FALSE;
-						}
-						if( validUtf32HighWords )
-						{
-							isLegacyUtf32 = TRUE;
-							hasTailBuffer = TRUE;
-						}
-
-					}
-
-					if( !isLegacyUtf32 )
-					{
-
-						clearerr( m_fileFP );
-						if( probePos >= 0 )
-							fseek( m_fileFP, probePos, SEEK_SET );
-
-					}
-
-				}
-
+				// of BMP characters are 0x0000. Restricting detection to 0x0000 avoids misclassifying
+				// UTF-16 control characters (e.g. \b, \t, \n) followed by binary fields.
+				isLegacyUtf32 = (fileBuffer[ 1 ] == 0x0000) || (len >= 4 && fileBuffer[ 3 ] == 0x0000);
 				if( !isLegacyUtf32 )
 					m_unicodeEncoding = UNICODE_ENCODING_UTF16;
 
@@ -391,8 +347,8 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 			{
 
 				m_unicodeEncoding = UNICODE_ENCODING_UTF32;
-				if( !hasTailBuffer )
-					xferUser( tailBuffer, sizeof( UnsignedShort ) * len );
+				UnsignedShort tailBuffer[ MAX_XFER_UNICODE_STRING_LEN ];
+				xferUser( tailBuffer, sizeof( UnsignedShort ) * len );
 				for( Int i = 0; i < len; ++i )
 				{
 

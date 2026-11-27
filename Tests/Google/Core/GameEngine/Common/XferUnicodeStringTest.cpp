@@ -338,32 +338,26 @@ TEST_F(XferUnicodeStringTest, ReadsSingleCharUtf16FollowedByEmptyAsciiStringAtEo
 	EXPECT_STREQ(emptyTail.str(), "");
 }
 
-TEST_F(XferUnicodeStringTest, ReadsSupplementaryLegacyUtf32FollowedByAsciiChar)
-{
-	// U+1F600 (0x0001F600) followed by 'A' (0x00000041) in legacy 4-byte UTF-32LE, then AsciiString "ok"
-	writeBytes({
-		2u,
-		0x00, 0xF6, 0x01, 0x00,
-		'A', 0x00, 0x00, 0x00,
-		2u,
-		'o', 'k'
-	});
-
-	XferLoad xfer;
-	xfer.open(AsciiString(m_path.c_str()));
-	UnicodeString text;
-	xfer.xferUnicodeString(&text);
-	AsciiString tail;
-	xfer.xferAsciiString(&tail);
-	xfer.close();
-
-	EXPECT_STREQ(text.str(), L"\U0001F600A");
-	EXPECT_STREQ(tail.str(), "ok");
-}
-
 TEST_F(XferUnicodeStringTest, ReadsUtf16ControlCharacterWithoutMisclassifyingAsUtf32)
 {
 	writeBytes({ 2u, 'A', 0x00, '\b', 0x00 });
 
 	EXPECT_STREQ(readString().str(), L"A\b");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsUtf16ControlCharacterFollowedByInt)
+{
+	// UTF-16 "A\b" followed by Int(66) must not be misclassified as UTF-32LE.
+	writeBytes({ 2u, 'A', 0x00, '\b', 0x00, 0x42, 0x00, 0x00, 0x00 });
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	Int value = 0;
+	xfer.xferInt(&value);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"A\b");
+	EXPECT_EQ(value, 66);
 }
