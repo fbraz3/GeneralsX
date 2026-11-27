@@ -320,3 +320,43 @@ TEST_F(XferUnicodeStringTest, ReadsSingleCharUtf16AtEof)
 
 	EXPECT_STREQ(readString().str(), L"Z");
 }
+
+TEST_F(XferUnicodeStringTest, ReadsSingleCharUtf16FollowedByEmptyAsciiStringAtEof)
+{
+	// Probe reads the trailing 0x00 byte of the empty AsciiString and hits EOF; position must be restored.
+	writeBytes({ 1u, 'Z', 0x00, 0x00 });
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	AsciiString emptyTail;
+	xfer.xferAsciiString(&emptyTail);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"Z");
+	EXPECT_STREQ(emptyTail.str(), "");
+}
+
+TEST_F(XferUnicodeStringTest, ReadsSupplementaryLegacyUtf32FollowedByAsciiChar)
+{
+	// U+1F600 (0x0001F600) followed by 'A' (0x00000041) in legacy 4-byte UTF-32LE, then AsciiString "ok"
+	writeBytes({
+		2u,
+		0x00, 0xF6, 0x01, 0x00,
+		'A', 0x00, 0x00, 0x00,
+		2u,
+		'o', 'k'
+	});
+
+	XferLoad xfer;
+	xfer.open(AsciiString(m_path.c_str()));
+	UnicodeString text;
+	xfer.xferUnicodeString(&text);
+	AsciiString tail;
+	xfer.xferAsciiString(&tail);
+	xfer.close();
+
+	EXPECT_STREQ(text.str(), L"\U0001F600A");
+	EXPECT_STREQ(tail.str(), "ok");
+}

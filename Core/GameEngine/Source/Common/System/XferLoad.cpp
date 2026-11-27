@@ -311,8 +311,12 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 			{
 
 				// Valid UTF-16 strings never contain 0x0000; in 4-byte UTF-32LE, the high 16 bits
-				// of BMP characters are 0x0000.
-				isLegacyUtf32 = (fileBuffer[ 1 ] == 0x0000) || (len >= 4 && fileBuffer[ 3 ] == 0x0000);
+				// are 0x0000 for BMP characters or 0x0001..0x0010 for supplementary characters
+				// (excluding control chars \t, \n, \r to avoid false positives in UTF-16).
+				const UnsignedShort w1 = fileBuffer[ 1 ];
+				const Bool isSupplementaryHighWord = (w1 >= 0x0001 && w1 <= 0x0010 &&
+					w1 != 0x0009 && w1 != 0x000A && w1 != 0x000D);
+				isLegacyUtf32 = (w1 == 0x0000) || isSupplementaryHighWord || (len >= 4 && fileBuffer[ 3 ] == 0x0000);
 				if( !isLegacyUtf32 )
 					m_unicodeEncoding = UNICODE_ENCODING_UTF16;
 
@@ -320,31 +324,22 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 			else
 			{
 
+				const long probePos = ftell( m_fileFP );
 				UnsignedShort nextWord = 0;
-				if( fread( &nextWord, sizeof( UnsignedShort ), 1, m_fileFP ) == 1 )
+				if( fread( &nextWord, sizeof( UnsignedShort ), 1, m_fileFP ) == 1 && nextWord == 0x0000 )
 				{
 
-					if( nextWord == 0x0000 )
-					{
-
-						isLegacyUtf32 = TRUE;
-						m_unicodeEncoding = UNICODE_ENCODING_UTF32;
-						appendCodePoint( buffer, charCount, (UnsignedInt)fileBuffer[ 0 ] );
-
-					}
-					else
-					{
-
-						fseek( m_fileFP, -(long)sizeof( UnsignedShort ), SEEK_CUR );
-						m_unicodeEncoding = UNICODE_ENCODING_UTF16;
-
-					}
+					isLegacyUtf32 = TRUE;
+					m_unicodeEncoding = UNICODE_ENCODING_UTF32;
+					appendCodePoint( buffer, charCount, (UnsignedInt)fileBuffer[ 0 ] );
 
 				}
 				else
 				{
 
 					clearerr( m_fileFP );
+					if( probePos >= 0 )
+						fseek( m_fileFP, probePos, SEEK_SET );
 					m_unicodeEncoding = UNICODE_ENCODING_UTF16;
 
 				}
