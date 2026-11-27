@@ -30,9 +30,8 @@ Scripts for Linux native and Docker-based builds:
 #### `build/windows/` - Windows x64 Build
 - `build-windows-zh.ps1` - Configure and build `GeneralsXZH.exe` (`win64` preset)
 - `build-windows-generals.ps1` - Configure and build `GeneralsX.exe` (`win64` preset)
-- `deploy-windows-zh.ps1` - Stage `GeneralsXZH.exe`, vcpkg DLLs, `generalsx.big`, fonts, and SHA256-verified DXVK 2.6 x64 DLLs
+- `deploy-windows-zh.ps1` - Stage `GeneralsXZH.exe`, vcpkg DLLs, SDL3 DLLs, `generalsx.big`, and fonts
 - `deploy-windows-generals.ps1` - Stage `GeneralsX.exe` runtime bundle
-- `dxvk/dxvk-win64.pins` - Pinned URLs and SHA256 checksums for DXVK 2.6 x64 `d3d8.dll`/`d3d9.dll`
 
 ### `env/` - Environment Setup
 

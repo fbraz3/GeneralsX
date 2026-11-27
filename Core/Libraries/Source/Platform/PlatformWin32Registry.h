@@ -60,20 +60,25 @@ inline bool QueryWin32RegistryValue(HKEY root, const char *path, const char *key
 
 inline bool ReadWin32RegistryString(HKEY root, const char *path, const char *key, char *outBuf, size_t outBufSize)
 {
-	if (!outBuf || outBufSize < 2)
+	if (!outBuf || outBufSize == 0)
 	{
 		return false;
 	}
 
 	auto tryRead = [&](DWORD samDesired) -> bool {
-		DWORD size = static_cast<DWORD>(outBufSize - 1);
+		// GeneralsX @bugfix fbraz3 27/11/2026 Advertise full buffer capacity; accept exact-fit only when NUL-terminated.
+		DWORD size = static_cast<DWORD>(outBufSize);
 		if (!QueryWin32RegistryValue(root, path, key, samDesired, reinterpret_cast<unsigned char *>(outBuf), size))
 		{
 			return false;
 		}
-		if (size >= outBufSize)
+		if (size > outBufSize)
 		{
-			size = static_cast<DWORD>(outBufSize - 1);
+			return false;
+		}
+		if (size == outBufSize)
+		{
+			return outBuf[outBufSize - 1] == '\0';
 		}
 		outBuf[size] = '\0';
 		return true;

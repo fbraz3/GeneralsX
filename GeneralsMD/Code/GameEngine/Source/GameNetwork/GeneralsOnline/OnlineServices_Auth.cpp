@@ -263,15 +263,27 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                     m_authTokenVersion++;
                     m_sessionGeneration++;
 
-                    NGMP::SaveAuthToken(sessionToken);
-                    NGMP::SaveRefreshToken(refreshToken);
+                    try {
+                        NGMP::SaveAuthToken(sessionToken);
+                        NGMP::SaveRefreshToken(refreshToken);
+                    }
+                    catch (const std::exception& e) {
+                        fprintf(stderr, "[NGMP] Warning: failed to persist auth tokens: %s\n", e.what());
+                        fflush(stderr);
+                    }
 
                     fprintf(stderr, "[NGMP] Login successful! user=%s id=%lld\n",
                             displayName.c_str(), (long long)userId);
                     fflush(stderr);
 
                     // Fetch latest MOTD from the web portal in background
-                    NGMP::FetchMOTD();
+                    try {
+                        NGMP::FetchMOTD();
+                    }
+                    catch (const std::exception& e) {
+                        fprintf(stderr, "[NGMP] Warning: failed to fetch MOTD after login: %s\n", e.what());
+                        fflush(stderr);
+                    }
 
                     NGMPEvent ev;
                     ev.type    = NGMPEvent::EVENT_AUTH_SUCCESS;

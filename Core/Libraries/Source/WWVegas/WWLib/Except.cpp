@@ -56,6 +56,8 @@
 #include	<conio.h>
 #include	<imagehlp.h>
 #include <crtdbg.h>
+#include <cinttypes>
+#include <cstdint>
 // GeneralsX @bugfix Copilot 25/11/2026 Architecture-neutral CONTEXT register accessors for _WIN64
 #include "Utility/cpu_context_compat.h"
 
@@ -131,6 +133,22 @@ static StackWalkType								_StackWalk = nullptr;
 static SymFunctionTableAccessType	_SymFunctionTableAccess = nullptr;
 static SymGetModuleBaseType				_SymGetModuleBase = nullptr;
 
+#ifdef _WIN64
+// GeneralsX @bugfix fbraz3 27/11/2026 Use 64-bit dbghelp exports exclusively for width-sensitive APIs on _WIN64.
+static char const *const ImagehelpFunctionNames[] =
+{
+	"SymCleanup",
+	"SymGetSymFromAddr64",
+	"SymInitialize",
+	"SymLoadModule64",
+	"SymSetOptions",
+	"SymUnloadModule64",
+	"StackWalk64",
+	"SymFunctionTableAccess64",
+	"SymGetModuleBase64",
+	nullptr
+};
+#else
 static char const *const ImagehelpFunctionNames[] =
 {
 	"SymCleanup",
@@ -144,6 +162,19 @@ static char const *const ImagehelpFunctionNames[] =
 	"SymGetModuleBase",
 	nullptr
 };
+#endif
+
+static void Resolve_Image_Helper_Functions(HINSTANCE imagehelp)
+{
+	if (imagehelp == nullptr) {
+		return;
+	}
+	uintptr_t *fptr = (uintptr_t *) &_SymCleanup;
+	for (int count = 0; ImagehelpFunctionNames[count] != nullptr; count++) {
+		*fptr = (uintptr_t) GetProcAddress(imagehelp, ImagehelpFunctionNames[count]);
+		fptr++;
+	}
+}
 
 
 
@@ -296,18 +327,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 
 	if (imagehelp != nullptr) {
 		DebugString ("Exception Handler: Found IMAGEHLP.DLL - linking to required functions\n");
-		char const *function_name = nullptr;
-		uintptr_t *fptr = (uintptr_t*) &_SymCleanup;
-		int count = 0;
-
-		do {
-			function_name = ImagehelpFunctionNames[count];
-			if (function_name) {
-				*fptr = (uintptr_t) GetProcAddress(imagehelp, function_name);
-				fptr++;
-				count++;
-			}
-		} while (function_name);
+		Resolve_Image_Helper_Functions(imagehelp);
 	} else {
 		DebugString("Exception Handler: Unable to load IMAGEHLP.DLL\n");
 	}
@@ -627,32 +647,34 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	*/
 	DebugString("Stack dump...\n");
 	Add_Txt("Stack dump (* indicates possible code address) :\r\n");
-	unsigned long *stackptr = (unsigned long*) (DWORD_PTR)GX_CTX_SP(context);
+	uintptr_t *stackptr = reinterpret_cast<uintptr_t*>(static_cast<uintptr_t>(GX_CTX_SP(context)));
 
 	for (int j=0 ; j<2048 ; j++) {
-		if (IsBadReadPtr(stackptr, 4)) {
+		if (IsBadReadPtr(stackptr, sizeof(uintptr_t))) {
 			/*
 			** The stack contents cannot be read so just print up question marks.
 			*/
-			sprintf(scrap, "%p: ", static_cast<void*>(stackptr));
-			strlcat(scrap, "????????\r\n", ARRAY_SIZE(scrap));
+			snprintf(scrap, ARRAY_SIZE(scrap), "%p: %s\r\n", static_cast<void*>(stackptr),
+				sizeof(uintptr_t) == 8 ? "????????????????" : "????????");
 		} else {
 			/*
 			** If this stack address is in our memory space then try to match it with a code symbol.
 			*/
-			if (IsBadCodePtr((FARPROC)*stackptr)) {
-				sprintf(scrap, "%p: %08lX ", static_cast<void*>(stackptr), *stackptr);
-				strlcat(scrap, "DATA_PTR\r\n", ARRAY_SIZE(scrap));
+			const uintptr_t value = *stackptr;
+			if (IsBadCodePtr((FARPROC)value)) {
+				snprintf(scrap, ARRAY_SIZE(scrap), "%p: %0*" PRIXPTR " DATA_PTR\r\n",
+					static_cast<void*>(stackptr), static_cast<int>(sizeof(uintptr_t) * 2), value);
 			} else {
-				sprintf(scrap, "%p: %08lX", static_cast<void*>(stackptr), *stackptr);
+				snprintf(scrap, ARRAY_SIZE(scrap), "%p: %0*" PRIXPTR,
+					static_cast<void*>(stackptr), static_cast<int>(sizeof(uintptr_t) * 2), value);
 
 				if (symbols_available) {
 					symptr->SizeOfStruct = sizeof(symbol);
 					symptr->MaxNameLength = 128;
 					symptr->Size = 0;
-					symptr->Address = *stackptr;
+					symptr->Address = value;
 
-					if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), *stackptr, &displacement, symptr)) {
+					if (_SymGetSymFromAddr != nullptr && _SymGetSymFromAddr (GetCurrentProcess(), value, &displacement, symptr)) {
 						char symbuf[256];
 						snprintf(symbuf, ARRAY_SIZE(symbuf), " - %s + %p", symptr->Name, (void *)displacement);
 						strlcat(scrap, symbuf, ARRAY_SIZE(scrap));
@@ -909,30 +931,7 @@ void Load_Image_Helper()
 		ImageHelp = LoadLibrary("IMAGEHLP.DLL");
 
 		if (ImageHelp != nullptr) {
-			char const *function_name = nullptr;
-			uintptr_t *fptr = (uintptr_t *) &_SymCleanup;
-			int count = 0;
-
-			do {
-				function_name = ImagehelpFunctionNames[count];
-				if (function_name) {
-#ifdef _WIN64
-					// GeneralsX @bugfix fbraz3 26/11/2026 Prefer ...64 dbghelp exports on _WIN64 to match 64-bit typedefs.
-					char name64[64];
-					snprintf(name64, sizeof(name64), "%s64", function_name);
-					FARPROC proc = GetProcAddress(ImageHelp, name64);
-					if (proc == nullptr) {
-						proc = GetProcAddress(ImageHelp, function_name);
-					}
-					*fptr = (uintptr_t) proc;
-#else
-					*fptr = (uintptr_t) GetProcAddress(ImageHelp, function_name);
-#endif
-					fptr++;
-					count++;
-				}
-			}
-			while (function_name);
+			Resolve_Image_Helper_Functions(ImageHelp);
 		}
 
 		/*

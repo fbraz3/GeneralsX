@@ -65,14 +65,7 @@
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
 #endif
-#include "Win32Device/Common/GXD3DBackend.h"
 #include "Win32Device/Common/GXD3DWin32.h"
-#include "Win32Device/Common/GXVulkanCheck.h"
-#include "Common/OptionPreferences.h"
-#include "WW3D2/dx8wrapper.h"
-#ifdef GX_COMPAT_D3D9
-#include "gx_d3d8to9.h"
-#endif
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -306,63 +299,6 @@ static const char *messageToString(unsigned int message)
 #endif
 
 #ifdef SAGE_USE_SDL3
-// GeneralsX @feature fbraz 26/11/2026 Create SDL3 window on Windows and extract native HWND for DXVK/d3d8to9
-static Bool initializeSDL3Window( HINSTANCE hInstance, const char *title )
-{
-	if ( !SDL_InitSubSystem( SDL_INIT_VIDEO ) )
-	{
-		fprintf( stderr, "FATAL: SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError() );
-		return false;
-	}
-
-	TheSDL3Window = SDL_CreateWindow( title, 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN );
-	if ( !TheSDL3Window )
-	{
-		fprintf( stderr, "FATAL: SDL_CreateWindow failed: %s\n", SDL_GetError() );
-		SDL_Quit();
-		return false;
-	}
-
-	const SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
-	if ( primaryDisplay != 0 )
-	{
-		const int centered = SDL_WINDOWPOS_CENTERED_DISPLAY( primaryDisplay );
-		if ( !SDL_SetWindowPosition( TheSDL3Window, centered, centered ) )
-		{
-			fprintf( stderr, "WARNING: SDL_SetWindowPosition(primary display) failed: %s\n", SDL_GetError() );
-		}
-	}
-
-	ApplicationHWnd = static_cast<HWND>( SDL_GetPointerProperty(
-		SDL_GetWindowProperties( TheSDL3Window ),
-		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-		nullptr ) );
-	if ( !ApplicationHWnd )
-	{
-		fprintf( stderr, "FATAL: Failed to extract Win32 HWND from SDL3 window\n" );
-		SDL_DestroyWindow( TheSDL3Window );
-		TheSDL3Window = nullptr;
-		SDL_Quit();
-		return false;
-	}
-
-	gxwin32::attachWindowIcon( ApplicationHWnd, hInstance, IDI_ApplicationIcon );
-
-	fprintf( stderr, "INFO: SDL3 window initialized cleanly (SDL_Window=%p, HWND=%p)\n",
-		static_cast<void *>( TheSDL3Window ), static_cast<void *>( ApplicationHWnd ) );
-	return true;
-}
-
-static void shutdownSDL3Window()
-{
-	if ( TheSDL3Window )
-	{
-		SDL_DestroyWindow( TheSDL3Window );
-		TheSDL3Window = nullptr;
-	}
-	ApplicationHWnd = nullptr;
-	SDL_Quit();
-}
 #else
 // WndProc ====================================================================
 /** Window Procedure */
@@ -867,105 +803,6 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// GeneralsX @feature Copilot 25/11/2026 Select DXVK vs static d3d8to9 compatibility backend on Windows x64 based on Vulkan 1.3 availability.
-#ifdef GX_COMPAT_D3D9
-static IDirect3D8 *WINAPI gxCompatCreate8(UINT sdk)
-{
-	char why[256] = "";
-	IDirect3D8 *const d = static_cast<IDirect3D8 *>(gx_d3d8to9_Direct3DCreate8(sdk, why, sizeof(why)));
-	fprintf(stderr, "[GXGFX] d3d9=%ls%s%s\n", gx_d3d8to9_LoadedD3D9Path(), d != nullptr ? "" : " FAILED: ", d != nullptr ? "" : why);
-	fflush(stderr);
-	return d;
-}
-static const bool kGxCompatBuilt = true;
-#else
-static const bool kGxCompatBuilt = false;
-#endif
-
-static char s_gxGraphicsPath[1024] = "";
-static int s_gxFailures = 0;
-
-static void gxDeviceStage(int stage)
-{
-	static bool s_ready = false;
-	if (s_ready)
-		return;
-	const GxD3DState st = { stage == 0 ? static_cast<int>(GXD3D_PENDING_DEVICE) : static_cast<int>(GXD3D_PENDING_NONE), 0, stage == 0 ? s_gxFailures : 0 };
-	gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_DXVK, GXD3D_R_VULKAN_OK, st);
-	if (stage == 1)
-	{
-		s_ready = true;
-		fprintf(stderr, "[GXGFX] dxvk device ready: crash marker cleared\n");
-		fflush(stderr);
-	}
-}
-
-static Bool gxPickD3D()
-{
-	const char *env = getenv("GX_D3D_BACKEND");
-	const OptionPreferences prefs;
-	const AsciiString key = prefs.getAsciiString("GXGraphicsBackend", AsciiString::TheEmptyString);
-	const char *keyText = key.isEmpty() ? nullptr : key.str();
-	const bool pair = gxwin32::usesDxvkPair();
-	char leaf[64];
-	gxD3DStateFileName(leaf, sizeof(leaf), rts::ClientInstance::getInstanceId());
-	snprintf(s_gxGraphicsPath, sizeof(s_gxGraphicsPath), "%s%s", TheGlobalData->getPath_UserData().str(), leaf);
-
-	GxD3DState next;
-	const bool fallback = gxD3DFallback(env, keyText, kGxCompatBuilt, pair, gxwin32::readGraphicsState(s_gxGraphicsPath), &next);
-	// GeneralsX @bugfix fbraz3 26/11/2026 Preserve compatibility fallback for this launch even if persisting the state file fails.
-	if (fallback && !gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_COMPAT, GXD3D_R_DXVK_FAILED, next))
-	{
-		fprintf(stderr, "[GXGFX] %s cannot be written: keeping compatibility graphics active for this start\n", s_gxGraphicsPath);
-	}
-
-	int verdict = -1;
-	gxvk::Probe probe;
-	if (fallback)
-		fprintf(stderr, "[GXVULKAN] skipped: the last DXVK start never got a device (gxgraphics.txt crash marker)\n");
-	else if (gxD3DNeedsProbe(env, keyText, kGxCompatBuilt, pair))
-	{
-		gxwin32::writeGraphicsState(s_gxGraphicsPath, GXD3D_DXVK, GXD3D_R_VULKAN_OK, GxD3DState{ GXD3D_PENDING_PROBE, next.compatLeft, next.failures });
-		const gxvk::Loader loader = gxwin32::makeVulkanLoader();
-		probe = gxvk::probe(loader);
-		verdict = gxvk::judge(probe);
-		char line[512];
-		gxvk::logLine(static_cast<gxvk::Verdict>(verdict), probe, line, sizeof(line));
-		fprintf(stderr, "%s\n", line);
-	}
-	else
-		fprintf(stderr, "[GXVULKAN] skipped: %s\n", pair ? "compatibility graphics forced" : "no DXVK pair (d3d8.dll + d3d9.dll) beside the game");
-
-	GxD3DDecision d = gxD3DDecide(env, keyText, kGxCompatBuilt, pair, verdict);
-	if (fallback)
-	{
-		d.backend = GXD3D_COMPAT;
-		d.reason = GXD3D_R_DXVK_FAILED;
-	}
-	fprintf(stderr, "[GXGFX] backend=%s reason=%s%s%s\n", gxD3DBackendWord(d.backend), gxD3DReasonWord(d.reason),
-		d.badKey ? " ignored GXGraphicsBackend=" : "", d.badKey ? keyText : "");
-	fflush(stderr);
-
-	if (d.backend == GXD3D_REFUSED)
-	{
-		char text[1024];
-		gxvk::playerMessage(static_cast<gxvk::Verdict>(verdict), probe, text, sizeof(text));
-		::MessageBoxA(nullptr, text, "GeneralsX Zero Hour", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
-		return FALSE;
-	}
-#ifdef GX_COMPAT_D3D9
-	if (d.backend == GXD3D_COMPAT)
-		DX8Wrapper::Set_Direct3DCreate8_Override(gxCompatCreate8, gxD3DReasonWord(d.reason));
-#endif
-	if (d.backend == GXD3D_DXVK && kGxCompatBuilt)
-		DX8Wrapper::Device_Stage_Hook = gxDeviceStage;
-
-	next.pending = GXD3D_PENDING_NONE;
-	s_gxFailures = next.failures;
-	gxwin32::writeGraphicsState(s_gxGraphicsPath, d.backend, d.reason, next);
-	return TRUE;
-}
-
 // WinMain ====================================================================
 /** Application entry point */
 //=============================================================================
@@ -1045,7 +882,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// register windows class and create application window
 #ifdef SAGE_USE_SDL3
-		if(!TheGlobalData->m_headless && initializeSDL3Window(hInstance, "Command and Conquer Generals Zero Hour") == false)
+		if(!TheGlobalData->m_headless && gxwin32::initializeSDL3Window(hInstance, "Command and Conquer Generals Zero Hour", IDI_ApplicationIcon, TheSDL3Window, ApplicationHWnd) == false)
 		{
 			return exitcode;
 		}
@@ -1089,7 +926,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 			DEBUG_LOG(("Generals is already running...Bail!"));
 #ifdef SAGE_USE_SDL3
-			shutdownSDL3Window();
+			gxwin32::shutdownSDL3Window(TheSDL3Window, ApplicationHWnd);
 #endif
 			delete TheVersion;
 			TheVersion = nullptr;
@@ -1100,22 +937,16 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
-		if (!TheGlobalData->m_headless && !gxPickD3D())
+		if (!TheGlobalData->m_headless)
 		{
-#ifdef SAGE_USE_SDL3
-			shutdownSDL3Window();
-#endif
-			delete TheVersion;
-			TheVersion = nullptr;
-			shutdownMemoryManager();
-			return exitcode;
+			gxwin32::installD3D8To9Backend();
 		}
 
 		// run the game main loop
 		exitcode = GameMain();
 
 #ifdef SAGE_USE_SDL3
-		shutdownSDL3Window();
+		gxwin32::shutdownSDL3Window(TheSDL3Window, ApplicationHWnd);
 #endif
 
 		delete TheVersion;

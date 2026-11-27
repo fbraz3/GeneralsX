@@ -45,6 +45,7 @@ function Test-MsvcX64Toolchain {
     if ($clCmd.Source -match '(?i)\\Host(x64|x86)\\x64\\cl\.exe$') {
         return $true
     }
+    $ErrorActionPreference = "Continue"
     $banner = (& cl.exe 2>&1 | Out-String)
     return ($banner -match '\bx64\b')
 }

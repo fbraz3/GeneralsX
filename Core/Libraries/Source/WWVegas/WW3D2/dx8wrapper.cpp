@@ -448,7 +448,6 @@ D3DCOLOR							DX8Wrapper::FogColor										= 0;
 IDirect3D8 *					DX8Wrapper::D3DInterface								= nullptr;
 DX8Wrapper::Direct3DCreate8Fn	DX8Wrapper::Create8Override							= nullptr;
 const char *						DX8Wrapper::Create8OverrideReason					= nullptr;
-DX8Wrapper::DeviceStageHook		DX8Wrapper::Device_Stage_Hook						= nullptr;
 IDirect3DDevice8 *			DX8Wrapper::D3DDevice									= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentRenderTarget						= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentDepthBuffer						= nullptr;
@@ -687,13 +686,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			return false;
 		}
 #else
-#ifdef _WIN32
-		// GeneralsX @bugfix fbraz 26/11/2026 Set default DXVK configuration on Windows before loading DXVK 2.6 D3D8.DLL
-		// so SDL3 fullscreen swapchain resets do not fail on D3DPOOL_DEFAULT losable resource checks.
-		if (!Is_Compat_D3D9() && ::GetEnvironmentVariableA("DXVK_CONFIG", nullptr, 0) == 0) {
-			::SetEnvironmentVariableA("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False");
-		}
-#else
+#ifndef _WIN32
 		// GeneralsX @bugfix fbraz3 12/10/2026 Set default DXVK configuration fallback for D3D8 device resets
 		// In D3D8, swapchain resets (such as fullscreen transitions and window resizing)
 		// do not require exhaustive destruction of all D3DPOOL_DEFAULT subresources.
@@ -702,8 +695,6 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 			setenv("DXVK_CONFIG", "d3d9.countLosableResources = False; d3d9.forceSamplerTypeSpecConstants = False", 0);
 		}
 #endif
-		if (Device_Stage_Hook != nullptr)
-			Device_Stage_Hook(0);
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef _WIN32
 		// GeneralsX @feature Copilot 25/11/2026 Compatibility graphics (d3d8to9 override) skips loading D3D8.DLL.
@@ -754,7 +745,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		}
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL (DXVK failed to create D3D8 interface)\n");
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL\n");
 			Shutdown();
 			return(false);
 		}
@@ -1058,8 +1049,6 @@ bool DX8Wrapper::Create_Device()
 	** Initialize all subsystems
 	*/
 	Do_Onetime_Device_Dependent_Inits();
-	if (Device_Stage_Hook != nullptr)
-		Device_Stage_Hook(1);
 	return true;
 }
 

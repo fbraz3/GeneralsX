@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Stage a self-contained Windows x64 runtime directory (exe, pdb, vcpkg DLLs, generalsx.big, fonts, and verified DXVK 2.6 x64 DLLs).
+    Stage a self-contained Windows x64 runtime directory (exe, pdb, vcpkg DLLs, SDL3 DLLs, generalsx.big, and fonts).
 #>
 param(
     [string]$Destination = "",
@@ -9,8 +9,7 @@ param(
     [ValidateSet("RelWithDebInfo", "Debug", "Release")]
     [string]$Config = $(if ($Preset -eq "win64-debug") { "Debug" } else { "RelWithDebInfo" }),
     [ValidateSet("zh", "generals")]
-    [string]$Game = "zh",
-    [switch]$SkipDxvk
+    [string]$Game = "zh"
 )
 
 $ErrorActionPreference = "Stop"
@@ -86,50 +85,6 @@ if ($sdlEnabled) {
             throw "SAGE_USE_SDL3 is ON but $sdlDll was not found under $BuildDir"
         }
         Copy-Item -Force $srcDll (Join-Path $Destination $sdlDll)
-    }
-}
-
-if (-not $SkipDxvk) {
-    $PinsPath = Join-Path $PSScriptRoot "dxvk\dxvk-win64.pins"
-    $Pins = @{}
-    Get-Content $PinsPath | ForEach-Object {
-        $line = ($_ -replace '#.*$', '').Trim()
-        if ($line -match '^([^=\s]+)\s*=\s*(.+)$') {
-            $Pins[$matches[1].Trim()] = $matches[2].Trim()
-        }
-    }
-
-    $DxvkUrl = $Pins["official_url"]
-    $NeedD3D8 = $Pins["official_d3d8_sha256"].ToLowerInvariant()
-    $NeedD3D9 = $Pins["official_d3d9_sha256"].ToLowerInvariant()
-    $CacheDir = Join-Path $RepoRoot "build\.dxvk-cache"
-    New-Item -ItemType Directory -Force -Path $CacheDir | Out-Null
-    $Archive = Join-Path $CacheDir "dxvk-2.6.tar.gz"
-    if (-not (Test-Path $Archive)) {
-        Write-Host "Downloading official DXVK 2.6 release tarball..."
-        Invoke-WebRequest -Uri $DxvkUrl -OutFile $Archive -UseBasicParsing
-    }
-    $ExtractDir = Join-Path $CacheDir "dxvk-2.6"
-    if (-not (Test-Path (Join-Path $ExtractDir "x64\d3d8.dll"))) {
-        tar -xzf $Archive -C $CacheDir
-        if ($LASTEXITCODE -ne 0) { throw "Failed to extract $Archive" }
-    }
-
-    foreach ($pair in @(
-        @{ Name = "d3d8.dll"; Hash = $NeedD3D8 },
-        @{ Name = "d3d9.dll"; Hash = $NeedD3D9 }
-    )) {
-        $src = Join-Path $ExtractDir ("x64\" + $pair.Name)
-        $actual = (Get-FileHash -Path $src -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($actual -ne $pair.Hash) {
-            throw "SHA256 mismatch for $($pair.Name): expected $($pair.Hash), got $actual"
-        }
-        Copy-Item -Force $src (Join-Path $Destination $pair.Name)
-    }
-
-    $DxvkConf = Join-Path $RepoRoot "resources\dxvk\dxvk.conf"
-    if (Test-Path $DxvkConf) {
-        Copy-Item -Force $DxvkConf (Join-Path $Destination "dxvk.conf")
     }
 }
 

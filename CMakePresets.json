@@ -162,7 +162,7 @@
             "inherits": "default-vcpkg",
             "hidden": false,
             "displayName": "Windows 64bit (x64, SDL3 + MiniAudio + FFmpeg + DX8) RelWithDebInfo",
-            "description": "Windows 64-bit native build using MSVC x64, SDL3 windowing/input, MiniAudio, FFmpeg, NGMP, and min-dx8-sdk headers (with DXVK x64 drop-in + static d3d8to9 fallback).",
+            "description": "Windows 64-bit native build using MSVC x64, SDL3 windowing/input, MiniAudio, FFmpeg, NGMP, min-dx8-sdk headers, and embedded d3d8to9 (Direct3D 9).",
             "architecture": {
                 "value": "x64",
                 "strategy": "external"

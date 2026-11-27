@@ -207,37 +207,10 @@ jobs:
             }
           }
 
-          # Fetch and verify official DXVK 2.6 x64 d3d8.dll + d3d9.dll for release bundle
-          $pins = @{}
-          Get-Content "scripts/build/windows/dxvk/dxvk-win64.pins" | ForEach-Object {
-            $line = ($_ -replace '#.*$', '').Trim()
-            if ($line -match '^([^=\s]+)\s*=\s*(.+)$') { $pins[$matches[1].Trim()] = $matches[2].Trim() }
-          }
-          $dxvkArchive = Join-Path $env:RUNNER_TEMP "dxvk-2.6.tar.gz"
-          $dxvkExtract = Join-Path $env:RUNNER_TEMP "dxvk-2.6-extract"
-          Invoke-WebRequest -Uri $pins["official_url"] -OutFile $dxvkArchive -UseBasicParsing
-          New-Item -ItemType Directory -Force -Path $dxvkExtract | Out-Null
-          tar -xzf $dxvkArchive -C $dxvkExtract
-          if ($LASTEXITCODE -ne 0) { throw "Failed to extract DXVK 2.6 tarball" }
-          foreach ($pair in @(
-            @{ Name = "d3d8.dll"; Hash = $pins["official_d3d8_sha256"].ToLowerInvariant() },
-            @{ Name = "d3d9.dll"; Hash = $pins["official_d3d9_sha256"].ToLowerInvariant() }
-          )) {
-            $dllPath = Join-Path $dxvkExtract ("dxvk-2.6\x64\" + $pair.Name)
-            $actual = (Get-FileHash -Path $dllPath -Algorithm SHA256).Hash.ToLowerInvariant()
-            if ($actual -ne $pair.Hash) {
-              throw "DXVK $($pair.Name) SHA256 mismatch: expected $($pair.Hash), got $actual"
-            }
-            Copy-Item $dllPath (Join-Path "artifacts" $pair.Name)
-          }
-          if (Test-Path "resources/dxvk/dxvk.conf") {
-            Copy-Item "resources/dxvk/dxvk.conf" "artifacts/dxvk.conf"
-          }
-
           @"
           Copy these files into an existing licensed ${{ matrix.game.name }} installation.
-          GeneralsX Windows 64-bit uses MiniAudio and FFmpeg out of the box, bundles DXVK 2.6 x64
-          (d3d8.dll/d3d9.dll), and falls back automatically to embedded d3d8to9 on systems without Vulkan 1.3.
+          GeneralsX Windows 64-bit uses SDL3, MiniAudio, FFmpeg, and embedded d3d8to9 (Windows native
+          Direct3D 9) out of the box, with no Vulkan or DXVK runtime required.
           "@ | Set-Content artifacts/INSTALL.txt
           Compress-Archive -Path artifacts/* -DestinationPath "${{ matrix.game.artifact_name }}"
           Compress-Archive -Path ci-artifacts/* -DestinationPath "${{ matrix.game.ci_artifact_name }}"

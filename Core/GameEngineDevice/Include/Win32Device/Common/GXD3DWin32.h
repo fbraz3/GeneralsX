@@ -16,8 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// GXD3DWin32.h - Shared Win32 DXVK probe, crash-marker persistence, and SDL3 HWND icon helpers.
-// GeneralsX @refactor fbraz3 26/11/2026 Extract duplicated Win32 helpers from WinMain.cpp into Win32Device.
+// GXD3DWin32.h - Shared Win32 SDL3 HWND/icon helpers and embedded d3d8to9 graphics backend setup.
+// GeneralsX @refactor fbraz3 26/11/2026 Isolate Win32 windowing and d3d8to9 backend wiring in Win32Device.
 
 #pragma once
 
@@ -25,80 +25,17 @@
 
 #include <windows.h>
 #include <cstdio>
-#include <cstring>
-#include <cwchar>
 
-#include "Win32Device/Common/GXD3DBackend.h"
-#include "Win32Device/Common/GXVulkanCheck.h"
+#ifdef SAGE_USE_SDL3
+#include <SDL3/SDL.h>
+#endif
+
+#ifdef GX_COMPAT_D3D9
+#include "gx_d3d8to9.h"
+#include "WW3D2/dx8wrapper.h"
+#endif
 
 namespace gxwin32 {
-
-inline void *vkOpen(const char *name)
-{
-	return reinterpret_cast<void *>(LoadLibraryA(name));
-}
-
-inline void *vkSymbol(void *library, const char *name)
-{
-	return reinterpret_cast<void *>(GetProcAddress(static_cast<HMODULE>(library), name));
-}
-
-inline void vkClose(void *library)
-{
-	FreeLibrary(static_cast<HMODULE>(library));
-}
-
-inline gxvk::Loader makeVulkanLoader()
-{
-	const gxvk::Loader loader = { vkOpen, vkSymbol, vkClose };
-	return loader;
-}
-
-inline bool usesDxvkPair()
-{
-	wchar_t path[MAX_PATH];
-	const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
-	if (n == 0 || n >= MAX_PATH)
-		return false;
-	wchar_t *slash = wcsrchr(path, L'\\');
-	if (slash == nullptr)
-		return false;
-	const size_t room = MAX_PATH - static_cast<size_t>(slash + 1 - path);
-	auto beside = [&](const wchar_t *leaf) {
-		if (wcscpy_s(slash + 1, room, leaf) != 0)
-			return false;
-		const DWORD a = GetFileAttributesW(path);
-		return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY) == 0;
-	};
-	return gxvk::usesDxvkPair(beside(L"d3d8.dll"), beside(L"d3d9.dll"));
-}
-
-inline GxD3DState readGraphicsState(const char *path)
-{
-	char text[512] = "";
-	if (path && path[0] != '\0')
-	{
-		if (FILE *f = fopen(path, "r"))
-		{
-			text[fread(text, 1, sizeof(text) - 1, f)] = '\0';
-			fclose(f);
-		}
-	}
-	return gxD3DParseState(text);
-}
-
-inline bool writeGraphicsState(const char *path, int backend, int reason, GxD3DState st)
-{
-	char text[256];
-	const int n = gxD3DFormatFile(text, sizeof(text), backend, reason, st);
-	if (n <= 0 || n >= static_cast<int>(sizeof(text)) || !path || path[0] == '\0')
-		return false;
-	FILE *f = fopen(path, "w");
-	if (f == nullptr)
-		return false;
-	const bool written = fputs(text, f) >= 0;
-	return fclose(f) == 0 && written;
-}
 
 inline void attachWindowIcon(HWND hWnd, HINSTANCE hInstance, WORD iconResourceId)
 {
@@ -110,6 +47,87 @@ inline void attachWindowIcon(HWND hWnd, HINSTANCE hInstance, WORD iconResourceId
 		SendMessage(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(appIcon));
 		SendMessage(hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(appIcon));
 	}
+}
+
+#ifdef SAGE_USE_SDL3
+// Create the SDL3 window on Windows, extract its native Win32 HWND, and attach the application icon.
+inline bool initializeSDL3Window(HINSTANCE hInstance, const char *title, WORD iconResourceId, SDL_Window *&outWindow, HWND &outHwnd)
+{
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+	{
+		fprintf(stderr, "FATAL: SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError());
+		return false;
+	}
+
+	outWindow = SDL_CreateWindow(title, 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+	if (!outWindow)
+	{
+		fprintf(stderr, "FATAL: SDL_CreateWindow failed: %s\n", SDL_GetError());
+		SDL_Quit();
+		return false;
+	}
+
+	const SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
+	if (primaryDisplay != 0)
+	{
+		const int centered = SDL_WINDOWPOS_CENTERED_DISPLAY(primaryDisplay);
+		if (!SDL_SetWindowPosition(outWindow, centered, centered))
+		{
+			fprintf(stderr, "WARNING: SDL_SetWindowPosition(primary display) failed: %s\n", SDL_GetError());
+		}
+	}
+
+	outHwnd = static_cast<HWND>(SDL_GetPointerProperty(
+		SDL_GetWindowProperties(outWindow),
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+		nullptr));
+	if (!outHwnd)
+	{
+		fprintf(stderr, "FATAL: Failed to extract Win32 HWND from SDL3 window\n");
+		SDL_DestroyWindow(outWindow);
+		outWindow = nullptr;
+		SDL_Quit();
+		return false;
+	}
+
+	attachWindowIcon(outHwnd, hInstance, iconResourceId);
+
+	fprintf(stderr, "INFO: SDL3 window initialized cleanly (SDL_Window=%p, HWND=%p)\n",
+		static_cast<void *>(outWindow), static_cast<void *>(outHwnd));
+	return true;
+}
+
+inline void shutdownSDL3Window(SDL_Window *&window, HWND &hwnd)
+{
+	if (window)
+	{
+		SDL_DestroyWindow(window);
+		window = nullptr;
+	}
+	hwnd = nullptr;
+	SDL_Quit();
+}
+#endif
+
+#ifdef GX_COMPAT_D3D9
+inline IDirect3D8 *WINAPI compatDirect3DCreate8(UINT sdk)
+{
+	char why[256] = "";
+	IDirect3D8 *const d = static_cast<IDirect3D8 *>(gx_d3d8to9_Direct3DCreate8(sdk, why, sizeof(why)));
+	fprintf(stderr, "[GXGFX] d3d9=%ls%s%s\n", gx_d3d8to9_LoadedD3D9Path(), d != nullptr ? "" : " FAILED: ", d != nullptr ? "" : why);
+	fflush(stderr);
+	return d;
+}
+#endif
+
+// Install embedded d3d8to9 (Direct3D 9) graphics translation on Windows x64.
+inline void installD3D8To9Backend()
+{
+#ifdef GX_COMPAT_D3D9
+	DX8Wrapper::Set_Direct3DCreate8_Override(compatDirect3DCreate8, "d3d8to9");
+	fprintf(stderr, "[GXGFX] backend=d3d8to9\n");
+	fflush(stderr);
+#endif
 }
 
 } // namespace gxwin32

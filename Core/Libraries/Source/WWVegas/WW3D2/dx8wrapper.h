@@ -566,15 +566,13 @@ public:
 
 	static IDirect3DDevice8* _Get_D3D_Device8() { return D3DDevice; }
 	static IDirect3D8* _Get_D3D8() { return D3DInterface; }
-	// GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 compatibility override and DXVK device-stage probe hook for Win64
+	// GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 backend override for Win64
 	typedef IDirect3D8 *(WINAPI *Direct3DCreate8Fn)(UINT sdkVersion);
 	static void Set_Direct3DCreate8_Override(Direct3DCreate8Fn fn, const char *reason) { Create8Override = fn; Create8OverrideReason = reason; }
 	static bool Is_Compat_D3D9() { return Create8Override != nullptr; }
 	static const char *Compat_D3D9_Reason() { return Create8OverrideReason != nullptr ? Create8OverrideReason : ""; }
 	static Direct3DCreate8Fn Create8Override;
 	static const char *Create8OverrideReason;
-	typedef void (*DeviceStageHook)(int stage);
-	static DeviceStageHook Device_Stage_Hook;
 	/// Returns the display format - added by TR for video playback - not part of W3D
 	static WW3DFormat	getBackBufferFormat();
 	static bool Reset_Device(bool reload_assets=true);

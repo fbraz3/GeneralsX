@@ -276,10 +276,12 @@ void SDL3GameEngine::pollSDL3Events(void)
 			case SDL_EVENT_QUIT:
 			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 				// GeneralsX @bugfix fbraz3 26/11/2026 Route window close through instant-quit message when MessageStream is ready.
-				if (TheMessageStream && TheMessageStream->isReadyForMessages()) {
-					TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
-				} else {
-					m_quitting = true;
+				if (!m_quitting) {
+					if (TheMessageStream && TheMessageStream->isReadyForMessages()) {
+						TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+					} else {
+						m_quitting = true;
+					}
 				}
 				break;
 

@@ -27,7 +27,7 @@ if(WIN32)
     endif()
 endif()
 
-# GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 fallback for Windows x64 when Vulkan 1.3 is absent
+# GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 (Direct3D 9) graphics backend for Windows x64
 if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
     target_link_libraries(z_generals PRIVATE gx_d3d8to9)
     target_compile_definitions(z_generals PRIVATE GX_COMPAT_D3D9=1)
