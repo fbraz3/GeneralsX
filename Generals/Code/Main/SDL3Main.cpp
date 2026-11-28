@@ -48,6 +48,7 @@
 #include "Common/Debug.h"
 #include "Common/version.h"  // GeneralsX @bugfix BenderAI 14/02/2026 Version class + TheVersion extern
 #include "SDL3GameEngine.h"
+#include "SDL3Device/SDL3SplashScreen.h"
 
 // DXVK WSI
 #define DXVK_WSI_SDL3 1
@@ -342,6 +343,7 @@ int main(int argc, char* argv[])
 			// Store window handle globally (cast SDL_Window* to HWND for compatibility)
 			ApplicationHWnd = (HWND)TheSDL3Window;
 			fprintf(stderr, "INFO: SDL3 window created successfully\n");
+			gx::SDL3SplashScreen::show("Command & Conquer Generals");
 		}
 
 		// Call cross-platform game entry point

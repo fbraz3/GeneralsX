@@ -39,6 +39,9 @@ static void drawFramerateBar();
 #include <functional>
 #include <stdlib.h>
 #include <windows.h>
+#ifdef SAGE_USE_SDL3
+#include "SDL3Device/SDL3SplashScreen.h"
+#endif
 // GeneralsX @bugfix BenderAI 13/02/2026 - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>
@@ -1050,6 +1053,7 @@ void W3DDisplay::init()
 			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
 			SDL_ShowWindow(TheSDL3Window);
 		}
+		gx::SDL3SplashScreen::dismiss();
 		#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
