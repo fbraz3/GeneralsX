@@ -20,6 +20,7 @@
 
 #include "PreRTS.h"
 
+#include <cmath>
 #include "Common/Xfer.h"
 #include "GameLogic/AIInfluenceMap.h"
 
@@ -31,11 +32,15 @@ AIInfluenceMap::AIInfluenceMap() :
 
 void AIInfluenceMap::reset( Real originX, Real originY, Real width, Real height, Real cellSize )
 {
-	m_originX = originX;
-	m_originY = originY;
+	m_originX = std::isfinite( originX ) ? originX : 0.0f;
+	m_originY = std::isfinite( originY ) ? originY : 0.0f;
+	if( cellSize <= 0.0f || !std::isfinite( cellSize ) )
+		cellSize = 1.0f;
 	m_cellSize = cellSize;
-	m_cols = (width > 0.0f) ? REAL_TO_INT_CEIL( WWMath::Div_Safe( width, cellSize, 0.0f ) ) : 0;
-	m_rows = (height > 0.0f) ? REAL_TO_INT_CEIL( WWMath::Div_Safe( height, cellSize, 0.0f ) ) : 0;
+	const Real qCols = (width > 0.0f && std::isfinite( width )) ? WWMath::Div_Safe( width, m_cellSize, 0.0f ) : 0.0f;
+	const Real qRows = (height > 0.0f && std::isfinite( height )) ? WWMath::Div_Safe( height, m_cellSize, 0.0f ) : 0.0f;
+	m_cols = std::isfinite( qCols ) ? REAL_TO_INT_CEIL( qCols ) : 0;
+	m_rows = std::isfinite( qRows ) ? REAL_TO_INT_CEIL( qRows ) : 0;
 	m_enemy.assign( m_cols * m_rows, 0.0f );
 	m_friend.assign( m_cols * m_rows, 0.0f );
 	m_height.assign( m_cols * m_rows, 0.0f );
@@ -61,8 +66,14 @@ void AIInfluenceMap::setCellHeight( Int col, Int row, Real z )
 
 Int AIInfluenceMap::cellIndexAt( Real x, Real y ) const
 {
-	const Int col = REAL_TO_INT_FLOOR( WWMath::Div_Safe( x - m_originX, m_cellSize, -1.0f ) );
-	const Int row = REAL_TO_INT_FLOOR( WWMath::Div_Safe( y - m_originY, m_cellSize, -1.0f ) );
+	if( m_cellSize <= 0.0f || !std::isfinite( m_cellSize ) || !std::isfinite( x ) || !std::isfinite( y ) )
+		return -1;
+	const Real qCol = WWMath::Div_Safe( x - m_originX, m_cellSize, -1.0f );
+	const Real qRow = WWMath::Div_Safe( y - m_originY, m_cellSize, -1.0f );
+	if( !std::isfinite( qCol ) || !std::isfinite( qRow ) )
+		return -1;
+	const Int col = REAL_TO_INT_FLOOR( qCol );
+	const Int row = REAL_TO_INT_FLOOR( qRow );
 	if( col < 0 || row < 0 || col >= m_cols || row >= m_rows )
 		return -1;
 	return row * m_cols + col;
@@ -71,13 +82,22 @@ Int AIInfluenceMap::cellIndexAt( Real x, Real y ) const
 void AIInfluenceMap::stamp( std::vector<Real> &layer, Real x, Real y, Real z, Real range, Real power )
 {
 	(void)z;
-	if( m_cols <= 0 || power <= 0.0f || range <= 0.0f )
+	if( m_cols <= 0 || m_rows <= 0 || m_cellSize <= 0.0f || !std::isfinite( m_cellSize ) || power <= 0.0f || range <= 0.0f )
+		return;
+	if( !std::isfinite( x ) || !std::isfinite( y ) || !std::isfinite( range ) )
 		return;
 
-	const Int colLo = max<Int>( 0, REAL_TO_INT_FLOOR( (x - range - m_originX) / m_cellSize ) );
-	const Int colHi = min<Int>( m_cols - 1, REAL_TO_INT_FLOOR( (x + range - m_originX) / m_cellSize ) );
-	const Int rowLo = max<Int>( 0, REAL_TO_INT_FLOOR( (y - range - m_originY) / m_cellSize ) );
-	const Int rowHi = min<Int>( m_rows - 1, REAL_TO_INT_FLOOR( (y + range - m_originY) / m_cellSize ) );
+	const Real qColLo = WWMath::Div_Safe( x - range - m_originX, m_cellSize, 0.0f );
+	const Real qColHi = WWMath::Div_Safe( x + range - m_originX, m_cellSize, 0.0f );
+	const Real qRowLo = WWMath::Div_Safe( y - range - m_originY, m_cellSize, 0.0f );
+	const Real qRowHi = WWMath::Div_Safe( y + range - m_originY, m_cellSize, 0.0f );
+	if( !std::isfinite( qColLo ) || !std::isfinite( qColHi ) || !std::isfinite( qRowLo ) || !std::isfinite( qRowHi ) )
+		return;
+
+	const Int colLo = max<Int>( 0, REAL_TO_INT_FLOOR( qColLo ) );
+	const Int colHi = min<Int>( m_cols - 1, REAL_TO_INT_FLOOR( qColHi ) );
+	const Int rowLo = max<Int>( 0, REAL_TO_INT_FLOOR( qRowLo ) );
+	const Int rowHi = min<Int>( m_rows - 1, REAL_TO_INT_FLOOR( qRowHi ) );
 	const Real half = m_cellSize * 0.5f;
 	const Real rangeSqr = sqr( range );
 	for( Int row = rowLo; row <= rowHi; ++row )

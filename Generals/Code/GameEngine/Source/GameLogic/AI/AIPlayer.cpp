@@ -1291,8 +1291,14 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 						if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
 							continue;
 						pos = *pObj->getPosition();
-						const Int gx = REAL_TO_INT_FLOOR(WWMath::Div_Safe(pos.x, weaponRadius, 0.0f));
-						const Int gy = REAL_TO_INT_FLOOR(WWMath::Div_Safe(pos.y, weaponRadius, 0.0f));
+						if (weaponRadius <= 0.0f || !std::isfinite(weaponRadius) || !std::isfinite(pos.x) || !std::isfinite(pos.y))
+							continue;
+						const Real qx = WWMath::Div_Safe(pos.x, weaponRadius, 0.0f);
+						const Real qy = WWMath::Div_Safe(pos.y, weaponRadius, 0.0f);
+						if (!std::isfinite(qx) || !std::isfinite(qy))
+							continue;
+						const Int gx = REAL_TO_INT_FLOOR(qx);
+						const Int gy = REAL_TO_INT_FLOOR(qy);
 						const Int64 cellKey = ((Int64)gx << 32) | (UnsignedInt)gy;
 						if (std::find(testedCells.begin(), testedCells.end(), cellKey) != testedCells.end())
 							continue;
@@ -1340,6 +1346,8 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 			}
 		}
 	}
+	if (isMaverickAI() && cash <= 0)
+		return FALSE;
 	if (count>1) {
 		veryBestPos.x /= count;
 		veryBestPos.y /= count;
@@ -3838,14 +3846,36 @@ const ThingTemplate *AIPlayer::cheapestScoutTemplate()
 
 Bool AIPlayer::scoutInQueue()
 {
-	for( DLINK_ITERATOR<TeamInQueue> iter = iterate_TeamBuildQueue(); !iter.done(); iter.advance() )
+	DLINK_ITERATOR<TeamInQueue> iter = iterate_TeamBuildQueue();
+	while( !iter.done() )
 	{
 		TeamInQueue *team = iter.cur();
+		iter.advance();
 		if( team == nullptr )
 			continue;
+		Bool hasScoutOrder = FALSE;
+		Bool stillQueued = FALSE;
 		for( WorkOrder *order = team->m_workOrders; order; order = order->m_next )
-			if( order->m_isScout )
+		{
+			if( !order->m_isScout )
+				continue;
+			hasScoutOrder = TRUE;
+			Object *factory = TheGameLogic->findObjectByID( order->m_factoryID );
+			ProductionUpdateInterface *pu = (factory && !factory->isEffectivelyDead() && factory->getControllingPlayer() == m_player)
+				? factory->getProductionUpdateInterface() : nullptr;
+			if( pu && order->m_thing && pu->countUnitTypeInQueue( order->m_thing ) > 0 )
+			{
+				stillQueued = TRUE;
+				break;
+			}
+		}
+		if( hasScoutOrder )
+		{
+			if( stillQueued )
 				return true;
+			removeFrom_TeamBuildQueue( team );
+			deleteInstance( team );
+		}
 	}
 	return false;
 }
