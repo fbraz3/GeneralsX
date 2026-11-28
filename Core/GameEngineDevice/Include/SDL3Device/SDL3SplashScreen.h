@@ -79,14 +79,18 @@ inline void show(const char *title, const char *bmpPath = "Install_Final.bmp")
 	}
 
 	SDL_ShowWindow(win);
-	if (SDL_Surface *winSurface = SDL_GetWindowSurface(win))
-	{
-		SDL_BlitSurface(bmp, nullptr, winSurface, nullptr);
-		SDL_UpdateWindowSurface(win);
-	}
-	SDL_PumpEvents();
+	SDL_Surface *winSurface = SDL_GetWindowSurface(win);
+	const bool drawn = (winSurface != nullptr)
+		&& SDL_BlitSurface(bmp, nullptr, winSurface, nullptr)
+		&& SDL_UpdateWindowSurface(win);
 	SDL_DestroySurface(bmp);
+	if (!drawn)
+	{
+		SDL_DestroyWindow(win);
+		return;
+	}
 
+	SDL_PumpEvents();
 	windowSlot() = win;
 }
 
