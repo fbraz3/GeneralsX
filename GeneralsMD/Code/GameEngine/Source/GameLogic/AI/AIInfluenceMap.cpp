@@ -94,10 +94,12 @@ void AIInfluenceMap::stamp( std::vector<Real> &layer, Real x, Real y, Real z, Re
 	if( !std::isfinite( qColLo ) || !std::isfinite( qColHi ) || !std::isfinite( qRowLo ) || !std::isfinite( qRowHi ) )
 		return;
 
-	const Int colLo = max<Int>( 0, REAL_TO_INT_FLOOR( qColLo ) );
-	const Int colHi = min<Int>( m_cols - 1, REAL_TO_INT_FLOOR( qColHi ) );
-	const Int rowLo = max<Int>( 0, REAL_TO_INT_FLOOR( qRowLo ) );
-	const Int rowHi = min<Int>( m_rows - 1, REAL_TO_INT_FLOOR( qRowHi ) );
+	const Real maxCol = static_cast<Real>( m_cols - 1 );
+	const Real maxRow = static_cast<Real>( m_rows - 1 );
+	const Int colLo = REAL_TO_INT_FLOOR( WWMath::Clamp( qColLo, 0.0f, maxCol ) );
+	const Int colHi = REAL_TO_INT_FLOOR( WWMath::Clamp( qColHi, 0.0f, maxCol ) );
+	const Int rowLo = REAL_TO_INT_FLOOR( WWMath::Clamp( qRowLo, 0.0f, maxRow ) );
+	const Int rowHi = REAL_TO_INT_FLOOR( WWMath::Clamp( qRowHi, 0.0f, maxRow ) );
 	const Real half = m_cellSize * 0.5f;
 	const Real rangeSqr = sqr( range );
 	for( Int row = rowLo; row <= rowHi; ++row )
