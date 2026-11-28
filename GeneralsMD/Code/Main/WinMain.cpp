@@ -942,7 +942,24 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (!TheGlobalData->m_headless)
 		{
 #ifdef SAGE_USE_SDL3
+#if defined(RTS_DEBUG) || defined(RTS_PROFILE_LEGACY)
+			// GeneralsX @bugfix fbraz 27/11/2026 Preserve localized debug/profile splash lookup before falling back to root Install_Final.bmp.
+			char splashPath[_MAX_PATH];
+			const char *splashFileName = "Install_Final.bmp";
+			snprintf(splashPath, sizeof(splashPath), "Data/%s/%s", GetRegistryLanguage().str(), splashFileName);
+			FILE *splashFile = fopen(splashPath, "rb");
+			if (splashFile)
+			{
+				fclose(splashFile);
+				gx::SDL3SplashScreen::show("Command and Conquer Generals Zero Hour", splashPath);
+			}
+			else
+			{
+				gx::SDL3SplashScreen::show("Command and Conquer Generals Zero Hour", splashFileName);
+			}
+#else
 			gx::SDL3SplashScreen::show("Command and Conquer Generals Zero Hour");
+#endif
 #endif
 			gxwin32::installD3D8To9Backend();
 		}
