@@ -40,7 +40,8 @@ enum SlotState CPP_11(: Int)
 	SLOT_EASY_AI,
 	SLOT_MED_AI,
 	SLOT_BRUTAL_AI,
-	SLOT_PLAYER
+	SLOT_PLAYER,
+	SLOT_MAVERICK_AI // GeneralsX @feature fbraz3 25/11/2026 Advanced cooperative Maverick Army AI (appended to preserve wire/save indices)
 };
 
 enum

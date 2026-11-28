@@ -731,10 +731,17 @@ void InitLanGameGadgets()
 		if(localSlotNum != i)
 		{
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:Open"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 0, (void *)SLOT_OPEN);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:Closed"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 1, (void *)SLOT_CLOSED);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:EasyAI"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 2, (void *)SLOT_EASY_AI);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:MediumAI"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 3, (void *)SLOT_MED_AI);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:HardAI"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 4, (void *)SLOT_BRUTAL_AI);
+			GadgetComboBoxAddEntry(comboBoxPlayer[i],UnicodeString(L"Maverick Army"),white);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 5, (void *)SLOT_MAVERICK_AI);
 			GadgetComboBoxSetSelectedPos(comboBoxPlayer[i],0);
 		}
 		/*
@@ -1182,19 +1189,22 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 						  // Get
 						  Int pos = -1;
 						  GadgetComboBoxGetSelectedPos(comboBoxPlayer[i], &pos);
-						  if( pos != SLOT_PLAYER && pos >= 0)
+						  if( pos >= 0 )
 						  {
+							  const SlotState selectedState = (SlotState)(intptr_t)GadgetComboBoxGetItemData(comboBoxPlayer[i], pos);
+							  if( selectedState == SLOT_PLAYER )
+								  continue;
 							  if( myGame->getLANSlot(i)->getState() == SLOT_PLAYER )
 							  {
 								  UnicodeString name = myGame->getPlayerName(i);
-								  myGame->getLANSlot(i)->setState(SlotState(pos));
+								  myGame->getLANSlot(i)->setState(selectedState);
 								  myGame->resetAccepted();
 								  TheLAN->OnPlayerLeave(name);
 							  }
-							  else if( myGame->getLANSlot(i)->getState() != pos )
+							  else if( myGame->getLANSlot(i)->getState() != selectedState )
 							  {
 								  Bool wasAI = (myGame->getLANSlot(i)->isAI());
-								  myGame->getLANSlot(i)->setState(SlotState(pos));
+								  myGame->getLANSlot(i)->setState(selectedState);
 								  Bool isAI = (myGame->getLANSlot(i)->isAI());
 								  if (wasAI || isAI)
 									  myGame->resetAccepted();

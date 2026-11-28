@@ -452,6 +452,9 @@ public:
 	/// Is this player a skirmish ai player?
 	Bool isSkirmishAIPlayer();
 
+	/// Is this player a cooperative Maverick Army AI player?
+	Bool isMaverickAIPlayer() const;
+
 	/// Have the ai check for bridges.
 	virtual Bool checkBridges(Object *unit, Waypoint *way);
 

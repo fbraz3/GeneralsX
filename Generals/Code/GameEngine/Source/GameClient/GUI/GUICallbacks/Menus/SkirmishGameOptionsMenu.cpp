@@ -1071,6 +1071,8 @@ void InitSkirmishGameGadgets()
       GadgetComboBoxSetItemData(comboBoxPlayer[i], 3, (void *)SLOT_MED_AI);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:HardAI"),white);
       GadgetComboBoxSetItemData(comboBoxPlayer[i], 4, (void *)SLOT_BRUTAL_AI);
+			GadgetComboBoxAddEntry(comboBoxPlayer[i],UnicodeString(L"Maverick Army"),white);
+      GadgetComboBoxSetItemData(comboBoxPlayer[i], 5, (void *)SLOT_MAVERICK_AI);
 			GadgetComboBoxSetSelectedPos(comboBoxPlayer[i],0);
 
 		}

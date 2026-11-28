@@ -364,6 +364,10 @@ static void gameTooltip(GameWindow *window,
 				tooltip.concat(L'\n');
 				tooltip.concat(TheGameText->fetch("GUI:HardAI"));
 				break;
+			case SLOT_MAVERICK_AI:
+				tooltip.concat(L'\n');
+				tooltip.concat(UnicodeString(L"Maverick Army"));
+				break;
 			}
 		}
 	}

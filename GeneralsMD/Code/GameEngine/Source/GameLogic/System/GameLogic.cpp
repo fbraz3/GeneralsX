@@ -1591,6 +1591,10 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 					case SLOT_EASY_AI : d.setInt(TheKey_skirmishDifficulty, DIFFICULTY_EASY); break;
 					case SLOT_MED_AI : d.setInt(TheKey_skirmishDifficulty, DIFFICULTY_NORMAL); break;
 					case SLOT_BRUTAL_AI : d.setInt(TheKey_skirmishDifficulty, DIFFICULTY_HARD); break;
+					case SLOT_MAVERICK_AI :
+						d.setInt(TheKey_skirmishDifficulty, DIFFICULTY_HARD);
+						d.setBool(TheKey_skirmishMaverickAI, true);
+						break;
 					default: break;	 // no setting.
 				}
 			}

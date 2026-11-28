@@ -33,6 +33,7 @@
 #include "Common/GlobalData.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/Recorder.h"
 #include "Common/Team.h"
 #include "Common/ThingFactory.h"
 #include "Common/BuildAssistant.h"
@@ -40,6 +41,7 @@
 #include "Common/ThingTemplate.h"
 #include "Common/WellKnownKeys.h"
 #include "Common/Xfer.h"
+#include "GameClient/InGameUI.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/AISkirmishPlayer.h"
@@ -47,6 +49,7 @@
 #include "GameLogic/AI.h"
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/TerrainLogic.h"
+#include "GameLogic/VictoryConditions.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/DozerAIUpdate.h"
 #include "GameLogic/Module/RebuildHoleBehavior.h"
@@ -75,7 +78,9 @@ m_curLeftFlankRightDefenseAngle(0),
 m_curRightFlankLeftDefenseAngle(0),
 m_curRightFlankRightDefenseAngle(0),
 m_frameToCheckEnemy(0),
-m_currentEnemy(nullptr)
+m_currentEnemy(nullptr),
+m_hopelessSinceFrame(0),
+m_surrenderFrame(0)
 
 {
 	m_frameLastBuildingBuilt = TheGameLogic->getFrame();
@@ -223,7 +228,8 @@ void AISkirmishPlayer::processBaseBuilding()
 				}
 				continue;
 			}
-			if (TheBuildAssistant->canMakeUnit(dozer, bldgPlan)!=CANMAKE_OK) {
+			const ThingTemplate *templateToCheck = isMaverickAI() ? curPlan : bldgPlan;
+			if (TheBuildAssistant->canMakeUnit(dozer, templateToCheck)!=CANMAKE_OK) {
 				if (info->isBuildable()) {
 					AsciiString bldgName = info->getTemplateName();
 					bldgName.concat(" - Dozer unable to build - money or technology missing.");
@@ -504,21 +510,33 @@ void AISkirmishPlayer::acquireEnemy()
 			enemyPos.y = bounds.lo.y + bounds.height()/2;
 			Real curDistSqr = sqr(enemyPos.x-m_baseCenter.x) + sqr(enemyPos.y-m_baseCenter.y);
 
-			//Fudge for in bad shape.	 If an enemy is crippled, concentrate on the other ones.
-			if (inBadShape) {
-				curDistSqr = HUGE_DIST*HUGE_DIST*0.5f;
-			}
-			// See if other ai's are attacking this target.
-			// We don't want the ai's to gang up on one enemy.
+			Bool alreadyTargeted = FALSE;
+			Bool attackingMe = FALSE;
 			Int k;
 			for (k=0; k<ThePlayerList->getPlayerCount(); k++) {
 				if (k==i) continue;  // don't count self.
 				Player *somePlayer = ThePlayerList->getNthPlayer(k);
 				if (somePlayer->isSkirmishAIPlayer() && (somePlayer->getCurrentEnemy()==curPlayer)) {
+					alreadyTargeted = TRUE;
+				}
+				if (somePlayer->isSkirmishAIPlayer() && (somePlayer->getCurrentEnemy()==m_player)) {
+					attackingMe = TRUE;
+				}
+			}
+
+			if (isMaverickAI()) {
+				// GeneralsX @feature fbraz3 25/11/2026 Maverick Army converges on allied targets and finishes crippled foes
+				curDistSqr = aiEnemyCost(curDistSqr, inBadShape, alreadyTargeted, attackingMe, TRUE);
+			} else {
+				//Fudge for in bad shape.	 If an enemy is crippled, concentrate on the other ones.
+				if (inBadShape) {
+					curDistSqr = HUGE_DIST*HUGE_DIST*0.5f;
+				}
+				if (alreadyTargeted) {
 					// Some ai is already targeting this guy.  Add a distance penalty.
 					curDistSqr += (500*500);
 				}
-				if (somePlayer->isSkirmishAIPlayer() && (somePlayer->getCurrentEnemy()==m_player)) {
+				if (attackingMe) {
 					// he is attacking me.  So I will (gently) prefer to attack him.
 					curDistSqr -= (25*25);
 					if (curDistSqr<0) curDistSqr = 0;
@@ -955,6 +973,120 @@ void AISkirmishPlayer::doTeamBuilding()
 void AISkirmishPlayer::update()
 {
 	AIPlayer::update();
+	if (isMaverickAI())
+	{
+		doSurrender();
+	}
+}
+
+struct MaverickSurrenderTally
+{
+	Int64 value;
+	Int builders;
+};
+
+static void tallyMaverickSurrender( Object *obj, void *userData )
+{
+	if (!obj || obj->isEffectivelyDead())
+		return;
+	MaverickSurrenderTally *tally = (MaverickSurrenderTally *)userData;
+	tally->value += obj->getTemplate()->friend_getBuildCost();
+	if (obj->isKindOf(KINDOF_DOZER))
+		++tally->builders;
+}
+
+static Int64 bankForMaverickSurrender( Player *player )
+{
+	const Money *money = player->getMoney();
+	return money->countMoney();
+}
+
+//----------------------------------------------------------------------------------------------------------
+/**
+ * GeneralsX @feature fbraz3 25/11/2026 Maverick Army types GG and surrenders when hopeless in multiplayer,
+ * handing remaining funds to a living ally (adapted from CnCGeneralsZH-Reforged).
+ */
+void AISkirmishPlayer::doSurrender()
+{
+	if (m_player->isPlayerDead())
+		return;
+
+	const UnsignedInt now = TheGameLogic->getFrame();
+	if (m_surrenderFrame != 0)
+	{
+		if (now >= m_surrenderFrame)
+		{
+			// Transfer remaining funds to a living ally before surrendering
+			const UnsignedInt cash = m_player->getMoney()->countMoney();
+			if (cash > 0)
+			{
+				for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
+				{
+					Player *other = ThePlayerList->getNthPlayer(i);
+					if (other != m_player && other->isPlayableSide() && !other->isPlayerDead() &&
+						m_player->getRelationship(other->getDefaultTeam()) == ALLIES)
+					{
+						m_player->getMoney()->withdraw(cash);
+						other->getMoney()->deposit(cash);
+						break;
+					}
+				}
+			}
+			m_player->killPlayer();
+		}
+		return;
+	}
+
+	const UnsignedInt CHECK_FRAMES = 5 * LOGICFRAMES_PER_SECOND;
+	if ((now + 7 * (UnsignedInt)m_player->getPlayerIndex()) % CHECK_FRAMES != 0)
+		return;
+	if (!TheRecorder->isMultiplayer() || !m_player->isPlayableSide())
+		return;
+
+	const UnsignedInt EARLIEST_FRAMES = 10 * 60 * LOGICFRAMES_PER_SECOND;
+	if (now < EARLIEST_FRAMES)
+		return;
+
+	MaverickSurrenderTally mine = { 0, 0 };
+	m_player->iterateObjects(tallyMaverickSurrender, &mine);
+	mine.value += bankForMaverickSurrender(m_player);
+
+	Int64 strongestEnemy = 0;
+	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
+	{
+		Player *other = ThePlayerList->getNthPlayer(i);
+		if (other == m_player || !other->isPlayableSide() || other->isPlayerObserver())
+			continue;
+		if (m_player->getRelationship(other->getDefaultTeam()) != ENEMIES)
+			continue;
+		if (TheVictoryConditions->hasSinglePlayerBeenDefeated(other))
+			continue;
+		MaverickSurrenderTally theirs = { 0, 0 };
+		other->iterateObjects(tallyMaverickSurrender, &theirs);
+		theirs.value += bankForMaverickSurrender(other);
+		if (theirs.value > strongestEnemy)
+			strongestEnemy = theirs.value;
+	}
+
+	const Bool cannotRebuild = !m_player->hasAnyBuildFacility() && mine.builders == 0 && mine.value < strongestEnemy;
+	const Bool outweighed = mine.value * 100 < strongestEnemy * 8;
+	if (!cannotRebuild && !outweighed)
+	{
+		m_hopelessSinceFrame = 0;
+		return;
+	}
+	if (m_hopelessSinceFrame == 0)
+	{
+		m_hopelessSinceFrame = now;
+		return;
+	}
+	if (now - m_hopelessSinceFrame < 60 * LOGICFRAMES_PER_SECOND)
+		return;
+
+	UnicodeString ggMsg;
+	ggMsg.format(L"%s: GG", m_player->getPlayerDisplayName().str());
+	TheInGameUI->message(ggMsg);
+	m_surrenderFrame = now + 2 * LOGICFRAMES_PER_SECOND;
 }
 
 //----------------------------------------------------------------------------------------------------------

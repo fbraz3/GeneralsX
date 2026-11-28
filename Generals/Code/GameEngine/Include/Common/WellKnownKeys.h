@@ -805,6 +805,13 @@ DEFINE_KEY(skirmishDifficulty)
 /**
 	Which: Player Properties
 	Type: Bool
+	Usage: (optional) if present, enables cooperative Maverick Army AI behaviors
+*/
+DEFINE_KEY(skirmishMaverickAI)
+
+/**
+	Which: Player Properties
+	Type: Bool
 	Usage: (optional) if present, signifies if the player is the local player
 */
 DEFINE_KEY(multiplayerIsLocal)

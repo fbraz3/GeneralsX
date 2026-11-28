@@ -29,6 +29,7 @@
 #pragma once
 
 #include "Common/GameMemory.h"
+#include "GameLogic/AIInfluenceMap.h"
 #include "Common/Snapshot.h"
 
 enum { INVALID_SKILLSET_SELECTION = -1 };
@@ -50,7 +51,7 @@ class WorkOrder : public MemoryPoolObject,
 
 public:
 
-	WorkOrder():m_thing(nullptr), m_factoryID(INVALID_ID), m_isResourceGatherer(false), m_numCompleted(0), m_numRequired(1), m_next(nullptr) {};
+	WorkOrder():m_thing(nullptr), m_factoryID(INVALID_ID), m_isResourceGatherer(false), m_isScout(false), m_numCompleted(0), m_numRequired(1), m_next(nullptr) {};
 
 	Bool isWaitingToBuild();		///< return true if nothing is yet building this unit
 	void validateFactory( Player *thisPlayer );			///< verify factoryID still refers to an active object
@@ -64,6 +65,7 @@ public:
 	Int			m_numRequired;					  ///< Number needed.
 	Bool		m_required;								///< True if part of minimum requirement.
 	Bool		m_isResourceGatherer;			///< True if resource gatherer.
+	Bool		m_isScout;								///< True if unit is queued for scouting.
 
 protected:
 
@@ -190,6 +192,8 @@ public:
 	/// Difficulty level for this player.
 	GameDifficulty getAIDifficulty() const;
 	void setAIDifficulty(GameDifficulty difficulty) {m_difficulty = difficulty;}
+	Bool isMaverickAI() const { return m_isMaverickAI; }
+	void setMaverickAI(Bool isMaverick) { m_isMaverickAI = isMaverick; }
 	void buildBySupplies(Int minimumCash, const AsciiString &thingName ); ///< Builds a building by supplies.
 	void buildUpgrade(const AsciiString &upgrade ); ///< Builds an upgrade.
 	/// A team is about to be destroyed.
@@ -226,7 +230,7 @@ protected:
 	virtual Bool isAGoodIdeaToBuildTeam( TeamPrototype *proto );		///< return true if team should be built
 	virtual void processBaseBuilding();		///< do base-building behaviors
 	virtual void processTeamBuilding();		///< do team-building behaviors
- 	static Int getPlayerSuperweaponValue(Coord3D *center, Int playerNdx, Real radius);
+ 	static Int getPlayerSuperweaponValue(Coord3D *center, Int playerNdx, Real radius, Bool maverickFogFilter = FALSE, Int observerNdx = -1);
 // End of aiplayer interface.
 
 protected:
@@ -248,6 +252,19 @@ protected:
 	Bool dozerInQueue();
 	Object *findSupplyCenter(Int minSupplies);
 	static void getPlayerStructureBounds(Region2D *bounds, Int playerNdx);
+	void doScouting();
+	void updateStartIntel();
+	void countStartIntel( Int *enemies, Int *occupied, Int *unchecked ) const;
+	Bool nextScoutTarget( Int slot, const Coord3D *from, Coord3D *pos );
+	Object *findScout();
+	Bool scoutInQueue();
+	void queueScout();
+	void doAdaptiveEconomy();
+	void rebuildInfluence();
+	void doTactics();
+	void doRetreats();
+	void doCapture();
+	void doHijack();
 
 protected:
 
@@ -265,6 +282,25 @@ protected:
 	Int			m_frameLastBuildingBuilt;	///< When we built the last building.
 
 	GameDifficulty m_difficulty;
+	Bool m_isMaverickAI;
+
+	enum { MAX_AI_SCOUTS = 2 };
+	ObjectID	m_scoutID[MAX_AI_SCOUTS];
+	Int				m_scoutTargetFor[MAX_AI_SCOUTS];
+	Int				m_scoutTimer;
+	UnsignedInt m_scoutSeenFrame[MAX_PLAYER_COUNT];
+	UnsignedInt m_startIntelFrame;
+	Bool			m_startChecked[MAX_PLAYER_COUNT];
+	Bool			m_startOccupied[MAX_PLAYER_COUNT];
+	Int				m_playerStartNdx[MAX_PLAYER_COUNT];
+	Int				m_expansionTimer;
+	AIInfluenceMap m_influence;
+	ObjectID	m_capturerID;
+	ObjectID	m_hijackerID;
+	Int				m_tacticsTimer;
+	Int				m_retreatTimer;
+	Int				m_captureTimer;
+	Int				m_hijackTimer;
 
 	Int			m_skillsetSelector;
 

@@ -852,6 +852,11 @@ void Player::initFromDict(const Dict* d)
 		}
 		if (m_ai) {
 			m_ai->setAIDifficulty(difficulty);
+			Bool maverickExists = false;
+			Bool isMaverick = d->getBool(TheKey_skirmishMaverickAI, &maverickExists);
+			if (maverickExists && isMaverick) {
+				m_ai->setMaverickAI(true);
+			}
 		}
 
 		if (!found) {
@@ -1111,6 +1116,11 @@ void Player::becomingLocalPlayer(Bool yes)
 Bool Player::isSkirmishAIPlayer()
 {
 	return m_ai ? m_ai->isSkirmishAI() : false;
+}
+
+Bool Player::isMaverickAIPlayer() const
+{
+	return m_ai ? m_ai->isMaverickAI() : false;
 }
 
 

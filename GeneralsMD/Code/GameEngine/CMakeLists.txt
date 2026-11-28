@@ -832,6 +832,7 @@ set(GAMEENGINE_SRC
     Source/GameLogic/AI/AISkirmishPlayer.cpp
     Source/GameLogic/AI/AIStates.cpp
     Source/GameLogic/AI/AITNGuard.cpp
+    Source/GameLogic/AI/AIInfluenceMap.cpp
     Source/GameLogic/AI/Squad.cpp
     Source/GameLogic/AI/TurretAI.cpp
 #    Source/GameLogic/Map/PolygonTrigger.cpp

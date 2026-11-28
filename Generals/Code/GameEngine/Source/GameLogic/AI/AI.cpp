@@ -1040,4 +1040,44 @@ void AI::loadPostProcess()
 
 }
 
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature fbraz3 25/11/2026 Cooperative target selection cost helper for Maverick Army AI (from CnCGeneralsZH-Reforged)
+Real aiEnemyCost( Real distSqr, Bool crippled, Bool alreadyTargetedByAnotherAI,
+									Bool isAttackingMe, Bool joinAllysTarget )
+{
+	Real cost = distSqr;
+
+	if( crippled )
+		cost *= 0.4f;
+
+	if( alreadyTargetedByAnotherAI )
+		cost += joinAllysTarget ? -(250.0f * 250.0f) : (500.0f * 500.0f);
+	if( isAttackingMe )
+		cost -= 25.0f * 25.0f;
+
+	return (cost < 0.0f) ? 0.0f : cost;
+}
+
+//-------------------------------------------------------------------------------------------------
+// GeneralsX @feature fbraz3 27/11/2026 Fair scouting helpers for Maverick Army AI (from CnCGeneralsZH-Reforged)
+Real aiScoutScore( UnsignedInt now, UnsignedInt lastSeenFrame, Real distance, UnsignedInt freshFrames )
+{
+	const UnsignedInt age = now - lastSeenFrame;
+	if( lastSeenFrame != 0 && age < freshFrames )
+		return 0.0f;
+	if( distance < 1.0f )
+		distance = 1.0f;
+	return WWMath::Div_Safe( (Real)age, distance, 0.0f );
+}
+
+//-------------------------------------------------------------------------------------------------
+Real aiStartOccupiedOdds( Int unlocatedEnemies, Int uncheckedPositions )
+{
+	if( unlocatedEnemies <= 0 || uncheckedPositions <= 0 )
+		return 0.0f;
+	if( unlocatedEnemies >= uncheckedPositions )
+		return 1.0f;
+	return WWMath::Div_Safe( (Real)unlocatedEnemies, (Real)uncheckedPositions, 0.0f );
+}
+
 
