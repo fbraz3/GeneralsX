@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_version: ${{ steps.version.outputs.version }}
+      macos-runner: ${{ steps.macos-runner.outputs.runner }}
     steps:
       # GeneralsX @build GitHubCopilot 08/05/2026 Use Node 24 compatible GitHub Actions major versions to remove runner deprecation warnings.
       - name: Checkout repository
@@ -38,6 +39,13 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+
+      - name: Resolve macOS Runner
+        id: macos-runner
+        env:
+          CI_RUNNER_CONFIG_URL: ${{ secrets.CI_RUNNER_CONFIG_URL || vars.CI_RUNNER_CONFIG_URL }}
+          IS_EXTERNAL_FORK: "false"
+        run: ./.github/scripts/resolve-macos-runner.sh
 
       - name: Calculate release version
         id: version
@@ -73,6 +81,7 @@ jobs:
     with:
       preset: macos-vulkan
       checkout_ref: ${{ inputs.release_mode == 'Dry Run' && github.sha || format('refs/tags/{0}', needs.create-tag.outputs.release_version) }}
+      runner: ${{ needs.create-tag.outputs.macos-runner }}
     secrets: inherit
 
   build-windows:

@@ -1696,7 +1696,6 @@ void HeightMapRenderObjClass::updateCenter(CameraClass *camera, const Vector3 *c
 		// the projected ray has the same origin as the camera
 		rayLocation = camera_location;
 		// determine the location of the screen coordinate in camera-model space
-		const ViewportClass &viewport = camera->Get_Viewport();
 		Int i, j, minHt;
 
 		Real intersectionZ;
@@ -1712,8 +1711,6 @@ void HeightMapRenderObjClass::updateCenter(CameraClass *camera, const Vector3 *c
 
 		Vector2 min,max;
 		camera->Get_View_Plane(min,max);
-		float xscale = (max.X - min.X);
-		float yscale = (max.Y - min.Y);
 
 		float zmod = -1.0; // Scene->vpd; // Note: view plane distance is now always 1.0 from the camera
 		float minX = 200000;
@@ -1722,8 +1719,11 @@ void HeightMapRenderObjClass::updateCenter(CameraClass *camera, const Vector3 *c
 		float maxY = -minY;
 		for (i=0; i<2; i++) {
 			for (j=0; j<2; j++) {
-				float xmod = (-i + 0.5 + viewport.Min.X) * zmod * xscale;// / aspect;
-				float ymod = (j - 0.5 - viewport.Min.Y) * zmod * yscale;// * aspect;
+				// GeneralsX @bugfix ClaudeCode 22/11/2026 Use the actual view plane corners. The old math assumed
+				// a view plane centred on the view axis, which no longer holds when the view extends below the
+				// framed area (off-centre projection used beside the centred control bar on ultrawide displays).
+				float xmod = (i == 0) ? min.X : max.X;
+				float ymod = (j == 0) ? min.Y : max.Y;
 
 				// transform the screen coordinates by the camera's matrix into world coordinates.
 				float x = zmod * camera_matrix[0][2] + xmod * camera_matrix[0][0] + ymod * camera_matrix[0][1];
@@ -1937,7 +1937,7 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	}
 #endif
 
-	DX8Wrapper::Set_Light_Environment(rinfo.light_environment);
+	Renderer::Set_Light_Environment(rinfo.light_environment);
 
 	// Force shaders to update.
 	m_stageTwoTexture->restore();

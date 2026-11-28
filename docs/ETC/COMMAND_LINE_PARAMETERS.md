@@ -54,6 +54,21 @@ Test multiple replays in parallel without graphics (requires optimized VC6 build
 ```
 Test in windowed mode at 1440p resolution.
 
+## Ultrawide Camera (Hor+) and UI
+
+On displays wider than 16:9 the tactical camera can keep the 16:9 vertical field of view and widen the horizontal field of view instead, and menus and the HUD can be laid out in a centred 16:9 rect. Both are off by default. They are settings, not command-line flags, and can be changed in the GeneralsX menu (main menu) or here:
+
+| `Options.ini` key | Environment override | Default | Description |
+|-------------------|----------------------|---------|-------------|
+| `UltrawideHorPlus = yes/no` | `GENERALSX_ULTRAWIDE_HORPLUS=1/0` | `no` | Turns Hor+ on or off. Off keeps the fixed 50 degree horizontal field of view with aspect-scaled camera height. |
+| `UltrawideMaxHorizontalFOV = <degrees>` | `GENERALSX_ULTRAWIDE_MAX_HFOV=<degrees>` | `70` | Upper limit for the widened horizontal field of view (50 to 170). Past the limit the remaining width is covered by camera height. |
+| `UltrawideUI = yes/no` | `GENERALSX_ULTRAWIDE_UI=1/0` | `no` | Lays out menus and the HUD in a centred 16:9 rect on wider displays instead of stretching them. Read at startup; a change in the menu applies after a restart. |
+
+```bash
+GENERALSX_ULTRAWIDE_HORPLUS=1 GENERALSX_ULTRAWIDE_MAX_HFOV=120 ./GeneralsXZH -win -xres 5120 -yres 1440
+```
+Runs 32:9 with Hor+ and without an effective limit (86 degree horizontal field of view).
+
 ## Platform-Specific Notes
 
 ### Windows

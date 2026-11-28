@@ -1381,8 +1381,12 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 				minFps = frameRate;
 			}
 
-			// TheSuperHackers @info this clamps the logic time scale fps in network games
-			minFps = clamp<Int>(MIN_LOGIC_FRAMES, minFps, TheGlobalData->m_framesPerSecondLimit);
+			// GeneralsX @bugfix Codex 21/11/2026 Keep network logic at game speed when clients render above 30 FPS.
+			const Int renderLimit = TheGlobalData->m_framesPerSecondLimit;
+			const Int maxNetworkFps = renderLimit > 0
+				? clamp<Int>(MIN_LOGIC_FRAMES, renderLimit, LOGICFRAMES_PER_SECOND)
+				: LOGICFRAMES_PER_SECOND;
+			minFps = clamp<Int>(MIN_LOGIC_FRAMES, minFps, maxNetworkFps);
 			DEBUG_LOG_LEVEL(DEBUG_LEVEL_NET, ("ConnectionManager::updateRunAhead - minFps after adjustment is %d", minFps));
 
 			// TheSuperHackers @bugfix Mauller 21/08/2025 calculate the runahead so it always follows the latency
@@ -1455,8 +1459,8 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 			if (newMinFps == minFps) {
 				newMinFps = minFps + 1;
 			}
-			if (newMinFps > 30) {
-				newMinFps = 30; // Cap FPS to 30.
+			if (newMinFps > LOGICFRAMES_PER_SECOND) {
+				newMinFps = LOGICFRAMES_PER_SECOND;
 			}
 			msg2->setRunAhead(newRunAhead);
 			msg2->setFrameRate(newMinFps);

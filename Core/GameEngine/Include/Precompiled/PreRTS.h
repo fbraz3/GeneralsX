@@ -41,11 +41,8 @@ class STLSpecialAlloc;
 //--------------------------------------------------------------------------------- System Includes
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
-    // TheSuperHackers @build JohnsterID 05/01/2026 Add ATL compatibility for MinGW-w64 builds
-    #if defined(__GNUC__)
-        #include <Utility/atl_compat.h>
-    #endif
-    #include <atlbase.h>
+    // GeneralsX @build fbraz 22/11/2026 Include winsock2.h before windows.h so NGMP's ws2ipdef.h never collides with winsock.h.
+    #include <winsock2.h>
     #include <windows.h>
 #else
     // GeneralsX @build BenderAI 09/02/2026 Linux compatibility - Windows API stubs
@@ -56,6 +53,7 @@ class STLSpecialAlloc;
 #include <Utility/intrin_compat.h>
 
 #include <assert.h>
+#include <Utility/cmath_adapter.h>
 #include <ctype.h>
 #ifdef _WIN32
     #include <direct.h>

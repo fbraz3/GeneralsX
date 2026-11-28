@@ -32,13 +32,11 @@
  *                                                                                             *
  *                    $Revision:: 8                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include <max.h>
+#include "max_sdk.h"
 
 /*
 ** The W3DUtilityClass uses several app-data chunks to store user-options for INodes

@@ -31,14 +31,12 @@
  *                                                                                             *
  *                    $Revision:: 22                                                          $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include "always.h"
-#include <max.h>
+#include "WWLib/always.h"
+#include "max_sdk.h"
 #include "dllmain.h"
 #include "hiersave.h"
 #include "w3dutil.h"

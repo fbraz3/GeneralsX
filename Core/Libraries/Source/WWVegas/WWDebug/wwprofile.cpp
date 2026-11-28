@@ -83,18 +83,7 @@ WWINLINE double WWProfile_Get_Inv_Processor_Ticks_Per_Second()
 #endif
 }
 
-/***********************************************************************************************
- * WWProfile_Get_Ticks -- Retrieves the cpu performance counter                                *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Retrieves the cpu performance counter.
 static inline void WWProfile_Get_Ticks(_int64 * ticks)
 {
 #ifdef _UNIX
@@ -105,23 +94,8 @@ static inline void WWProfile_Get_Ticks(_int64 * ticks)
 }
 
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::WWProfileHierarchyNodeClass -- Constructor                       *
- *                                                                                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- * name - pointer to a static string which is the name of this profile node                    *
- * parent - parent pointer                                                                     *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- * The name is assumed to be a static pointer, only the pointer is stored and compared for     *
- * efficiency reasons.                                                                         *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// WARNING: The name is assumed to be a static pointer, only the pointer is stored and compared for
+// efficiency reasons.
 WWProfileHierarchyNodeClass::WWProfileHierarchyNodeClass( const char * name, WWProfileHierarchyNodeClass * parent ) :
 	Name( name ),
 	TotalCalls( 0 ),
@@ -155,18 +129,6 @@ WWProfileHierarchyNodeClass::WWProfileHierarchyNodeClass( unsigned id, WWProfile
 }
 
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::~WWProfileHierarchyNodeClass -- Destructor                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 WWProfileHierarchyNodeClass::~WWProfileHierarchyNodeClass()
 {
 	delete Child;
@@ -232,21 +194,8 @@ void WWProfileHierarchyNodeClass::Add_To_String_Compact(StringClass& string,int 
 	}
 }
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::Get_Sub_Node -- Searches for a child node by name (pointer)     *
- *                                                                                             *
- * INPUT:                                                                                      *
- * name - static string pointer to the name of the node we are searching for                   *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- * All profile names are assumed to be static strings so this function uses pointer compares   *
- * to find the named node.                                                                     *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// WARNING: All profile names are assumed to be static strings so this function uses pointer
+// compares to find the named node.
 WWProfileHierarchyNodeClass * WWProfileHierarchyNodeClass::Get_Sub_Node( const char * name )
 {
 	// Try to find this sub node
@@ -266,18 +215,7 @@ WWProfileHierarchyNodeClass * WWProfileHierarchyNodeClass::Get_Sub_Node( const c
 }
 
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::Reset -- Reset all profiling data in the tree                   *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Reset all profiling data in the tree.
 void	WWProfileHierarchyNodeClass::Reset()
 {
 	TotalCalls = 0;
@@ -292,18 +230,7 @@ void	WWProfileHierarchyNodeClass::Reset()
 }
 
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::Call -- Start timing                                            *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Start timing.
 void	WWProfileHierarchyNodeClass::Call()
 {
 	TotalCalls++;
@@ -313,18 +240,7 @@ void	WWProfileHierarchyNodeClass::Call()
 }
 
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::Return -- Stop timing, record results                           *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Stop timing, record results.
 bool	WWProfileHierarchyNodeClass::Return()
 {
 	if (--RecursionCounter == 0) {
@@ -361,24 +277,10 @@ static THREAD_ID				ThreadID = {};  // Default-initialized thread ID (platform-s
 #endif
 
 
-/***********************************************************************************************
- * WWProfileManager::Start_Profile -- Begin a named profile                                    *
- *                                                                                             *
- * Steps one level deeper into the tree, if a child already exists with the specified name     *
- * then it accumulates the profiling; otherwise a new child node is added to the profile tree. *
- *                                                                                             *
- * INPUT:                                                                                      *
- * name - name of this profiling record                                                        *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- * The string used is assumed to be a static string; pointer compares are used throughout      *
- * the profiling code for efficiency.                                                          *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Steps one level deeper into the tree. If a child already exists with the specified name then it
+// accumulates the profiling; otherwise a new child node is added to the profile tree.
+// WARNING: The string used is assumed to be a static string; pointer compares are used throughout
+// the profiling code for efficiency.
 void	WWProfileManager::Start_Profile( const char * name )
 {
 	if (::GetCurrentThreadId() != ThreadID) {
@@ -407,18 +309,6 @@ void	WWProfileManager::Start_Root_Profile( const char * name )
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Stop_Profile -- Stop timing and record the results.                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 void	WWProfileManager::Stop_Profile()
 {
 	if (::GetCurrentThreadId() != ThreadID) {
@@ -446,21 +336,7 @@ void	WWProfileManager::Stop_Root_Profile()
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Reset -- Reset the contents of the profiling system                       *
- *                                                                                             *
- *    This resets everything except for the tree structure.  All of the timing data is reset.  *
- *                                                                                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
+// Resets everything except for the tree structure.
 void	WWProfileManager::Reset()
 {
 	ThreadID = ::GetCurrentThreadId();
@@ -471,18 +347,6 @@ void	WWProfileManager::Reset()
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Increment_Frame_Counter -- Increment the frame counter                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 void WWProfileManager::Increment_Frame_Counter()
 {
 	if (ProfileCollecting) {
@@ -500,18 +364,6 @@ void WWProfileManager::Increment_Frame_Counter()
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Get_Time_Since_Reset -- returns the elapsed time since last reset         *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 float WWProfileManager::Get_Time_Since_Reset()
 {
 	__int64 time;
@@ -522,36 +374,12 @@ float WWProfileManager::Get_Time_Since_Reset()
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Get_Iterator -- Creates an iterator for the profile tree                  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 WWProfileIterator *	WWProfileManager::Get_Iterator()
 {
 	return W3DNEW WWProfileIterator( &Root );
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Release_Iterator -- Return an iterator for the profile tree               *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 void	WWProfileManager::Release_Iterator( WWProfileIterator * iterator )
 {
 	delete iterator;
@@ -848,36 +676,12 @@ void WWProfileManager::Load_Profile_Log(const char* filename, WWProfileHierarchy
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Get_In_Order_Iterator -- Creates an "in-order" iterator for the profile t *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 WWProfileInOrderIterator * WWProfileManager::Get_In_Order_Iterator()
 {
 	return W3DNEW WWProfileInOrderIterator;
 }
 
 
-/***********************************************************************************************
- * WWProfileManager::Release_In_Order_Iterator -- Return an "in-order" iterator                *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 void	WWProfileManager::Release_In_Order_Iterator( WWProfileInOrderIterator * iterator )
 {
 	delete iterator;
@@ -1086,20 +890,6 @@ void WWMemoryAndTimeLog::Log_Intermediate(const char* text)
 	IntermediateAllocSizeStart=current_alloc_size;
 }
 
-/***********************************************************************************************
- * WWProfileHierarchyInfoClass::WWProfileHierarchyInfoClass -- Constructor                       *
- *                                                                                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- * name - pointer to a static string which is the name of this profile node                    *
- * parent - parent pointer                                                                     *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *=============================================================================================*/
 WWProfileHierarchyInfoClass::WWProfileHierarchyInfoClass( const char * name, WWProfileHierarchyInfoClass * parent ) :
 	Name( name ),
 	TotalCalls( 0 ),
@@ -1110,18 +900,6 @@ WWProfileHierarchyInfoClass::WWProfileHierarchyInfoClass( const char * name, WWP
 {
 }
 
-/***********************************************************************************************
- * WWProfileHierarchyNodeClass::~WWProfileHierarchyNodeClass -- Destructor                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   9/24/2000  gth : Created.                                                                 *
- *=============================================================================================*/
 WWProfileHierarchyInfoClass::~WWProfileHierarchyInfoClass()
 {
 	delete Child;

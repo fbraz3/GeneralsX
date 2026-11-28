@@ -30,13 +30,11 @@
  *                                                                                             *
  *                    $Revision:: 5                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
 
-#include <max.h>
+#include "max_sdk.h"
 
 class GameMtl;
 class GameMtlFormClass;

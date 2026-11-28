@@ -30,13 +30,11 @@
  *                                                                                             *
  *                    $Revision:: 7                                                           $*
  *                                                                                             *
- *---------------------------------------------------------------------------------------------*
- * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
 #include "colboxsave.h"
-#include "w3d_file.h"
+#include "WW3D2/w3d_file.h"
 #include "util.h"
 #include "w3dappdata.h"
 #include "errclass.h"

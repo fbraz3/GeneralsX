@@ -64,8 +64,6 @@ endif()
 # MinGW-w64 specific configuration
 if(MINGW)
     include(cmake/mingw.cmake)
-    include(cmake/reactos-atl.cmake)
-    include(cmake/widl.cmake)
 endif()
 
 # Always include DX8 headers (needed for both Windows and Linux builds)

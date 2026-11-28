@@ -22,6 +22,11 @@ on:
         required: false
         type: string
         description: "Optional workflow run ID to download artifacts from"
+      macos-runner:
+        required: false
+        type: string
+        default: "github"
+        description: "macOS runner selection: github or local"
     secrets:
       ASSETS_KEY:
         required: true
@@ -30,10 +35,13 @@ on:
 jobs:
   replay-test-zh:
     name: ZH Replay Tests (${{ inputs.platform }})
-    runs-on: ${{ inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.platform == 'macos' && (inputs.macos-runner == 'local' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted", "macOS", "ARM64", "local-mac"]') || 'macos-latest') || 'ubuntu-latest' }}
     timeout-minutes: 45
 
     steps:
+      - name: Clean Stale Replay Workspace
+        run: |
+          rm -rf /tmp/game-artifact /tmp/game-bundle ci-assets-repo ci-replays-repo
       # -----------------------------------------------------------------------
       # 1. Download built binary artifact from upstream build job
       # -----------------------------------------------------------------------
@@ -75,7 +83,15 @@ jobs:
 
       - name: Install system dependencies (macOS)
         if: inputs.platform == 'macos'
-        run: brew install p7zip coreutils
+        run: |
+          if [ "${{ inputs.macos-runner }}" = "local" ]; then
+            if command -v 7z >/dev/null 2>&1 && command -v gtimeout >/dev/null 2>&1; then
+              echo "✅ p7zip and coreutils already available on local-mac"
+              exit 0
+            fi
+            export HOMEBREW_NO_AUTO_UPDATE=1
+          fi
+          brew install p7zip coreutils
 
       - name: Install system dependencies (WASM)
         if: inputs.platform == 'wasm'
@@ -214,6 +230,7 @@ jobs:
       # 4. Check out and extract game assets (password-protected 7z, uses LFS)
       # -----------------------------------------------------------------------
       - name: Cache Game Assets
+        if: inputs.platform != 'macos' || inputs.macos-runner != 'local'
         id: cache-assets
         uses: actions/cache@v5
         with:
@@ -222,9 +239,38 @@ jobs:
 
       - name: Clone game assets repo (GitLab with GitHub fallback)
         if: steps.cache-assets.outputs.cache-hit != 'true'
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          MACOS_RUNNER: ${{ inputs.macos-runner }}
+          TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           # GeneralsX @build fbraz3 24/06/2026 Support checking out current branch if present in assets/replays repo.
-          TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          resolve_remote_rev() {
+            local remote_url="$1"
+            local rev=""
+            if [ "$TARGET_BRANCH" != "main" ] && [ -n "$TARGET_BRANCH" ]; then
+              rev="$(git ls-remote --heads "$remote_url" "refs/heads/$TARGET_BRANCH" 2>/dev/null | awk 'NR==1 {print $1}')"
+            fi
+            if [ -z "$rev" ]; then
+              rev="$(git ls-remote --heads "$remote_url" "refs/heads/main" 2>/dev/null | awk 'NR==1 {print $1}')"
+            fi
+            printf '%s' "$rev"
+          }
+
+          RESOLVED_REV=""
+          if [ "$PLATFORM" = "macos" ] && [ "$MACOS_RUNNER" = "local" ] && [ -f /tmp/cached-assets/.complete ]; then
+            RESOLVED_REV="$(resolve_remote_rev https://gitlab.com/fbraz3/generalsx-test-files.git)"
+            if [ -z "$RESOLVED_REV" ]; then
+              RESOLVED_REV="$(resolve_remote_rev https://github.com/generalsx-project/generalsx-test-files.git)"
+            fi
+            CACHED_REV="$(cat /tmp/cached-assets/.complete 2>/dev/null || true)"
+            if [ -n "$RESOLVED_REV" ] && [ "$CACHED_REV" = "$RESOLVED_REV" ]; then
+              echo "✅ Reusing verified /tmp/cached-assets ($RESOLVED_REV) on local-mac"
+              echo "ASSETS_CACHE_HIT=true" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          fi
+
           clone_success=true
           git clone https://gitlab.com/fbraz3/generalsx-test-files.git ci-assets-repo || clone_success=false
           if [ "$clone_success" = true ]; then
@@ -263,12 +309,18 @@ jobs:
             git lfs pull
           fi
 
+          ACTUAL_REV="$(git -C "$GITHUB_WORKSPACE/ci-assets-repo" rev-parse HEAD)"
+          echo "RESOLVED_ASSETS_REV=$ACTUAL_REV" >> "$GITHUB_ENV"
+
 
       - name: Extract game assets to cache (only on cache miss)
-        if: steps.cache-assets.outputs.cache-hit != 'true'
+        if: steps.cache-assets.outputs.cache-hit != 'true' && env.ASSETS_CACHE_HIT != 'true'
         run: |
-          mkdir -p /tmp/cached-assets
-          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets" -y
+          rm -rf /tmp/cached-assets-staging /tmp/cached-assets
+          mkdir -p /tmp/cached-assets-staging
+          7z x -p"${{ secrets.ASSETS_KEY }}" "$GITHUB_WORKSPACE/ci-assets-repo/generalszh.7z" -o"/tmp/cached-assets-staging" -y
+          printf '%s\n' "${RESOLVED_ASSETS_REV:-unknown}" > /tmp/cached-assets-staging/.complete
+          mv /tmp/cached-assets-staging /tmp/cached-assets
 
       - name: Install game assets (Linux)
         if: inputs.platform == 'linux'
@@ -291,6 +343,7 @@ jobs:
       #    Repo structure: GeneralsXZH/Maps/<MapFolder>/  GeneralsXZH/Replays/<platform>_*.rep
       # -----------------------------------------------------------------------
       - name: Cache Replay Files
+        if: inputs.platform != 'macos' || inputs.macos-runner != 'local'
         id: cache-replays
         uses: actions/cache@v5
         with:
@@ -373,6 +426,7 @@ jobs:
           USER_DATA="$HOME/Library/Application Support/GeneralsX/GeneralsZH"
           MAPS_DIR="$USER_DATA/Maps"
           REPLAYS_DIR="$USER_DATA/Replays"
+          rm -rf "$MAPS_DIR" "$REPLAYS_DIR"
           mkdir -p "$MAPS_DIR" "$REPLAYS_DIR"
 
           # Install custom maps (includes MapCache.ini)

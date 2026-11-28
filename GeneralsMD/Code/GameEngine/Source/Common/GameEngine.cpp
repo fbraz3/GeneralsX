@@ -106,7 +106,6 @@
 #include "GameClient/GUICallbacks.h"
 
 #include "GameNetwork/NetworkInterface.h"
-#include "GameNetwork/WOLBrowser/WebBrowser.h"
 #include "GameNetwork/LANAPI.h"
 #if defined(SAGE_USE_GAMESPY)
 #include "GameNetwork/GameSpy/GameResultsThread.h"
@@ -175,10 +174,6 @@ void initSubsystem(
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
-// TheSuperHackers @build fighter19 11/02/2026 COM module (Windows-only)
-#ifdef _WIN32
-extern CComModule _Module;
-#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -263,11 +258,6 @@ GameEngine::GameEngine()
 	m_logicTimeAccumulator = 0.0f;
 	m_quitting = FALSE;
 	m_isActive = FALSE;
-
-// TheSuperHackers @build fighter19 11/02/2026 COM initialization (Windows-only)
-#ifdef _WIN32
-	_Module.Init(nullptr, ApplicationHInstance, nullptr);
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -320,11 +310,6 @@ GameEngine::~GameEngine()
 	TheGameLODManager = nullptr;
 
 	Drawable::killStaticImages();
-
-// TheSuperHackers @build fighter19 11/02/2026 COM termination (Windows-only)
-#ifdef _WIN32
-	_Module.Term();
-#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -769,7 +754,6 @@ void GameEngine::init()
 
 
 		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), nullptr);
-		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), nullptr);
 		initSubsystem(TheGameStateMap,"TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, nullptr );
 		initSubsystem(TheGameState,"TheGameState", MSGNEW("GameEngineSubsystem") GameState, nullptr );
 

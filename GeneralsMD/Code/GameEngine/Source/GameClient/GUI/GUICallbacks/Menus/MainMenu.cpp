@@ -483,7 +483,8 @@ static void initLabelVersion()
 			instData.m_style = GWS_STATIC_TEXT | GWS_MOUSE_TRACK;
 			instData.m_textLabelString = "GeneralsXCreditLabel";
 
-			const Int width = TheDisplay->getWidth() - 16;
+			// GeneralsX @feature ClaudeCode 22/11/2026 Relative to the main menu parent, which spans the UI layout rect.
+			const Int width = TheDisplay->getUILayoutWidth() - 16;
 			const Int height = 28;
 			const Int x = 8;
 			const Int y = TheDisplay->getHeight() - height - 8;
@@ -1053,7 +1054,8 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 			const Int btnW = 260;
 			const Int btnH = 26;
 			const Int margin = 8;
-			const Int x = TheDisplay->getWidth()  - btnW - margin;
+			// GeneralsX @feature ClaudeCode 22/11/2026 Relative to the main menu parent, which spans the UI layout rect.
+			const Int x = TheDisplay->getUILayoutWidth()  - btnW - margin;
 			const Int y = TheDisplay->getHeight() - btnH - margin;
 
 			WinInstanceData instData;

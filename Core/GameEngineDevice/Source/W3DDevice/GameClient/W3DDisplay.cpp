@@ -39,6 +39,9 @@ static void drawFramerateBar();
 #include <functional>
 #include <stdlib.h>
 #include <windows.h>
+#ifdef SAGE_USE_SDL3
+#include "SDL3Device/SDL3SplashScreen.h"
+#endif
 // GeneralsX @bugfix BenderAI 13/02/2026 - io.h is Windows-specific, use unistd.h on Linux
 #ifdef _WIN32
 #include <io.h>
@@ -106,7 +109,6 @@ static void drawFramerateBar();
 #include "WW3D2/render2dsentence.h"
 #include "WW3D2/sortingrenderer.h"
 #include "WW3D2/textureloader.h"
-#include "WW3D2/dx8webbrowser.h"
 #include "WW3D2/mesh.h"
 #include "WW3D2/hlod.h"
 #include "WW3D2/meshmatdesc.h"
@@ -514,8 +516,6 @@ W3DDisplay::~W3DDisplay()
 	if (!TheGlobalData->m_headless)
 		WW3D::Shutdown();
 	WWMath::Shutdown();
-	if (!TheGlobalData->m_headless)
-		DX8WebBrowser::Shutdown();
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = nullptr;
 
@@ -1053,6 +1053,7 @@ void W3DDisplay::init()
 			fprintf(stderr, "DEBUG: Showing SDL3 window after WW3D init...\n");
 			SDL_ShowWindow(TheSDL3Window);
 		}
+		gx::SDL3SplashScreen::dismiss();
 		#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
@@ -1205,8 +1206,6 @@ void W3DDisplay::init()
 			m_nativeDebugDisplay->setFontHeight( 13 );
 			m_nativeDebugDisplay->setFontWidth( 9 );
 		}
-
-		DX8WebBrowser::Initialize();
 	}
 
 	// we're now online
@@ -2373,6 +2372,19 @@ AGAIN:
 				if (TheW3DPostProcess)
 				{
 					TheW3DPostProcess->endSceneAndApply();
+				}
+
+				// GeneralsX @feature ClaudeCode 22/11/2026 Menus are laid out in the centred UI layout rect on displays wider
+				// than 16:9. Cover the shell map on both sides of that rect so the menu sits between black bars.
+				if (TheGameLogic && TheGameLogic->isInShellGame())
+				{
+					const Int uiOriginX = getUILayoutOriginX();
+					if (uiOriginX > 0)
+					{
+						const UnsignedInt barColor = 0xFF000000;
+						drawFillRect( 0, 0, uiOriginX, m_height, barColor );
+						drawFillRect( uiOriginX + getUILayoutWidth(), 0, m_width - uiOriginX - getUILayoutWidth(), m_height, barColor );
+					}
 				}
 
 				// draw the user interface
