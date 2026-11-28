@@ -78,15 +78,20 @@ void AIInfluenceMap::stamp( std::vector<Real> &layer, Real x, Real y, Real z, Re
 	const Int colHi = min<Int>( m_cols - 1, REAL_TO_INT_FLOOR( (x + range - m_originX) / m_cellSize ) );
 	const Int rowLo = max<Int>( 0, REAL_TO_INT_FLOOR( (y - range - m_originY) / m_cellSize ) );
 	const Int rowHi = min<Int>( m_rows - 1, REAL_TO_INT_FLOOR( (y + range - m_originY) / m_cellSize ) );
+	const Real half = m_cellSize * 0.5f;
 	const Real rangeSqr = sqr( range );
 	for( Int row = rowLo; row <= rowHi; ++row )
 	{
 		const Real cy = m_originY + (row + 0.5f) * m_cellSize;
+		const Real nearestY = WWMath::Clamp( y, cy - half, cy + half );
+		const Real dy = y - nearestY;
 		for( Int col = colLo; col <= colHi; ++col )
 		{
 			const Int index = row * m_cols + col;
 			const Real cx = m_originX + (col + 0.5f) * m_cellSize;
-			if( sqr( cx - x ) + sqr( cy - y ) <= rangeSqr )
+			const Real nearestX = WWMath::Clamp( x, cx - half, cx + half );
+			const Real dx = x - nearestX;
+			if( dx * dx + dy * dy <= rangeSqr )
 				layer[ index ] += power;
 		}
 	}

@@ -511,16 +511,15 @@ void AISkirmishPlayer::acquireEnemy()
 			Real curDistSqr = sqr(enemyPos.x-m_baseCenter.x) + sqr(enemyPos.y-m_baseCenter.y);
 
 			Bool alreadyTargeted = FALSE;
-			Bool attackingMe = FALSE;
+			const Bool attackingMe = curPlayer->isSkirmishAIPlayer() && (curPlayer->getCurrentEnemy() == m_player);
 			Int k;
 			for (k=0; k<ThePlayerList->getPlayerCount(); k++) {
 				if (k==i) continue;  // don't count self.
 				Player *somePlayer = ThePlayerList->getNthPlayer(k);
 				if (somePlayer->isSkirmishAIPlayer() && (somePlayer->getCurrentEnemy()==curPlayer)) {
-					alreadyTargeted = TRUE;
-				}
-				if (somePlayer->isSkirmishAIPlayer() && (somePlayer->getCurrentEnemy()==m_player)) {
-					attackingMe = TRUE;
+					if (!isMaverickAI() || m_player->getRelationship(somePlayer->getDefaultTeam()) == ALLIES) {
+						alreadyTargeted = TRUE;
+					}
 				}
 			}
 
@@ -1326,12 +1325,18 @@ void AISkirmishPlayer::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
 	// xfer base class info
 	AIPlayer::xfer( xfer );
+
+	if( version >= 2 )
+	{
+		xfer->xferUnsignedInt( &m_hopelessSinceFrame );
+		xfer->xferUnsignedInt( &m_surrenderFrame );
+	}
 
 	// front base defense
 	xfer->xferInt( &m_curFrontBaseDefense );

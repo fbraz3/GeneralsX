@@ -2461,10 +2461,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								WOLDisplaySlotList();
 								//TheLAN->OnPlayerLeave(name);
 							}
-							else if( myGame->getSlot(i)->getState() != pos )
+							else if( myGame->getSlot(i)->getState() != selectedState )
 							{
 								Bool wasAI = (myGame->getSlot(i)->isAI());
-								myGame->getSlot(i)->setState(SlotState(pos));
+								myGame->getSlot(i)->setState(selectedState);
 								Bool isAI = (myGame->getSlot(i)->isAI());
 								myGame->resetAccepted();
 								if (wasAI ^ isAI)

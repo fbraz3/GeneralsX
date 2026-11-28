@@ -3262,16 +3262,16 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								  if (pLobbyInterface != nullptr)
 								  {
 									  pLobbyInterface->UpdateCurrentLobby_KickUser(0, name);
-									  pLobbyInterface->UpdateCurrentLobby_SetSlotState(i, pos);
+									  pLobbyInterface->UpdateCurrentLobby_SetSlotState(i, static_cast<uint16_t>(selectedState));
 								  }
 #endif
 								  WOLDisplaySlotList();
 								  //TheLAN->OnPlayerLeave(name);
 							  }
-							  else if( myGame->getSlot(i)->getState() != pos )
+							  else if( myGame->getSlot(i)->getState() != selectedState )
 							  {
 								  Bool wasAI = (myGame->getSlot(i)->isAI());
-								  myGame->getSlot(i)->setState(SlotState(pos));
+								  myGame->getSlot(i)->setState(selectedState);
 								  Bool isAI = (myGame->getSlot(i)->isAI());
 								  myGame->resetAccepted();
 								  if (wasAI ^ isAI)
@@ -3283,7 +3283,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 #if defined(SAGE_USE_NGMP)
 								  if (pLobbyInterface != nullptr)
 								  {
-									  pLobbyInterface->UpdateCurrentLobby_SetSlotState(i, pos);
+									  pLobbyInterface->UpdateCurrentLobby_SetSlotState(i, static_cast<uint16_t>(selectedState));
 								  }
 #endif
 								  WOLDisplaySlotList();

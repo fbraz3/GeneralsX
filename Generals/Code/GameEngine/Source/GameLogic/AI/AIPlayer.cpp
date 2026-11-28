@@ -1194,7 +1194,42 @@ void AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 {
 
 	Region2D bounds;
-	getPlayerStructureBounds(&bounds, playerNdx);
+	Bool hasVisibleBounds = FALSE;
+	if (isMaverickAI()) {
+		bounds.zero();
+		Player *enemy = ThePlayerList ? ThePlayerList->getNthPlayer(playerNdx) : nullptr;
+		if (enemy != nullptr) {
+			const Int observerNdx = m_player->getPlayerIndex();
+			for (Player::PlayerTeamList::const_iterator teamIt = enemy->getPlayerTeams()->begin(); teamIt != enemy->getPlayerTeams()->end(); ++teamIt) {
+				for (DLINK_ITERATOR<Team> instanceIt = (*teamIt)->iterate_TeamInstanceList(); !instanceIt.done(); instanceIt.advance()) {
+					Team *team = instanceIt.cur();
+					if (!team) continue;
+					for (DLINK_ITERATOR<Object> memberIt = team->iterate_TeamMemberList(); !memberIt.done(); memberIt.advance()) {
+						Object *pObj = memberIt.cur();
+						if (!pObj || pObj->isEffectivelyDead())
+							continue;
+						const ObjectShroudStatus shroud = pObj->getShroudedStatus(observerNdx);
+						if (pObj->isKindOf(KINDOF_STRUCTURE) ? (shroud == OBJECTSHROUD_SHROUDED) : (shroud > OBJECTSHROUD_PARTIAL_CLEAR))
+							continue;
+						if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
+							continue;
+						const Coord3D *p = pObj->getPosition();
+						if (!hasVisibleBounds) {
+							bounds.lo.x = bounds.hi.x = p->x;
+							bounds.lo.y = bounds.hi.y = p->y;
+							hasVisibleBounds = TRUE;
+						} else {
+							bounds.uniteWith(p->asCoord2D());
+						}
+					}
+				}
+			}
+		}
+		if (!hasVisibleBounds)
+			return;
+	} else {
+		getPlayerStructureBounds(&bounds, playerNdx);
+	}
 
 	if (weaponRadius<1.0f) {
 		weaponRadius = 1.0f; // sanity to avoid divide by 0.
@@ -1227,7 +1262,7 @@ void AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 			pos.y = bounds.lo.y + (bounds.height()*j)/yCount;
 			pos.z = 0;
 			Int curCash = getPlayerSuperweaponValue(&pos, playerNdx, 2*weaponRadius, isMaverickAI(), m_player->getPlayerIndex());
-			if ( curCash > cash) {
+			if ( curCash > cash && (!isMaverickAI() || curCash > 0)) {
 				cash = curCash;
 				bestPos = pos;
 			}
@@ -1238,6 +1273,7 @@ void AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 		Player *enemy = ThePlayerList ? ThePlayerList->getNthPlayer(playerNdx) : nullptr;
 		if (enemy != nullptr) {
 			const Int observerNdx = m_player->getPlayerIndex();
+			std::vector<Int64> testedCells;
 			for (Player::PlayerTeamList::const_iterator teamIt = enemy->getPlayerTeams()->begin(); teamIt != enemy->getPlayerTeams()->end(); ++teamIt) {
 				for (DLINK_ITERATOR<Team> instanceIt = (*teamIt)->iterate_TeamInstanceList(); !instanceIt.done(); instanceIt.advance()) {
 					Team *team = instanceIt.cur();
@@ -1253,13 +1289,25 @@ void AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 						if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
 							continue;
 						pos = *pObj->getPosition();
+						const Int gx = REAL_TO_INT_FLOOR(WWMath::Div_Safe(pos.x, weaponRadius, 0.0f));
+						const Int gy = REAL_TO_INT_FLOOR(WWMath::Div_Safe(pos.y, weaponRadius, 0.0f));
+						const Int64 cellKey = ((Int64)gx << 32) | (UnsignedInt)gy;
+						if (std::find(testedCells.begin(), testedCells.end(), cellKey) != testedCells.end())
+							continue;
+						testedCells.push_back(cellKey);
 						Int curCash = getPlayerSuperweaponValue(&pos, playerNdx, 2*weaponRadius, isMaverickAI(), m_player->getPlayerIndex());
-						if (curCash > cash) {
+						if (curCash > cash && curCash > 0) {
 							cash = curCash;
 							bestPos = pos;
 						}
+						if (testedCells.size() >= 24)
+							break;
 					}
+					if (testedCells.size() >= 24)
+						break;
 				}
+				if (testedCells.size() >= 24)
+					break;
 			}
 		}
 	}
@@ -3093,7 +3141,7 @@ void AIPlayer::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -3253,6 +3301,33 @@ void AIPlayer::xfer( Xfer *xfer )
 	xfer->xferBool( &m_dozerQueuedForRepair );
 	xfer->xferBool( &m_dozerIsRepairing );
 	xfer->xferInt( &m_bridgeTimer );
+
+	if( version >= 2 )
+	{
+		xfer->xferBool( &m_isMaverickAI );
+		xfer->xferInt( &m_scoutTimer );
+		xfer->xferUnsignedInt( &m_startIntelFrame );
+		xfer->xferInt( &m_expansionTimer );
+		xfer->xferObjectID( &m_capturerID );
+		xfer->xferObjectID( &m_hijackerID );
+		xfer->xferInt( &m_tacticsTimer );
+		xfer->xferInt( &m_retreatTimer );
+		xfer->xferInt( &m_captureTimer );
+		xfer->xferInt( &m_hijackTimer );
+		for( Int s = 0; s < MAX_AI_SCOUTS; ++s )
+		{
+			xfer->xferObjectID( &m_scoutID[s] );
+			xfer->xferInt( &m_scoutTargetFor[s] );
+		}
+		for( Int p = 0; p < MAX_PLAYER_COUNT; ++p )
+		{
+			xfer->xferUnsignedInt( &m_scoutSeenFrame[p] );
+			xfer->xferBool( &m_startChecked[p] );
+			xfer->xferBool( &m_startOccupied[p] );
+			xfer->xferInt( &m_playerStartNdx[p] );
+		}
+		m_influence.xfer( xfer );
+	}
 
 }
 
@@ -3532,7 +3607,7 @@ void WorkOrder::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -3556,6 +3631,9 @@ void WorkOrder::xfer( Xfer *xfer )
 
 	// is resource gatherer
 	xfer->xferBool( &m_isResourceGatherer );
+
+	if( version >= 2 )
+		xfer->xferBool( &m_isScout );
 
 }
 
@@ -3639,7 +3717,7 @@ static Bool maverickStartPositionLoc( Int startNdx, Coord3D *pos )
 	return TRUE;
 }
 
-static const ThingTemplate *cheapestScoutTemplate( Player *player )
+const ThingTemplate *AIPlayer::cheapestScoutTemplate()
 {
 	const ThingTemplate *best = nullptr;
 	Int bestCost = 0;
@@ -3652,17 +3730,16 @@ static const ThingTemplate *cheapestScoutTemplate( Player *player )
 			continue;
 		if( t->isKindOf( KINDOF_AIRCRAFT ) || t->isKindOf( KINDOF_IMMOBILE ) )
 			continue;
-		if( !player->canBuild( t ) )
+		if( !m_player->canBuild( t ) )
 			continue;
 
-		const Int cost = t->calcCostToBuild( player );
-		if( cost <= 0 )
+		const Int cost = t->calcCostToBuild( m_player );
+		if( cost <= 0 || (best != nullptr && cost >= bestCost) )
 			continue;
-		if( best == nullptr || cost < bestCost )
-		{
-			best = t;
-			bestCost = cost;
-		}
+		if( findFactory( t, true ) == nullptr )
+			continue;
+		best = t;
+		bestCost = cost;
 	}
 	return best;
 }
@@ -3715,15 +3792,17 @@ Object *AIPlayer::findScout()
 
 void AIPlayer::queueScout()
 {
-	const ThingTemplate *tTemplate = cheapestScoutTemplate( m_player );
-	if( tTemplate == nullptr || scoutInQueue() )
-		return;
-
-	if( m_player->getMoney()->countMoney() < 2 * (UnsignedInt)tTemplate->calcCostToBuild( m_player ) )
+	if( scoutInQueue() )
 		return;
 
 	Bool canBuildUnits = m_player->getCanBuildUnits();
 	m_player->setCanBuildUnits( true );
+	const ThingTemplate *tTemplate = cheapestScoutTemplate();
+	if( tTemplate == nullptr || m_player->getMoney()->countMoney() < 2 * (UnsignedInt)tTemplate->calcCostToBuild( m_player ) )
+	{
+		m_player->setCanBuildUnits( canBuildUnits );
+		return;
+	}
 
 	Object *factory = findFactory( tTemplate, true );
 	if( factory )
@@ -3745,7 +3824,11 @@ void AIPlayer::queueScout()
 		team->m_team = m_player->getDefaultTeam();
 
 		m_teamDelay = 0;
-		startTraining( order, team->m_priorityBuild, team->m_team->getName() );
+		if( !startTraining( order, team->m_priorityBuild, team->m_team->getName() ) )
+		{
+			removeFrom_TeamBuildQueue( team );
+			deleteInstance( team );
+		}
 	}
 
 	m_player->setCanBuildUnits( canBuildUnits );
@@ -3810,7 +3893,7 @@ void AIPlayer::updateStartIntel()
 	for( Int slot = 0; slot < MAX_AI_SCOUTS; ++slot )
 	{
 		Object *scout = TheGameLogic->findObjectByID( m_scoutID[ slot ] );
-		if( scout == nullptr || scout->isEffectivelyDead() )
+		if( scout == nullptr || scout->isEffectivelyDead() || scout->getControllingPlayer() != m_player )
 			continue;
 
 		const Coord3D *at = scout->getPosition();
@@ -3874,8 +3957,6 @@ Bool AIPlayer::nextScoutTarget( Int slot, const Coord3D *from, Coord3D *pos )
 		return FALSE;
 
 	const UnsignedInt now = TheGameLogic->getFrame();
-	if( m_scoutTargetFor[ slot ] >= 0 && m_scoutTargetFor[ slot ] < MAX_PLAYER_COUNT )
-		m_scoutSeenFrame[ m_scoutTargetFor[ slot ] ] = now;
 
 	const UnsignedInt fresh = 25 * LOGICFRAMES_PER_SECOND;
 	Int bestNdx = -1;
@@ -3994,14 +4075,12 @@ void AIPlayer::doAdaptiveEconomy()
 	AsciiString supplyCenterName;
 	for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
 	{
-		const AsciiString &name = info->getTemplateName();
-		if( name.isEmpty() )
+		if( !info->isSupplyBuilding() || info->getTemplateName().isEmpty() )
 			continue;
-		const ThingTemplate *tmpl = TheThingFactory->findTemplate( name );
-		if( tmpl && tmpl->isKindOf( KINDOF_STRUCTURE ) &&
-			strstr( name.str(), "Supply" ) != nullptr )
+		const ThingTemplate *tmpl = TheThingFactory->findTemplate( info->getTemplateName() );
+		if( tmpl && tmpl->isKindOf( KINDOF_STRUCTURE ) )
 		{
-			supplyCenterName = name;
+			supplyCenterName = info->getTemplateName();
 			break;
 		}
 	}
@@ -4153,7 +4232,7 @@ void AIPlayer::doTactics()
 					const Real len = WWMath::Sqrtf( dx * dx + dy * dy );
 					if( len > 1.0f )
 					{
-						const Real step = 150.0f;
+						const Real step = min<Real>( 150.0f, len );
 						Coord3D back;
 						back.x = pos->x + WWMath::Div_Safe( dx, len, 0.0f ) * step;
 						back.y = pos->y + WWMath::Div_Safe( dy, len, 0.0f ) * step;
@@ -4173,7 +4252,7 @@ void AIPlayer::doTactics()
 					const Real len = WWMath::Sqrtf( dx * dx + dy * dy );
 					if( len > 1.0f )
 					{
-						const Real step = 120.0f;
+						const Real step = min<Real>( 120.0f, len );
 						Coord3D back;
 						back.x = pos->x + WWMath::Div_Safe( dx, len, 0.0f ) * step;
 						back.y = pos->y + WWMath::Div_Safe( dy, len, 0.0f ) * step;
@@ -4383,7 +4462,11 @@ void AIPlayer::doCapture()
 				team->m_frameStarted = TheGameLogic->getFrame();
 				team->m_team = m_player->getDefaultTeam();
 				m_teamDelay = 0;
-				startTraining( order, team->m_priorityBuild, team->m_team->getName() );
+				if( !startTraining( order, team->m_priorityBuild, team->m_team->getName() ) )
+				{
+					removeFrom_TeamBuildQueue( team );
+					deleteInstance( team );
+				}
 			}
 			m_player->setCanBuildUnits( canBuildUnits );
 		}

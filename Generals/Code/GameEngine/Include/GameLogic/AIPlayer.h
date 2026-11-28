@@ -259,6 +259,7 @@ protected:
 	Object *findScout();
 	Bool scoutInQueue();
 	void queueScout();
+	const ThingTemplate *cheapestScoutTemplate();
 	void doAdaptiveEconomy();
 	void rebuildInfluence();
 	void doTactics();
