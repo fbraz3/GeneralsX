@@ -249,6 +249,9 @@ protected:
 	void clearTeamsInQueue();			///< Delete all teams in the build queue.
 	void computeCenterAndRadiusOfBase(Coord3D *center, Real *radius);
 	Object *findFactory(const ThingTemplate *thing, Bool busyOK); ///< Find a factory to build a unit.  If force is true, may return a busy factory.
+	Object *findMaverickUnitFactory(const ThingTemplate *thing);
+	const ThingTemplate *cheapestCapturerTemplate();
+	Bool queueMaverickDefaultTeamUnit(const ThingTemplate *tmpl);
 	void queueUnits();						///< Check the team build list, & queue up units at any idle factories.
 	void checkForSupplyCenter( BuildListInfo *info, Object *bldg);
  	void queueSupplyTruck();

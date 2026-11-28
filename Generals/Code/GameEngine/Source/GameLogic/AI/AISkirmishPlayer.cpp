@@ -990,6 +990,34 @@ static Int64 bankForMaverickSurrender( Player *player )
 	return money->countMoney();
 }
 
+static Bool isMaverickHopeless( Player *player )
+{
+	MaverickSurrenderTally mine = { 0, 0 };
+	player->iterateObjects(tallyMaverickSurrender, &mine);
+	mine.value += bankForMaverickSurrender(player);
+
+	Int64 strongestEnemy = 0;
+	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
+	{
+		Player *other = ThePlayerList->getNthPlayer(i);
+		if (other == player || !other->isPlayableSide() || other->isPlayerObserver())
+			continue;
+		if (player->getRelationship(other->getDefaultTeam()) != ENEMIES)
+			continue;
+		if (TheVictoryConditions->hasSinglePlayerBeenDefeated(other))
+			continue;
+		MaverickSurrenderTally theirs = { 0, 0 };
+		other->iterateObjects(tallyMaverickSurrender, &theirs);
+		theirs.value += bankForMaverickSurrender(other);
+		if (theirs.value > strongestEnemy)
+			strongestEnemy = theirs.value;
+	}
+
+	const Bool cannotRebuild = !player->hasAnyBuildFacility() && mine.builders == 0 && mine.value < strongestEnemy;
+	const Bool outweighed = mine.value * 100 < strongestEnemy * 8;
+	return cannotRebuild || outweighed;
+}
+
 //----------------------------------------------------------------------------------------------------------
 /**
  * GeneralsX @feature fbraz3 25/11/2026 Maverick Army types GG and surrenders when hopeless in multiplayer,
@@ -1005,6 +1033,12 @@ void AISkirmishPlayer::doSurrender()
 	{
 		if (now >= m_surrenderFrame)
 		{
+			if (!isMaverickHopeless(m_player))
+			{
+				m_hopelessSinceFrame = 0;
+				m_surrenderFrame = 0;
+				return;
+			}
 			// Transfer remaining funds to a living ally before surrendering
 			const UnsignedInt cash = m_player->getMoney()->countMoney();
 			if (cash > 0)
@@ -1036,30 +1070,7 @@ void AISkirmishPlayer::doSurrender()
 	if (now < EARLIEST_FRAMES)
 		return;
 
-	MaverickSurrenderTally mine = { 0, 0 };
-	m_player->iterateObjects(tallyMaverickSurrender, &mine);
-	mine.value += bankForMaverickSurrender(m_player);
-
-	Int64 strongestEnemy = 0;
-	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
-	{
-		Player *other = ThePlayerList->getNthPlayer(i);
-		if (other == m_player || !other->isPlayableSide() || other->isPlayerObserver())
-			continue;
-		if (m_player->getRelationship(other->getDefaultTeam()) != ENEMIES)
-			continue;
-		if (TheVictoryConditions->hasSinglePlayerBeenDefeated(other))
-			continue;
-		MaverickSurrenderTally theirs = { 0, 0 };
-		other->iterateObjects(tallyMaverickSurrender, &theirs);
-		theirs.value += bankForMaverickSurrender(other);
-		if (theirs.value > strongestEnemy)
-			strongestEnemy = theirs.value;
-	}
-
-	const Bool cannotRebuild = !m_player->hasAnyBuildFacility() && mine.builders == 0 && mine.value < strongestEnemy;
-	const Bool outweighed = mine.value * 100 < strongestEnemy * 8;
-	if (!cannotRebuild && !outweighed)
+	if (!isMaverickHopeless(m_player))
 	{
 		m_hopelessSinceFrame = 0;
 		return;
@@ -1252,7 +1263,7 @@ Object * AISkirmishPlayer::findDozer( const Coord3D *pos )
 /**
  * Find a good spot to fire a superweapon.
  */
-void AISkirmishPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
+Bool AISkirmishPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
 {
 
 	Region2D bounds;
@@ -1290,9 +1301,9 @@ void AISkirmishPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *powe
 		retPos->x += offset.x;
 		retPos->y += offset.y;
 		retPos->z = TheTerrainLogic->getGroundHeight(retPos->x, retPos->y);
-		return;
+		return TRUE;
 	}
-	AIPlayer::computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
+	return AIPlayer::computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
 
 }
 

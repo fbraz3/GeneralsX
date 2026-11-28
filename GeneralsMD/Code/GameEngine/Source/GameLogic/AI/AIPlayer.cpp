@@ -4089,6 +4089,91 @@ static Bool maverickStartPositionLoc( Int startNdx, Coord3D *pos )
 	return TRUE;
 }
 
+Object *AIPlayer::findMaverickUnitFactory( const ThingTemplate *thing )
+{
+	if( thing == nullptr )
+		return nullptr;
+
+	Object *busyFactory = nullptr;
+	for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
+	{
+		Object *factory = TheGameLogic->findObjectByID( info->getObjectID() );
+		if( factory == nullptr )
+			continue;
+		if( factory->getControllingPlayer() != m_player )
+		{
+			info->setObjectID( INVALID_ID );
+			continue;
+		}
+		if( factory->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) || factory->testStatus( OBJECT_STATUS_SOLD ) )
+			continue;
+		ProductionUpdateInterface *pu = factory->getProductionUpdateInterface();
+		if( !pu || TheBuildAssistant->isPossibleToMakeUnit( factory, thing ) == FALSE )
+			continue;
+		if( pu->canQueueCreateUnit( thing ) != CANMAKE_OK )
+			continue;
+
+		// Avoid queuing behind an active order for the same factory and template so
+		// completion matching by (factory, template) cannot steal a scripted team's unit.
+		Bool hasConcurrentOrder = FALSE;
+		for( DLINK_ITERATOR<TeamInQueue> iter = iterate_TeamBuildQueue(); !iter.done(); iter.advance() )
+		{
+			TeamInQueue *team = iter.cur();
+			if( team == nullptr )
+				continue;
+			for( WorkOrder *order = team->m_workOrders; order; order = order->m_next )
+			{
+				if( order->m_factoryID == factory->getID() &&
+					order->m_numCompleted < order->m_numRequired &&
+					order->m_thing && thing->isEquivalentTo( order->m_thing ) )
+				{
+					hasConcurrentOrder = TRUE;
+					break;
+				}
+			}
+			if( hasConcurrentOrder )
+				break;
+		}
+		if( hasConcurrentOrder )
+			continue;
+
+		if( pu->getProductionCount() == 0 )
+			return factory;
+		if( busyFactory == nullptr )
+			busyFactory = factory;
+	}
+	return busyFactory;
+}
+
+Bool AIPlayer::queueMaverickDefaultTeamUnit( const ThingTemplate *tmpl )
+{
+	Object *factory = findMaverickUnitFactory( tmpl );
+	if( factory == nullptr )
+		return FALSE;
+
+	ProductionUpdateInterface *pu = factory->getProductionUpdateInterface();
+	if( pu == nullptr || !pu->queueCreateUnit( tmpl, pu->requestUniqueUnitID() ) )
+		return FALSE;
+
+	WorkOrder *order = newInstance(WorkOrder);
+	order->m_thing = tmpl;
+	order->m_factoryID = factory->getID();
+	order->m_numRequired = 1;
+	order->m_required = true;
+	order->m_isResourceGatherer = FALSE;
+	order->m_isScout = TRUE;
+	order->m_next = nullptr;
+
+	TeamInQueue *team = newInstance(TeamInQueue);
+	prependTo_TeamBuildQueue( team );
+	team->m_priorityBuild = true;
+	team->m_workOrders = order;
+	team->m_frameStarted = TheGameLogic->getFrame();
+	team->m_team = m_player->getDefaultTeam();
+	m_teamDelay = 0;
+	return TRUE;
+}
+
 const ThingTemplate *AIPlayer::cheapestScoutTemplate()
 {
 	const ThingTemplate *best = nullptr;
@@ -4108,7 +4193,7 @@ const ThingTemplate *AIPlayer::cheapestScoutTemplate()
 		const Int cost = t->calcCostToBuild( m_player );
 		if( cost <= 0 || (best != nullptr && cost >= bestCost) )
 			continue;
-		if( findFactory( t, true ) == nullptr )
+		if( findMaverickUnitFactory( t ) == nullptr )
 			continue;
 		best = t;
 		bestCost = cost;
@@ -4170,37 +4255,9 @@ void AIPlayer::queueScout()
 	Bool canBuildUnits = m_player->getCanBuildUnits();
 	m_player->setCanBuildUnits( true );
 	const ThingTemplate *tTemplate = cheapestScoutTemplate();
-	if( tTemplate == nullptr || m_player->getMoney()->countMoney() < 2 * (UnsignedInt)tTemplate->calcCostToBuild( m_player ) )
+	if( tTemplate != nullptr && m_player->getMoney()->countMoney() >= 2 * (UnsignedInt)tTemplate->calcCostToBuild( m_player ) )
 	{
-		m_player->setCanBuildUnits( canBuildUnits );
-		return;
-	}
-
-	Object *factory = findFactory( tTemplate, true );
-	if( factory )
-	{
-		WorkOrder *order = newInstance(WorkOrder);
-		order->m_thing = tTemplate;
-		order->m_factoryID = INVALID_ID;
-		order->m_numRequired = 1;
-		order->m_required = true;
-		order->m_isResourceGatherer = FALSE;
-		order->m_isScout = TRUE;
-		order->m_next = nullptr;
-
-		TeamInQueue *team = newInstance(TeamInQueue);
-		prependTo_TeamBuildQueue( team );
-		team->m_priorityBuild = true;
-		team->m_workOrders = order;
-		team->m_frameStarted = TheGameLogic->getFrame();
-		team->m_team = m_player->getDefaultTeam();
-
-		m_teamDelay = 0;
-		if( !startTraining( order, team->m_priorityBuild, team->m_team->getName() ) )
-		{
-			removeFrom_TeamBuildQueue( team );
-			deleteInstance( team );
-		}
+		queueMaverickDefaultTeamUnit( tTemplate );
 	}
 
 	m_player->setCanBuildUnits( canBuildUnits );
@@ -4450,7 +4507,7 @@ void AIPlayer::doAdaptiveEconomy()
 		if( !info->isSupplyBuilding() || info->getTemplateName().isEmpty() )
 			continue;
 		const ThingTemplate *tmpl = TheThingFactory->findTemplate( info->getTemplateName() );
-		if( tmpl && tmpl->isKindOf( KINDOF_STRUCTURE ) )
+		if( tmpl && tmpl->isKindOf( KINDOF_STRUCTURE ) && tmpl->isKindOf( KINDOF_CASH_GENERATOR ) )
 		{
 			supplyCenterName = info->getTemplateName();
 			break;
@@ -4719,7 +4776,7 @@ void AIPlayer::doRetreats()
 	}
 }
 
-static const ThingTemplate *cheapestCapturerTemplate( Player *player )
+const ThingTemplate *AIPlayer::cheapestCapturerTemplate()
 {
 	if( TheControlBar == nullptr )
 		return nullptr;
@@ -4728,9 +4785,9 @@ static const ThingTemplate *cheapestCapturerTemplate( Player *player )
 	Int bestCost = 0;
 	for( const ThingTemplate *t = TheThingFactory->firstTemplate(); t; t = t->friend_getNextTemplate() )
 	{
-		if( !t->isKindOf( KINDOF_INFANTRY ) || t->isKindOf( KINDOF_DOZER ) || !player->canBuild( t ) )
+		if( !t->isKindOf( KINDOF_INFANTRY ) || t->isKindOf( KINDOF_DOZER ) || !m_player->canBuild( t ) )
 			continue;
-		const Int cost = t->calcCostToBuild( player );
+		const Int cost = t->calcCostToBuild( m_player );
 		if( cost <= 0 || (best != nullptr && cost >= bestCost) )
 			continue;
 		const CommandSet *set = TheControlBar->findCommandSet( t->friend_getCommandSetString() );
@@ -4749,7 +4806,7 @@ static const ThingTemplate *cheapestCapturerTemplate( Player *player )
 				break;
 			}
 		}
-		if( canCapture )
+		if( canCapture && findMaverickUnitFactory( t ) != nullptr )
 		{
 			best = t;
 			bestCost = cost;
@@ -4815,34 +4872,14 @@ void AIPlayer::doCapture()
 
 	if( capturer == nullptr )
 	{
-		const ThingTemplate *tmpl = cheapestCapturerTemplate( m_player );
-		if( tmpl && !scoutInQueue() && m_player->getMoney()->countMoney() >= 2 * (UnsignedInt)tmpl->calcCostToBuild( m_player ) )
+		if( !scoutInQueue() )
 		{
 			Bool canBuildUnits = m_player->getCanBuildUnits();
 			m_player->setCanBuildUnits( true );
-			Object *factory = findFactory( tmpl, true );
-			if( factory )
+			const ThingTemplate *tmpl = cheapestCapturerTemplate();
+			if( tmpl && m_player->getMoney()->countMoney() >= 2 * (UnsignedInt)tmpl->calcCostToBuild( m_player ) )
 			{
-				WorkOrder *order = newInstance(WorkOrder);
-				order->m_thing = tmpl;
-				order->m_factoryID = INVALID_ID;
-				order->m_numRequired = 1;
-				order->m_required = true;
-				order->m_isResourceGatherer = FALSE;
-				order->m_isScout = TRUE;
-				order->m_next = nullptr;
-				TeamInQueue *team = newInstance(TeamInQueue);
-				prependTo_TeamBuildQueue( team );
-				team->m_priorityBuild = true;
-				team->m_workOrders = order;
-				team->m_frameStarted = TheGameLogic->getFrame();
-				team->m_team = m_player->getDefaultTeam();
-				m_teamDelay = 0;
-				if( !startTraining( order, team->m_priorityBuild, team->m_team->getName() ) )
-				{
-					removeFrom_TeamBuildQueue( team );
-					deleteInstance( team );
-				}
+				queueMaverickDefaultTeamUnit( tmpl );
 			}
 			m_player->setCanBuildUnits( canBuildUnits );
 		}

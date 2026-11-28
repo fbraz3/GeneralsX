@@ -1128,11 +1128,12 @@ Bool Player::isMaverickAIPlayer() const
 /**
  * Find a good spot to fire a superweapon.
  */
-void Player::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
+Bool Player::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
 {
 	if (m_ai) {
-		m_ai->computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
+		return m_ai->computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
 	}
+	return FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------

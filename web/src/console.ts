@@ -83,10 +83,10 @@ export function initConsole(deps: ConsoleDeps): void {
     }
     if (action === "ai") {
       const slot = Number(args[1]);
-      const difficulty = { easy: 0, medium: 1, hard: 2 }[args[2] || "hard"];
+      const difficulty = { easy: 0, medium: 1, hard: 2, maverick: 3 }[args[2] || "hard"];
       return Number.isInteger(slot) && difficulty !== undefined
         && call("GeneralsXLanSetSlotAI", slot, difficulty)
-        ? `Slot ${slot} set to ${args[2] || "hard"} AI.` : "Usage: lan ai <slot> easy|medium|hard";
+        ? `Slot ${slot} set to ${args[2] || "hard"} AI.` : "Usage: lan ai <slot> easy|medium|hard|maverick";
     }
     const requests: Record<string, string> = {
       host: "GeneralsXLanHost",
@@ -97,7 +97,7 @@ export function initConsole(deps: ConsoleDeps): void {
     };
     const exported = requests[action ?? ""];
     if (exported) return call(exported) ? `LAN ${action} requested.` : `LAN ${action} is not ready.`;
-    return "Usage: lan open|identity <1-254>|host|join|map <2-8>|ai <slot> easy|medium|hard|accept|start|surrender|status";
+    return "Usage: lan open|identity <1-254>|host|join|map <2-8>|ai <slot> easy|medium|hard|maverick|accept|start|surrender|status";
   }
 
   function execute(commandLine: string): string {
