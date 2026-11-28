@@ -20,7 +20,7 @@ const COMMANDS = [
 
 const HELP =
   "capture | clear | close | cursor free | fullscreen | help | "
-  + "lan open|identity <1-254>|host|join|map <2-8>|ai <slot> easy|medium|hard|accept|start|surrender|status | "
+  + "lan open|identity <1-254>|host|join|map <2-8>|ai <slot> easy|medium|hard|maverick|accept|start|surrender|status | "
   + "mute | pause on|off | reload | replay [path] [speed] | status | sync";
 
 export function initConsole(deps: ConsoleDeps): void {
