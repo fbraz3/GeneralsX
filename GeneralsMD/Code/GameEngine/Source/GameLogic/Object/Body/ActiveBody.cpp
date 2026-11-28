@@ -693,7 +693,10 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 	//Also only retaliate if we're controlled by a human player and the thing that attacked me
 	//is an enemy.
 	Player *controllingPlayer = obj->getControllingPlayer();
-	if( controllingPlayer && controllingPlayer->isLogicalRetaliationModeEnabled() && controllingPlayer->getPlayerType() == PLAYER_HUMAN )
+	const Bool retaliates = controllingPlayer &&
+													(controllingPlayer->getPlayerType() == PLAYER_HUMAN ||
+													 controllingPlayer->isMaverickAIPlayer());
+	if( controllingPlayer && controllingPlayer->isLogicalRetaliationModeEnabled() && retaliates )
 	{
 		if( shouldRetaliateAgainstAggressor(obj, damager))
 		{
@@ -749,8 +752,9 @@ Bool ActiveBody::shouldRetaliateAgainstAggressor(Object *obj, Object *damager)
 	if (distSqr > sqr(TheAI->getAiData()->m_maxRetaliateDistance)) {
 		return false;
 	}
-	// Only human players retaliate. [8/25/2003]
-	if (obj->getControllingPlayer()->getPlayerType() != PLAYER_HUMAN) {
+	// Only human players and cooperative Maverick Army AIs retaliate.
+	if (obj->getControllingPlayer()->getPlayerType() != PLAYER_HUMAN &&
+			!obj->getControllingPlayer()->isMaverickAIPlayer()) {
 		return false;
 	}
 	// Drones never retaliate. [8/25/2003]

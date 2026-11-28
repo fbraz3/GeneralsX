@@ -3981,7 +3981,8 @@ void ScriptActions::doSkirmishFireSpecialPowerAtMostCost( const AsciiString &pla
 		return;
 
 	Coord3D location;
-	pPlayer->computeSuperweaponTarget(power, &location, enemyNdx, radius);
+	if (!pPlayer->computeSuperweaponTarget(power, &location, enemyNdx, radius))
+		return;
 
 	for (it = pPlayer->getPlayerTeams()->begin(); it != pPlayer->getPlayerTeams()->end(); ++it) {
 		for (DLINK_ITERATOR<Team> iter = (*it)->iterate_TeamInstanceList(); !iter.done(); iter.advance()) {

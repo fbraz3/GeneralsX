@@ -100,9 +100,12 @@ protected:
 	void adjustBuildList(BuildListInfo *list);
 	Int getMyEnemyPlayerIndex();
 	void acquireEnemy();
+	void doSurrender();
 
 protected:
 	Int m_curFrontBaseDefense; // First is 0.
+	UnsignedInt m_hopelessSinceFrame;
+	UnsignedInt m_surrenderFrame;
 	Int m_curFlankBaseDefense; // First is 0.
 	Real m_curFrontLeftDefenseAngle;
 	Real m_curFrontRightDefenseAngle;

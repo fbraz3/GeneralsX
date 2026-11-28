@@ -443,13 +443,16 @@ public:
 	/// Have the team guard a supply center.
 	void guardSupplyCenter( Team *team, Int minSupplies );
 
-	virtual void computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *pos, Int playerNdx, Real weaponRadius); ///< Calculates best pos for weapon given radius.
+	virtual Bool computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *pos, Int playerNdx, Real weaponRadius); ///< Calculates best pos for weapon given radius.
 
 	/// Get the enemy an ai player is currently focused on.  NOTE - Can be nullptr.
 	Player  *getCurrentEnemy();
 
 	/// Is this player a skirmish ai player?
 	Bool isSkirmishAIPlayer();
+
+	/// Is this player a cooperative Maverick Army AI player?
+	Bool isMaverickAIPlayer() const;
 
 	/// Have the ai check for bridges.
 	virtual Bool checkBridges(Object *unit, Waypoint *way);

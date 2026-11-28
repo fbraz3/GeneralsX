@@ -162,6 +162,11 @@ void RefreshGameInfoWindow(GameInfo *gameInfo, UnicodeString gameName)
 					addedRow = GadgetListBoxAddEntryText(listBoxPlayers,TheGameText->fetch("GUI:HardAI"),playerColor,-1, 1);
 					break;
 				}
+				case SLOT_MAVERICK_AI:
+				{
+					addedRow = GadgetListBoxAddEntryText(listBoxPlayers,UnicodeString(L"Maverick Army"),playerColor,-1, 1);
+					break;
+				}
 				default:
 					break;
 			}

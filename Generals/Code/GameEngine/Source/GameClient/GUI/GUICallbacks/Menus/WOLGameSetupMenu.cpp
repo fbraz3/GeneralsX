@@ -1044,10 +1044,17 @@ void InitWOLGameGadgets()
 		if(theGameInfo->getLocalSlotNum() != i)
 		{
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:Open"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 0, (void *)SLOT_OPEN);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:Closed"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 1, (void *)SLOT_CLOSED);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:EasyAI"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 2, (void *)SLOT_EASY_AI);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:MediumAI"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 3, (void *)SLOT_MED_AI);
 			GadgetComboBoxAddEntry(comboBoxPlayer[i],TheGameText->fetch("GUI:HardAI"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 4, (void *)SLOT_BRUTAL_AI);
+			GadgetComboBoxAddEntry(comboBoxPlayer[i],UnicodeString(L"Maverick Army"),GameSpyColor[GSCOLOR_PLAYER_NORMAL]);
+			GadgetComboBoxSetItemData(comboBoxPlayer[i], 5, (void *)SLOT_MAVERICK_AI);
 			GadgetComboBoxSetSelectedPos(comboBoxPlayer[i],0);
 		}
 
@@ -2430,8 +2437,11 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 						// Get
 						Int pos = -1;
 						GadgetComboBoxGetSelectedPos(comboBoxPlayer[i], &pos);
-						if( pos != SLOT_PLAYER && pos >= 0)
+						if( pos >= 0 )
 						{
+							const SlotState selectedState = (SlotState)(intptr_t)GadgetComboBoxGetItemData(comboBoxPlayer[i], pos);
+							if( selectedState == SLOT_PLAYER )
+								continue;
 							if( myGame->getSlot(i)->getState() == SLOT_PLAYER )
 							{
 								PeerRequest req;
@@ -2445,16 +2455,16 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 								TheGameSpyPeerMessageQueue->addRequest(req);
 
 								UnicodeString name = myGame->getSlot(i)->getName();
-								myGame->getSlot(i)->setState(SlotState(pos));
+								myGame->getSlot(i)->setState(selectedState);
 								myGame->resetAccepted();
 								TheGameSpyInfo->setGameOptions();
 								WOLDisplaySlotList();
 								//TheLAN->OnPlayerLeave(name);
 							}
-							else if( myGame->getSlot(i)->getState() != pos )
+							else if( myGame->getSlot(i)->getState() != selectedState )
 							{
 								Bool wasAI = (myGame->getSlot(i)->isAI());
-								myGame->getSlot(i)->setState(SlotState(pos));
+								myGame->getSlot(i)->setState(selectedState);
 								Bool isAI = (myGame->getSlot(i)->isAI());
 								myGame->resetAccepted();
 								if (wasAI ^ isAI)

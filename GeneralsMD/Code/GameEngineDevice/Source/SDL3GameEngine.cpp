@@ -237,13 +237,13 @@ extern "C" EMSCRIPTEN_KEEPALIVE Int GeneralsXLanSetSlotAI(Int slotIndex, Int dif
 {
 	if (TheLAN == nullptr || TheLAN->GetMyGame() == nullptr || !TheLAN->AmIHost())
 		return FALSE;
-	if (slotIndex < 1 || slotIndex >= MAX_SLOTS || difficulty < 0 || difficulty > 2)
+	if (slotIndex < 1 || slotIndex >= MAX_SLOTS || difficulty < 0 || difficulty > 3)
 		return FALSE;
 	LANGameInfo *game = TheLAN->GetMyGame();
 	GameSlot *slot = game->getLANSlot(slotIndex);
 	if (slot == nullptr || slot->getState() == SLOT_PLAYER)
 		return FALSE;
-	static const SlotState aiStates[3] = { SLOT_EASY_AI, SLOT_MED_AI, SLOT_BRUTAL_AI };
+	static const SlotState aiStates[4] = { SLOT_EASY_AI, SLOT_MED_AI, SLOT_BRUTAL_AI, SLOT_MAVERICK_AI };
 	slot->setState(aiStates[difficulty]);
 	game->resetAccepted();
 	TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);

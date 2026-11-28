@@ -852,6 +852,11 @@ void Player::initFromDict(const Dict* d)
 		}
 		if (m_ai) {
 			m_ai->setAIDifficulty(difficulty);
+			Bool maverickExists = false;
+			Bool isMaverick = d->getBool(TheKey_skirmishMaverickAI, &maverickExists);
+			if (maverickExists && isMaverick) {
+				m_ai->setMaverickAI(true);
+			}
 		}
 
 		if (!found) {
@@ -1113,16 +1118,22 @@ Bool Player::isSkirmishAIPlayer()
 	return m_ai ? m_ai->isSkirmishAI() : false;
 }
 
+Bool Player::isMaverickAIPlayer() const
+{
+	return m_ai ? m_ai->isMaverickAI() : false;
+}
+
 
 //----------------------------------------------------------------------------------------------------------
 /**
  * Find a good spot to fire a superweapon.
  */
-void Player::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
+Bool Player::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *retPos, Int playerNdx, Real weaponRadius)
 {
 	if (m_ai) {
-		m_ai->computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
+		return m_ai->computeSuperweaponTarget(power, retPos, playerNdx, weaponRadius);
 	}
+	return FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------

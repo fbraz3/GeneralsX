@@ -1012,3 +1012,10 @@ private:
 
 	mutable VecObjectID	m_lastRequestedIDList;			///< this is used so we can return by reference, saving a copy
 };
+
+// GeneralsX @feature fbraz3 25/11/2026 Cooperative target selection cost helper for Maverick Army AI
+Real aiEnemyCost( Real distSqr, Bool crippled, Bool alreadyTargetedByAnotherAI,
+									Bool isAttackingMe, Bool joinAllysTarget );
+// GeneralsX @feature fbraz3 27/11/2026 Fair scouting helpers for Maverick Army AI (from CnCGeneralsZH-Reforged)
+Real aiScoutScore( UnsignedInt now, UnsignedInt lastSeenFrame, Real distance, UnsignedInt freshFrames );
+Real aiStartOccupiedOdds( Int unlocatedEnemies, Int uncheckedPositions );

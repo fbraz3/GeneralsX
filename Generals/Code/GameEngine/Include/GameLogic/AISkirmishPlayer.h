@@ -45,7 +45,7 @@ class AISkirmishPlayer : public AIPlayer
 public:	 // AISkirmish specific methods.
 
 	AISkirmishPlayer( Player *p );							///< constructor
-	virtual void computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *pos, Int playerNdx, Real weaponRadius) override; ///< Calculates best pos for weapon given radius.
+	virtual Bool computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord3D *pos, Int playerNdx, Real weaponRadius) override; ///< Calculates best pos for weapon given radius.
 
 public:	// AIPlayer interface methods.
 
@@ -100,9 +100,12 @@ protected:
 	void adjustBuildList(BuildListInfo *list);
 	Int getMyEnemyPlayerIndex();
 	void acquireEnemy();
+	void doSurrender();
 
 protected:
 	Int m_curFrontBaseDefense; // First is 0.
+	UnsignedInt m_hopelessSinceFrame;
+	UnsignedInt m_surrenderFrame;
 	Int m_curFlankBaseDefense; // First is 0.
 	Real m_curFrontLeftDefenseAngle;
 	Real m_curFrontRightDefenseAngle;

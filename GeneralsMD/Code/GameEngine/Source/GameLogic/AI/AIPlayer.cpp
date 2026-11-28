@@ -38,6 +38,7 @@
 #include "Common/Team.h"
 #include "Common/ThingFactory.h"
 #include "Common/PlayerList.h"
+#include "Common/ActionManager.h"
 #include "Common/BuildAssistant.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Upgrade.h"
@@ -53,7 +54,11 @@
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/TerrainLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/BodyModule.h"
+#include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/DozerAIUpdate.h"
+#include "GameLogic/Module/SpecialPowerModule.h"
+#include "GameLogic/Weapon.h"
 #include "GameLogic/Module/UpdateModule.h"
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/Module/ProductionUpdate.h"
@@ -84,7 +89,17 @@ m_dozerQueuedForRepair(false),
 m_supplySourceAttackCheckFrame(0),
 m_attackedSupplyCenter(INVALID_ID),
 m_teamSeconds(10),
-m_curWarehouseID(INVALID_ID)
+m_curWarehouseID(INVALID_ID),
+m_isMaverickAI(false),
+m_scoutTimer(1),
+m_startIntelFrame(0),
+m_expansionTimer(60 * LOGICFRAMES_PER_SECOND),
+m_capturerID(INVALID_ID),
+m_hijackerID(INVALID_ID),
+m_tacticsTimer(LOGICFRAMES_PER_SECOND / 2),
+m_retreatTimer(2 * LOGICFRAMES_PER_SECOND),
+m_captureTimer(5 * LOGICFRAMES_PER_SECOND),
+m_hijackTimer(5 * LOGICFRAMES_PER_SECOND)
 {
 	m_frameLastBuildingBuilt = TheGameLogic->getFrame();
 	p->setCanBuildUnits(false); // turn off ai production by default.
@@ -92,6 +107,16 @@ m_curWarehouseID(INVALID_ID)
 	Int i;
 	for (i=0; i<MAX_STRUCTURES_TO_REPAIR; i++) {
 		m_structuresToRepair[i] = INVALID_ID;
+	}
+	for (i=0; i<MAX_AI_SCOUTS; i++) {
+		m_scoutID[i] = INVALID_ID;
+		m_scoutTargetFor[i] = -1;
+	}
+	for (i=0; i<MAX_PLAYER_COUNT; i++) {
+		m_scoutSeenFrame[i] = 0;
+		m_startChecked[i] = FALSE;
+		m_startOccupied[i] = FALSE;
+		m_playerStartNdx[i] = -1;
 	}
 	m_repairDozerOrigin.zero();
 	m_baseCenter.zero();
@@ -1177,7 +1202,52 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
   Bool success = FALSE;
 
 	Region2D bounds;
-	getPlayerStructureBounds(&bounds, playerNdx);
+	Bool hasVisibleBounds = FALSE;
+	if (isMaverickAI())
+	{
+		bounds.zero();
+		Player *enemy = ThePlayerList ? ThePlayerList->getNthPlayer(playerNdx) : nullptr;
+		if (enemy != nullptr)
+		{
+			const Int observerNdx = m_player->getPlayerIndex();
+			for (Player::PlayerTeamList::const_iterator teamIt = enemy->getPlayerTeams()->begin(); teamIt != enemy->getPlayerTeams()->end(); ++teamIt)
+			{
+				for (DLINK_ITERATOR<Team> instanceIt = (*teamIt)->iterate_TeamInstanceList(); !instanceIt.done(); instanceIt.advance())
+				{
+					Team *team = instanceIt.cur();
+					if (!team) continue;
+					for (DLINK_ITERATOR<Object> memberIt = team->iterate_TeamMemberList(); !memberIt.done(); memberIt.advance())
+					{
+						Object *pObj = memberIt.cur();
+						if (!pObj || pObj->isEffectivelyDead())
+							continue;
+						const ObjectShroudStatus shroud = pObj->getShroudedStatus(observerNdx);
+						if (pObj->isKindOf(KINDOF_STRUCTURE) ? (shroud == OBJECTSHROUD_SHROUDED) : (shroud > OBJECTSHROUD_PARTIAL_CLEAR))
+							continue;
+						if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
+							continue;
+						const Coord3D *p = pObj->getPosition();
+						if (!hasVisibleBounds)
+						{
+							bounds.lo.x = bounds.hi.x = p->x;
+							bounds.lo.y = bounds.hi.y = p->y;
+							hasVisibleBounds = TRUE;
+						}
+						else
+						{
+							bounds.uniteWith(p->asCoord2D());
+						}
+					}
+				}
+			}
+		}
+		if (!hasVisibleBounds)
+			return FALSE;
+	}
+	else
+	{
+		getPlayerStructureBounds(&bounds, playerNdx);
+	}
 
 	if( bounds.hi.x == 0 &&
 		bounds.lo.x == 0 &&
@@ -1264,12 +1334,68 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 			pos.x = bounds.lo.x + ( bounds.width() * xIndex ) / xCount;
 			pos.y = bounds.lo.y + ( bounds.height() * yIndex ) / yCount;
 			pos.z = 0;
-			Int curCash = getPlayerSuperweaponValue( &pos, playerNdx, 2*weaponRadius, targetMilitaryUnits );
-			if ( curCash > cash)
+			Int curCash = getPlayerSuperweaponValue( &pos, playerNdx, 2*weaponRadius, targetMilitaryUnits, isMaverickAI(), m_player->getPlayerIndex() );
+			if ( curCash > cash && (!isMaverickAI() || !targetMilitaryUnits || curCash > 0) )
 			{
 				cash = curCash;
 				bestPos = pos;
 				success = true;
+			}
+		}
+	}
+
+	if (isMaverickAI() && targetMilitaryUnits)
+	{
+		Player *enemy = ThePlayerList ? ThePlayerList->getNthPlayer(playerNdx) : nullptr;
+		if (enemy != nullptr)
+		{
+			const Int observerNdx = m_player->getPlayerIndex();
+			std::vector<Int64> testedCells;
+			for (Player::PlayerTeamList::const_iterator teamIt = enemy->getPlayerTeams()->begin(); teamIt != enemy->getPlayerTeams()->end(); ++teamIt)
+			{
+				for (DLINK_ITERATOR<Team> instanceIt = (*teamIt)->iterate_TeamInstanceList(); !instanceIt.done(); instanceIt.advance())
+				{
+					Team *team = instanceIt.cur();
+					if (!team) continue;
+					for (DLINK_ITERATOR<Object> memberIt = team->iterate_TeamMemberList(); !memberIt.done(); memberIt.advance())
+					{
+						Object *pObj = memberIt.cur();
+						if (!pObj || pObj->isKindOf(KINDOF_STRUCTURE) || pObj->isEffectivelyDead())
+							continue;
+						if (pObj->isKindOf(KINDOF_AIRCRAFT) && pObj->isSignificantlyAboveTerrain())
+							continue;
+						if (pObj->getShroudedStatus(observerNdx) > OBJECTSHROUD_PARTIAL_CLEAR)
+							continue;
+						if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
+							continue;
+						pos = *pObj->getPosition();
+						if (weaponRadius <= 0.0f || !std::isfinite(weaponRadius) || !std::isfinite(pos.x) || !std::isfinite(pos.y))
+							continue;
+						const Real qx = WWMath::Div_Safe(pos.x, weaponRadius, 0.0f);
+						const Real qy = WWMath::Div_Safe(pos.y, weaponRadius, 0.0f);
+						if (!std::isfinite(qx) || !std::isfinite(qy))
+							continue;
+						const Int gx = REAL_TO_INT_FLOOR(qx);
+						const Int gy = REAL_TO_INT_FLOOR(qy);
+						const Int64 cellKey = ((Int64)gx << 32) | (UnsignedInt)gy;
+						if (std::find(testedCells.begin(), testedCells.end(), cellKey) != testedCells.end())
+							continue;
+						testedCells.push_back(cellKey);
+						Int curCash = getPlayerSuperweaponValue(&pos, playerNdx, 2*weaponRadius, targetMilitaryUnits, TRUE, observerNdx);
+						if (curCash > cash && curCash > 0)
+						{
+							cash = curCash;
+							bestPos = pos;
+							success = true;
+						}
+						if (testedCells.size() >= 24)
+							break;
+					}
+					if (testedCells.size() >= 24)
+						break;
+				}
+				if (testedCells.size() >= 24)
+					break;
 			}
 		}
 	}
@@ -1288,9 +1414,9 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 		for( y = 0; y < yCount; y++ )
 		{
 			pos.x = bestPos.x + (x-5)*(weaponRadius/10);
-			pos.y = bestPos.y + (x-5)*(weaponRadius/10);
+			pos.y = bestPos.y + (y-5)*(weaponRadius/10);
 			pos.z = 0;
-			Int curCash = getPlayerSuperweaponValue( &pos, playerNdx, weaponRadius, targetMilitaryUnits );
+			Int curCash = getPlayerSuperweaponValue( &pos, playerNdx, weaponRadius, targetMilitaryUnits, isMaverickAI(), m_player->getPlayerIndex() );
 			if ( curCash > cash)
 			{
 				cash = curCash;
@@ -1312,7 +1438,7 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 	veryBestPos.z = TheTerrainLogic->getGroundHeight(veryBestPos.x, veryBestPos.y);
 	*retPos = veryBestPos;
 
-  success = ( cash > -1 );
+  success = (isMaverickAI() && targetMilitaryUnits) ? ( cash > 0 ) : ( cash > -1 );
 
 
   return success;
@@ -1324,7 +1450,7 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 /**
  * Get the target value for structures in an area.
  */
-Int AIPlayer::getPlayerSuperweaponValue(Coord3D *center, Int playerNdx, Real radius, Bool includeMilitaryUnits )
+Int AIPlayer::getPlayerSuperweaponValue(Coord3D *center, Int playerNdx, Real radius, Bool includeMilitaryUnits, Bool maverickFogFilter, Int observerNdx )
 {
 	if (radius < 4*PATHFIND_CELL_SIZE_F)
 	{
@@ -1348,6 +1474,14 @@ Int AIPlayer::getPlayerSuperweaponValue(Coord3D *center, Int playerNdx, Real rad
 				Object *pObj = iter.cur();
 				if (!pObj)
 					continue;
+				if (maverickFogFilter && observerNdx >= 0)
+				{
+					const ObjectShroudStatus shroud = pObj->getShroudedStatus(observerNdx);
+					if (pObj->isKindOf(KINDOF_STRUCTURE) ? (shroud == OBJECTSHROUD_SHROUDED) : (shroud > OBJECTSHROUD_PARTIAL_CLEAR))
+						continue;
+					if (pObj->testStatus(OBJECT_STATUS_STEALTHED) && !pObj->testStatus(OBJECT_STATUS_DETECTED))
+						continue;
+				}
 
 				Bool applyNegValue = FALSE;
 				if( !includeMilitaryUnits )
@@ -3030,6 +3164,12 @@ void AIPlayer::doUpgradesAndSkills()
 		Int i;
 		for (i=0; i<skillset->m_numSkills; i++) {
 			ScienceType science = skillset->m_skills[i];
+			if (isMaverickAI() && !m_player->hasScience(science)) {
+				const Int cost = TheScienceStore->getSciencePurchaseCost(science);
+				if (cost > m_player->getSciencePurchasePoints()) {
+					break;
+				}
+			}
 			if (m_player->isCapableOfPurchasingScience(science)) {
 				if (m_player->attemptToPurchaseScience(science)) {
 						AsciiString msg = TheNameKeyGenerator->keyToName(m_player->getPlayerNameKey());
@@ -3067,6 +3207,16 @@ void AIPlayer::update()
 	doUpgradesAndSkills(); // See if it's time to build an upgrade or buy a skill.
 
 	updateBridgeRepair(); // Handle any bridge repairs.
+
+	if (isMaverickAI())
+	{
+		doScouting();
+		doAdaptiveEconomy();
+		doTactics();
+		doRetreats();
+		doCapture();
+		doHijack();
+	}
 
 }
 
@@ -3348,7 +3498,7 @@ void AIPlayer::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -3508,6 +3658,33 @@ void AIPlayer::xfer( Xfer *xfer )
 	xfer->xferBool( &m_dozerQueuedForRepair );
 	xfer->xferBool( &m_dozerIsRepairing );
 	xfer->xferInt( &m_bridgeTimer );
+
+	if( version >= 2 )
+	{
+		xfer->xferBool( &m_isMaverickAI );
+		xfer->xferInt( &m_scoutTimer );
+		xfer->xferUnsignedInt( &m_startIntelFrame );
+		xfer->xferInt( &m_expansionTimer );
+		xfer->xferObjectID( &m_capturerID );
+		xfer->xferObjectID( &m_hijackerID );
+		xfer->xferInt( &m_tacticsTimer );
+		xfer->xferInt( &m_retreatTimer );
+		xfer->xferInt( &m_captureTimer );
+		xfer->xferInt( &m_hijackTimer );
+		for( Int s = 0; s < MAX_AI_SCOUTS; ++s )
+		{
+			xfer->xferObjectID( &m_scoutID[s] );
+			xfer->xferInt( &m_scoutTargetFor[s] );
+		}
+		for( Int p = 0; p < MAX_PLAYER_COUNT; ++p )
+		{
+			xfer->xferUnsignedInt( &m_scoutSeenFrame[p] );
+			xfer->xferBool( &m_startChecked[p] );
+			xfer->xferBool( &m_startOccupied[p] );
+			xfer->xferInt( &m_playerStartNdx[p] );
+		}
+		m_influence.xfer( xfer );
+	}
 
 }
 
@@ -3787,7 +3964,7 @@ void WorkOrder::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -3811,6 +3988,9 @@ void WorkOrder::xfer( Xfer *xfer )
 
 	// is resource gatherer
 	xfer->xferBool( &m_isResourceGatherer );
+
+	if( version >= 2 )
+		xfer->xferBool( &m_isScout );
 
 }
 
@@ -3896,4 +4076,926 @@ void AIPlayer::getPlayerStructureBounds(Region2D *bounds, Int playerNdx, Bool co
 		// Player had no structures, so use unit bounds.
 		*bounds = objBounds;
 	}
+}
+
+//----------------------------------------------------------------------------------------------------------
+// GeneralsX @feature fbraz3 27/11/2026 Fair scouting and adaptive economy for Maverick Army AI (Phase 2)
+static Bool maverickStartPositionLoc( Int startNdx, Coord3D *pos )
+{
+	if( startNdx < 0 || startNdx >= MAX_PLAYER_COUNT || TheTerrainLogic == nullptr )
+		return FALSE;
+
+	AsciiString name;
+	name.format( "Player_%d_Start", startNdx + 1 );
+	Waypoint *way = TheTerrainLogic->getWaypointByName( name );
+	if( way == nullptr )
+		return FALSE;
+
+	*pos = *way->getLocation();
+	return TRUE;
+}
+
+Object *AIPlayer::findMaverickUnitFactory( const ThingTemplate *thing )
+{
+	if( thing == nullptr )
+		return nullptr;
+
+	Object *busyFactory = nullptr;
+	for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
+	{
+		Object *factory = TheGameLogic->findObjectByID( info->getObjectID() );
+		if( factory == nullptr )
+			continue;
+		if( factory->getControllingPlayer() != m_player )
+		{
+			info->setObjectID( INVALID_ID );
+			continue;
+		}
+		if( factory->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) || factory->testStatus( OBJECT_STATUS_SOLD ) )
+			continue;
+		ProductionUpdateInterface *pu = factory->getProductionUpdateInterface();
+		if( !pu || TheBuildAssistant->isPossibleToMakeUnit( factory, thing ) == FALSE )
+			continue;
+		if( pu->canQueueCreateUnit( thing ) != CANMAKE_OK )
+			continue;
+
+		// Avoid queuing behind an active order for the same factory and template so
+		// completion matching by (factory, template) cannot steal a scripted team's unit.
+		Bool hasConcurrentOrder = FALSE;
+		for( DLINK_ITERATOR<TeamInQueue> iter = iterate_TeamBuildQueue(); !iter.done(); iter.advance() )
+		{
+			TeamInQueue *team = iter.cur();
+			if( team == nullptr )
+				continue;
+			for( WorkOrder *order = team->m_workOrders; order; order = order->m_next )
+			{
+				if( order->m_factoryID == factory->getID() &&
+					order->m_numCompleted < order->m_numRequired &&
+					order->m_thing && thing->isEquivalentTo( order->m_thing ) )
+				{
+					hasConcurrentOrder = TRUE;
+					break;
+				}
+			}
+			if( hasConcurrentOrder )
+				break;
+		}
+		if( hasConcurrentOrder )
+			continue;
+
+		if( pu->getProductionCount() == 0 )
+			return factory;
+		if( busyFactory == nullptr )
+			busyFactory = factory;
+	}
+	return busyFactory;
+}
+
+Bool AIPlayer::queueMaverickDefaultTeamUnit( const ThingTemplate *tmpl )
+{
+	Object *factory = findMaverickUnitFactory( tmpl );
+	if( factory == nullptr )
+		return FALSE;
+
+	ProductionUpdateInterface *pu = factory->getProductionUpdateInterface();
+	if( pu == nullptr || !pu->queueCreateUnit( tmpl, pu->requestUniqueUnitID() ) )
+		return FALSE;
+
+	WorkOrder *order = newInstance(WorkOrder);
+	order->m_thing = tmpl;
+	order->m_factoryID = factory->getID();
+	order->m_numRequired = 1;
+	order->m_required = true;
+	order->m_isResourceGatherer = FALSE;
+	order->m_isScout = TRUE;
+	order->m_next = nullptr;
+
+	TeamInQueue *team = newInstance(TeamInQueue);
+	prependTo_TeamBuildQueue( team );
+	team->m_priorityBuild = true;
+	team->m_workOrders = order;
+	team->m_frameStarted = TheGameLogic->getFrame();
+	team->m_team = m_player->getDefaultTeam();
+	m_teamDelay = 0;
+	return TRUE;
+}
+
+const ThingTemplate *AIPlayer::cheapestScoutTemplate()
+{
+	const ThingTemplate *best = nullptr;
+	Int bestCost = 0;
+
+	for( const ThingTemplate *t = TheThingFactory->firstTemplate(); t; t = t->friend_getNextTemplate() )
+	{
+		if( !t->isKindOf( KINDOF_INFANTRY ) && !t->isKindOf( KINDOF_VEHICLE ) )
+			continue;
+		if( t->isKindOf( KINDOF_DOZER ) || t->isKindOf( KINDOF_HARVESTER ) )
+			continue;
+		if( t->isKindOf( KINDOF_AIRCRAFT ) || t->isKindOf( KINDOF_IMMOBILE ) )
+			continue;
+		if( !m_player->canBuild( t ) )
+			continue;
+
+		const Int cost = t->calcCostToBuild( m_player );
+		if( cost <= 0 || (best != nullptr && cost >= bestCost) )
+			continue;
+		if( findMaverickUnitFactory( t ) == nullptr )
+			continue;
+		best = t;
+		bestCost = cost;
+	}
+	return best;
+}
+
+Bool AIPlayer::scoutInQueue()
+{
+	DLINK_ITERATOR<TeamInQueue> iter = iterate_TeamBuildQueue();
+	while( !iter.done() )
+	{
+		TeamInQueue *team = iter.cur();
+		iter.advance();
+		if( team == nullptr )
+			continue;
+		Bool hasScoutOrder = FALSE;
+		Bool stillQueued = FALSE;
+		for( WorkOrder *order = team->m_workOrders; order; order = order->m_next )
+		{
+			if( !order->m_isScout )
+				continue;
+			hasScoutOrder = TRUE;
+			Object *factory = TheGameLogic->findObjectByID( order->m_factoryID );
+			ProductionUpdateInterface *pu = (factory && !factory->isEffectivelyDead() && factory->getControllingPlayer() == m_player)
+				? factory->getProductionUpdateInterface() : nullptr;
+			if( pu && order->m_thing && pu->countUnitTypeInQueue( order->m_thing ) > 0 )
+			{
+				stillQueued = TRUE;
+				break;
+			}
+		}
+		if( hasScoutOrder )
+		{
+			if( stillQueued )
+				return true;
+			removeFrom_TeamBuildQueue( team );
+			deleteInstance( team );
+		}
+	}
+	return false;
+}
+
+Object *AIPlayer::findScout()
+{
+	Team *team = m_player->getDefaultTeam();
+	if( team == nullptr )
+		return nullptr;
+
+	for( DLINK_ITERATOR<Object> iter = team->iterate_TeamMemberList(); !iter.done(); iter.advance() )
+	{
+		Object *obj = iter.cur();
+		if( obj == nullptr || obj->isEffectivelyDead() )
+			continue;
+		if( !obj->isKindOf( KINDOF_INFANTRY ) && !obj->isKindOf( KINDOF_VEHICLE ) )
+			continue;
+		if( obj->isKindOf( KINDOF_PROJECTILE ) || obj->isKindOf( KINDOF_IMMOBILE ) )
+			continue;
+		if( obj->isKindOf( KINDOF_DOZER ) || obj->isKindOf( KINDOF_HARVESTER ) || obj->isKindOf( KINDOF_AIRCRAFT ) )
+			continue;
+		if( obj->getAI() == nullptr )
+			continue;
+
+		Bool alreadyScouting = FALSE;
+		for( Int slot = 0; slot < MAX_AI_SCOUTS; ++slot )
+			if( m_scoutID[ slot ] == obj->getID() )
+				alreadyScouting = TRUE;
+		if( alreadyScouting )
+			continue;
+
+		return obj;
+	}
+	return nullptr;
+}
+
+void AIPlayer::queueScout()
+{
+	if( scoutInQueue() )
+		return;
+
+	Bool canBuildUnits = m_player->getCanBuildUnits();
+	m_player->setCanBuildUnits( true );
+	const ThingTemplate *tTemplate = cheapestScoutTemplate();
+	if( tTemplate != nullptr && m_player->getMoney()->countMoney() >= 2 * (UnsignedInt)tTemplate->calcCostToBuild( m_player ) )
+	{
+		queueMaverickDefaultTeamUnit( tTemplate );
+	}
+
+	m_player->setCanBuildUnits( canBuildUnits );
+}
+
+void AIPlayer::countStartIntel( Int *enemies, Int *occupied, Int *unchecked ) const
+{
+	*enemies = *occupied = *unchecked = 0;
+	if( ThePlayerList == nullptr )
+		return;
+
+	const Int playerCount = ThePlayerList->getPlayerCount();
+	for( Int i = 0; i < playerCount && i < MAX_PLAYER_COUNT; ++i )
+	{
+		Player *p = ThePlayerList->getNthPlayer( i );
+		if( p == nullptr || p == m_player || !p->isPlayerActive() )
+			continue;
+		if( m_player->getRelationship( p->getDefaultTeam() ) == ENEMIES )
+			++(*enemies);
+	}
+
+	for( Int startNdx = 0; startNdx < MAX_PLAYER_COUNT; ++startNdx )
+	{
+		Coord3D there;
+		if( !maverickStartPositionLoc( startNdx, &there ) )
+			continue;
+		if( m_startOccupied[ startNdx ] )
+			++(*occupied);
+		else if( !m_startChecked[ startNdx ] )
+			++(*unchecked);
+	}
+}
+
+void AIPlayer::updateStartIntel()
+{
+	const UnsignedInt now = TheGameLogic->getFrame();
+	if( m_startIntelFrame != 0 && now < m_startIntelFrame + LOGICFRAMES_PER_SECOND )
+		return;
+	m_startIntelFrame = now;
+
+	if( ThePlayerList == nullptr )
+		return;
+
+	const Int playerCount = ThePlayerList->getPlayerCount();
+
+	for( Int i = 0; i < playerCount && i < MAX_PLAYER_COUNT; ++i )
+	{
+		Player *p = ThePlayerList->getNthPlayer( i );
+		if( p == nullptr || m_playerStartNdx[ i ] >= 0 )
+			continue;
+		if( p != m_player && m_player->getRelationship( p->getDefaultTeam() ) != ALLIES )
+			continue;
+
+		const Int startNdx = p->getMpStartIndex();
+		if( startNdx >= 0 && startNdx < MAX_PLAYER_COUNT )
+		{
+			m_playerStartNdx[ i ] = startNdx;
+			m_startChecked[ startNdx ] = TRUE;
+		}
+	}
+
+	for( Int slot = 0; slot < MAX_AI_SCOUTS; ++slot )
+	{
+		Object *scout = TheGameLogic->findObjectByID( m_scoutID[ slot ] );
+		if( scout == nullptr || scout->isEffectivelyDead() || scout->getControllingPlayer() != m_player )
+			continue;
+
+		const Coord3D *at = scout->getPosition();
+		Real see = scout->getVisionRange();
+		if( see < 1.0f )
+			see = 1.0f;
+
+		for( Int startNdx = 0; startNdx < MAX_PLAYER_COUNT; ++startNdx )
+		{
+			Bool pinned = FALSE;
+			for( Int i = 0; i < MAX_PLAYER_COUNT; ++i )
+				if( m_playerStartNdx[ i ] == startNdx )
+					pinned = TRUE;
+			if( m_startChecked[ startNdx ] && (pinned || !m_startOccupied[ startNdx ]) )
+				continue;
+
+			Coord3D there;
+			if( !maverickStartPositionLoc( startNdx, &there ) )
+				continue;
+
+			const Real dx = there.x - at->x;
+			const Real dy = there.y - at->y;
+			if( dx*dx + dy*dy > see*see )
+				continue;
+
+			m_startChecked[ startNdx ] = TRUE;
+			m_scoutSeenFrame[ startNdx ] = now;
+
+			for( Int i = 0; i < playerCount && i < MAX_PLAYER_COUNT; ++i )
+			{
+				Player *p = ThePlayerList->getNthPlayer( i );
+				if( p == nullptr || p == m_player || p->getMpStartIndex() != startNdx )
+					continue;
+				if( m_player->getRelationship( p->getDefaultTeam() ) != ENEMIES )
+					continue;
+
+				m_startOccupied[ startNdx ] = TRUE;
+				m_playerStartNdx[ i ] = startNdx;
+			}
+		}
+	}
+
+	Int enemies = 0, occupied = 0, unchecked = 0;
+	countStartIntel( &enemies, &occupied, &unchecked );
+	if( aiStartOccupiedOdds( enemies - occupied, unchecked ) < 1.0f )
+		return;
+
+	for( Int startNdx = 0; startNdx < MAX_PLAYER_COUNT; ++startNdx )
+	{
+		Coord3D there;
+		if( m_startChecked[ startNdx ] || !maverickStartPositionLoc( startNdx, &there ) )
+			continue;
+		m_startChecked[ startNdx ] = TRUE;
+		m_startOccupied[ startNdx ] = TRUE;
+	}
+}
+
+Bool AIPlayer::nextScoutTarget( Int slot, const Coord3D *from, Coord3D *pos )
+{
+	if( slot < 0 || slot >= MAX_AI_SCOUTS || from == nullptr )
+		return FALSE;
+
+	const UnsignedInt now = TheGameLogic->getFrame();
+
+	const UnsignedInt fresh = 25 * LOGICFRAMES_PER_SECOND;
+	Int bestNdx = -1;
+	Real bestScore = 0.0f;
+	Bool bestSearching = FALSE;
+	Coord3D bestPos;
+
+	for( Int startNdx = 0; startNdx < MAX_PLAYER_COUNT; ++startNdx )
+	{
+		Coord3D there;
+		if( !maverickStartPositionLoc( startNdx, &there ) )
+			continue;
+
+		const Bool searching = !m_startChecked[ startNdx ];
+		if( !searching && !m_startOccupied[ startNdx ] )
+			continue;
+
+		Bool taken = FALSE;
+		for( Int other = 0; other < MAX_AI_SCOUTS; ++other )
+			if( other != slot && m_scoutID[ other ] != INVALID_ID && m_scoutTargetFor[ other ] == startNdx )
+				taken = TRUE;
+		if( taken )
+			continue;
+
+		const Real dx = there.x - from->x;
+		const Real dy = there.y - from->y;
+		const Real dist = WWMath::Sqrtf( dx*dx + dy*dy );
+
+		const Real score = aiScoutScore( now, m_scoutSeenFrame[ startNdx ], dist, fresh );
+		if( score <= 0.0f )
+			continue;
+
+		if( bestNdx < 0 || (searching && !bestSearching) ||
+				(searching == bestSearching && score > bestScore) )
+		{
+			bestNdx = startNdx;
+			bestScore = score;
+			bestSearching = searching;
+			bestPos = there;
+		}
+	}
+
+	if( bestNdx < 0 )
+		return FALSE;
+
+	m_scoutTargetFor[ slot ] = bestNdx;
+	*pos = bestPos;
+	return TRUE;
+}
+
+void AIPlayer::doScouting()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() )
+		return;
+
+	updateStartIntel();
+
+	if( --m_scoutTimer > 0 )
+		return;
+	m_scoutTimer = 2 * LOGICFRAMES_PER_SECOND;
+
+	Bool ordered = FALSE;
+	Bool needScout = FALSE;
+
+	for( Int slot = 0; slot < MAX_AI_SCOUTS; ++slot )
+	{
+		Object *scout = TheGameLogic->findObjectByID( m_scoutID[ slot ] );
+		if( scout && (scout->isEffectivelyDead() || scout->getControllingPlayer() != m_player) )
+			scout = nullptr;
+
+		if( scout == nullptr )
+		{
+			m_scoutID[ slot ] = INVALID_ID;
+			scout = findScout();
+			if( scout )
+				m_scoutID[ slot ] = scout->getID();
+		}
+
+		if( scout == nullptr )
+		{
+			needScout = TRUE;
+			continue;
+		}
+
+		AIUpdateInterface *ai = scout->getAI();
+		if( ai == nullptr || !ai->isIdle() )
+			continue;
+
+		Coord3D goal;
+		if( nextScoutTarget( slot, scout->getPosition(), &goal ) )
+		{
+			ai->aiMoveToPosition( &goal, CMD_FROM_AI );
+			ordered = TRUE;
+		}
+	}
+
+	if( needScout )
+		queueScout();
+
+	if( ordered )
+		m_scoutTimer = 25 * LOGICFRAMES_PER_SECOND;
+}
+
+void AIPlayer::doAdaptiveEconomy()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() )
+		return;
+
+	if( --m_expansionTimer > 0 )
+		return;
+	m_expansionTimer = 60 * LOGICFRAMES_PER_SECOND;
+
+	if( m_player->getMoney()->countMoney() < 2500 )
+		return;
+
+	AsciiString supplyCenterName;
+	for( BuildListInfo *info = m_player->getBuildList(); info; info = info->getNext() )
+	{
+		if( !info->isSupplyBuilding() || info->getTemplateName().isEmpty() )
+			continue;
+		const ThingTemplate *tmpl = TheThingFactory->findTemplate( info->getTemplateName() );
+		if( tmpl && tmpl->isKindOf( KINDOF_STRUCTURE ) && tmpl->isKindOf( KINDOF_CASH_GENERATOR ) )
+		{
+			supplyCenterName = info->getTemplateName();
+			break;
+		}
+	}
+	if( supplyCenterName.isEmpty() )
+		return;
+
+	if( findSupplyCenter( 1000 ) != nullptr )
+	{
+		buildBySupplies( 1000, supplyCenterName );
+	}
+}
+
+//----------------------------------------------------------------------------------------------------------
+// GeneralsX @feature fbraz3 27/11/2026 Phase 3 tactical micro, influence map, retreats, capture & hijack (from CnCGeneralsZH-Reforged)
+static Bool maverickKnowsAbout( const Object *obj, Int observerNdx )
+{
+	if( obj == nullptr )
+		return FALSE;
+	if( observerNdx < 0 )
+		return TRUE;
+	const ObjectShroudStatus shroud = obj->getShroudedStatus( observerNdx );
+	if( obj->isKindOf( KINDOF_STRUCTURE ) )
+	{
+		if( shroud == OBJECTSHROUD_SHROUDED )
+			return FALSE;
+	}
+	else
+	{
+		if( shroud > OBJECTSHROUD_PARTIAL_CLEAR )
+			return FALSE;
+	}
+	if( !obj->testStatus( OBJECT_STATUS_STEALTHED ) || obj->testStatus( OBJECT_STATUS_DETECTED ) )
+		return TRUE;
+	const Player *observer = ThePlayerList ? ThePlayerList->getNthPlayer( observerNdx ) : nullptr;
+	return observer != nullptr && observer->getRelationship( obj->getTeam() ) == ALLIES;
+}
+
+static Real maverickCombatPower( const Object *obj )
+{
+	if( obj == nullptr || !obj->isKindOf( KINDOF_CAN_ATTACK ) )
+		return 0.0f;
+	if( obj->isKindOf( KINDOF_DOZER ) || obj->isKindOf( KINDOF_HARVESTER ) )
+		return 0.0f;
+	const Int cost = obj->getTemplate()->friend_getBuildCost();
+	return (cost > 0) ? (Real)cost : 100.0f;
+}
+
+static Real maverickAttackRange( const Object *obj )
+{
+	if( obj == nullptr )
+		return 0.0f;
+	const Weapon *w = obj->getCurrentWeapon();
+	if( w == nullptr )
+		return 0.0f;
+	return w->getAttackRange( obj );
+}
+
+void AIPlayer::rebuildInfluence()
+{
+	static const Real INFLUENCE_CELL_SIZE = 100.0f;
+	if( !m_influence.isSized() )
+	{
+		Region3D extent;
+		TheTerrainLogic->getExtent( &extent );
+		m_influence.reset( extent.lo.x, extent.lo.y, extent.hi.x - extent.lo.x, extent.hi.y - extent.lo.y, INFLUENCE_CELL_SIZE );
+		for( Int row = 0; row < m_influence.getRows(); ++row )
+		{
+			for( Int col = 0; col < m_influence.getCols(); ++col )
+			{
+				Real x, y;
+				m_influence.cellCenter( col, row, &x, &y );
+				m_influence.setCellHeight( col, row, TheTerrainLogic->getGroundHeight( x, y ) );
+			}
+		}
+	}
+
+	m_influence.clear();
+	const Int me = m_player->getPlayerIndex();
+	for( Object *obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject() )
+	{
+		if( obj->isEffectivelyDead() || obj->isKindOf( KINDOF_PROJECTILE ) )
+			continue;
+		const Bool mine = obj->getControllingPlayer() == m_player;
+		const Relationship relation = m_player->getRelationship( obj->getTeam() );
+		if( !mine && relation != ENEMIES && relation != ALLIES )
+			continue;
+		const Real power = maverickCombatPower( obj );
+		if( power <= 0.0f )
+			continue;
+		const Real range = maverickAttackRange( obj );
+		if( range <= 0.0f )
+			continue;
+		const Coord3D *pos = obj->getPosition();
+		if( mine || relation == ALLIES )
+			m_influence.stampFriend( pos->x, pos->y, pos->z, range, power );
+		else if( maverickKnowsAbout( obj, me ) )
+			m_influence.stampEnemy( pos->x, pos->y, pos->z, range, power );
+	}
+	m_influence.markBuilt( TheGameLogic->getFrame() );
+}
+
+void AIPlayer::doTactics()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() || !m_baseCenterSet )
+		return;
+
+	const UnsignedInt now = TheGameLogic->getFrame();
+	if( !m_influence.isBuilt() || now - m_influence.getBuiltFrame() >= (UnsignedInt)LOGICFRAMES_PER_SECOND )
+		rebuildInfluence();
+
+	if( --m_tacticsTimer > 0 )
+		return;
+	m_tacticsTimer = LOGICFRAMES_PER_SECOND / 2;
+
+	const Real homeRadiusSqr = sqr( m_baseRadius * 1.25f );
+
+	for( Player::PlayerTeamList::const_iterator t = m_player->getPlayerTeams()->begin(); t != m_player->getPlayerTeams()->end(); ++t )
+	{
+		for( DLINK_ITERATOR<Team> iter = (*t)->iterate_TeamInstanceList(); !iter.done(); iter.advance() )
+		{
+			Team *team = iter.cur();
+			if( team == nullptr )
+				continue;
+
+			for( DLINK_ITERATOR<Object> objIter = team->iterate_TeamMemberList(); !objIter.done(); objIter.advance() )
+			{
+				Object *unit = objIter.cur();
+				if( unit == nullptr || unit->isEffectivelyDead() || unit->isContained() )
+					continue;
+				if( unit->isKindOf( KINDOF_STRUCTURE ) || unit->isKindOf( KINDOF_DOZER ) || unit->isKindOf( KINDOF_HARVESTER ) || unit->isKindOf( KINDOF_AIRCRAFT ) )
+					continue;
+				AIUpdateInterface *ai = unit->getAI();
+				if( ai == nullptr )
+					continue;
+
+				const Coord3D *pos = unit->getPosition();
+				const Real distHomeSqr = sqr( pos->x - m_baseCenter.x ) + sqr( pos->y - m_baseCenter.y );
+				if( distHomeSqr <= homeRadiusSqr )
+					continue;
+
+				const Real range = maverickAttackRange( unit );
+				const Real enemyThreat = m_influence.enemyAt( pos->x, pos->y );
+				const Real friendPower = m_influence.friendAt( pos->x, pos->y );
+
+				// Keep long-range siege/artillery units behind the frontline if standing in enemy fire
+				if( range >= 300.0f && enemyThreat > 0.0f && !ai->isMoving() )
+				{
+					Real dx = m_baseCenter.x - pos->x;
+					Real dy = m_baseCenter.y - pos->y;
+					const Real len = WWMath::Sqrtf( dx * dx + dy * dy );
+					if( len > 1.0f )
+					{
+						const Real step = min<Real>( 150.0f, len );
+						Coord3D back;
+						back.x = pos->x + WWMath::Div_Safe( dx, len, 0.0f ) * step;
+						back.y = pos->y + WWMath::Div_Safe( dy, len, 0.0f ) * step;
+						back.z = TheTerrainLogic->getGroundHeight( back.x, back.y );
+						if( m_influence.enemyAt( back.x, back.y ) < enemyThreat )
+						{
+							ai->aiAttackMoveToPosition( &back, NO_MAX_SHOTS_LIMIT, CMD_FROM_AI );
+							continue;
+						}
+					}
+				}
+
+				// Kite back when outnumbered locally and taking heavy threat
+				if( enemyThreat > friendPower * 1.6f && ai->isIdle() )
+				{
+					Real dx = m_baseCenter.x - pos->x;
+					Real dy = m_baseCenter.y - pos->y;
+					const Real len = WWMath::Sqrtf( dx * dx + dy * dy );
+					if( len > 1.0f )
+					{
+						const Real step = min<Real>( 120.0f, len );
+						Coord3D back;
+						back.x = pos->x + WWMath::Div_Safe( dx, len, 0.0f ) * step;
+						back.y = pos->y + WWMath::Div_Safe( dy, len, 0.0f ) * step;
+						back.z = TheTerrainLogic->getGroundHeight( back.x, back.y );
+						ai->aiMoveToPosition( &back, CMD_FROM_AI );
+					}
+				}
+			}
+		}
+	}
+}
+
+void AIPlayer::doRetreats()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() || !m_baseCenterSet )
+		return;
+
+	if( --m_retreatTimer > 0 )
+		return;
+	m_retreatTimer = 2 * LOGICFRAMES_PER_SECOND;
+
+	const Real homeRadiusSqr = sqr( m_baseRadius * 1.3f );
+
+	// Find a friendly GLA tunnel near base for fast retreat if available
+	Object *homeTunnel = nullptr;
+	if( m_player->getTunnelSystem() != nullptr )
+	{
+		Real bestSqr = 0.0f;
+		for( Object *obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject() )
+		{
+			if( obj->isEffectivelyDead() || obj->getControllingPlayer() != m_player )
+				continue;
+			if( !obj->isKindOf( KINDOF_STRUCTURE ) || obj->getContain() == nullptr || !obj->getContain()->isTunnelContain() )
+				continue;
+			const Real d = sqr( obj->getPosition()->x - m_baseCenter.x ) + sqr( obj->getPosition()->y - m_baseCenter.y );
+			if( homeTunnel == nullptr || d < bestSqr )
+			{
+				homeTunnel = obj;
+				bestSqr = d;
+			}
+		}
+	}
+
+	for( Player::PlayerTeamList::const_iterator t = m_player->getPlayerTeams()->begin(); t != m_player->getPlayerTeams()->end(); ++t )
+	{
+		const TeamTemplateInfo *info = (*t)->getTemplateInfo();
+		if( info && (info->m_isBaseDefense || info->m_isPerimeterDefense) )
+			continue;
+
+		for( DLINK_ITERATOR<Team> iter = (*t)->iterate_TeamInstanceList(); !iter.done(); iter.advance() )
+		{
+			Team *team = iter.cur();
+			if( team == nullptr )
+				continue;
+
+			for( DLINK_ITERATOR<Object> objIter = team->iterate_TeamMemberList(); !objIter.done(); objIter.advance() )
+			{
+				Object *unit = objIter.cur();
+				if( unit == nullptr || unit->isEffectivelyDead() || unit->isContained() )
+					continue;
+				if( unit->isKindOf( KINDOF_STRUCTURE ) || unit->isKindOf( KINDOF_DOZER ) || unit->isKindOf( KINDOF_HARVESTER ) || unit->isKindOf( KINDOF_AIRCRAFT ) )
+					continue;
+				if( unit->getID() == m_capturerID || unit->getID() == m_hijackerID )
+					continue;
+				AIUpdateInterface *ai = unit->getAI();
+				BodyModuleInterface *body = unit->getBodyModule();
+				if( ai == nullptr || body == nullptr )
+					continue;
+
+				const Coord3D *pos = unit->getPosition();
+				if( sqr( pos->x - m_baseCenter.x ) + sqr( pos->y - m_baseCenter.y ) <= homeRadiusSqr )
+					continue;
+
+				const Real maxHp = body->getMaxHealth();
+				if( maxHp <= 0.0f )
+					continue;
+				const Real hpRatio = WWMath::Div_Safe( body->getHealth(), maxHp, 1.0f );
+				const Bool isVeteran = unit->getVeterancyLevel() >= LEVEL_VETERAN;
+				const Bool outnumbered = m_influence.enemyAt( pos->x, pos->y ) > m_influence.friendAt( pos->x, pos->y ) * 1.5f;
+
+				if( (isVeteran && hpRatio < 0.45f) || (outnumbered && hpRatio < 0.30f) )
+				{
+					if( homeTunnel != nullptr && homeTunnel->getContain() && homeTunnel->getContain()->isValidContainerFor( unit, TRUE ) )
+						ai->aiEnter( homeTunnel, CMD_FROM_AI );
+					else
+						ai->aiMoveToPosition( &m_baseCenter, CMD_FROM_AI );
+				}
+			}
+		}
+	}
+}
+
+const ThingTemplate *AIPlayer::cheapestCapturerTemplate()
+{
+	if( TheControlBar == nullptr )
+		return nullptr;
+
+	const ThingTemplate *best = nullptr;
+	Int bestCost = 0;
+	for( const ThingTemplate *t = TheThingFactory->firstTemplate(); t; t = t->friend_getNextTemplate() )
+	{
+		if( !t->isKindOf( KINDOF_INFANTRY ) || t->isKindOf( KINDOF_DOZER ) || !m_player->canBuild( t ) )
+			continue;
+		const Int cost = t->calcCostToBuild( m_player );
+		if( cost <= 0 || (best != nullptr && cost >= bestCost) )
+			continue;
+		const CommandSet *set = TheControlBar->findCommandSet( t->friend_getCommandSetString() );
+		if( set == nullptr )
+			continue;
+		Bool canCapture = FALSE;
+		for( Int i = 0; i < MAX_COMMANDS_PER_SET; ++i )
+		{
+			const CommandButton *button = set->getCommandButton( i );
+			if( button == nullptr || button->getCommandType() != GUI_COMMAND_SPECIAL_POWER )
+				continue;
+			const SpecialPowerTemplate *power = button->getSpecialPowerTemplate();
+			if( power && power->getSpecialPowerType() == SPECIAL_INFANTRY_CAPTURE_BUILDING )
+			{
+				canCapture = TRUE;
+				break;
+			}
+		}
+		if( canCapture && findMaverickUnitFactory( t ) != nullptr )
+		{
+			best = t;
+			bestCost = cost;
+		}
+	}
+	return best;
+}
+
+void AIPlayer::doCapture()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() || !m_baseCenterSet )
+		return;
+
+	if( --m_captureTimer > 0 )
+		return;
+	m_captureTimer = 5 * LOGICFRAMES_PER_SECOND;
+
+	Object *capturer = TheGameLogic->findObjectByID( m_capturerID );
+	if( capturer && (capturer->isEffectivelyDead() || capturer->getControllingPlayer() != m_player) )
+		capturer = nullptr;
+	if( capturer == nullptr )
+	{
+		m_capturerID = INVALID_ID;
+		Team *defTeam = m_player->getDefaultTeam();
+		if( defTeam )
+		{
+			for( DLINK_ITERATOR<Object> iter = defTeam->iterate_TeamMemberList(); !iter.done(); iter.advance() )
+			{
+				Object *obj = iter.cur();
+				if( obj && !obj->isEffectivelyDead() && obj->getAI() &&
+					obj->findSpecialPowerModuleInterface( SPECIAL_INFANTRY_CAPTURE_BUILDING ) != nullptr )
+				{
+					capturer = obj;
+					m_capturerID = obj->getID();
+					break;
+				}
+			}
+		}
+	}
+
+	// Find nearest visible neutral tech building
+	const Int me = m_player->getPlayerIndex();
+	Object *target = nullptr;
+	Real bestDistSqr = 0.0f;
+	for( Object *obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject() )
+	{
+		if( obj->isEffectivelyDead() || !obj->isKindOf( KINDOF_TECH_BUILDING ) || obj->isKindOf( KINDOF_IMMUNE_TO_CAPTURE ) )
+			continue;
+		if( m_player->getRelationship( obj->getTeam() ) == ALLIES || obj->getControllingPlayer() == m_player )
+			continue;
+		if( !maverickKnowsAbout( obj, me ) )
+			continue;
+		const Real d = sqr( obj->getPosition()->x - m_baseCenter.x ) + sqr( obj->getPosition()->y - m_baseCenter.y );
+		if( target == nullptr || d < bestDistSqr )
+		{
+			target = obj;
+			bestDistSqr = d;
+		}
+	}
+
+	if( target == nullptr )
+		return;
+
+	if( capturer == nullptr )
+	{
+		if( !scoutInQueue() )
+		{
+			Bool canBuildUnits = m_player->getCanBuildUnits();
+			m_player->setCanBuildUnits( true );
+			const ThingTemplate *tmpl = cheapestCapturerTemplate();
+			if( tmpl && m_player->getMoney()->countMoney() >= 2 * (UnsignedInt)tmpl->calcCostToBuild( m_player ) )
+			{
+				queueMaverickDefaultTeamUnit( tmpl );
+			}
+			m_player->setCanBuildUnits( canBuildUnits );
+		}
+		return;
+	}
+
+	AIUpdateInterface *ai = capturer->getAI();
+	if( ai == nullptr || !ai->isIdle() || capturer->testStatus( OBJECT_STATUS_IS_USING_ABILITY ) )
+		return;
+
+	static const AsciiString captureUpgradeName( "Upgrade_InfantryCaptureBuilding" );
+	const UpgradeTemplate *captureUpgrade = TheUpgradeCenter->findUpgrade( captureUpgradeName );
+	SpecialPowerModuleInterface *mod = capturer->findSpecialPowerModuleInterface( SPECIAL_INFANTRY_CAPTURE_BUILDING );
+	if( mod && captureUpgrade && mod->getPercentReady() < 1.0f && !m_player->hasUpgradeComplete( captureUpgrade ) )
+	{
+		buildUpgrade( captureUpgradeName );
+		return;
+	}
+
+	if( mod && TheActionManager->canCaptureBuilding( capturer, target, CMD_FROM_AI ) )
+		mod->doSpecialPowerAtObject( target, 0 );
+	else
+		ai->aiMoveToObject( target, CMD_FROM_AI );
+}
+
+void AIPlayer::doHijack()
+{
+	if( m_player == nullptr || !m_player->isPlayableSide() || !m_baseCenterSet )
+		return;
+
+	if( --m_hijackTimer > 0 )
+		return;
+	m_hijackTimer = 5 * LOGICFRAMES_PER_SECOND;
+
+	Object *thief = TheGameLogic->findObjectByID( m_hijackerID );
+	if( thief && (thief->isEffectivelyDead() || thief->getControllingPlayer() != m_player) )
+		thief = nullptr;
+	if( thief == nullptr )
+	{
+		m_hijackerID = INVALID_ID;
+		Team *defTeam = m_player->getDefaultTeam();
+		if( defTeam )
+		{
+			for( DLINK_ITERATOR<Object> iter = defTeam->iterate_TeamMemberList(); !iter.done(); iter.advance() )
+			{
+				Object *obj = iter.cur();
+				if( obj && !obj->isEffectivelyDead() && obj->getAI() && obj->isKindOf( KINDOF_INFANTRY ) &&
+					strstr( obj->getTemplate()->getName().str(), "Hijacker" ) != nullptr )
+				{
+					thief = obj;
+					m_hijackerID = obj->getID();
+					break;
+				}
+			}
+		}
+	}
+
+	if( thief == nullptr )
+		return;
+
+	AIUpdateInterface *ai = thief->getAI();
+	if( ai == nullptr || !ai->isIdle() )
+		return;
+
+	const Int me = m_player->getPlayerIndex();
+	const Coord3D *from = thief->getPosition();
+	const Real reachSqr = sqr( 900.0f );
+	Object *target = nullptr;
+	Real bestDistSqr = 0.0f;
+
+	for( Object *obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject() )
+	{
+		if( obj->isEffectivelyDead() || !obj->isKindOf( KINDOF_VEHICLE ) || obj->isKindOf( KINDOF_AIRCRAFT ) )
+			continue;
+		if( m_player->getRelationship( obj->getTeam() ) != ENEMIES )
+			continue;
+		if( !maverickKnowsAbout( obj, me ) )
+			continue;
+		const Real d = sqr( obj->getPosition()->x - from->x ) + sqr( obj->getPosition()->y - from->y );
+		if( d > reachSqr )
+			continue;
+		if( TheActionManager->canHijackVehicle( thief, obj, CMD_FROM_AI ) && (target == nullptr || d < bestDistSqr) )
+		{
+			target = obj;
+			bestDistSqr = d;
+		}
+	}
+
+	if( target != nullptr )
+		ai->aiEnter( target, CMD_FROM_AI );
 }
