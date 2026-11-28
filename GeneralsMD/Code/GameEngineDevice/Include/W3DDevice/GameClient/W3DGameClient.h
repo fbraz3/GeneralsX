@@ -49,13 +49,15 @@
 #ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegVideoPlayer.h"
 #endif
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 #include "Win32Device/GameClient/Win32DIKeyboard.h"
 #include "Win32Device/GameClient/Win32DIMouse.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input devices
-#ifndef _WIN32
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 #include <cstdlib>
 #include "SDL3Device/GameClient/SDL3Mouse.h"
 #include "SDL3Device/GameClient/SDL3Keyboard.h"
@@ -65,7 +67,9 @@
 
 class ThingTemplate;
 
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 extern Win32Mouse *TheWin32Mouse;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROTOTYPES /////////////////////////////////////////////////////////////////
@@ -136,8 +140,8 @@ protected:
 
 // TheSuperHackers @build 10/02/2026 BenderAI - Phase 1.5 SDL3 input factory wiring
 inline Keyboard *W3DGameClient::createKeyboard() {
-#ifndef _WIN32
-	return NEW SDL3Keyboard();  // Linux: SDL3 keyboard
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
+	return NEW SDL3Keyboard();
 #else
 	return NEW DirectInputKeyboard;  // Windows: DirectInput keyboard
 #endif
@@ -146,8 +150,8 @@ inline Keyboard *W3DGameClient::createKeyboard() {
 inline Mouse *W3DGameClient::createMouse()
 {
 // GeneralsX @bugfix BenderAI 14/03/2026 SDL3 mouse creation must fail fast instead of returning nullptr.
-#ifndef _WIN32
-	// Linux: SDL3 mouse requires the pre-initialized SDL3GameEngine window.
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
+	// SDL3 mouse requires the pre-initialized SDL3GameEngine window.
 	SDL3GameEngine* sdlEngine = dynamic_cast<SDL3GameEngine*>(TheGameEngine);
 	if (sdlEngine && sdlEngine->getSDLWindow()) {
 		return NEW SDL3Mouse(sdlEngine->getSDLWindow());

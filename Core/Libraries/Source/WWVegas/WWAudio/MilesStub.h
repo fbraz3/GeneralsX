@@ -42,18 +42,29 @@
     #define AILCALLBACK
 #endif
 
+// GeneralsX @feature fbraz 25/11/2026 Include Windows + MMSystem headers on Win32 and expose Miles scalar types unconditionally
 // Windows type stubs
 #if !defined(_WIN32)
     #define HANDLE void*
-    typedef unsigned char  U8;
-    typedef signed char    S8;
-    typedef unsigned short U16;
-    typedef signed short   S16;
-    typedef unsigned int   U32;
-    typedef signed int     S32;
-    typedef float          F32;
-    typedef double         F64;
+#else
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
+    #ifndef NOMINMAX
+    #define NOMINMAX
+    #endif
+    #include <windows.h>
+    #include <mmsystem.h>
 #endif
+
+typedef unsigned char  U8;
+typedef signed char    S8;
+typedef unsigned short U16;
+typedef signed short   S16;
+typedef unsigned int   U32;
+typedef signed int     S32;
+typedef float          F32;
+typedef double         F64;
 
 // Miles Sound System type stubs (not including callback typedefs - those are defined in AudioEvents.h)
 typedef void* HDIGDRIVER;
@@ -63,7 +74,8 @@ typedef void* H3DSAMPLE;
 typedef void* H3DPOBJECT;
 typedef void* HTIMER;
 
-// Wave format stub
+// Wave format stub (Windows provides WAVEFORMAT/LPWAVEFORMAT via <mmsystem.h>)
+#if !defined(_WIN32)
 typedef struct {
     U16 wFormatTag;
     U16 nChannels;
@@ -73,6 +85,7 @@ typedef struct {
     U16 wBitsPerSample;
 } WAVEFORMAT;
 typedef WAVEFORMAT* LPWAVEFORMAT;
+#endif
 
 // Driver info stub
 struct DRIVER_INFO_STRUCT {

@@ -183,12 +183,11 @@ set(GAMEENGINEDEVICE_SRC
 if(WIN32)
     # Windows-specific files (use Windows API for filesystem)
     list(APPEND GAMEENGINEDEVICE_SRC
-        Include/MilesAudioDevice/MilesAudioManager.h
         Include/VideoDevice/Bink/BinkVideoPlayer.h
+        Include/Win32Device/Common/GXD3DWin32.h
         Include/Win32Device/Common/Win32LANInterface.h
         Include/Win32Device/Common/Win32LocalFile.h
         Include/Win32Device/Common/Win32LocalFileSystem.h
-        Source/MilesAudioDevice/MilesAudioManager.cpp
         Source/VideoDevice/Bink/BinkVideoPlayer.cpp
         Source/Win32Device/Common/Win32LANInterface.cpp
         Source/Win32Device/Common/Win32LocalFile.cpp
@@ -196,6 +195,13 @@ if(WIN32)
 #        Source/Win32Device/Common/Win32OSDisplay.cpp
 #        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     )
+    # Never compile Miles alongside MiniAudio/OpenAL (duplicate PlayingAudio / MAXPROVIDERS symbols).
+    if(NOT SAGE_USE_MINIAUDIO AND NOT SAGE_USE_OPENAL)
+        list(APPEND GAMEENGINEDEVICE_SRC
+            Include/MilesAudioDevice/MilesAudioManager.h
+            Source/MilesAudioDevice/MilesAudioManager.cpp
+        )
+    endif()
 else()
     # GeneralsX @refactor Mr. Meesseeks 17/09/2026 POSIX network interface implementation
     list(APPEND GAMEENGINEDEVICE_SRC
@@ -244,8 +250,10 @@ if(WIN32)
     target_link_libraries(corei_gameenginedevice_public INTERFACE
         deps_bink
         d3d8lib
-        deps_miles
     )
+    if(NOT SAGE_USE_MINIAUDIO AND NOT SAGE_USE_OPENAL)
+        target_link_libraries(corei_gameenginedevice_public INTERFACE deps_miles)
+    endif()
 endif()
 
 # GeneralsX @build BenderAI 13/02/2026 OpenAL audio library for Linux
@@ -309,8 +317,15 @@ if(SAGE_USE_MINIAUDIO)
 endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+    if(WIN32 AND MSVC)
+        # GeneralsX @build Copilot 25/11/2026 Resolve vcpkg FFmpeg on MSVC via cmake/FindFFmpeg.cmake (no pkg-config needed)
+        find_package(FFmpeg REQUIRED COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE SWRESAMPLE)
+        set(_FFMPEG_TARGET_OR_LIBS ${FFMPEG_LIBRARIES})
+    else()
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil libswscale)
+        set(_FFMPEG_TARGET_OR_LIBS PkgConfig::FFMPEG)
+    endif()
 
     if(FFMPEG_FOUND)
         target_sources(corei_gameenginedevice_private INTERFACE
@@ -320,7 +335,7 @@ if(RTS_BUILD_OPTION_FFMPEG)
             Source/VideoDevice/FFmpeg/FFmpegVideoPlayer.cpp
         )
         target_include_directories(corei_gameenginedevice_private INTERFACE ${FFMPEG_INCLUDE_DIRS})
-        target_link_libraries(corei_gameenginedevice_private INTERFACE PkgConfig::FFMPEG)
+        target_link_libraries(corei_gameenginedevice_private INTERFACE ${_FFMPEG_TARGET_OR_LIBS})
         target_compile_definitions(corei_gameenginedevice_public INTERFACE RTS_HAS_FFMPEG)
     endif()
 endif()

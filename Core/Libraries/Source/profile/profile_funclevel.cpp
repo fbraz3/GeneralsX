@@ -32,7 +32,8 @@
 #include "debug/debug.h"
 #include <new>
 
-#ifdef HAS_PROFILE
+// GeneralsX @bugfix Copilot 25/11/2026 _pleave/_penter inline naked asm is x86-32 only
+#if defined(HAS_PROFILE) && defined(_M_IX86)
 
 // TLS index (-1 if not yet initialized)
 static int TLSIndex=-1;

@@ -1,0 +1,45 @@
+d3d8to9 - a Direct3D 8 to Direct3D 9 translator, compiled INTO generalszh.exe (x64 Windows only) for the
+compatibility-graphics path: a PC with no Vulkan driver renders through Windows' own d3d9.dll instead of DXVK.
+
+Upstream:  https://github.com/crosire/d3d8to9
+Tag:       v1.16.0
+Commit:    255338f698c8270b537f0a91a13f795f4f988250
+Tarball:   https://github.com/crosire/d3d8to9/archive/255338f698c8270b537f0a91a13f795f4f988250.tar.gz
+Tarball sha256: 06e4fdedb4bc45abed1a624ebafd7e79322def09ce1a7542e65acfe400fbfc53
+Licence:   BSD-2-Clause (LICENSE.md, verbatim), Copyright (C) 2015 Patrick Mours
+
+Vendored: source/ (all 16 files) and LICENSE.md, byte-identical to the tarball, then the patches in patches/ applied in
+name order. scripts/test/d3d8to9-pin-test.sh re-derives upstream + patches == source/ from the tarball.
+
+Upstream file sha256 (before any patch):
+  fa65d158beefa55f270ee0c69c42cf5e92cc607d14336e7d74b8524b59a08902  LICENSE.md
+  1609e8db979ba74a9f56e5bd98b1c147e4732456dd3111f725d6092fbefd5bca  source/d3d8.hpp
+  11bf2c159fe47a4868fe751a6e0a160a877c809b518922d5732ac8f770f26de3  source/d3d8to9_base.cpp
+  efd5fc166d69c751749ff0fece944c77d93d6d9222a10f444faad3083a5984a4  source/d3d8to9_device.cpp
+  a174a122fcabf5c3de8c359d267bc1a8e05e53dc82246e767bae0a6351c8678f  source/d3d8to9_index_buffer.cpp
+  29075c78e7d24c0b397e33e817d9c8a7f67acccd7e1e1182e828db8a491ee94a  source/d3d8to9_surface.cpp
+  3e2555b501eb7bd9f724d056d360017c9fbb6c50556b50f69a4ae245c48d8a42  source/d3d8to9_swap_chain.cpp
+  52190cdaa96d7d460593d349a963392bc60ca06f9007b15b100ed5a63f1a583c  source/d3d8to9_texture.cpp
+  c5d097ff5399a8406eae2a55d72ca0ac3151ae1d5a6be61f8d50867d430f7e44  source/d3d8to9_vertex_buffer.cpp
+  dc0bdad901769c3f066e9a952d945430d61a61fe38a865d9b4eae9b2295caa61  source/d3d8to9_volume.cpp
+  be05da96dfc1ec29466f5bc17b50b8484b40e15a540744b1963a1ff8d405f684  source/d3d8to9.cpp
+  a96d2c986a73bf6d677a3b5db67871ed8e7110ebd3ea2532fd203a42d97f5e40  source/d3d8to9.hpp
+  09b8d2df0d51c7bcb8ca68ed487eecb8765128ea21a73cf97d39ddf509c9598f  source/d3d8types.cpp
+  e8e719ab1d03fd907e46c00f534c8a3e2136208f969ae0760bb423f6039bf928  source/d3d8types.hpp
+  414d6e295bc746d2ff4bf72b6009c30a66f54a78ed78fcb75405e9e07a995b9a  source/d3dx9.hpp
+  8acf165d4dad5cbceb580db330fecd112c9df3bfb51ab9f3afc35ef0e7d568c2  source/interface_query.cpp
+  6e80cab52288aeb2df78aee23bde00f9537d9ab14b0116f29245a1a5efc982b3  source/interface_query.hpp
+
+Patches (patches/, applied in name order; each is a plain git diff of source/):
+  0001-gx-entry-system-d3d9-no-log-no-box   entry point gx_d3d8to9_Direct3DCreate8 (gx_d3d8to9.h), nothing exported;
+                                           System32\d3d9.dll by full path (System32-only dependency search); no log file,
+                                           message box or browser; d3dx9_43.dll optional, from System32 only
+  0002-gx-x64-handle-tables                 shader handles and state-block tokens as table slots (gx_handle_table.hpp):
+                                           upstream stored 64-bit pointers in 32-bit DWORD handles
+  0003-gx-shaders-without-d3dx             pixel shaders pass through, vertex shaders get their dcl inputs
+                                           (gx_shader_tokens.cpp, adapted from DXVK's D3D8 front end, zlib notice kept)
+  0004-gx-copyrects-and-caps-without-d3dx  CopyRects into managed / out of render-target surfaces by locking (fonts,
+                                           screenshots) with D3DX only as a fallback; shader versions in the caps never
+                                           above what the device has
+  0005-gx-ps-end-inside-data              a pixel shader's END is looked for only between instructions: an END-valued comment
+                                           payload or def literal no longer cuts the shader short

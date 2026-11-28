@@ -55,6 +55,11 @@ if(SAGE_USE_SDL3)
         if(EMSCRIPTEN)
             set(SDL_WAYLAND OFF CACHE BOOL "Disable Wayland" FORCE)
             set(SDL_X11 OFF CACHE BOOL "Disable X11" FORCE)
+        elseif(WIN32)
+            # GeneralsX @feature fbraz 26/11/2026 Windows builds use Win32 backend; MiniAudio handles audio via WASAPI
+            set(SDL_WAYLAND OFF CACHE BOOL "Disable Wayland" FORCE)
+            set(SDL_X11 OFF CACHE BOOL "Disable X11" FORCE)
+            set(SDL_AUDIO OFF CACHE BOOL "Disable SDL audio (MiniAudio uses WASAPI)" FORCE)
         else()
             set(SDL_WAYLAND ON CACHE BOOL "Enable Wayland support (Linux)" FORCE)
             set(SDL_X11 ON CACHE BOOL "Enable X11 support (Linux)" FORCE)
@@ -68,8 +73,11 @@ if(SAGE_USE_SDL3)
         # Before SDL3_image build: force PNG discovery to platform-specific libpng
         # Linux: System libpng16.so is dynamic shared library
         # macOS: Use Homebrew PNG or system framework
+        # Windows: SDL3_image uses native WIC + built-in ICO/CUR/BMP decoders
         if(EMSCRIPTEN)
             # Browser cursor decoding uses SDL_image's built-in formats.
+        elseif(WIN32)
+            # Windows SDL3_image uses native Windows Imaging Component (WIC) — no external libpng required.
         elseif(NOT APPLE)
             # Find system shared libpng, bypassing vcpkg's static .a.
             # SDL3_image requires a shared .so but vcpkg only provides static libpng16.a.
@@ -133,6 +141,23 @@ if(SAGE_USE_SDL3)
             set(SDLIMAGE_TIF OFF CACHE BOOL "Disable TIFF" FORCE)
             set(SDLIMAGE_WEBP OFF CACHE BOOL "Disable WebP" FORCE)
             set(SDLIMAGE_AVIF OFF CACHE BOOL "Disable AVIF" FORCE)
+            set(SDLIMAGE_XCUR OFF CACHE BOOL "Disable X cursor" FORCE)
+        elseif(WIN32)
+            # GeneralsX @feature fbraz 26/11/2026 Use built-in STB backend + ICO/CUR/BMP decoders on Windows (no external image DLLs)
+            set(SDLIMAGE_DEPS_SHARED OFF CACHE BOOL "Disable external shared image deps on Windows" FORCE)
+            set(SDLIMAGE_BACKEND_WIC OFF CACHE BOOL "Disable WIC backend (avoid conflict with STB)" FORCE)
+            set(SDLIMAGE_BACKEND_STB ON CACHE BOOL "Use built-in STB backend on Windows" FORCE)
+            set(SDLIMAGE_PNG_LIBPNG OFF CACHE BOOL "Disable external libpng on Windows" FORCE)
+            set(SDLIMAGE_VENDORED OFF CACHE BOOL "Disable vendored third-party image libs" FORCE)
+            set(SDLIMAGE_ICO ON CACHE BOOL "Enable ICO support" FORCE)
+            set(SDLIMAGE_CUR ON CACHE BOOL "Enable CUR support" FORCE)
+            set(SDLIMAGE_BMP ON CACHE BOOL "Enable BMP support" FORCE)
+            set(SDLIMAGE_PNG ON CACHE BOOL "Enable PNG support" FORCE)
+            set(SDLIMAGE_JPG ON CACHE BOOL "Enable JPG support" FORCE)
+            set(SDLIMAGE_TIF OFF CACHE BOOL "Disable TIF" FORCE)
+            set(SDLIMAGE_WEBP OFF CACHE BOOL "Disable WebP" FORCE)
+            set(SDLIMAGE_AVIF OFF CACHE BOOL "Disable AVIF" FORCE)
+            set(SDLIMAGE_JXL OFF CACHE BOOL "Disable JXL" FORCE)
             set(SDLIMAGE_XCUR OFF CACHE BOOL "Disable X cursor" FORCE)
         else()
             set(SDLIMAGE_DEPS_SHARED ON CACHE BOOL "Use system shared dependencies" FORCE)

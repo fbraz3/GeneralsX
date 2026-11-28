@@ -172,14 +172,14 @@ jobs:
       - name: Download Windows Zero Hour artifact
         uses: actions/download-artifact@v8
         with:
-          name: windows-x86-GeneralsXZH.zip
+          name: windows-x64-GeneralsXZH.zip
           path: artifacts/windows-zh
           skip-decompress: true
 
       - name: Download Windows Generals artifact
         uses: actions/download-artifact@v8
         with:
-          name: windows-x86-GeneralsX.zip
+          name: windows-x64-GeneralsX.zip
           path: artifacts/windows-generals
           skip-decompress: true
 

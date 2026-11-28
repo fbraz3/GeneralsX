@@ -127,7 +127,11 @@ TextureBaseClass::~TextureBaseClass()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
@@ -209,7 +213,11 @@ void TextureBaseClass::Invalidate()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
@@ -244,7 +252,11 @@ void TextureBaseClass::Invalidate()
 
 	if (D3DTexture)
 	{
-		D3DTexture->Release();
+		// GeneralsX @bugfix fbraz 26/11/2026 Skip COM Release() if DX8Wrapper has already destroyed the device/unloaded D3D8Lib.
+		if (DX8Wrapper::Is_Initted() && DX8Wrapper::_Get_D3D_Device8() != nullptr)
+		{
+			D3DTexture->Release();
+		}
 		D3DTexture = nullptr;
 	}
 
@@ -903,8 +915,13 @@ void TextureClass::Apply_New_Surface
 	if (disable_auto_invalidation) InactivationTime = 0;
 
 	WWASSERT(d3d_texture);
-	IDirect3DSurface8* surface;
-	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(0,&surface));
+	IDirect3DSurface8* surface = nullptr;
+	const HRESULT hr = Peek_D3D_Texture()->GetSurfaceLevel(0,&surface);
+	DX8_ErrorCode(hr);
+	if (FAILED(hr) || surface == nullptr)
+	{
+		return;
+	}
 	D3DSURFACE_DESC d3d_desc;
 	::ZeroMemory(&d3d_desc, sizeof(D3DSURFACE_DESC));
 	DX8_ErrorCode(surface->GetDesc(&d3d_desc));
@@ -986,7 +1003,12 @@ SurfaceClass *TextureClass::Get_Surface_Level(unsigned int level) const
 	}
 
 	IDirect3DSurface8 *d3d_surface = nullptr;
-	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(level, &d3d_surface));
+	const HRESULT hr = Peek_D3D_Texture()->GetSurfaceLevel(level, &d3d_surface);
+	DX8_ErrorCode(hr);
+	if (FAILED(hr) || d3d_surface == nullptr)
+	{
+		return nullptr;
+	}
 	SurfaceClass *surface = new SurfaceClass(d3d_surface);
 	d3d_surface->Release();
 
@@ -1284,8 +1306,13 @@ void ZTextureClass::Apply_New_Surface
 	if (disable_auto_invalidation) InactivationTime = 0;
 
 	WWASSERT(Peek_D3D_Texture());
-	IDirect3DSurface8* surface;
-	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(0,&surface));
+	IDirect3DSurface8* surface = nullptr;
+	const HRESULT hr = Peek_D3D_Texture()->GetSurfaceLevel(0,&surface);
+	DX8_ErrorCode(hr);
+	if (FAILED(hr) || surface == nullptr)
+	{
+		return;
+	}
 	D3DSURFACE_DESC d3d_desc;
 	::ZeroMemory(&d3d_desc, sizeof(D3DSURFACE_DESC));
 	DX8_ErrorCode(surface->GetDesc(&d3d_desc));

@@ -165,7 +165,7 @@ if(SAGE_USE_NGMP)
     elseif(TARGET GameNetworkingSockets_s)
         target_link_libraries(core_config INTERFACE GameNetworkingSockets_s)
         target_compile_definitions(core_config INTERFACE SAGE_USE_GAMENETWORKINGSOCKETS=1)
-    elseif(WIN32 AND MSVC)
+    elseif(WIN32 AND MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(_VNS_DIR "")
         set(_VNS_INC "")
         # Reject stale cached paths pointing to external reference repositories
@@ -205,7 +205,7 @@ if(SAGE_USE_NGMP)
         endif()
     endif()
 
-    if(NOT TARGET GameNetworkingSockets AND NOT TARGET GameNetworkingSockets::GameNetworkingSockets AND NOT TARGET GameNetworkingSockets_s AND NOT (WIN32 AND MSVC AND _VNS_DIR))
+    if(NOT TARGET GameNetworkingSockets AND NOT TARGET GameNetworkingSockets::GameNetworkingSockets AND NOT TARGET GameNetworkingSockets_s AND NOT (WIN32 AND MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 4 AND _VNS_DIR))
         message(WARNING "[NGMP WARNING] GameNetworkingSockets target was NOT configured! SAGE_USE_GAMENETWORKINGSOCKETS will be disabled and P2P multiplayer will not work!")
     endif()
 

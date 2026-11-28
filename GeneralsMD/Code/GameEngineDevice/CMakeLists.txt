@@ -184,7 +184,8 @@ set(GAMEENGINEDEVICE_SRC
 )
 
 # GeneralsX @TheSuperHackers @build BenderAI 11/02/2026 Separate Windows and Linux platform-specific files
-if(WIN32)
+# GeneralsX @feature fbraz 26/11/2026 Support SDL3 windowing and input on Windows builds when SAGE_USE_SDL3 is ON
+if(WIN32 AND NOT SAGE_USE_SDL3)
     # Windows-specific files (DirectX 8, Miles Sound, Win32 API)
     list(APPEND GAMEENGINEDEVICE_SRC
 #        Source/Win32Device/Common/Win32BIGFile.cpp
@@ -197,22 +198,26 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/Core/GameEngineDevice/Source/Win32Device/GameClient/Win32Mouse.cpp
     )
 else()
-    # Linux-specific files (SDL3, OpenAL+FFmpeg audio, DXVK)
+    # SDL3 windowing/input (Linux, macOS, WebGPU, and SDL3-enabled Windows builds)
     list(APPEND GAMEENGINEDEVICE_SRC
         Source/SDL3GameEngine.cpp
         Source/SDL3Device/GameClient/SDL3Mouse.cpp
         Source/SDL3Device/GameClient/SDL3Keyboard.cpp
-        Source/VideoDevice/BinkVideoPlayerStub.cpp
     )
 
-    # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
-    # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
-    # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
-    # GeneralsX @feature fbraz 11/06/2026 MiniAudio sources also provided by Core when SAGE_USE_MINIAUDIO is enabled.
-    if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+    if(NOT WIN32)
         list(APPEND GAMEENGINEDEVICE_SRC
-            Source/OpenALAudioManager.cpp
+            Source/VideoDevice/BinkVideoPlayerStub.cpp
         )
+        # GeneralsX @refactor fbraz3 31/03/2026 OpenALAudioDevice sources moved to Core/GameEngineDevice
+        # OpenALAudioManager.cpp, OpenALAudioStream.cpp, OpenALAudioCache.cpp and FFmpegFile.cpp
+        # are now provided by corei_gameenginedevice_private when SAGE_USE_OPENAL is enabled.
+        # GeneralsX @feature fbraz 11/06/2026 MiniAudio sources also provided by Core when SAGE_USE_MINIAUDIO is enabled.
+        if(NOT SAGE_USE_OPENAL AND NOT SAGE_USE_MINIAUDIO)
+            list(APPEND GAMEENGINEDEVICE_SRC
+                Source/OpenALAudioManager.cpp
+            )
+        endif()
     endif()
 endif()
 

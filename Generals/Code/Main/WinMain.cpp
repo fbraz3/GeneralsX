@@ -57,8 +57,14 @@
 #include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
+#ifdef SAGE_USE_SDL3
+#include <SDL3/SDL.h>
+#include "SDL3GameEngine.h"
+#else
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
+#endif
+#include "Win32Device/Common/GXD3DWin32.h"
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -71,7 +77,11 @@
 // GLOBALS ////////////////////////////////////////////////////////////////////
 HINSTANCE ApplicationHInstance = nullptr;  ///< our application instance
 HWND ApplicationHWnd = nullptr;  ///< our application window handle
+#ifdef SAGE_USE_SDL3
+SDL_Window* TheSDL3Window = nullptr;  ///< SDL3 window when SAGE_USE_SDL3 is active
+#else
 Win32Mouse *TheWin32Mouse = nullptr;  ///< for the WndProc() only
+#endif
 DWORD TheMessageTime = 0;	///< For getting the time that a message was posted from Windows.
 
 const Char *g_strFile = "data\\Generals.str";
@@ -286,6 +296,8 @@ static const char *messageToString(unsigned int message)
 }
 #endif
 
+#ifdef SAGE_USE_SDL3
+#else
 // WndProc ====================================================================
 /** Window Procedure */
 //=============================================================================
@@ -765,6 +777,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	return true;  // success
 
 }
+#endif // !SAGE_USE_SDL3
 
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4;
@@ -831,19 +844,28 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//	WWDebug_Install_Message_Handler(WWDebug_Message_Callback);
 	//	WWDebug_Install_Assert_Handler(WWAssert_Callback);
 
+#ifndef SAGE_USE_SDL3
  		// [SKB: Jun 24 2003 @ 1:50pm] :
 		// Force to be loaded from a file, not a resource so same exe can be used in germany and retail.
  		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp",	IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
+#endif // !SAGE_USE_SDL3
 
 #ifdef RTS_ENABLE_CRASHDUMP
 		// Initialize minidump facilities - requires TheGlobalData so performed after parseCommandLineForStartup
 		MiniDumper::initMiniDumper(TheGlobalData->getPath_UserData().str(), 'G');
 #endif
 		// register windows class and create application window
+#ifdef SAGE_USE_SDL3
+		if(!TheGlobalData->m_headless && gxwin32::initializeSDL3Window(hInstance, "Command and Conquer Generals", IDI_ApplicationIcon, TheSDL3Window, ApplicationHWnd) == false)
+		{
+			return exitcode;
+		}
+#else
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 		{
 			return exitcode;
 		}
+#endif
 
 		// save our application instance for future use
 		ApplicationHInstance = hInstance;
@@ -877,6 +899,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 
 			DEBUG_LOG(("Generals is already running...Bail!"));
+#ifdef SAGE_USE_SDL3
+			gxwin32::shutdownSDL3Window(TheSDL3Window, ApplicationHWnd);
+#endif
 			delete TheVersion;
 			TheVersion = nullptr;
 			shutdownMemoryManager();
@@ -885,8 +910,20 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		DEBUG_LOG(("Create Generals Mutex okay."));
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
+		if (!TheGlobalData->m_headless)
+		{
+#ifdef SAGE_USE_SDL3
+			gx::SDL3SplashScreen::show("Command and Conquer Generals");
+#endif
+			gxwin32::installD3D8To9Backend();
+		}
+
 		// run the game main loop
 		exitcode = GameMain();
+
+#ifdef SAGE_USE_SDL3
+		gxwin32::shutdownSDL3Window(TheSDL3Window, ApplicationHWnd);
+#endif
 
 		delete TheVersion;
 		TheVersion = nullptr;
@@ -925,6 +962,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //=============================================================================
 GameEngine *CreateGameEngine()
 {
+#ifdef SAGE_USE_SDL3
+	return NEW SDL3GameEngine();
+#else
 	Win32GameEngine *engine;
 
 	engine = NEW Win32GameEngine;
@@ -933,5 +973,5 @@ GameEngine *CreateGameEngine()
 	engine->setIsActive(isWinMainActive);
 
 	return engine;
-
+#endif
 }

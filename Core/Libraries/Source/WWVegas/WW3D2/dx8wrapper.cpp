@@ -369,7 +369,7 @@ static void Resolve_Present_BackBuffer_Size(int gameW, int gameH, bool isWindowe
 	outW = (UINT)gameW;
 	outH = (UINT)gameH;
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
 	if (!isWindowed) {
 		int windowW = gameW;
 		int windowH = gameH;
@@ -446,6 +446,8 @@ bool								DX8Wrapper::FogEnable									= false;
 D3DCOLOR							DX8Wrapper::FogColor										= 0;
 
 IDirect3D8 *					DX8Wrapper::D3DInterface								= nullptr;
+DX8Wrapper::Direct3DCreate8Fn	DX8Wrapper::Create8Override							= nullptr;
+const char *						DX8Wrapper::Create8OverrideReason					= nullptr;
 IDirect3DDevice8 *			DX8Wrapper::D3DDevice									= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentRenderTarget						= nullptr;
 IDirect3DSurface8 *			DX8Wrapper::CurrentDepthBuffer						= nullptr;
@@ -695,7 +697,8 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 #endif
 		// GeneralsX @build BenderAI 10/02/2026 - Platform-specific DLL/SO/DYLIB loading (Phase 5: macOS)
 #ifdef _WIN32
-		D3D8Lib = LoadLibrary("D3D8.DLL");
+		// GeneralsX @feature Copilot 25/11/2026 Compatibility graphics (d3d8to9 override) skips loading D3D8.DLL.
+		D3D8Lib = Is_Compat_D3D9() ? nullptr : LoadLibrary("D3D8.DLL");
 #elif defined(__APPLE__)
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Loading libdxvk_d3d8.dylib (macOS)...\n");
 		D3D8Lib = LoadLibrary("libdxvk_d3d8.dylib");
@@ -714,13 +717,13 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		}
 #endif
 
-		if (D3D8Lib == nullptr) {
+		if (D3D8Lib == nullptr && !Is_Compat_D3D9()) {
 			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to load D3D8 library\n");
 			return false;	// Return false at this point if init failed
 		}
 
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Getting Direct3DCreate8 function pointer...\n");
-		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
+		Direct3DCreate8Ptr = Is_Compat_D3D9() ? Create8Override : (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
 		if (Direct3DCreate8Ptr == nullptr) {
 			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Failed to get Direct3DCreate8 function\n");
 			Shutdown();
@@ -742,7 +745,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		}
 		fprintf(stderr, "DEBUG: DX8Wrapper::Init() - Direct3DCreate8 returned: %p\n", (void*)D3DInterface);
 		if (D3DInterface == nullptr) {
-			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL (DXVK failed to create D3D8 interface)\n");
+			fprintf(stderr, "ERROR: DX8Wrapper::Init() - Direct3DCreate8 returned NULL\n");
 			Shutdown();
 			return(false);
 		}
@@ -925,37 +928,32 @@ bool DX8Wrapper::Create_Device()
 	WWASSERT(D3DDevice==nullptr);	// for now, once you've created a device, you're stuck with it!
 
 	D3DCAPS8 caps;
-	if
+	HRESULT hr = D3DInterface->GetDeviceCaps
 	(
-		FAILED
-		(
-			D3DInterface->GetDeviceCaps
-			(
-				CurRenderDevice,
-				WW3D_DEVTYPE,
-				&caps
-			)
-		)
-	)
+		CurRenderDevice,
+		WW3D_DEVTYPE,
+		&caps
+	);
+	if (FAILED(hr))
 	{
+		// GeneralsX @feature fbraz 25/11/2026 Surface device-creation diagnostics in release builds
+		fprintf(stderr, "[GXGFX] Create_Device: GetDeviceCaps failed hr=0x%08lx (dev=%d)\n", (unsigned long)hr, CurRenderDevice);
+		fflush(stderr);
 		return false;
 	}
 
 	::ZeroMemory(&CurrentAdapterIdentifier, sizeof(D3DADAPTER_IDENTIFIER8));
 
-	if
+	hr = D3DInterface->GetAdapterIdentifier
 	(
-		FAILED
-		(
-			D3DInterface->GetAdapterIdentifier
-			(
-				CurRenderDevice,
-				D3DENUM_NO_WHQL_LEVEL,
-				&CurrentAdapterIdentifier
-			)
-			)
-	)
+		CurRenderDevice,
+		D3DENUM_NO_WHQL_LEVEL,
+		&CurrentAdapterIdentifier
+	);
+	if (FAILED(hr))
 	{
+		fprintf(stderr, "[GXGFX] Create_Device: GetAdapterIdentifier failed hr=0x%08lx (dev=%d)\n", (unsigned long)hr, CurRenderDevice);
+		fflush(stderr);
 		return false;
 	}
 
@@ -986,7 +984,7 @@ bool DX8Wrapper::Create_Device()
 	// the graphics driver from potentially loading the old game dbghelp.dll and then crashing the game process.
 	DbgHelpGuard dbgHelpGuard;
 
-	HRESULT hr=D3DInterface->CreateDevice
+	hr = D3DInterface->CreateDevice
 	(
 		CurRenderDevice,
 		WW3D_DEVTYPE,
@@ -998,6 +996,14 @@ bool DX8Wrapper::Create_Device()
 
 	if (FAILED(hr))
 	{
+		fprintf(stderr, "[GXGFX] Create_Device: CreateDevice failed hr=0x%08lx dev=%d %ux%u win=%d bbFmt=%d dsFmt=%d msaa=%d swap=%d behav=0x%lx hwnd=%p\n",
+			(unsigned long)hr, CurRenderDevice,
+			(unsigned)_PresentParameters.BackBufferWidth, (unsigned)_PresentParameters.BackBufferHeight,
+			(int)_PresentParameters.Windowed, (int)_PresentParameters.BackBufferFormat,
+			(int)_PresentParameters.AutoDepthStencilFormat, (int)_PresentParameters.MultiSampleType,
+			(int)_PresentParameters.SwapEffect, (unsigned long)Vertex_Processing_Behavior, (void*)_Hwnd);
+		fflush(stderr);
+
 		// The device selection may fail because the device lied that it supports 32 bit zbuffer with 16 bit
 		// display. This happens at least on Voodoo2.
 
@@ -1021,6 +1027,13 @@ bool DX8Wrapper::Create_Device()
 
 			if (FAILED(hr))
 			{
+				fprintf(stderr, "[GXGFX] Create_Device: CreateDevice 16-bit fallback failed hr=0x%08lx dev=%d %ux%u win=%d bbFmt=%d dsFmt=%d msaa=%d swap=%d behav=0x%lx hwnd=%p\n",
+					(unsigned long)hr, CurRenderDevice,
+					(unsigned)_PresentParameters.BackBufferWidth, (unsigned)_PresentParameters.BackBufferHeight,
+					(int)_PresentParameters.Windowed, (int)_PresentParameters.BackBufferFormat,
+					(int)_PresentParameters.AutoDepthStencilFormat, (int)_PresentParameters.MultiSampleType,
+					(int)_PresentParameters.SwapEffect, (unsigned long)Vertex_Processing_Behavior, (void*)_Hwnd);
+				fflush(stderr);
 				return false;
 			}
         }
@@ -1047,11 +1060,23 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		// Release all non-MANAGED stuff
 		WW3D::_Invalidate_Textures();
 
-		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
+		// GeneralsX @bugfix fbraz 26/11/2026 Unbind active D3D8 texture stages, vertex streams, and index buffer before Reset().
+		for (int a = 0; a < MAX_TEXTURE_STAGES; ++a)
 		{
-			Set_Vertex_Buffer (nullptr,i);
+			DX8CALL(SetTexture(a, nullptr));
+			if (Textures[a])
+			{
+				Textures[a]->Release();
+				Textures[a] = nullptr;
+			}
 		}
-		Set_Index_Buffer (nullptr, 0);
+		for (unsigned i = 0; i < MAX_VERTEX_STREAMS; ++i)
+		{
+			DX8CALL(SetStreamSource(i, nullptr, 0));
+			Set_Vertex_Buffer(nullptr, i);
+		}
+		DX8CALL(SetIndices(nullptr, 0));
+		Set_Index_Buffer(nullptr, 0);
 		// GeneralsX @bugfix fbraz3 12/10/2026 Ensure default render targets are restored and custom RTs unbound before reset
 		Set_Render_Target(static_cast<IDirect3DSurface8*>(nullptr));
 
@@ -1079,10 +1104,18 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		if (hr != D3DERR_DEVICELOST )
 		{	DX8CALL_HRES(Reset(&_PresentParameters),hr)
 			if (hr != D3D_OK)
+			{
+				fprintf(stderr, "[GXGFX] Reset_Device: Reset failed hr=0x%08X\n", (unsigned)hr);
+				fflush(stderr);
 				return false;	//reset failed.
+			}
 		}
 		else
+		{
+			fprintf(stderr, "[GXGFX] Reset_Device: TestCooperativeLevel=D3DERR_DEVICELOST\n");
+			fflush(stderr);
 			return false;	//device is lost and can't be reset.
+		}
 
 		if (reload_assets)
 		{
@@ -1354,7 +1387,7 @@ void DX8Wrapper::Resize_And_Position_Window()
 		// Resize the window to fit this resolution
 		if (!IsWindowed)
 		{
-			#ifdef _WIN32
+			#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 			::SetWindowPos(_Hwnd, HWND_TOPMOST, 0, 0, width, height, 0);
 
 			DEBUG_LOG(("Window resized to w:%d h:%d", width, height));
@@ -1455,9 +1488,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
 	_PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;//IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
 	_PresentParameters.hDeviceWindow = _Hwnd;
-	#ifndef _WIN32
-	// GeneralsX @bugfix xorza 14/04/2026 Force DXVK to use windowed presentation mode on Linux.
-	// DXVK's SDL3 WSI calls SDL_SetWindowPosition during fullscreen entry which Wayland rejects.
+	#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
+	// GeneralsX @bugfix xorza 14/04/2026 Force DXVK to use windowed presentation mode on SDL3 platforms.
 	// SDL3 native fullscreen is applied separately after device creation (see W3DDisplay::init).
 	_PresentParameters.Windowed = TRUE;
 	#else
@@ -1468,6 +1500,9 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	_PresentParameters.Flags=0;											// We're not going to lock the backbuffer
 
 	_PresentParameters.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+	// GeneralsX @feature fbraz 25/11/2026 Compatibility graphics presents immediately without vsync throttling
+	if (Is_Compat_D3D9())
+		_PresentParameters.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	_PresentParameters.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 
 	/*
@@ -1496,6 +1531,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		case D3DFMT_P8: BitDepth=8; break;
 		default:
 			// Unknown backbuffer format probably means the device can't do windowed
+			fprintf(stderr, "[GXGFX] Set_Render_Device: unsupported windowed desktop format=%d (dev=%d)\n", (int)_PresentParameters.BackBufferFormat, CurRenderDevice);
+			fflush(stderr);
 			return false;
 		}
 
@@ -1547,6 +1584,9 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	/*
 	** Check the devices support for the requested MSAA mode then setup the multi sample type
 	*/
+	// GeneralsX @feature fbraz 25/11/2026 Compatibility graphics (d3d8to9) renders without MSAA
+	if (Is_Compat_D3D9())
+		MultiSampleAntiAliasing = D3DMULTISAMPLE_NONE;
 	if (MultiSampleAntiAliasing > D3DMULTISAMPLE_NONE) {
 		const D3DMULTISAMPLE_TYPE requestedMode = MultiSampleAntiAliasing;
 		MultiSampleAntiAliasing = Normalize_MSAA_Mode(MultiSampleAntiAliasing);
@@ -3088,8 +3128,15 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_ZTexture
 	}
 
 	DX8_ErrorCode(ret);
+	if (FAILED(ret))
+	{
+		return nullptr;
+	}
 
-	texture->AddRef(); // don't release this texture
+	// GeneralsX @bugfix fbraz 27/11/2026 Remove spurious AddRef() on newly created D3DPOOL_DEFAULT ZTexture.
+	// CreateTexture already returns RefCount == 1; bumping to 2 prevented Release_Textures() from freeing
+	// the underlying D3D9 depth-stencil resource during Reset_Device(), causing IDirect3DDevice9::Reset()
+	// to fail with D3DERR_INVALIDCALL and leaving the device lost.
 
 	// Just return the texture, no reduction
 	// allowed for render targets.
@@ -3741,7 +3788,7 @@ void DX8Wrapper::Create_Render_Target
 	{
 		if (can_create_depth)
 		{
-			*depth_buffer=NEW_REF
+			ZTextureClass* ztex=NEW_REF
 			(
 				ZTextureClass,
 				(
@@ -3752,6 +3799,12 @@ void DX8Wrapper::Create_Render_Target
 					TextureClass::POOL_DEFAULT
 				)
 			);
+			if (ztex->Peek_D3D_Base_Texture() == nullptr)
+			{
+				WWDEBUG_SAY(("DX8Wrapper - Depth stencil target creation failed!"));
+				REF_PTR_RELEASE(ztex);
+			}
+			*depth_buffer = ztex;
 		}
 		else
 		{

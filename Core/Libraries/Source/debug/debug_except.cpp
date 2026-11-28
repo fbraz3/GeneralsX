@@ -30,6 +30,8 @@
 #include "internal_except.h"
 #include <windows.h>
 #include <commctrl.h>
+// GeneralsX @bugfix Copilot 25/11/2026 Architecture-neutral CONTEXT register accessors for _WIN64
+#include "Utility/cpu_context_compat.h"
 
 DebugExceptionhandler::DebugExceptionhandler()
 {
@@ -110,7 +112,7 @@ void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_P
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   char buf[512];
-  DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
+  DebugStackwalk::Signature::GetSymbol(GX_CTX_PC(&ctx),buf,sizeof(buf));
   dbg << "Exception occured at\n" << buf << ".";
 }
 
@@ -120,6 +122,25 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
 
   dbg << Debug::FillChar('0')
       << Debug::Hex()
+#if defined(_M_X64) || defined(_M_AMD64)
+      <<  "RAX:" << Debug::Width(16) << ctx.Rax
+      << " RBX:" << Debug::Width(16) << ctx.Rbx
+      << " RCX:" << Debug::Width(16) << ctx.Rcx << "\n"
+      <<  "RDX:" << Debug::Width(16) << ctx.Rdx
+      << " RSI:" << Debug::Width(16) << ctx.Rsi
+      << " RDI:" << Debug::Width(16) << ctx.Rdi << "\n"
+      <<  "R8 :" << Debug::Width(16) << ctx.R8
+      << " R9 :" << Debug::Width(16) << ctx.R9
+      << " R10:" << Debug::Width(16) << ctx.R10 << "\n"
+      <<  "R11:" << Debug::Width(16) << ctx.R11
+      << " R12:" << Debug::Width(16) << ctx.R12
+      << " R13:" << Debug::Width(16) << ctx.R13 << "\n"
+      <<  "R14:" << Debug::Width(16) << ctx.R14
+      << " R15:" << Debug::Width(16) << ctx.R15 << "\n"
+      <<  "RIP:" << Debug::Width(16) << ctx.Rip
+      << " RSP:" << Debug::Width(16) << ctx.Rsp
+      << " RBP:" << Debug::Width(16) << ctx.Rbp << "\n"
+#else
       <<  "EAX:" << Debug::Width(8) << ctx.Eax
       << " EBX:" << Debug::Width(8) << ctx.Ebx
       << " ECX:" << Debug::Width(8) << ctx.Ecx << "\n"
@@ -129,6 +150,7 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
       <<  "EIP:" << Debug::Width(8) << ctx.Eip
       << " ESP:" << Debug::Width(8) << ctx.Esp
       << " EBP:" << Debug::Width(8) << ctx.Ebp << "\n"
+#endif
       <<  "Flags:" << Debug::Bin() << Debug::Width(32) << ctx.EFlags << Debug::Hex() << "\n"
       <<  "CS:" << Debug::Width(4) << ctx.SegCs
       << " DS:" << Debug::Width(4) << ctx.SegDs
@@ -148,6 +170,9 @@ void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTE
     return;
   }
 
+#if !defined(_M_IX86)
+  dbg << "x87 register dump is 32-bit only\n";
+#else
   FLOATING_SAVE_AREA &flt=ctx.FloatSave;
   dbg << Debug::Bin() << Debug::FillChar('0')
       << "CW:" << Debug::Width(16) << (flt.ControlWord&0xffff) << "\n"
@@ -180,6 +205,7 @@ void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTE
 
     dbg << "\n";
   }
+#endif // _M_IX86
   dbg << Debug::FillChar() << Debug::Dec();
 }
 
@@ -195,7 +221,8 @@ static char regInfo[1024],verInfo[256];
 // and this saves us from doing a stack walk twice
 static DebugStackwalk::Signature sig;
 
-static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+// GeneralsX @bugfix Copilot 25/11/2026 DLGPROC returns INT_PTR (pointer-width on _WIN64)
+static INT_PTR CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch(uMsg)
   {
@@ -240,7 +267,7 @@ static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
   // address
   struct _CONTEXT &ctx=*exPtrs->ContextRecord;
-  DebugStackwalk::Signature::GetSymbol(ctx.Eip,regInfo,sizeof(regInfo));
+  DebugStackwalk::Signature::GetSymbol(GX_CTX_PC(&ctx),regInfo,sizeof(regInfo));
   SendDlgItemMessage(hWnd,102,WM_SETTEXT,0,(LPARAM)regInfo);
 
   // stack
@@ -396,7 +423,7 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   dbg.m_stackWalk.StackWalk(sig,pExPtrs->ContextRecord);
   dbg << sig << "\n";
 
-  dbg << "Bytes around EIP:" << Debug::MemDump::Char(((char *)(pExPtrs->ContextRecord->Eip))-32,80);
+  dbg << "Bytes around instruction pointer:" << Debug::MemDump::Char(((char *)(DWORD_PTR)GX_CTX_PC(pExPtrs->ContextRecord))-32,80);
 
   dbg.FlushOutput();
 

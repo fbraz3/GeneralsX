@@ -46,6 +46,7 @@ public:
 	W3DParticleSystemManager();
 	virtual ~W3DParticleSystemManager() override;
 
+	virtual void reset() override;
 	virtual void doParticles(RenderInfoClass &rinfo) override;
 	virtual void queueParticleRender() override;
 	///< returns the number of particles shown on screen per frame

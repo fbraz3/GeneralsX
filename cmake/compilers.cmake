@@ -46,8 +46,10 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 if (NOT IS_VS6_BUILD)
     if (MSVC)
-        # Multithreaded build.
-        add_compile_options(/MP)
+        # GeneralsX @feature fbraz 26/11/2026 Avoid /MP when Ninja + compiler cache (sccache/ccache) handles parallelism
+        if (NOT (CMAKE_CXX_COMPILER_LAUNCHER AND CMAKE_GENERATOR MATCHES "Ninja"))
+            add_compile_options(/MP)
+        endif()
         # Enforce strict __cplusplus version
         add_compile_options(/Zc:__cplusplus)
         # Prevent FMA contraction to avoid cross-platform divergence

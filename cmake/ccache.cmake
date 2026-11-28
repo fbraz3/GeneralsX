@@ -8,14 +8,19 @@
 #   CMAKE_C_COMPILER_LAUNCHER   = ccache
 #   CMAKE_CXX_COMPILER_LAUNCHER = ccache
 
-option(SAGE_USE_CCACHE "Use ccache compiler cache if available" ON)
+option(SAGE_USE_CCACHE "Use compiler cache (ccache/sccache) if available" ON)
 
 if(SAGE_USE_CCACHE)
-    find_program(CCACHE_PROGRAM ccache)
+    # GeneralsX @feature fbraz 26/11/2026 Prefer ccache on Unix/macOS and support sccache on Windows MSVC
+    if(WIN32)
+        find_program(CCACHE_PROGRAM NAMES sccache ccache)
+    else()
+        find_program(CCACHE_PROGRAM NAMES ccache sccache)
+    endif()
     if(CCACHE_PROGRAM)
         set(CMAKE_C_COMPILER_LAUNCHER   "${CCACHE_PROGRAM}" CACHE STRING "C compiler launcher")
         set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "C++ compiler launcher")
-        message(STATUS "ccache enabled: ${CCACHE_PROGRAM}")
+        message(STATUS "Compiler cache enabled: ${CCACHE_PROGRAM}")
         
         # GeneralsX @build BenderAI 25/02/2026
         # Use CCACHE_SLOPPINESS env var so we don't mutate the global ccache config
@@ -26,8 +31,8 @@ if(SAGE_USE_CCACHE)
             message(STATUS "ccache: CCACHE_SLOPPINESS=time_macros,locale set for this build")
         endif()
     else()
-        message(STATUS "ccache not found, building without compiler cache")
+        message(STATUS "Compiler cache (ccache/sccache) not found, building without compiler cache")
     endif()
 else()
-    message(STATUS "ccache disabled (SAGE_USE_CCACHE=OFF)")
+    message(STATUS "Compiler cache disabled (SAGE_USE_CCACHE=OFF)")
 endif()

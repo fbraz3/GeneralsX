@@ -25,7 +25,8 @@
 ** Replaces Win32DIKeyboard with SDL3 keyboard APIs for Linux.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz 26/11/2026 Enable SDL3 windowing and input on Windows builds
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 
 // GeneralsX @bugfix BenderAI 13/02/2026 Fix include path (fighter19 pattern)
 #include "SDL3Device/GameClient/SDL3Keyboard.h"

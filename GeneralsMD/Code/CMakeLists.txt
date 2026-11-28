@@ -8,8 +8,21 @@ add_library(zi_always_no_pch INTERFACE) # Use this for Shared Libs with MFC AFX
 target_include_directories(zi_gameengine_include INTERFACE "GameEngine/Include")
 target_include_directories(zi_libraries_source_wwvegas INTERFACE "Libraries/Source/WWVegas")
 target_include_directories(zi_main INTERFACE "Main")
-if(UNIX)
+# GeneralsX @build Copilot 25/11/2026 On Windows expose only the four d3dx8 headers so CompatLib's POSIX windows.h never shadows the Windows SDK.
+if(WIN32)
+    set(_compatlib_win_inc "${CMAKE_CURRENT_BINARY_DIR}/compatlib-d3dx8-only")
+    set(GX_COMPATLIB_INCLUDE_DIR "${_compatlib_win_inc}")
+    file(MAKE_DIRECTORY "${_compatlib_win_inc}")
+    foreach(_d3dx_hdr IN ITEMS d3dx8.h d3dx8core.h d3dx8math.h d3dx8tex.h)
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include/${_d3dx_hdr}"
+            "${_compatlib_win_inc}/${_d3dx_hdr}"
+            COPYONLY)
+    endforeach()
+    target_include_directories(zi_always INTERFACE "${_compatlib_win_inc}")
+elseif(UNIX)
     target_include_directories(zi_always INTERFACE "CompatLib/Include")
+    set(GX_COMPATLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CompatLib/Include")
 endif()
 
 target_compile_definitions(zi_always INTERFACE

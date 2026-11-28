@@ -304,25 +304,11 @@ bool Debug::SkipNext()
   if (Instance.disableAssertsEtc)
     return true;
 
-  // do not implement this function inline, we do need
-  // a valid frame pointer here!
-  unsigned help;
+  // GeneralsX @bugfix Copilot 25/11/2026 Replace x86 inline asm [ebp+4] with portable _ReturnAddress() / __builtin_return_address(0).
 #if defined(_MSC_VER)
-  __asm
-  {
-    mov eax,[ebp+4]   // return address
-    mov help,eax
-  };
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(_M_IX86))
-  // GCC/Clang inline assembly for x86-32
-  __asm__ __volatile__(
-    "mov 4(%%ebp), %0"
-    : "=r"(help)
-    :
-    : "memory"
-  );
+  unsigned help = (unsigned)(UINT_PTR)_ReturnAddress();
 #else
-  #error "Unsupported compiler or architecture for inline assembly"
+  unsigned help = (unsigned)(UINT_PTR)__builtin_return_address(0);
 #endif
   curStackFrame=help;
 
@@ -436,10 +422,7 @@ bool Debug::AssertDone()
           break;
         case IDRETRY:
 #if defined(_MSC_VER)
-          __asm
-          {
-            int 0x03
-          }
+          __debugbreak();
 #elif defined(__GNUC__)
           __builtin_trap();
 #else
@@ -713,10 +696,7 @@ bool Debug::CrashDone(bool die)
             break;
           case IDRETRY:
 #if defined(_MSC_VER)
-            __asm
-            {
-              int 0x03
-            }
+            __debugbreak();
 #elif defined(__GNUC__)
             __builtin_trap();
 #else

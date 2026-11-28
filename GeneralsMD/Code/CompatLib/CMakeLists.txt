@@ -1,4 +1,4 @@
-# On 64-bit Windows, macOS, and Linux: use our d3dx8 implementation (GLI/GLM for math helpers)
+# On 64-bit Windows, macOS, and Linux: use our d3dx8 implementation (box filter + GLM for math helpers)
 # GeneralsX @build BenderAI 24/02/2026 Phase 5 - Skip d3dx8 on macOS/Linux due to GLI/GLM ambiguity
 # GeneralsX @build felipebraz 20/06/2025 - Also build d3dx8 STATIC on macOS (D3DX math/texture stubs required for link)
 # GeneralsX @bugfix felipebraz 02/03/2026 - Build real d3dx8 STATIC on Linux too (D3DXGetFVFVertexSize / D3DXLoadSurfaceFromSurface required for link)
@@ -12,13 +12,11 @@ list(APPEND SOURCE_D3DX_COMPAT
 list(TRANSFORM SOURCE_D3DX_COMPAT PREPEND "Source/")
 
 add_library(d3dx8 STATIC ${SOURCE_D3DX_COMPAT})
-
-# GLI requires GLM_ENABLE_EXPERIMENTAL for internal extensions (like gli/core/coord.hpp)
-target_compile_definitions(d3dx8 PRIVATE GLM_ENABLE_EXPERIMENTAL)
+set_property(TARGET d3dx8 PROPERTY CXX_STANDARD 17)
 
 # TheSuperHackers @build 09/02/2025 Bender
 # Use vcpkg find_package (like fighter19) instead of FetchContent
-# This ensures compatible GLM/GLI versions via vcpkg baseline
+# This ensures compatible GLM versions via vcpkg baseline
 if(NOT SAGE_USE_GLM)
     message(FATAL_ERROR "GLM is required for d3dx8 compatibility layer")
 endif()
@@ -26,19 +24,27 @@ endif()
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(d3dx8 PUBLIC glm::glm)
 
-# GeneralsX @build felipebraz 20/06/2025 GLI causes make_vec4 ambiguity with Apple Clang - only link on Windows
-if(NOT APPLE)
-    find_package(gli CONFIG REQUIRED)
-    target_link_libraries(d3dx8 PUBLIC gli)
-endif()
-
 # d3dx8 needs bittype.h from WWLib for Win32 types (DWORD, BYTE, UINT, etc.)
 # Add only WWLib directory (not full core_wwcommon to avoid d3d8.h conflicts from WWAudio)
+# GeneralsX @build Copilot 25/11/2026 Never publish CompatLib/Include directly on Windows (POSIX windows.h shim).
+if(NOT GX_COMPATLIB_INCLUDE_DIR)
+    if(WIN32)
+        set(GX_COMPATLIB_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/compatlib-d3dx8-only")
+        file(MAKE_DIRECTORY "${GX_COMPATLIB_INCLUDE_DIR}")
+        foreach(_d3dx_hdr IN ITEMS d3dx8.h d3dx8core.h d3dx8math.h d3dx8tex.h)
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/Include/${_d3dx_hdr}"
+                "${GX_COMPATLIB_INCLUDE_DIR}/${_d3dx_hdr}"
+                COPYONLY)
+        endforeach()
+    else()
+        set(GX_COMPATLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+    endif()
+endif()
 target_include_directories(d3dx8 PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include
+    ${GX_COMPATLIB_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WWLib
 )
-
 
 # Link d3dx8 to d3d8lib to get DirectX8 headers (min-dx8-sdk or DXVK)
 target_link_libraries(d3dx8 PUBLIC d3d8lib)
@@ -61,9 +67,11 @@ if(SAGE_USE_DX8)
     target_include_directories(d3d8lib INTERFACE
         ${dx8_SOURCE_DIR}/include
     )
-    target_link_directories(d3d8lib INTERFACE
-        ${dx8_SOURCE_DIR}/lib
-    )
+    if(NOT (MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8))
+        target_link_directories(d3d8lib INTERFACE
+            ${dx8_SOURCE_DIR}/lib
+        )
+    endif()
 else()
     # Linux + macOS: Use ONLY DXVK headers (not min-dx8-sdk) to avoid conflicts
     # DXVK provides complete Wine-compatible DirectX 8 headers

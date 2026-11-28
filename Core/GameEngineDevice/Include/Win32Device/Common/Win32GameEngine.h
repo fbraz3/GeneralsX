@@ -37,7 +37,13 @@
 #include "GameClient/ParticleSys.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
+// GeneralsX @feature Copilot 25/11/2026 Use MiniAudio (with NullAudioManager for headless) on Win64 when SAGE_USE_MINIAUDIO is enabled.
+#ifdef SAGE_USE_MINIAUDIO
+#include "MiniAudioDevice/MiniAudioManager.h"
+#include "NullAudioDevice/NullAudioManager.h"
+#else
 #include "MilesAudioDevice/MilesAudioManager.h"
+#endif
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
@@ -110,7 +116,13 @@ inline Radar *Win32GameEngine::createRadar(Bool dummy)
 }
 inline AudioManager *Win32GameEngine::createAudioManager(Bool dummy)
 {
+#ifdef SAGE_USE_MINIAUDIO
+	if (dummy)
+		return NEW NullAudioManager;
+	return NEW MiniAudioManager;
+#else
 	if (dummy)
 		return NEW MilesAudioManagerDummy;
 	return NEW MilesAudioManager;
+#endif
 }

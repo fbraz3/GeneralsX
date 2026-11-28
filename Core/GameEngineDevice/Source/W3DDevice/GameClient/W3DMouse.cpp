@@ -108,7 +108,7 @@ W3DMouse::W3DMouse()
 
 W3DMouse::~W3DMouse()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (m_pDev)
@@ -335,7 +335,7 @@ void W3DMouse::init()
 {
 
 	//check if system already initialized and texture assets loaded.
-	#ifdef _WIN32
+	#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	Win32Mouse::init();
 	#endif
 	setCursor(ARROW);	//set default starting cursor image
@@ -357,7 +357,7 @@ void W3DMouse::reset()
 {
 
 	// extend
-	#ifdef _WIN32
+	#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	Win32Mouse::reset();
 	#endif
 
@@ -372,7 +372,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	CriticalSectionClass::LockClass m(mutex);
 
 	m_directionFrame=0;
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	if (m_currentRedrawMode == RM_WINDOWS)
 	{
 		//Windows default cursor needs to refreshed whenever we get a WM_SETCURSOR
@@ -395,7 +395,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 		return;
 
 	//make sure Windows didn't reset our cursor
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	if (m_currentRedrawMode == RM_DX8)
 	{
 		SetCursor(nullptr);	//Kill Windows Cursor
@@ -482,7 +482,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 extern HWND ApplicationHWnd;
 #endif
 
@@ -495,7 +495,7 @@ void W3DMouse::draw()
 	//make sure the correct cursor image is selected
 	setCursor(m_currentCursor);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 	if (m_currentRedrawMode == RM_DX8 && m_currentD3DCursor != NONE)
 	{
 		//called from update thread or rendering loop.  Tells D3D where

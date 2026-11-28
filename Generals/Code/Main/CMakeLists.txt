@@ -10,14 +10,26 @@ if(WIN32)
     target_link_libraries(g_generals PRIVATE
         deps_bink
         comctl32
-        d3d8
-        dinput8
         dxguid
         imm32
-        deps_miles
         vfw32
         winmm
     )
+    if(NOT SAGE_USE_SDL3)
+        target_link_libraries(g_generals PRIVATE dinput8)
+    endif()
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        target_link_libraries(g_generals PRIVATE d3d8)
+    endif()
+    if(NOT SAGE_USE_MINIAUDIO AND NOT SAGE_USE_OPENAL)
+        target_link_libraries(g_generals PRIVATE deps_miles)
+    endif()
+endif()
+
+# GeneralsX @feature Copilot 25/11/2026 Static d3d8to9 (Direct3D 9) graphics backend for Windows x64
+if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+    target_link_libraries(g_generals PRIVATE gx_d3d8to9)
+    target_compile_definitions(g_generals PRIVATE GX_COMPAT_D3D9=1)
 endif()
 
 # Cross-platform core libraries
@@ -66,7 +78,11 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 endif()
 
 if(MSVC)
-    target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+    target_link_options(g_generals PRIVATE
+        "/NODEFAULTLIB:libci.lib"
+        "$<$<CONFIG:RelWithDebInfo>:/OPT:REF>"
+        "$<$<CONFIG:RelWithDebInfo>:/OPT:NOICF>"
+    )
 endif()
 
 target_include_directories(g_generals PRIVATE
@@ -99,6 +115,7 @@ if(MSVC)
     target_sources(g_generals PRIVATE
         RTS.RC
     )
+    set_source_files_properties(RTS.RC PROPERTIES OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/app.manifest;${CMAKE_CURRENT_SOURCE_DIR}/Generals.ico")
 endif()
 
 # Strip debug symbols to separate file for MinGW Release builds

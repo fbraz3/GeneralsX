@@ -1,6 +1,12 @@
 set(GS_OPENSSL FALSE)
 set(GAMESPY_SERVER_NAME "server.cnc-online.net")
 
+if(WIN32 AND NOT DEFINED gamespy_SHARED_LIBS)
+    # GeneralsX @feature fbraz 26/11/2026 Windows DLLs do not auto-export data globals (gcd_gamename, gcd_secret_key);
+    # keep GameSpy static on WIN32 even when SDL3_image sets BUILD_SHARED_LIBS=ON in cache.
+    set(gamespy_SHARED_LIBS OFF CACHE BOOL "Build GameSpy as a static library on Windows" FORCE)
+endif()
+
 FetchContent_Declare(
     gamespy
     GIT_REPOSITORY https://github.com/TheSuperHackers/GamespySDK.git

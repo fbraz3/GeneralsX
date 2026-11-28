@@ -26,10 +26,12 @@
 ** Based on fighter19 reference implementation.
 */
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz 26/11/2026 Enable SDL3 windowing and input on Windows builds
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 
 #include "SDL3GameEngine.h"
 #include "NullAudioDevice/NullAudioManager.h"
+#include "Common/GameAudio.h"
 // GeneralsX @build Mr. Meeseeks 16/06/2026 Make audio headers mutually exclusive to avoid redefinition conflicts
 #ifdef SAGE_USE_MINIAUDIO
 #include "MiniAudioDevice/MiniAudioManager.h"
@@ -66,7 +68,9 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include <SDL3/SDL.h>
+#ifndef _WIN32
 #include <SDL3/SDL_vulkan.h>
+#endif
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #include "WebGPUDevice/WebGPUD3D8.h"
@@ -548,15 +552,22 @@ void SDL3GameEngine::pollSDL3Events(void)
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
-				m_quitting = true;
-				break;
-
 			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-				m_quitting = true;
+				// GeneralsX @bugfix fbraz3 26/11/2026 Route window close through instant-quit message when MessageStream is ready.
+				if (!m_quitting) {
+					if (TheMessageStream && TheMessageStream->isReadyForMessages()) {
+						TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+					} else {
+						m_quitting = true;
+					}
+				}
 				break;
 
 			case SDL_EVENT_WINDOW_FOCUS_GAINED:
 				m_IsActive = true;
+				if (TheAudio) {
+					TheAudio->unmuteAudio(AudioManager::MuteAudioReason_WindowFocus);
+				}
 				if (TheMouse) {
 					TheMouse->regainFocus();
 					TheMouse->refreshCursorCapture();
@@ -565,6 +576,9 @@ void SDL3GameEngine::pollSDL3Events(void)
 
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
 				m_IsActive = false;
+				if (TheAudio) {
+					TheAudio->muteAudio(AudioManager::MuteAudioReason_WindowFocus);
+				}
 				if (m_IsTextInputActive) {
 					SDL_StopTextInput(m_SDLWindow);
 					m_IsTextInputActive = false;
@@ -846,9 +860,8 @@ ParticleSystemManager* SDL3GameEngine::createParticleSystemManager(Bool dummy)
  */
 AudioManager *SDL3GameEngine::createAudioManager(Bool dummy)
 {
-	(void)dummy;
 	fprintf(stderr, "INFO: SDL3GameEngine::createAudioManager()\n");
-	if (TheGlobalData && !TheGlobalData->m_audioOn) {
+	if (dummy || (TheGlobalData && !TheGlobalData->m_audioOn)) {
 		fprintf(stderr, "INFO: Creating NullAudio audio backend\n");
 		return new NullAudioManager();
 	}

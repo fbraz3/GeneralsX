@@ -1,0 +1,117 @@
+diff --git a/source/d3d8to9.cpp b/source/d3d8to9.cpp
+index a81af347d4..6cc048a102 100644
+--- a/source/d3d8to9.cpp
++++ b/source/d3d8to9.cpp
+@@ -129,59 +129,59 @@ extern "C" void WINAPI DebugSetMute()
+ #endif
+ }
+ 
+-extern "C" IDirect3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
++// GeneralsX: compiled into generalszh.exe, not a d3d8.dll. The entry point is renamed and nothing is exported, Windows'
++// own d3d9.dll is loaded by its full System32 path (the app-local d3d9.dll beside the exe is DXVK, which needs Vulkan),
++// and nothing here may show a box, open a browser or write a file into the install folder (patch 0001).
++#include <cstdio>
++#include <cwchar>
++
++static wchar_t s_gxD3D9Path[MAX_PATH] = L"";
++extern "C" const wchar_t *gx_d3d8to9_LoadedD3D9Path(void) { return s_gxD3D9Path; }
++
++// System32\<name>, its dependencies searched in System32 only. outPath gets the path of the module actually loaded.
++static HMODULE gxLoadSystemDll(const wchar_t *name, wchar_t *outPath)
+ {
+-#ifndef D3D8TO9NOLOG
+-	static bool LogMessageFlag = true;
++	wchar_t dir[MAX_PATH], path[MAX_PATH];
++	const UINT n = GetSystemDirectoryW(dir, MAX_PATH);
++	if (n == 0 || n >= MAX_PATH || n + 1 + wcslen(name) >= MAX_PATH)
++		return nullptr;
++	swprintf_s(path, MAX_PATH, L"%ls\\%ls", dir, name);
++	const HMODULE module = LoadLibraryExW(path, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
++	if (module != nullptr && outPath != nullptr && GetModuleFileNameW(module, outPath, MAX_PATH) == 0)
++		wcscpy_s(outPath, MAX_PATH, path);
++	return module;
++}
+ 
+-	if (!LOG.is_open())
+-	{
+-		LOG.open("d3d8.log", std::ios::trunc);
+-	}
++extern "C" void *gx_d3d8to9_Direct3DCreate8(UINT SDKVersion, char *why, unsigned int whyLen)
++{
++	UNREFERENCED_PARAMETER(SDKVersion);
+ 
+-	if (!LOG.is_open() && LogMessageFlag)
++	typedef IDirect3D9 *(WINAPI *PFN_Direct3DCreate9)(UINT);
++	const HMODULE d3d9 = gxLoadSystemDll(L"d3d9.dll", s_gxD3D9Path);
++	const PFN_Direct3DCreate9 create9 = d3d9 != nullptr ? reinterpret_cast<PFN_Direct3DCreate9>(GetProcAddress(d3d9, "Direct3DCreate9")) : nullptr;
++	if (create9 == nullptr)
+ 	{
+-		LogMessageFlag = false;
+-		MessageBox(nullptr, TEXT("Failed to open debug log file \"d3d8.log\"!"), nullptr, MB_ICONWARNING);
++		snprintf(why, whyLen, "system d3d9.dll not loadable (error %lu)", GetLastError());
++		return nullptr;
+ 	}
+ 
+-	LOG << "Redirecting '" << "Direct3DCreate8" << "(" << SDKVersion << ")' ..." << std::endl;
+-	LOG << "> Passing on to 'Direct3DCreate9':" << std::endl;
+-#endif
+-
+-	IDirect3D9 *const d3d = Direct3DCreate9(D3D_SDK_VERSION);
++	IDirect3D9 *const d3d = create9(D3D_SDK_VERSION);
+ 
+ 	if (d3d == nullptr)
+ 	{
++		snprintf(why, whyLen, "Direct3DCreate9 returned null");
+ 		return nullptr;
+ 	}
+ 
+-	// Load D3DX
+-	if (!D3DXAssembleShader || !D3DXDisassembleShader || !D3DXLoadSurfaceFromSurface)
++	// D3DX is optional and used only for D3DXLoadSurfaceFromSurface, CopyRects' fallback between formats. Shaders never
++	// need it (patches 0003 + 0004). Missing is normal on a fresh Windows: CopyRects then fails for those copies alone.
++	if (D3DXLoadSurfaceFromSurface == nullptr)
+ 	{
+-		const HMODULE module = LoadLibrary(TEXT("d3dx9_43.dll"));
++		wchar_t d3dxPath[MAX_PATH];
++		const HMODULE module = gxLoadSystemDll(L"d3dx9_43.dll", d3dxPath);
+ 
+ 		if (module != nullptr)
+-		{
+-			D3DXAssembleShader = reinterpret_cast<PFN_D3DXAssembleShader>(GetProcAddress(module, "D3DXAssembleShader"));
+-			D3DXDisassembleShader = reinterpret_cast<PFN_D3DXDisassembleShader>(GetProcAddress(module, "D3DXDisassembleShader"));
+ 			D3DXLoadSurfaceFromSurface = reinterpret_cast<PFN_D3DXLoadSurfaceFromSurface>(GetProcAddress(module, "D3DXLoadSurfaceFromSurface"));
+-		}
+-		else
+-		{
+-#ifndef D3D8TO9NOLOG
+-			LOG << "Failed to load d3dx9_43.dll! Some features will not work correctly." << std::endl;
+-#endif
+-			if (MessageBox(nullptr, TEXT(
+-					"Failed to load d3dx9_43.dll! Some features will not work correctly.\n\n"
+-					"It's required to install the \"Microsoft DirectX End-User Runtime\" in order to use d3d8to9, or alternatively get the DLLs from this NuGet package:\nhttps://www.nuget.org/packages/Microsoft.DXSDK.D3DX\n\n"
+-					"Please click \"OK\" to open the official download page or \"Cancel\" to continue anyway."), nullptr, MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND | MB_OKCANCEL | MB_DEFBUTTON1) == IDOK)
+-			{
+-				ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/download/details.aspx?id=35"), nullptr, nullptr, SW_SHOW);
+-
+-				return nullptr;
+-			}
+-		}
+ 	}
+ 
+ 	return new Direct3D8(d3d);
+diff --git a/source/d3d8to9.hpp b/source/d3d8to9.hpp
+index f864ffb485..985704fea8 100644
+--- a/source/d3d8to9.hpp
++++ b/source/d3d8to9.hpp
+@@ -5,6 +5,11 @@
+ 
+ #pragma once
+ 
++// GeneralsX: never log - upstream writes its log file into the current folder, which is the player's install (patch 0001).
++#ifndef D3D8TO9NOLOG
++#define D3D8TO9NOLOG
++#endif
++
+ #include <vector>
+ #include <unordered_set>
+ #include "d3d8.hpp"

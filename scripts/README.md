@@ -27,8 +27,11 @@ Scripts for Linux native and Docker-based builds:
 - `deploy-macos-generals.sh` - Deploy binaries
 - `run-macos-zh.sh` - Launch the game
 
-#### `build/windows/` - Windows Build (Pending)
-Reserved for modern Windows toolchain (VS2022 + SDL3 + DXVK + MiniAudio)
+#### `build/windows/` - Windows x64 Build
+- `build-windows-zh.ps1` - Configure and build `GeneralsXZH.exe` (`win64` preset)
+- `build-windows-generals.ps1` - Configure and build `GeneralsX.exe` (`win64` preset)
+- `deploy-windows-zh.ps1` - Stage `GeneralsXZH.exe`, vcpkg DLLs, SDL3 DLLs, `generalsx.big`, and fonts
+- `deploy-windows-generals.ps1` - Stage `GeneralsX.exe` runtime bundle
 
 ### `env/` - Environment Setup
 

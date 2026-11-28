@@ -1,0 +1,129 @@
+diff --git a/source/d3d8to9_device.cpp b/source/d3d8to9_device.cpp
+index 6001068784..39e5098514 100644
+--- a/source/d3d8to9_device.cpp
++++ b/source/d3d8to9_device.cpp
+@@ -6,6 +6,7 @@
+ #include "d3dx9.hpp"
+ #include "d3d8to9.hpp"
+ #include "gx_shader_tokens.hpp"
++#include <cstring>
+ #include <regex>
+ #include <assert.h>
+ 
+@@ -445,6 +446,65 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateImageSurface(UINT Width, UINT H
+ 
+ 	return D3D_OK;
+ }
++// GeneralsX (patch 0004): CopyRects where D3D9 has no GPU copy - into a managed texture level (every font upload) or out
++// of a render target into system memory (screenshots) - by locking both sides. Upstream needed d3dx9_43.dll for these,
++// which a fresh Windows does not have. Same format on both sides (the caller checks). A render-target source is read
++// back through system memory first; a destination D3D9 cannot lock is staged in system memory and uploaded.
++static HRESULT GxCopyRectByLock(IDirect3DDevice9 *Device, IDirect3DSurface9 *Source, const D3DSURFACE_DESC &SourceDesc, const RECT &SourceRect,
++	IDirect3DSurface9 *Destination, const D3DSURFACE_DESC &DestinationDesc, const RECT &DestinationRect)
++{
++	const UINT Width = SourceRect.right - SourceRect.left, Height = SourceRect.bottom - SourceRect.top;
++	const bool Blocks = SourceDesc.Format == D3DFMT_DXT1 || SourceDesc.Format == D3DFMT_DXT2 || SourceDesc.Format == D3DFMT_DXT3 ||
++		SourceDesc.Format == D3DFMT_DXT4 || SourceDesc.Format == D3DFMT_DXT5;
++	const UINT RowBytes = CalcTextureSize(Width, Blocks ? 4 : 1, 1, SourceDesc.Format);
++	const UINT Rows = Blocks ? (Height + 3) / 4 : Height;
++	if (RowBytes == 0 || Rows == 0)
++		return D3DERR_INVALIDCALL;
++
++	IDirect3DSurface9 *Read = Source, *ReadTemp = nullptr, *Write = Destination, *WriteTemp = nullptr;
++	RECT WriteRect = DestinationRect;
++	HRESULT hr = D3D_OK;
++	if (SourceDesc.Pool == D3DPOOL_DEFAULT)
++	{
++		hr = Device->CreateOffscreenPlainSurface(SourceDesc.Width, SourceDesc.Height, SourceDesc.Format, D3DPOOL_SYSTEMMEM, &ReadTemp, nullptr);
++		if (SUCCEEDED(hr))
++			hr = Device->GetRenderTargetData(Source, ReadTemp);
++		Read = ReadTemp;
++	}
++	if (SUCCEEDED(hr) && DestinationDesc.Pool == D3DPOOL_DEFAULT)
++	{
++		hr = Device->CreateOffscreenPlainSurface(Width, Height, DestinationDesc.Format, D3DPOOL_SYSTEMMEM, &WriteTemp, nullptr);
++		Write = WriteTemp;
++		WriteRect = { 0, 0, static_cast<LONG>(Width), static_cast<LONG>(Height) };
++	}
++	if (SUCCEEDED(hr))
++	{
++		D3DLOCKED_RECT From, To;
++		hr = Read->LockRect(&From, &SourceRect, D3DLOCK_READONLY);
++		if (SUCCEEDED(hr))
++		{
++			hr = Write->LockRect(&To, &WriteRect, 0);
++			if (SUCCEEDED(hr))
++			{
++				for (UINT Row = 0; Row < Rows; ++Row)
++					memcpy(static_cast<BYTE *>(To.pBits) + Row * To.Pitch, static_cast<const BYTE *>(From.pBits) + Row * From.Pitch, RowBytes);
++				Write->UnlockRect();
++			}
++			Read->UnlockRect();
++		}
++	}
++	if (SUCCEEDED(hr) && WriteTemp != nullptr)
++	{
++		const POINT Point = { DestinationRect.left, DestinationRect.top };
++		hr = Device->UpdateSurface(WriteTemp, nullptr, Destination, &Point);
++	}
++	if (ReadTemp != nullptr)
++		ReadTemp->Release();
++	if (WriteTemp != nullptr)
++		WriteTemp->Release();
++	return hr;
++}
++
+ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(IDirect3DSurface8 *pSourceSurface, const RECT *pSourceRectsArray, UINT cRects, IDirect3DSurface8 *pDestinationSurface, const POINT *pDestPointsArray)
+ {
+ 	if (pSourceSurface == nullptr || pDestinationSurface == nullptr || pSourceSurface == pDestinationSurface)
+@@ -498,8 +558,9 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CopyRects(IDirect3DSurface8 *pSourceS
+ 
+ 		if (SourceDesc.Pool == D3DPOOL_MANAGED || DestinationDesc.Pool != D3DPOOL_DEFAULT)
+ 		{
+-			hr = D3DERR_INVALIDCALL;
+-			if (D3DXLoadSurfaceFromSurface != nullptr)
++			hr = GxCopyRectByLock(ProxyInterface, pSourceSurfaceImpl->GetProxyInterface(), SourceDesc, SourceRect,
++				pDestinationSurfaceImpl->GetProxyInterface(), DestinationDesc, DestinationRect);
++			if (FAILED(hr) && D3DXLoadSurfaceFromSurface != nullptr)
+ 			{
+ 				if (SUCCEEDED(D3DXLoadSurfaceFromSurface(pDestinationSurfaceImpl->GetProxyInterface(), nullptr, &DestinationRect, pSourceSurfaceImpl->GetProxyInterface(), nullptr, &SourceRect, D3DX_FILTER_NONE, 0)))
+ 				{
+diff --git a/source/d3d8types.cpp b/source/d3d8types.cpp
+index a89df23db5..437116efa0 100644
+--- a/source/d3d8types.cpp
++++ b/source/d3d8types.cpp
+@@ -49,7 +49,7 @@ DWORD CalcDepthBias(DWORD ZBias, DWORD DepthBitCount)
+ 	return *reinterpret_cast<DWORD*>(&DepthBias);
+ }
+ 
+-static UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format)
++UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format)	// GeneralsX: not static, CopyRects sizes its rows with it (patch 0004)
+ {
+ 	switch (static_cast<DWORD>(Format))
+ 	{
+@@ -119,9 +119,11 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
+ 	// Remove unsupported stencil capability
+ 	Output.StencilCaps &= ~D3DSTENCILCAPS_TWOSIDED;
+ 	// Set default pixel shader version to 1.4 for D3D8 compatibility
+-	Output.PixelShaderVersion = D3DPS_VERSION(1, 4);
++	// GeneralsX: at most 1.4 / 1.1, never more than the device has: a GPU without vertex or pixel shaders must say so, or the
++	// game creates shaders it cannot run instead of taking its fixed-function path (patch 0004).
++	Output.PixelShaderVersion = std::min<DWORD>(Input.PixelShaderVersion, D3DPS_VERSION(1, 4));
+ 	// Set default vertex shader version to 1.1 for D3D8 compatibility
+-	Output.VertexShaderVersion = D3DVS_VERSION(1, 1);
++	Output.VertexShaderVersion = std::min<DWORD>(Input.VertexShaderVersion, D3DVS_VERSION(1, 1));
+ 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
+ 	Output.MaxVertexShaderConst = std::min(256ul, Input.MaxVertexShaderConst);
+ }
+diff --git a/source/d3d8types.hpp b/source/d3d8types.hpp
+index 281c890525..ede2b51ab0 100644
+--- a/source/d3d8types.hpp
++++ b/source/d3d8types.hpp
+@@ -194,6 +194,7 @@ struct D3DADAPTER_IDENTIFIER8
+ DWORD GetDepthStencilBitCount(D3DFORMAT Format);
+ DWORD CalcDepthBias(DWORD ZBias, DWORD BitCount);
+ 
++UINT CalcTextureSize(UINT Width, UINT Height, UINT Depth, D3DFORMAT Format);	// GeneralsX: bytes of a block of texels (patch 0004)
+ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output);
+ void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output);
+ void ConvertSurfaceDesc(D3DSURFACE_DESC &Input, D3DSURFACE_DESC8 &Output);

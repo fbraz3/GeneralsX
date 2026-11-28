@@ -4,21 +4,26 @@ applyTo: 'cmake/**,CMakeLists.txt,CMakePresets.json'
 
 ## Build Presets
 
-### Legacy (Maintenance Only)
-- **`vc6`** — Visual Studio 6 (C++98), 32-bit, DirectX 8 + Miles
-- **`win32`** — MSVC 2022 (C++20), experimental upstream path
-
-### Cross-Platform (SDL3 + DXVK/WebGPU + MiniAudio) — Active Targets
+### Cross-Platform Active Targets
+- **`win64`** — MSVC x64 (`RelWithDebInfo`), SDL3 + MiniAudio + FFmpeg + NGMP + embedded `d3d8to9` (Direct3D 9) — **PRIMARY WINDOWS**
+- **`win64-debug`** — MSVC x64 (`Debug`) variant
 - **`linux64-deploy`** — GCC/Clang x86_64, Release — **PRIMARY LINUX**
 - **`linux64-testing`** — Linux debug variant
 - **`macos-vulkan`** — macOS ARM64, RelWithDebInfo — **PRIMARY MACOS**
 - **`webgpu`** — Emscripten 32-bit WebAssembly + WebGPU (`z_generals` / `GeneralsXZH`, exception to DXVK — uses `WebGPUDevice` + `web/` frontend)
 - **`mingw-w64-i686`** — exploratory MinGW-w64 cross-compile for Windows
-- **`windows64-deploy`** — planned MinGW-w64 x86_64 (issue #29, not active)
+
+### Legacy / Superseded
+- **`vc6`** — Visual Studio 6 (C++98), 32-bit, DirectX 8 + Miles (replaced by `win64`)
+- **`win32`** — MSVC 2022 32-bit, experimental upstream path (superseded by `win64`)
 
 ## Build Workflow
 
 ```bash
+# Windows x64 (PowerShell + VS 2022 Build Tools + vcpkg)
+./scripts/build/windows/build-windows-zh.ps1
+./scripts/build/windows/build-windows-generals.ps1
+
 # Linux (Docker)
 ./scripts/build/linux/docker-configure-linux.sh linux64-deploy
 ./scripts/build/linux/docker-build-linux-zh.sh linux64-deploy

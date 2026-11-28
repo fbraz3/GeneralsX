@@ -28,7 +28,8 @@
 
 #pragma once
 
-#ifndef _WIN32
+// GeneralsX @feature fbraz 26/11/2026 Enable SDL3 windowing and input on Windows builds
+#if defined(SAGE_USE_SDL3) || !defined(_WIN32)
 
 #include "Common/GameEngine.h"
 #include "Common/LocalFileSystem.h"

@@ -48,10 +48,10 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 #include "Win32Device/GameClient/Win32Mouse.h"
 #else
-// Linux: W3DMouse inherits from Mouse abstract base; Win32Mouse.h has Windows-specific types
+// SDL3 / non-Win32: W3DMouse inherits from Mouse abstract base; Win32Mouse.h is not used under SDL3
 #include "GameClient/Mouse.h"
 #endif
 
@@ -64,7 +64,7 @@ class SurfaceClass;
 // W3DMouse -----------------------------------------------------------------
 /** Mouse interface for when using only the Win32 messages and W3D for cursor */
 //-----------------------------------------------------------------------------
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(SAGE_USE_SDL3)
 class W3DMouse : public Win32Mouse
 #else
 class W3DMouse : public Mouse
@@ -113,7 +113,7 @@ private:
 
 	// GeneralsX @build fbraz 12/02/2026 BenderAI - Linux: member from Win32Mouse base class
 	// On Windows, inherited from Win32Mouse; on Linux, declare locally for setDirect/setCursor support
-	#ifndef _WIN32
+	#if !defined(_WIN32) || defined(SAGE_USE_SDL3)
 	Int m_directionFrame;			///< current frame of directional cursor (from 0 points up).
 	#endif
 

@@ -83,6 +83,15 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
         m_gamecode = "ILOVECODE";
         fprintf(stderr, "[NGMP] Development mode detected: using bypass gamecode ILOVECODE\n");
         fflush(stderr);
+
+        // GeneralsX @bugfix fbraz3 26/11/2026 Show cancelable dialog in local dev mode so Online click never stalls the main menu silently
+        std::string devMsg = "Connecting to local Generals Online server (" + NGMP::GetServerRESTEndpoint() + ")...";
+        ClearGSMessageBoxes();
+        GSMessageBoxCancel(UnicodeString(L"Generals Online Login (Dev)"),
+                           NGMP::UTF8ToUnicode(devMsg),
+                           []() {
+                               NGMP_OnlineServicesManager::getInstance().cancelBrowserLogin();
+                           });
     } else {
         std::string serverCode = RequestLoginCodeFromServer();
         if (serverCode.empty()) {
@@ -164,7 +173,9 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NGMP::Internal::WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
             curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
             curl_easy_setopt(curl, CURLOPT_USERAGENT, NGMP::GetUserAgent().c_str());
+            curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 
             CURLcode res = curl_easy_perform(curl);
             long httpCode = 0;
@@ -187,11 +198,17 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
             fflush(stderr);
 
             if (httpCode == 426) {
+                {
+                    std::lock_guard<std::mutex> lock(m_authMutex);
+                    if (!m_pollThreadRunning || !m_waitingBrowserLogin) {
+                        return;
+                    }
+                    m_waitingBrowserLogin = false;
+                    m_pollThreadRunning   = false;
+                }
+
                 fprintf(stderr, "[NGMP] Server rejected login: client version is outdated (HTTP 426 Upgrade Required)\n");
                 fflush(stderr);
-
-                m_waitingBrowserLogin = false;
-                m_pollThreadRunning   = false;
 
                 NGMPEvent ev;
                 ev.type    = NGMPEvent::EVENT_AUTH_FAILURE;
@@ -229,29 +246,44 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                     std::string wsUri         = respJson.value("ws_uri",         "");
                     int64_t     userId        = respJson.value("user_id",        int64_t(-1));
 
+                    // GeneralsX @bugfix fbraz3 26/11/2026 Check cancellation state under m_authMutex before committing tokens/login state.
                     {
                         std::lock_guard<std::mutex> lock(m_authMutex);
+                        if (!m_pollThreadRunning || !m_waitingBrowserLogin) {
+                            return;
+                        }
                         m_authToken  = sessionToken;
                         m_username   = displayName;
                         m_userId     = userId;
                         m_wsUri      = wsUri;
                         m_isLoggedIn = true;
+                        m_waitingBrowserLogin = false;
+                        m_pollThreadRunning   = false;
                     }
                     m_authTokenVersion++;
                     m_sessionGeneration++;
 
-                    NGMP::SaveAuthToken(sessionToken);
-                    NGMP::SaveRefreshToken(refreshToken);
-
-                    m_waitingBrowserLogin = false;
-                    m_pollThreadRunning   = false;
+                    try {
+                        NGMP::SaveAuthToken(sessionToken);
+                        NGMP::SaveRefreshToken(refreshToken);
+                    }
+                    catch (const std::exception& e) {
+                        fprintf(stderr, "[NGMP] Warning: failed to persist auth tokens: %s\n", e.what());
+                        fflush(stderr);
+                    }
 
                     fprintf(stderr, "[NGMP] Login successful! user=%s id=%lld\n",
                             displayName.c_str(), (long long)userId);
                     fflush(stderr);
 
                     // Fetch latest MOTD from the web portal in background
-                    NGMP::FetchMOTD();
+                    try {
+                        NGMP::FetchMOTD();
+                    }
+                    catch (const std::exception& e) {
+                        fprintf(stderr, "[NGMP] Warning: failed to fetch MOTD after login: %s\n", e.what());
+                        fflush(stderr);
+                    }
 
                     NGMPEvent ev;
                     ev.type    = NGMPEvent::EVENT_AUTH_SUCCESS;
@@ -260,11 +292,17 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
                     return;
                 }
                 else if (pollResult == ELoginPollResult::LOGIN_FAILED) {
+                    {
+                        std::lock_guard<std::mutex> lock(m_authMutex);
+                        if (!m_pollThreadRunning || !m_waitingBrowserLogin) {
+                            return;
+                        }
+                        m_waitingBrowserLogin = false;
+                        m_pollThreadRunning   = false;
+                    }
+
                     fprintf(stderr, "[NGMP] Server reported login failure\n");
                     fflush(stderr);
-
-                    m_waitingBrowserLogin = false;
-                    m_pollThreadRunning   = false;
 
                     NGMPEvent ev;
                     ev.type    = NGMPEvent::EVENT_AUTH_FAILURE;
@@ -288,13 +326,16 @@ void NGMP_OnlineServicesManager::beginBrowserLogin() {
 // cancelBrowserLogin — called when the user clicks Cancel in the in-game dialog
 // ──────────────────────────────────────────────────────────────────────────────
 void NGMP_OnlineServicesManager::cancelBrowserLogin() {
-    if (!m_waitingBrowserLogin) return;
+    {
+        std::lock_guard<std::mutex> lock(m_authMutex);
+        if (!m_waitingBrowserLogin) return;
 
-    fprintf(stderr, "[NGMP] Browser login cancelled by user\n");
-    fflush(stderr);
+        fprintf(stderr, "[NGMP] Browser login cancelled by user\n");
+        fflush(stderr);
 
-    m_pollThreadRunning   = false;
-    m_waitingBrowserLogin = false;
+        m_pollThreadRunning   = false;
+        m_waitingBrowserLogin = false;
+    }
 
     if (m_pollThread.joinable()) {
         m_pollThread.join();
